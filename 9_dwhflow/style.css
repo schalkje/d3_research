@@ -3,24 +3,53 @@ body {
     font-family: Arial;
   }
 
+  line {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1px;
+  }
+  
+  text {
+    font-size: 12px;
+    text-anchor: middle;
+  }
+
+  rect {
+    fill: cadetblue;
+    opacity: 0.3;
+    stroke: white;
+  }
+
+  .container {
+    stroke: rgb(21, 21, 21);
+    stroke-opacity: 0.4;
+    stroke-width: 2;
+  }
+
+  .dataset {
+    fill: blue;
+    stroke: rgb(21, 21, 21);
+    stroke-opacity: 0.4;
+    stroke-width: 2;
+  }
 
   .lane {
     stroke: rgb(211, 211, 211);
-    stroke-opacity: 0.4;
+    stroke-opacity: 1;
     stroke-width: 1;
 }
 
   .lane1 {
     text-align: center;
-    fill:aliceblue;
-    fill-opacity: 0.4;
+    fill:rgb(83, 142, 194);
+    fill-opacity: 0.5;
   }
 
   
   .lane2 {
     text-align: center;
     fill: #abcec2;
-    fill-opacity: 0.2;
+    fill-opacity: 1;
 }
 
 .database {
