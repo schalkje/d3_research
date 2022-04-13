@@ -1,84 +1,26 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
-      <script type = "text/javascript" src = "https://d3js.org/d3.v5.min.js"></script>
-      <script type = "text/javascript" src = "app.js" defer></script>
-   </head>
- 
-   <body>
-      <h1>DWH Lineage Visualiser </h1>
 
-      <h2>fruits</h2>
-      <div class="d3_fruit">
-         <p>test</p>
+<head>
+   <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+   <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+   <script type="text/javascript" src="app.js" defer></script>
+</head>
 
-      </div>
+<body>
+   <h1>DWH Lineage Visualiser </h1>
 
-      <h2>svg</h2>
+   <h2>svg</h2>
 
-      <svg id="svgcontainer">
-         <script>
-         var container = d3.select("#svgcontainer")
-            .append("svg")
-            .style("fill","red")
-            .style("stroke","black")
-            .attr("width",600)
-               .attr("Height",300);
-            
-            //Create and append rectangle element
-            container.append("rect")
-            .attr("x", 20)
-            .attr("y", 20)
-            .attr("width", 200)
-            .attr("height", 600)
-            .attr("class", "lane lane2");
-         </script>
-               </svg>
+   <svg id="svg_container" class="container">
+   </svg>
 
-               <h2>svg</h2>
+   <h2>Data</h2>
 
-      <div id="divcontainer">
-         <script>
-            var width = 1000;
-            var height = 300;
-            //Create SVG element
-            var svg = d3.select("#divcontainer")
-               .append("svg")
-               .attr("width", width)
-               .attr("height", height);
-     
-            //Create and append rectangle element
-            svg.append("rect")
-               .attr("x", 20)
-               .attr("y", 20)
-               .attr("width", 200)
-               .attr("height", 600)
-               .attr("class", "lane lane1");
-     
-               var databaseHeight = 80
-               svg.append("rect")
-               .attr("x", 30)
-               .attr("y", 30)
-               .attr("width", 180)
-               .attr("height", databaseHeight)
-               .attr("class", "database");
-     
-               svg.append("rect")
-               .attr("x", 30)
-               .attr("y", 130)
-               .attr("width", 180)
-               .attr("height", databaseHeight)
-               .attr("class", "database");
-     
-               svg.append("rect")
-               .attr("x", 240)
-               .attr("y", 20)
-               .attr("width", 200)
-               .attr("height", 600)
-               .attr("class", "lane lane2");
-     </script>
-      </div>
+   <div id="data_container">
+      <p>No data yet</p>
+   </div>
 
-    </body>
+</body>
+
 </html>
