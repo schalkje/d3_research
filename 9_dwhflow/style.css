@@ -1,0 +1,35 @@
+body {
+    background-color: white;
+    font-family: Arial;
+  }
+
+
+  .lane {
+    stroke: rgb(211, 211, 211);
+    stroke-opacity: 0.4;
+    stroke-width: 1;
+}
+
+  .lane1 {
+    text-align: center;
+    fill:aliceblue;
+    fill-opacity: 0.4;
+  }
+
+  
+  .lane2 {
+    text-align: center;
+    fill: #abcec2;
+    fill-opacity: 0.2;
+}
+
+.database {
+    text-align: center;
+    fill:lightgray;
+    fill-opacity: 0.4;
+    stroke: gray;
+    stroke-opacity: 0.4;
+    stroke-width: 1;
+  }
+
+  
