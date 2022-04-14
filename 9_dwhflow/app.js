@@ -14,6 +14,7 @@ let data = [
     {'dataset': 'Bankview', 'layer': 'Application', 'value': 100},
     {'dataset': 'Fidor', 'layer': 'Application', 'value': 100},
     {'dataset': 'Matrix', 'layer': 'Application', 'value': 500},
+    {'dataset': 'BGS', 'layer': 'Application', 'value': 500},
 
     {'dataset': 'STG_Bankview', 'layer': 'Staging', 'value': 200},
     {'dataset': 'STG_Fidor', 'layer': 'Staging', 'value': 300},
@@ -60,17 +61,27 @@ var dataset_separator = 10;
 for (i in layers){
     var layer = layers[i];
 
-    var parent_x = d3.select('#' + layer.layer ).attr(x)
-    d3.select('#' + layer.layer )
+    var layer_object = d3.select('#' + layer.layer );
+    var parent_x = parseInt(layer_object.attr('x')); // need to explicitly convert to int; otherwise js thinks it's a string
+    var parent_y = parseInt(layer_object.attr('y'));
+    console.log(layer.layer)
+    console.log(parent_x)
+    console.log(parent_y)
+    d3.select('#svg_container')
         .selectAll('.dataset')
         .data(data)
         // .filter(":nth-child(odd)")
-        // .filter(function(d){ 
-        //     return d.layer == 'Staging';
-        // })
         .join("rect")
-        // .attr("x", parent_x + 20)
-        .attr('y', dataset_height)
+        .filter(function(d,i){ 
+            return d.layer == layer.layer;
+         })
+        // .attr("x", 20)
+        .attr("x", function(d, i) {
+            return 20 + parent_x;
+          })
+        .attr('y', function(d, i) {
+            return parent_y + dataset_separator+ i * (dataset_height+dataset_separator); // + parent_x;
+          })
         .attr("width", dataset_width)
         .attr("height", dataset_height)
         .attr("class", 'dataset')
