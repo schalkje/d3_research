@@ -12,7 +12,24 @@ let layers = [
     // {'id': 'base', 'layer': 'BASE (Strada)'},
 ]
 
-let data = [
+// let datasets = [
+//     {'id': 'app_bnv'},
+//     {'id': 'app_fid'},
+//     {'id': 'app_mtx'},
+//     {'id': 'app_bgs'},
+//     {'id': 'stg_bnv'},
+//     {'id': 'stg_fid'},
+//     {'id': 'stg_mtx'},
+//     {'id': 'arc_bnv'},
+//     {'id': 'arc_fid'},
+//     {'id': 'arc_mtx'},
+//     {'id': 'trn_bnv'},
+//     {'id': 'trn_fid'},
+//     {'id': 'trn_mtx'},
+//     {'id': 'dwh_ods'},
+// ]
+
+let datasets = [
     {'id': 'app_bnv', 'dataset': 'Bankview', 'layer': 'app', 'value': 100},
     {'id': 'app_fid', 'dataset': 'Fidor', 'layer': 'app', 'value': 100},
     {'id': 'app_mtx', 'dataset': 'Matrix', 'layer': 'app', 'value': 500},
@@ -49,6 +66,24 @@ let data = [
     // {'id': 'base_mtx', 'dataset': 'Matrix', 'layer': 'base', 'value': 200},
 ]
  
+let links = [
+    {'source': 0, 'target': 4},
+    {'source': 1, 'target': 5},
+    {'source': 2, 'target': 6},
+    {'source': 3, 'target': 6},
+
+    {'source': 4, 'target': 7},
+    {'source': 5, 'target': 8},
+    {'source': 6, 'target': 9},
+
+    {'source': 4, 'target': 10},
+    {'source': 5, 'target': 11},
+    {'source': 6, 'target': 12},
+
+    {'source': 10, 'target': 13},
+    {'source': 11, 'target': 13},
+    {'source': 12, 'target': 13},
+]
 
 let connections = [
     {'source': 'app_bnv', 'target': 'stg_bnv'},
@@ -85,13 +120,14 @@ let connections = [
     // {'source': 'raw_mtx',     'target': 'base_mtx'},
 ]
 
+// var color = d3.scale.category10();
 
 // const xScale = d3.scaleBand().domain(layers.map((datapoint) => datapoint.layer)).rangeRound([0, 1500]).padding(0,1);
 // const yScale = d3.scaleLinear.domain([0,15]).range([600,0]);
 
 d3.select('#data_container')
     .selectAll('p')
-    .data(data)
+    .data(datasets)
     .join('p')
     .text(d => d.layer + '.' + d.dataset);
 
@@ -99,73 +135,68 @@ d3.select('#data_container')
 var container_width = 200;
 var container_separator = 10;
 
-var container = d3.select('#svg_container')
-    .attr("width", 1700)
-    .attr("height", 600);
-
-// Create the lanes
-    container
-        .selectAll('rect')
-        .data(layers)
-        .join("rect")
-        .attr('x', function(d, i) {
-            return container_separator + i * (container_separator + container_width);
-        })
-        .attr("y", 20)
-        .attr("width", container_width)
-        .attr("height", 400)
-        .attr("id", function(d, i) {
-            return d.id
-        })
-        .attr("class", function(d, i) {
-            return i%2==0 ? 'lane lane1' : "lane lane2"
-        });
-  
-    container
-        .selectAll('.lanelabel')
-        .data(layers)
-        .join("text")
-        .attr('x', function(d, i) {
-            return (container_separator + container_width/2) + i * (container_separator + container_width);
-            })
-        .attr("y", 12)
-        .text(d => d.layer)
-        .attr("class", 'lanelabel');
-
-
-
-        
-// create datasets
 var dataset_width = 160;
 var dataset_height = 40;
-var dataset_separator = 10;
-// var layer;
-for (i in layers){
-    var layer = layers[i];
 
-    var layer_object = d3.select('#' + layer.id );
-    var parent_x = parseInt(layer_object.attr('x')); // need to explicitly convert to int; otherwise js thinks it's a string
-    var parent_y = parseInt(layer_object.attr('y'));
+var width = 1700;
+var height = 600;
 
-    console.log('Layer: '+ layer.id + ', with label: ' + layer.layer)
-    console.log(parent_x)
-    console.log(parent_y)
+var container = d3.select('#svg_container')
+    .attr("width", width)
+    .attr("height", height);
 
-    // var layer_data = data.filter(d => d.layer === layer.id);
+var nodes = container
+    .selectAll('.dataset')
+    .data(datasets)
+    .join("rect")
+    .attr("x", function(d) {
+        return d.x;
+      })
+    .attr('y', function(d) {
+        return d.layer;
+      })
+    .attr("width", dataset_width)
+    .attr("height", dataset_height)
+    .attr("class", 'dataset')
+    .attr("id", function(d, i) {
+        return d.id
+    });
 
+var simulation = d3.forceSimulation(datasets)
+    .force('link', d3.forceLink()
+        .id(d => d.id)
+        .links(links)
+        .distance(100)
+        .strength(0.9)
+    )
+    .force('charge', d3.forceManyBody())
+    .force('center', d3.forceCenter(width/2,height,2))
+    .on('tick',ticked);
 
-    container
+// function ticked() {
+//     var u = d3.select('svg')
+//         .selectAll('circle')
+//         .data(datasets)
+//         .join('circle')
+//         .attr('r', 5)
+//         .attr('cx', function(d) {
+//         return d.x
+//         })
+//         .attr('cy', function(d) {
+//         return d.y
+//         });
+//     }
+
+function ticked() {
+    var u = container
         .selectAll('.dataset')
-        .data(data)
+        .data(datasets)
         .join("rect")
-        .filter(function(d,i){ 
-            return d.layer == layer.id;
-         })
-        .attr("x", function(d, i) {
-            return 20 + parent_x;
+        .attr("x", function(d) {
+            return d.x;
           })
-        .attr('y', function(d, i) {
-            return parent_y + dataset_separator+ i * (dataset_height+dataset_separator); // + parent_x;
+        .attr('y', function(d) {
+            return d.layer;
           })
         .attr("width", dataset_width)
         .attr("height", dataset_height)
@@ -173,92 +204,17 @@ for (i in layers){
         .attr("id", function(d, i) {
             return d.id
         });
-
-    container
-        .selectAll('.datasetlabel')
-        .data(data)
-        .join("text")
-        .filter(function(d,i){ 
-            return d.layer == layer.id;
-         })
-        .attr("x", function(d, i) {
-            return 20 + parent_x + dataset_width/ 2;
-          })
-        .attr('y', function(d, i) {
-            return 5 + parent_y + dataset_separator + dataset_height / 2 + i * (dataset_height+dataset_separator); // + parent_x;
-          })
-        .text((d) => d.dataset)
-        .attr("class", 'datasetlabel');
-}
-
-
-function getRightConnectionPoint(object)
-{    
-    var rect=object._groups[0][0];
-
-    var link_x = rect.x.baseVal.value + rect.width.baseVal.value;
-    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
-
-    return {
-        x: link_x,
-        y: link_y
-    };
-}
-
-function getLeftConnectionPoint(object)
-{
-    var rect=object._groups[0][0];
-
-    var link_x = rect.x.baseVal.value;
-    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
-    
-    return {
-        x: link_x,
-        y: link_y
-    };
-}
-
-
-// Links:
-// per link
-// - lookup source location
-// - lookup destination location
-// draw arrows
-function computeLinks()
-{
-    for (i in connections){
-        var connection = connections[i];
-        var connectionName = connection.source + '_' + connection.target
-        console.log('compute link ' + i + ': ' + connectionName)
-
-        var sourceObject = d3.select('#' + connection.source );
-        var source = getRightConnectionPoint(sourceObject);
-
-        var targetObject = d3.select('#' + connection.target );
-        var target = getLeftConnectionPoint(targetObject);
-        
-        connection.x1 = source.x; 
-        connection.y1 = source.y; 
-        connection.x2 = target.x; 
-        connection.y2 = target.y; 
-        console.log(connection)
     }
 
-}
+// var force = d3.layout.force()
+//     .charge(-180)
+//     .linkDistance(70)
+//     .size([width, height]);
 
-computeLinks();
 
-    container
-        .selectAll('.link')
-        .data(connections)
-        .enter()
-        .append('line')
-        .attr('x1', d => d.x1)
-        .attr('y1', d => d.y1)
-        .attr('x2', d => d.x2)
-        .attr('y2', d => d.y2)
-        // .attr('id',d => d.source + '_' + d.target)
-        .attr('class','link')
-        .attr("marker-end", "url(#arrow)");
 
+// force
+//     .nodes(data)
+//     .links(connections)
+//     .start();
 
