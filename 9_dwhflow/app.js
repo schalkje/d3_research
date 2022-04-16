@@ -1,3 +1,4 @@
+
 console.log(d3)
 
 let layers = [
@@ -18,8 +19,18 @@ let data = [
 
     {'dataset': 'STG_Bankview', 'layer': 'Staging', 'value': 200},
     {'dataset': 'STG_Fidor', 'layer': 'Staging', 'value': 300},
-    {'dataset': 'STG_Matrix', 'layer': 'Staging', 'value': 400}]
+    {'dataset': 'STG_Matrix', 'layer': 'Staging', 'value': 400}
+]
  
+
+let connections = [
+    {source:'Bankview',target:'STG_Bankview'},
+    {source:'Fidor',target:'STG_Fidor'},
+    {source:'Matrix',target:'STG_Matrix'},
+    {source:'BGS',target:'STG_Matrix'}
+]
+
+
 // const xScale = d3.scaleBand().domain(layers.map((datapoint) => datapoint.layer)).rangeRound([0, 1500]).padding(0,1);
 // const yScale = d3.scaleLinear.domain([0,15]).range([600,0]);
 
@@ -123,4 +134,48 @@ for (i in layers){
 }
 
 
+function getRightConnectionPoint(object)
+{    
+    return {x:10,y:10};
+}
 
+function getLeftConnectionPoint(object)
+{
+    return {x:100,y:100};
+}
+
+
+// Links:
+// per link
+// - lookup source location
+// - lookup destination location
+// draw arrows
+for (i in connections){
+    var connection = connections[i];
+
+    var connectionName = connection.source + '_' + connection.target
+    // var sourceObject = d3.select('#' + connection.source );
+    // var source = getRightConnectionPoint(sourceObject);
+
+    // var targetObject = d3.select('#' + connection.target );
+    // var target = getLeftConnectionPoint(targetObject);
+    console.log('draw link ' + i + ': ' + connectionName)
+
+    container
+        .selectAll('#' + connectionName)
+        .data(connections)
+        .enter()
+        .append('line')
+        .attr('x1', 10)
+        .attr('y1', 10)
+        .attr('x2', 100)
+        .attr('y2', 100)
+        // .attr('x1', source.x)
+        // .attr('y1', source.y)
+        // .attr('x2', target.x)
+        // .attr('y2', target.y)
+        .attr('id',d => d.source + '_' + d.target + '-' + connectionName)
+        .attr('class','link');
+        // .attr("marker-end", "url(#arrow)");
+
+}

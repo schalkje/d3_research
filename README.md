@@ -13,3 +13,6 @@ https://www.tutorialspoint.com/d3js/d3js_introduction_to_svg.htm
 http://www.d3noob.org/2014/02/styles-in-d3js.html
 
 
+# Learning
+
+https://jansipke.nl/creating-network-diagrams-with-d3-js/?msclkid=eaf70143bcca11ecbd68424d5396b208

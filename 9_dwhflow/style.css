@@ -51,6 +51,17 @@ body {
     text-anchor: middle;
   }
 
+line.link {
+    stroke-width: 2px;
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+marker#arrow {
+    stroke: #999;
+    fill: #999;
+}
+
   .lane {
     stroke: rgb(211, 211, 211);
     stroke-opacity: 1;
