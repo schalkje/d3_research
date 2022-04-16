@@ -2,87 +2,27 @@
 console.log(d3)
 
 let layers = [
-    {'id': 'app', 'layer': 'Application'},
-    {'id': 'stg', 'layer': 'Staging'},
-    {'id': 'arc', 'layer': 'Staging Archive'},
-    {'id': 'trn', 'layer': 'Transform'},
-    {'id': 'dwh', 'layer': 'DWH'},
-    {'id': 'dm', 'layer': 'DM'},
-    {'id': 'raw', 'layer': 'RAW (Strada)'},
-    {'id': 'base', 'layer': 'BASE (Strada)'},
+    {'id': 'id1', 'layer': 'Application'},
+    {'id': 'id2', 'layer': 'Staging'},
 ]
 
 let data = [
-    {'id': 'app_bnv', 'dataset': 'Bankview', 'layer': 'app', 'value': 100},
-    {'id': 'app_fid', 'dataset': 'Fidor', 'layer': 'app', 'value': 100},
-    {'id': 'app_mtx', 'dataset': 'Matrix', 'layer': 'app', 'value': 500},
-    {'id': 'app_bgs', 'dataset': 'BGS', 'layer': 'app', 'value': 500},
+    {'dataset': 'Bankview', 'layer': 'Application', 'value': 100},
+    {'dataset': 'Fidor', 'layer': 'Application', 'value': 100},
+    {'dataset': 'Matrix', 'layer': 'Application', 'value': 500},
+    {'dataset': 'BGS', 'layer': 'Application', 'value': 500},
 
-    {'id': 'stg_bnv', 'dataset': 'STG_Bankview', 'layer': 'stg', 'value': 200},
-    {'id': 'stg_fid', 'dataset': 'STG_Fidor', 'layer': 'stg', 'value': 300},
-    {'id': 'stg_mtx', 'dataset': 'STG_Matrix', 'layer': 'stg', 'value': 400},
-
-    {'id': 'arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'arc', 'value': 200},
-    {'id': 'arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'arc', 'value': 300},
-    {'id': 'arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'arc', 'value': 400},
-
-    {'id': 'trn_bnv', 'dataset': 'Transform_Bankview', 'layer': 'trn', 'value': 200},
-    {'id': 'trn_fid', 'dataset': 'Transform_Fidor', 'layer': 'trn', 'value': 300},
-    {'id': 'trn_mtx', 'dataset': 'Transform_Matrix', 'layer': 'trn', 'value': 400},
-
-    {'id': 'dwh_ods', 'dataset': 'ODS', 'layer': 'dwh', 'value': 400},
-
-    {'id': 'dwh_dwh', 'dataset': 'DWH', 'layer': 'dwh', 'value': 400},
-
-    {'id': 'raw_dwh', 'dataset': 'DWH', 'layer': 'raw', 'value': 400},
-    {'id': 'raw_arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'raw', 'value': 200},
-    {'id': 'raw_arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'raw', 'value': 300},
-    {'id': 'raw_arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'raw', 'value': 400},
-    {'id': 'raw_bnv', 'dataset': 'Bankview', 'layer': 'raw', 'value': 200},
-    {'id': 'raw_mtx', 'dataset': 'Matrix', 'layer': 'raw', 'value': 200},
-
-    {'id': 'base_dwh', 'dataset': 'DWH', 'layer': 'base', 'value': 400},
-    {'id': 'base_arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'base', 'value': 200},
-    {'id': 'base_arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'base', 'value': 300},
-    {'id': 'base_arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'base', 'value': 400},
-    {'id': 'base_bnv', 'dataset': 'Bankview', 'layer': 'base', 'value': 200},
-    {'id': 'base_mtx', 'dataset': 'Matrix', 'layer': 'base', 'value': 200},
+    {'dataset': 'STG_Bankview', 'layer': 'Staging', 'value': 200},
+    {'dataset': 'STG_Fidor', 'layer': 'Staging', 'value': 300},
+    {'dataset': 'STG_Matrix', 'layer': 'Staging', 'value': 400},
 ]
  
 
 let connections = [
-    {'source': 'app_bnv', 'target': 'stg_bnv'},
-    {'source': 'app_fid', 'target': 'stg_fid'},
-    {'source': 'app_mtx', 'target': 'stg_mtx'},
-    {'source': 'app_bgs', 'target': 'stg_mtx'},
-
-    {'source': 'stg_bnv', 'target': 'arc_bnv'},
-    {'source': 'stg_fid', 'target': 'arc_fid'},
-    {'source': 'stg_mtx', 'target': 'arc_mtx'},
-
-    {'source': 'stg_bnv', 'target': 'trn_bnv'},
-    {'source': 'stg_fid', 'target': 'trn_fid'},
-    {'source': 'stg_mtx', 'target': 'trn_mtx'},
-
-    {'source': 'trn_bnv', 'target': 'dwh_ods'},
-    {'source': 'trn_fid', 'target': 'dwh_ods'},
-    {'source': 'trn_mtx', 'target': 'dwh_ods'},
-
-    {'source': 'dwh_ods', 'target': 'dwh_dwh'},
-
-    {'source': 'dwh_dwh', 'target': 'raw_dwh'},
-    {'source': 'arc_bnv', 'target': 'raw_arc_bnv'},
-    {'source': 'arc_fid', 'target': 'raw_arc_fid'},
-    {'source': 'arc_mtx', 'target': 'raw_arc_mtx'},
-    {'source': 'app_bnv', 'target': 'raw_bnv'},
-    {'source': 'app_mtx', 'target': 'raw_mtx'},
-
-    {'source': 'raw_dwh',     'target': 'base_dwh'},
-    {'source': 'raw_arc_bnv', 'target': 'base_arc_bnv'},
-    {'source': 'raw_arc_fid', 'target': 'base_arc_fid'},
-    {'source': 'raw_arc_mtx', 'target': 'base_arc_mtx'},
-    {'source': 'raw_bnv',     'target': 'base_bnv'},
-    {'source': 'raw_mtx',     'target': 'base_mtx'},
+    {source:'Bankview',target:'STG_Bankview'},
+    {source:'Fidor',target:'STG_Fidor'},
+    {source:'Matrix',target:'STG_Matrix'},
+    {source:'BGS',target:'STG_Matrix'},
 ]
 
 
@@ -115,7 +55,7 @@ var container = d3.select('#svg_container')
         .attr("width", container_width)
         .attr("height", 400)
         .attr("id", function(d, i) {
-            return d.id
+            return d.layer
         })
         .attr("class", function(d, i) {
             return i%2==0 ? 'lane lane1' : "lane lane2"
@@ -143,23 +83,20 @@ var dataset_separator = 10;
 for (i in layers){
     var layer = layers[i];
 
-    var layer_object = d3.select('#' + layer.id );
+    var layer_object = d3.select('#' + layer.layer );
     var parent_x = parseInt(layer_object.attr('x')); // need to explicitly convert to int; otherwise js thinks it's a string
     var parent_y = parseInt(layer_object.attr('y'));
 
-    console.log('Layer: '+ layer.id + ', with label: ' + layer.layer)
+    console.log(layer.layer)
     console.log(parent_x)
     console.log(parent_y)
-
-    // var layer_data = data.filter(d => d.layer === layer.id);
-
 
     container
         .selectAll('.dataset')
         .data(data)
         .join("rect")
         .filter(function(d,i){ 
-            return d.layer == layer.id;
+            return d.layer == layer.layer;
          })
         .attr("x", function(d, i) {
             return 20 + parent_x;
@@ -171,7 +108,7 @@ for (i in layers){
         .attr("height", dataset_height)
         .attr("class", 'dataset')
         .attr("id", function(d, i) {
-            return d.id
+            return d.dataset
         });
 
     container
@@ -179,7 +116,7 @@ for (i in layers){
         .data(data)
         .join("text")
         .filter(function(d,i){ 
-            return d.layer == layer.id;
+            return d.layer == layer.layer;
          })
         .attr("x", function(d, i) {
             return 20 + parent_x + dataset_width/ 2;
@@ -229,8 +166,6 @@ function computeLinks()
     for (i in connections){
         var connection = connections[i];
         var connectionName = connection.source + '_' + connection.target
-        console.log('compute link ' + i + ': ' + connectionName)
-
         var sourceObject = d3.select('#' + connection.source );
         var source = getRightConnectionPoint(sourceObject);
 
@@ -241,6 +176,7 @@ function computeLinks()
         connection.y1 = source.y; 
         connection.x2 = target.x; 
         connection.y2 = target.y; 
+        console.log('draw link ' + i + ': ' + connectionName)
         console.log(connection)
     }
 
