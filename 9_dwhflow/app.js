@@ -136,12 +136,28 @@ for (i in layers){
 
 function getRightConnectionPoint(object)
 {    
-    return {x:10,y:10};
+    var rect=object._groups[0][0];
+
+    var link_x = rect.x.baseVal.value + rect.width.baseVal.value;
+    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
+
+    return {
+        x: link_x,
+        y: link_y
+    };
 }
 
 function getLeftConnectionPoint(object)
 {
-    return {x:100,y:100};
+    var rect=object._groups[0][0];
+
+    var link_x = rect.x.baseVal.value;
+    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
+    
+    return {
+        x: link_x,
+        y: link_y
+    };
 }
 
 
@@ -150,32 +166,40 @@ function getLeftConnectionPoint(object)
 // - lookup source location
 // - lookup destination location
 // draw arrows
-for (i in connections){
-    var connection = connections[i];
+function computeLinks()
+{
+    for (i in connections){
+        var connection = connections[i];
+        var connectionName = connection.source + '_' + connection.target
+        var sourceObject = d3.select('#' + connection.source );
+        var source = getRightConnectionPoint(sourceObject);
 
-    var connectionName = connection.source + '_' + connection.target
-    // var sourceObject = d3.select('#' + connection.source );
-    // var source = getRightConnectionPoint(sourceObject);
+        var targetObject = d3.select('#' + connection.target );
+        var target = getLeftConnectionPoint(targetObject);
+        
+        connection.x1 = source.x; 
+        connection.y1 = source.y; 
+        connection.x2 = target.x; 
+        connection.y2 = target.y; 
+        console.log('draw link ' + i + ': ' + connectionName)
+        console.log(connection)
+    }
 
-    // var targetObject = d3.select('#' + connection.target );
-    // var target = getLeftConnectionPoint(targetObject);
-    console.log('draw link ' + i + ': ' + connectionName)
+}
+
+computeLinks();
 
     container
-        .selectAll('#' + connectionName)
+        .selectAll('.link')
         .data(connections)
         .enter()
         .append('line')
-        .attr('x1', 10)
-        .attr('y1', 10)
-        .attr('x2', 100)
-        .attr('y2', 100)
-        // .attr('x1', source.x)
-        // .attr('y1', source.y)
-        // .attr('x2', target.x)
-        // .attr('y2', target.y)
-        .attr('id',d => d.source + '_' + d.target + '-' + connectionName)
-        .attr('class','link');
-        // .attr("marker-end", "url(#arrow)");
+        .attr('x1', d => d.x1)
+        .attr('y1', d => d.y1)
+        .attr('x2', d => d.x2)
+        .attr('y2', d => d.y2)
+        // .attr('id',d => d.source + '_' + d.target)
+        .attr('class','link')
+        .attr("marker-end", "url(#arrow)");
 
-}
+
