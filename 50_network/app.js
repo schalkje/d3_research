@@ -140,7 +140,8 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 var label_width = 160;
 var label_height = 40;
 
-var width = 1700;
+var width = layers.length * (container_width + container_separator) + container_separator;
+//1700;
 var height = 600;
 
 console.log('Initialize container:')
@@ -245,16 +246,16 @@ var node_label = nodes_container
 console.log('Force simulation')
 
 var simulation = d3.forceSimulation(nodes)
-    .alpha(0.3) // what does this?
+    .alpha(0.3) // what does this do?
     .force('link', d3.forceLink()
         .id(d => d.id)
         .links(links)
-        .distance(200)
+        .distance(80)
         .strength(0.9)
     )
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
-    .force("collide", d3.forceCollide(20))
+    .force("collide", d3.forceCollide(30))
     .on('tick',ticked);
 
 var tickedCount = 0
@@ -265,18 +266,18 @@ function ticked() {
     tickedCount++;
 
      node
-         .each(cluster(0.2));
-        //  .each(collide(0.2));
+         .each(cluster(0.2))
+         .each(collide(0.2));
     
-    // renderNodes();
+    renderNodes();
 
-    // refresh display to see the changes animate
-    if (tickedCount % tickedRefreshCount === 0 )
-    {
-        console.log('refresh display');
-        tickedRefreshCount*=1.2;
-        renderNodes();
-    }
+    // // refresh display to see the changes animate
+    // if (tickedCount % tickedRefreshCount === 0 )
+    // {
+    //     console.log('refresh display');
+    //     tickedRefreshCount*=1.2;
+    //     renderNodes();
+    // }
 }
 
 simulation.on("end", function() {
@@ -451,25 +452,11 @@ const cluster = function(alpha) {
     return function (d) {
       const cluster = clusters[d.layer];
       if (!cluster) return;
-    //   let x = d.x - cluster.x,
-    //       y = d.y - cluster.y,
-    //       l = Math.sqrt(x * x + y * y),
-    //       r = d.radius + cluster.radius + 3;
-    //   if (l != r) { // what are we checking here?
-    //     l = (l - r) / l * alpha;
-    //     d.x -= x *= l;
-    //     d.y -= y *= l;
-        // JS: keep clusters on the fixed locations
-        // cluster.x += x;
-        // cluster.y += y;
-
-        let dx = d.x - cluster.x;
-        let dy = d.y - (cluster.y + cluster.height/2)
+        let dx = d.x - (cluster.x + clusterPadding);
 
         if (Math.abs(dx > 10))
         {
-            d.x -= dx * alpha;
-            d.y -= dy * alpha;
+            d.x -= dx; // the x is absolutely positioned by the layer
         }
     };
   }
