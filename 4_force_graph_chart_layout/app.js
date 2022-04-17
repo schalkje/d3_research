@@ -1,4 +1,5 @@
-const radius = 50;
+const radius = 40;
+const link_separator = 4;
 
 var nodes=[
   { id: 1, name: "node 1", dependsOn: [] },
@@ -169,10 +170,26 @@ function render() {
       .selectAll('.link')
       .data(links)
       .join("line")
-      .attr("x1", d => d.source.x)
-      .attr('y1', d => d.source.y + radius)
-      .attr("x2", d => d.target.x)
-      .attr('y2', d => d.target.y - radius)
+      .attr("x1", function(d) {
+        var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+        var dx = Math.cos(alfa) * (radius + link_separator);
+        return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
+      } )
+      .attr("y1", function(d) {
+        var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+        var dy = Math.sin(alfa) * (radius + link_separator);
+        return d.source.y < d.target.y ? d.source.y + dy : d.source.y - dy;
+      } )
+      .attr("x2", function(d) {
+        var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+        var dx = Math.cos(alfa) * (radius + link_separator);
+        return d.source.x < d.target.x ? d.target.x - dx : d.target.x + dx;
+      } )
+      .attr('y2', function(d) {
+        var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+        var dy = Math.sin(alfa) * (radius + link_separator);
+        return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
+      })
       .attr('marker-end','url(#suit)')
       .attr("class", 'link');
 }
