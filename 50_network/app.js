@@ -163,7 +163,7 @@ var simulation = d3.forceSimulation(datasets)
     //     .strength(0.9)
     // )
     .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width/2,height,2))
+    .force('center', d3.forceCenter(width/2,height/2))
     .on('tick',ticked);
 
 var tickedCount = 0
@@ -176,7 +176,7 @@ function ticked() {
     {
         console.log('refresh display');
         tickedRefreshCount*=2;
-        render();
+        renderNodes();
     }
 }
 
@@ -188,7 +188,7 @@ simulation.on("end", function() {
     console.log(links);
     console.log("connections:"); 
     console.log(connections);
-    render();
+    renderAll();
   });
 
 // var force = d3.layout.force()
@@ -196,14 +196,67 @@ simulation.on("end", function() {
 //     .linkDistance(70)
 //     .size([width, height]);
 
-render();
+renderNodes();
 
 // force
 //     .nodes(data)
 //     .links(connections)
 //     .start();
 
-function render() {
+function getRightConnectionPoint(object)
+{    
+    var rect=object._groups[0][0];
+
+    var link_x = rect.x.baseVal.value + rect.width.baseVal.value;
+    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
+
+    return {
+        x: link_x,
+        y: link_y
+    };
+}
+
+function getLeftConnectionPoint(object)
+{
+    var rect=object._groups[0][0];
+
+    var link_x = rect.x.baseVal.value;
+    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
+    
+    return {
+        x: link_x,
+        y: link_y
+    };
+}
+
+// Links:
+// per link
+// - lookup source location
+// - lookup destination location
+// draw arrows
+function computeLinks()
+{
+    for (i in connections){
+        var connection = connections[i];
+        var connectionName = connection.source + '_' + connection.target
+        console.log('compute link ' + i + ': ' + connectionName)
+
+        var sourceObject = d3.select('#' + connection.source );
+        var source = getRightConnectionPoint(sourceObject);
+
+        var targetObject = d3.select('#' + connection.target );
+        var target = getLeftConnectionPoint(targetObject);
+        
+        connection.x1 = source.x; 
+        connection.y1 = source.y; 
+        connection.x2 = target.x; 
+        connection.y2 = target.y; 
+        console.log(connection)
+    }
+
+}
+
+function renderNodes() {
     nodes_container
     .selectAll('.dataset')
     .data(datasets)
@@ -233,4 +286,26 @@ function render() {
       })
     .text((d) => d.dataset)
     .attr("class", 'datasetlabel');
+}
+
+function renderLinks() {
+    computeLinks();
+
+    container
+        .selectAll('.link')
+        .data(connections)
+        .enter()
+        .append('line')
+        .attr('x1', d => d.x1)
+        .attr('y1', d => d.y1)
+        .attr('x2', d => d.x2)
+        .attr('y2', d => d.y2)
+        // .attr('id',d => d.source + '_' + d.target)
+        .attr('class','link')
+        .attr("marker-end", "url(#arrow)");
+}
+
+function renderAll() {
+    renderNodes();
+    renderLinks();
 }

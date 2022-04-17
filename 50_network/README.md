@@ -15,6 +15,8 @@ https://github.com/d3/d3-force?msclkid=345ea878bd9c11ecb327371b7c2a3560
 Force in depth:
 https://www.d3indepth.com/force-layout/?msclkid=dc8f54f8bccb11ecaa6877654f189ae7
 
+Examples:
+https://observablehq.com/search?query=force%20direct%20graph
 
 Inspiration forced chart:
 https://codesandbox.io/s/7zj0x6xmo6
