@@ -67,25 +67,6 @@ let datasets = [
 ]
  
 let links = [
-    {'source': 0, 'target': 4},
-    {'source': 1, 'target': 5},
-    {'source': 2, 'target': 6},
-    {'source': 3, 'target': 6},
-
-    {'source': 4, 'target': 7},
-    {'source': 5, 'target': 8},
-    {'source': 6, 'target': 9},
-
-    {'source': 4, 'target': 10},
-    {'source': 5, 'target': 11},
-    {'source': 6, 'target': 12},
-
-    {'source': 10, 'target': 13},
-    {'source': 11, 'target': 13},
-    {'source': 12, 'target': 13},
-]
-
-let connections = [
     {'source': 'app_bnv', 'target': 'stg_bnv'},
     {'source': 'app_fid', 'target': 'stg_fid'},
     {'source': 'app_mtx', 'target': 'stg_mtx'},
@@ -156,14 +137,15 @@ var nodes_container = d3.select('#nodes')
 console.log('Force simulation')
 
 var simulation = d3.forceSimulation(datasets)
-    // .force('link', d3.forceLink()
-    //     .id(d => d.id)
-    //     .links(links)
-    //     .distance(100)
-    //     .strength(0.9)
-    // )
+    .force('link', d3.forceLink()
+        .id(d => d.id)
+        .links(links)
+        .distance(200)
+        .strength(0.9)
+    )
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
+    .force("collide", d3.forceCollide(10).strength(1).iterations(100))
     .on('tick',ticked);
 
 var tickedCount = 0
@@ -186,24 +168,17 @@ simulation.on("end", function() {
     console.log(datasets);
     console.log("links:"); 
     console.log(links);
-    console.log("connections:"); 
-    console.log(connections);
     renderAll();
   });
 
-// var force = d3.layout.force()
-//     .charge(-180)
-//     .linkDistance(70)
-//     .size([width, height]);
 
+// Initial display render 
+// only the nodes, because they will be moving to the right places in the simulation
 renderNodes();
 
-// force
-//     .nodes(data)
-//     .links(connections)
-//     .start();
 
-function getRightConnectionPoint(object)
+
+function getRightlinkPoint(object)
 {    
     var rect=object._groups[0][0];
 
@@ -216,12 +191,25 @@ function getRightConnectionPoint(object)
     };
 }
 
-function getLeftConnectionPoint(object)
+function getLeftlinkPoint(object)
 {
     var rect=object._groups[0][0];
 
     var link_x = rect.x.baseVal.value;
     var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
+    
+    return {
+        x: link_x,
+        y: link_y
+    };
+}
+
+function getlinkPoint(source, target)
+{
+    
+    // TODO: determine best link point dynamically
+    var link_x = source.x + dataset_width /2;
+    var link_y = source.y + dataset_height /2;
     
     return {
         x: link_x,
@@ -236,22 +224,25 @@ function getLeftConnectionPoint(object)
 // draw arrows
 function computeLinks()
 {
-    for (i in connections){
-        var connection = connections[i];
-        var connectionName = connection.source + '_' + connection.target
-        console.log('compute link ' + i + ': ' + connectionName)
+    for (i in links){
+        var link = links[i];
+        var linkName = link.source.id + '_' + link.target.id
+        console.log('compute link ' + i + ': ' + linkName)
 
-        var sourceObject = d3.select('#' + connection.source );
-        var source = getRightConnectionPoint(sourceObject);
+        // var sourceObject = d3.select('#' + link.source.id );
+        // var source = getlinkPoint(sourceObject,targetObject);
 
-        var targetObject = d3.select('#' + connection.target );
-        var target = getLeftConnectionPoint(targetObject);
+        // var targetObject = d3.select('#' + link.target.id );
+        // var target = getlinkPoint(targetObject,sourceObject);
+
+        var source = getlinkPoint(link.source,link.target);
+        var target = getlinkPoint(link.target,link.source);
         
-        connection.x1 = source.x; 
-        connection.y1 = source.y; 
-        connection.x2 = target.x; 
-        connection.y2 = target.y; 
-        console.log(connection)
+        link.x1 = source.x; 
+        link.y1 = source.y; 
+        link.x2 = target.x; 
+        link.y2 = target.y; 
+        console.log(link)
     }
 
 }
@@ -293,7 +284,7 @@ function renderLinks() {
 
     container
         .selectAll('.link')
-        .data(connections)
+        .data(links)
         .enter()
         .append('line')
         .attr('x1', d => d.x1)
