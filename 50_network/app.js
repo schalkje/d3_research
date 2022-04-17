@@ -253,7 +253,7 @@ var simulation = d3.forceSimulation(nodes)
         .distance(80)
         .strength(0.9)
     )
-    .force('charge', d3.forceManyBody())
+    //.force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
     .force("collide", d3.forceCollide(30))
     .on('tick',ticked);
@@ -262,12 +262,12 @@ var tickedCount = 0
 var tickedRefreshCount = 1
 
 function ticked() {
-    console.log('Ticked');
+    // console.log('Ticked');
     tickedCount++;
 
      node
-         .each(cluster(0.2))
-         .each(collide(0.2));
+         .each(cluster(0.2));
+        //  .each(collide(0.2));
     
     renderNodes();
 
@@ -447,6 +447,7 @@ const collide = function(alpha)
   };
 }
 
+var traveldegradation = 1;
 const cluster = function(alpha) {
     // https://bl.ocks.org/mbostock/7881887
     return function (d) {
@@ -458,5 +459,65 @@ const cluster = function(alpha) {
         {
             d.x -= dx; // the x is absolutely positioned by the layer
         }
+
+        // cluster linked object between different layers on the same y
+        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
+        {
+        var targets = links.filter(function(link)
+        {
+            return link.source.id === d.id;
+        });
+        var y = 0;
+        for (i in targets)
+        {
+            if (Math.abs(y) < Math.abs(targets[i].target.y))
+                y = targets[i].target.y;
+        }
+        var dy = d.y - y;
+
+        //console.log( '  ' + d.id + ':  d.y=' + d.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy*alpha)
+
+        d.y -= dy * alpha;
+
+        for (i in targets)
+        {
+            travelLinks(d,targets[i].target,alpha * traveldegradation,[d.id]);
+        }
+    }
+        // d.y = y;
     };
+   
   }
+
+
+function travelLinks(origin, destination, alpha, visited)
+{
+    console.log('  o:' + origin.id + '-->' + destination.id + '   (len=' + visited.length+')')
+    visited.push(destination.id);
+    destination.y -= (destination.y - origin.y)* alpha;
+
+    // check for follow up targets
+    var targets = links.filter(function(link)
+    {
+        return link.source.id === destination.id;
+    });
+    var y = 0;
+
+    for (i in targets)
+    {
+        if ( !visited.includes(targets[i].target.id))
+            travelLinks(origin,targets[i].target,alpha * traveldegradation,visited);
+    }    
+
+    // check for sources that are not the origninator
+    var sources = links.filter(function(link)
+    {
+        return 
+            (link.target.id === destination.id);
+    });
+    for (i in sources)
+    {
+        if ( !visited.includes(sources[i].source.id))
+            travelLinks(origin,sources[i].source,alpha * traveldegradation,visited);
+    }    
+}
