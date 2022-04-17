@@ -48,8 +48,9 @@ svg.container {
 
 .datasetlabel
 {
-  font-size: 12px;
-  fill: rgb(66, 66, 88);
+  font-size: 14px;
+  font-weight: bold;
+  fill: rgb(216, 216, 241);
   fill-opacity: 0.8;
   text-anchor: middle;
 }

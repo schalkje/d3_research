@@ -52,7 +52,7 @@ var simulation = d3.forceSimulation(nodes)
     d3.forceLink()
       .id(d => d.id)
       .links(links)
-      .distance(100)
+      .distance(80) // with 100 you get link below a node
       .strength(0.9)
   )
   .force("x", d3.forceX(200).strength(0.1))
@@ -167,7 +167,7 @@ function render() {
           .data(nodes)
           .join("text")
           .attr("x", d => d.x)
-          .attr('y', d => d.y)
+          .attr('y', d => d.y + 4)
           .text(d => d.name)
           .attr("class", 'datasetlabel');    
 
