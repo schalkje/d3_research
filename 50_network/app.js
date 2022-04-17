@@ -141,11 +141,70 @@ var dataset_height = 40;
 var width = 1700;
 var height = 600;
 
+console.log('Initialize container:')
+console.log('   Width = ' + width)
+console.log('   Height = ' + height)
+
 var container = d3.select('#svg_container')
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .attr("class", "container");
 
-var nodes = container
+var links_container = d3.select('#links')
+var nodes_container = d3.select('#nodes')
+    
+console.log('Force simulation')
+
+var simulation = d3.forceSimulation(datasets)
+    // .force('link', d3.forceLink()
+    //     .id(d => d.id)
+    //     .links(links)
+    //     .distance(100)
+    //     .strength(0.9)
+    // )
+    .force('charge', d3.forceManyBody())
+    .force('center', d3.forceCenter(width/2,height,2))
+    .on('tick',ticked);
+
+var tickedCount = 0
+var tickedRefreshCount = 1
+
+function ticked() {
+    console.log('Ticked');
+    tickedCount++;
+    if (tickedCount % tickedRefreshCount === 0 )
+    {
+        console.log('refresh display');
+        tickedRefreshCount*=2;
+        render();
+    }
+}
+
+simulation.on("end", function() {
+    console.log("simulation end"); 
+    console.log("datasets:"); 
+    console.log(datasets);
+    console.log("links:"); 
+    console.log(links);
+    console.log("connections:"); 
+    console.log(connections);
+    render();
+  });
+
+// var force = d3.layout.force()
+//     .charge(-180)
+//     .linkDistance(70)
+//     .size([width, height]);
+
+render();
+
+// force
+//     .nodes(data)
+//     .links(connections)
+//     .start();
+
+function render() {
+    nodes_container
     .selectAll('.dataset')
     .data(datasets)
     .join("rect")
@@ -153,7 +212,7 @@ var nodes = container
         return d.x;
       })
     .attr('y', function(d) {
-        return d.layer;
+        return d.y;
       })
     .attr("width", dataset_width)
     .attr("height", dataset_height)
@@ -162,59 +221,16 @@ var nodes = container
         return d.id
     });
 
-var simulation = d3.forceSimulation(datasets)
-    .force('link', d3.forceLink()
-        .id(d => d.id)
-        .links(links)
-        .distance(100)
-        .strength(0.9)
-    )
-    .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width/2,height,2))
-    .on('tick',ticked);
-
-// function ticked() {
-//     var u = d3.select('svg')
-//         .selectAll('circle')
-//         .data(datasets)
-//         .join('circle')
-//         .attr('r', 5)
-//         .attr('cx', function(d) {
-//         return d.x
-//         })
-//         .attr('cy', function(d) {
-//         return d.y
-//         });
-//     }
-
-function ticked() {
-    var u = container
-        .selectAll('.dataset')
-        .data(datasets)
-        .join("rect")
-        .attr("x", function(d) {
-            return d.x;
-          })
-        .attr('y', function(d) {
-            return d.layer;
-          })
-        .attr("width", dataset_width)
-        .attr("height", dataset_height)
-        .attr("class", 'dataset')
-        .attr("id", function(d, i) {
-            return d.id
-        });
-    }
-
-// var force = d3.layout.force()
-//     .charge(-180)
-//     .linkDistance(70)
-//     .size([width, height]);
-
-
-
-// force
-//     .nodes(data)
-//     .links(connections)
-//     .start();
-
+    nodes_container
+    .selectAll('.datasetlabel')
+    .data(datasets)
+    .join("text")
+    .attr("x", function(d, i) {
+        return d.x + dataset_width/ 2;
+      })
+    .attr('y', function(d, i) {
+        return 5 + d.y + dataset_height / 2;
+      })
+    .text((d) => d.dataset)
+    .attr("class", 'datasetlabel');
+}

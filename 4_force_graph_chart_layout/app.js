@@ -61,15 +61,9 @@ var simulation = d3.forceSimulation(nodes)
     "y",
     d3.forceY()
       .y(node => {
-        // let dependedOn = this._nodeDependedOn(node);
-
-        // if (!dependedOn) {
         console.log(node);
         console.log(this._calcPath(node));
         return this._calcPath(node) * 150 - 75;
-        // }
-
-        // return node.dependsOn.length < 1 ? 100 : 0;
       })
       .strength(node => {
         let dependedOn = this._nodeDependedOn(node);
