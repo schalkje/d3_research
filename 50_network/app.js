@@ -12,6 +12,18 @@ let layers = [
     // {'id': 'base', 'layer': 'BASE (Strada)'},
 ]
 
+// let clusters = [
+//     {'id': 'app', 'layer': 'Application'},
+//     {'id': 'stg', 'layer': 'Staging'},
+//     {'id': 'arc', 'layer': 'Staging Archive'},
+//     {'id': 'trn', 'layer': 'Transform'},
+//     {'id': 'dwh', 'layer': 'DWH'},
+//     // {'id': 'dm', 'layer': 'DM'},
+//     // {'id': 'raw', 'layer': 'RAW (Strada)'},
+//     // {'id': 'base', 'layer': 'BASE (Strada)'},
+// ]
+
+
 // let nodes = [
 //     {'id': 'app_bnv'},
 //     {'id': 'app_fid'},
@@ -65,7 +77,10 @@ let nodes = [
     // {'id': 'base_bnv', 'label': 'Bankview', 'layer': 'base', 'value': 200},
     // {'id': 'base_mtx', 'label': 'Matrix', 'layer': 'base', 'value': 200},
 ]
- 
+
+
+
+
 let links = [
     {'source': 'app_bnv', 'target': 'stg_bnv'},
     {'source': 'app_fid', 'target': 'stg_fid'},
@@ -114,7 +129,13 @@ d3.select('#data_container')
 
 // create visualisation
 var container_width = 200;
+var container_height = 600;
 var container_separator = 10;
+
+var padding = 5;
+var clusterPadding = 20;
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
 
 var label_width = 160;
 var label_height = 40;
@@ -160,13 +181,71 @@ var container = d3.select('#svg_container')
         .text(d => d.layer)
         .attr("class", 'lanelabel');
 
+// create a cluster map, to use in the simulations
+function createClusterMap()
+{
+    const clusterMap = {};
+    var i = 0;
+    layers.forEach(n => {
+        //if (!clusterMap[n.layer] || (n.radius > clusterMap[n.layer].radius)) clusterMap[n.layer] = n;
+        if (!clusterMap[n.id]) 
+        {
+            clusterMap[n.id] = n;
+            clusterMap[n.id].x = container_separator + i * (container_separator + container_width);
+            clusterMap[n.id].y = 20;
+            clusterMap[n.id].width = container_width;
+            clusterMap[n.id].height = container_height;
+            i++;
+        }
+      });
+      return clusterMap;
+  }
+
+let clusters = createClusterMap();
 
 var links_container = d3.select('#links')
 var nodes_container = d3.select('#nodes')
-    
+
+
+
+var node = nodes_container
+    .selectAll('.label')
+    .data(nodes)
+    .join("rect")
+    .attr("x", function(d) {
+        return d.x;
+      })
+    .attr('y', function(d) {
+        return d.y;
+      })
+    .attr("width", label_width)
+    .attr("height", label_height)
+    .attr("class", 'label')
+    .attr("id", function(d, i) {
+        return d.id
+    });
+
+var node_label = nodes_container
+    .selectAll('.labellabel')
+    .data(nodes)
+    .join("text")
+    .attr("x", function(d, i) {
+        return d.x + label_width/ 2;
+      })
+    .attr('y', function(d, i) {
+        return 5 + d.y + label_height / 2;
+      })
+    .text((d) => d.label)
+    .attr("class", 'labellabel');
+
+
+
+
+
 console.log('Force simulation')
 
 var simulation = d3.forceSimulation(nodes)
+    .alpha(0.3) // what does this?
     .force('link', d3.forceLink()
         .id(d => d.id)
         .links(links)
@@ -175,7 +254,7 @@ var simulation = d3.forceSimulation(nodes)
     )
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
-    .force("collide", d3.forceCollide(10).strength(1).iterations(100))
+    .force("collide", d3.forceCollide(20))
     .on('tick',ticked);
 
 var tickedCount = 0
@@ -185,8 +264,11 @@ function ticked() {
     console.log('Ticked');
     tickedCount++;
 
-
-
+     node
+         .each(cluster(0.2));
+        //  .each(collide(0.2));
+    
+    // renderNodes();
 
     // refresh display to see the changes animate
     if (tickedCount % tickedRefreshCount === 0 )
@@ -201,10 +283,14 @@ simulation.on("end", function() {
     console.log("simulation end"); 
     console.log("nodes:"); 
     console.log(nodes);
+    console.log("clusters:"); 
+    console.log(clusters);
+
+    renderAll();
+
     console.log("links:"); 
     console.log(links);
-    renderAll();
-  });
+});
 
 
 // Initial display render 
@@ -262,7 +348,7 @@ function computeLinks()
     for (i in links){
         var link = links[i];
         var linkName = link.source.id + '_' + link.target.id
-        console.log('compute link ' + i + ': ' + linkName)
+        // console.log('compute link ' + i + ': ' + linkName)
 
         // var sourceObject = d3.select('#' + link.source.id );
         // var source = getlinkPoint(sourceObject,targetObject);
@@ -277,41 +363,28 @@ function computeLinks()
         link.y1 = source.y; 
         link.x2 = target.x; 
         link.y2 = target.y; 
-        console.log(link)
+        // console.log(link)
     }
 
 }
 
+    
 function renderNodes() {
-    nodes_container
-    .selectAll('.label')
-    .data(nodes)
-    .join("rect")
-    .attr("x", function(d) {
-        return d.x;
-      })
-    .attr('y', function(d) {
-        return d.y;
-      })
-    .attr("width", label_width)
-    .attr("height", label_height)
-    .attr("class", 'label')
-    .attr("id", function(d, i) {
-        return d.id
-    });
+    node
+        .attr("x", function(d) {
+            return d.x;
+        })
+        .attr('y', function(d) {
+            return d.y;
+        });
 
-    nodes_container
-    .selectAll('.labellabel')
-    .data(nodes)
-    .join("text")
-    .attr("x", function(d, i) {
-        return d.x + label_width/ 2;
-      })
-    .attr('y', function(d, i) {
-        return 5 + d.y + label_height / 2;
-      })
-    .text((d) => d.label)
-    .attr("class", 'labellabel');
+    node_label
+        .attr("x", function(d, i) {
+            return d.x + label_width/ 2;
+        })
+        .attr('y', function(d, i) {
+            return 5 + d.y + label_height / 2;
+        })
 }
 
 function renderLinks() {
@@ -338,36 +411,65 @@ function renderAll() {
 
 /*
  */
-// collide = function(alpha)
-// {
-//   // https://bl.ocks.org/mbostock/7882658
-//   const quadtree = d3.quadtree()
-//     .x(function (d) { return d.x; })
-//     .y(function (d) { return d.y; })
-//     .extent([[0, 0], [width, height]])
-//     .addAll(nodes);
-//   return function (d) {
-//     let r = d.radius + (maxRadius * 8) + Math.max(padding, clusterPadding),
-//         nx1 = d.x - r,
-//         nx2 = d.x + r,
-//         ny1 = d.y - r,
-//         ny2 = d.y + r;
-//     quadtree.visit(function (quad, x1, y1, x2, y2) {
-//       let data = quad.data;
-//       if (data && data !== d) {
-//         let x = d.x - data.x,
-//             y = d.y - data.y,
-//             l = Math.sqrt(x * x + y * y),
-//             r = d.radius + data.radius + (d.cluster == data.cluster ? padding : clusterPadding);
-//         if (l < r) {
-//           l = (l - r) / l * alpha;
-//           d.x -= x *= l;
-//           d.y -= y *= l;
-//           data.x += x;
-//           data.y += y;
-//         }
-//       }
-//       return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-//     });
-//   };
-// }
+var maxRadius = 10;
+const collide = function(alpha)
+{
+  // https://bl.ocks.org/mbostock/7882658
+  const quadtree = d3.quadtree()
+    .x(function (d) { return d.x; })
+    .y(function (d) { return d.y; })
+    .extent([[0, 0], [width, height]])
+    .addAll(nodes);
+  return function (d) {
+    let r = d.radius + (maxRadius * 8) + Math.max(padding, clusterPadding),
+        nx1 = d.x - r,
+        nx2 = d.x + r,
+        ny1 = d.y - r,
+        ny2 = d.y + r;
+    quadtree.visit(function (quad, x1, y1, x2, y2) {
+      let data = quad.data;
+      if (data && data !== d) {
+        let x = d.x - data.x,
+            y = d.y - data.y,
+            l = Math.sqrt(x * x + y * y),
+            r = d.radius + data.radius + (d.cluster == data.cluster ? padding : clusterPadding);
+        if (l < r) {
+          l = (l - r) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          data.x += x;
+          data.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}
+
+const cluster = function(alpha) {
+    // https://bl.ocks.org/mbostock/7881887
+    return function (d) {
+      const cluster = clusters[d.layer];
+      if (!cluster) return;
+    //   let x = d.x - cluster.x,
+    //       y = d.y - cluster.y,
+    //       l = Math.sqrt(x * x + y * y),
+    //       r = d.radius + cluster.radius + 3;
+    //   if (l != r) { // what are we checking here?
+    //     l = (l - r) / l * alpha;
+    //     d.x -= x *= l;
+    //     d.y -= y *= l;
+        // JS: keep clusters on the fixed locations
+        // cluster.x += x;
+        // cluster.y += y;
+
+        let dx = d.x - cluster.x;
+        let dy = d.y - (cluster.y + cluster.height/2)
+
+        if (Math.abs(dx > 10))
+        {
+            d.x -= dx * alpha;
+            d.y -= dy * alpha;
+        }
+    };
+  }
