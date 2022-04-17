@@ -21,6 +21,8 @@ var container = d3.select('#svg_container')
     .attr("height", height)
     .attr("class", "container");
 
+var links_container = d3.select('#links')
+var nodes_container = d3.select('#nodes')
 
 
 
@@ -80,10 +82,16 @@ var simulation = d3.forceSimulation(nodes)
         // return 0;
       })
   )
-  .force("collide", d3.forceCollide(radius));
+  .force("collide", d3.forceCollide(radius * 1.2));
 
+var tick_counter = 0;
 simulation.on("tick", () => {
-  // render();
+  tick_counter++;
+  console.log('tick')
+  if (tick_counter % 60 === 0)
+  {
+    render();
+  }
 });
 
 simulation.on("end", function() {
@@ -140,7 +148,7 @@ function render() {
   console.log('Draw nodes');
   console.log(nodes);
 
-  var nodes_objects = container
+  var nodes_objects = nodes_container
     .selectAll('.dataset')
     .data(nodes)
     .join("circle")
@@ -154,7 +162,7 @@ function render() {
 
   console.log('Draw node labels');
 
-  var nodeLabels_objects = container
+  var nodeLabels_objects = nodes_container
           .selectAll('.datasetlabel')
           .data(nodes)
           .join("text")
@@ -166,7 +174,7 @@ function render() {
 
   console.log('Draw links')
 
-  var links_objects = container
+  var links_objects = links_container
       .selectAll('.link')
       .data(links)
       .join("line")
