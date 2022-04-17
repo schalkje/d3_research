@@ -18,6 +18,8 @@ https://www.d3indepth.com/force-layout/?msclkid=dc8f54f8bccb11ecaa6877654f189ae7
 Examples:
 https://observablehq.com/search?query=force%20direct%20graph
 
+Cool example with hulls: https://observablehq.com/d/79b63a2830d41fe4 (clustering of multiple bubbles)
+
 Inspiration forced chart:
 https://codesandbox.io/s/7zj0x6xmo6
 https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1

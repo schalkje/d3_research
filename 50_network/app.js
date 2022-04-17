@@ -12,7 +12,7 @@ let layers = [
     // {'id': 'base', 'layer': 'BASE (Strada)'},
 ]
 
-// let datasets = [
+// let nodes = [
 //     {'id': 'app_bnv'},
 //     {'id': 'app_fid'},
 //     {'id': 'app_mtx'},
@@ -29,41 +29,41 @@ let layers = [
 //     {'id': 'dwh_ods'},
 // ]
 
-let datasets = [
-    {'id': 'app_bnv', 'dataset': 'Bankview', 'layer': 'app', 'value': 100},
-    {'id': 'app_fid', 'dataset': 'Fidor', 'layer': 'app', 'value': 100},
-    {'id': 'app_mtx', 'dataset': 'Matrix', 'layer': 'app', 'value': 500},
-    {'id': 'app_bgs', 'dataset': 'BGS', 'layer': 'app', 'value': 500},
+let nodes = [
+    {'id': 'app_bnv', 'label': 'Bankview', 'layer': 'app', 'value': 100},
+    {'id': 'app_fid', 'label': 'Fidor', 'layer': 'app', 'value': 100},
+    {'id': 'app_mtx', 'label': 'Matrix', 'layer': 'app', 'value': 500},
+    {'id': 'app_bgs', 'label': 'BGS', 'layer': 'app', 'value': 500},
 
-    {'id': 'stg_bnv', 'dataset': 'STG_Bankview', 'layer': 'stg', 'value': 200},
-    {'id': 'stg_fid', 'dataset': 'STG_Fidor', 'layer': 'stg', 'value': 300},
-    {'id': 'stg_mtx', 'dataset': 'STG_Matrix', 'layer': 'stg', 'value': 400},
+    {'id': 'stg_bnv', 'label': 'STG_Bankview', 'layer': 'stg', 'value': 200},
+    {'id': 'stg_fid', 'label': 'STG_Fidor', 'layer': 'stg', 'value': 300},
+    {'id': 'stg_mtx', 'label': 'STG_Matrix', 'layer': 'stg', 'value': 400},
 
-    {'id': 'arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'arc', 'value': 200},
-    {'id': 'arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'arc', 'value': 300},
-    {'id': 'arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'arc', 'value': 400},
+    {'id': 'arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'arc', 'value': 200},
+    {'id': 'arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'arc', 'value': 300},
+    {'id': 'arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'arc', 'value': 400},
 
-    {'id': 'trn_bnv', 'dataset': 'Transform_Bankview', 'layer': 'trn', 'value': 200},
-    {'id': 'trn_fid', 'dataset': 'Transform_Fidor', 'layer': 'trn', 'value': 300},
-    {'id': 'trn_mtx', 'dataset': 'Transform_Matrix', 'layer': 'trn', 'value': 400},
+    {'id': 'trn_bnv', 'label': 'Transform_Bankview', 'layer': 'trn', 'value': 200},
+    {'id': 'trn_fid', 'label': 'Transform_Fidor', 'layer': 'trn', 'value': 300},
+    {'id': 'trn_mtx', 'label': 'Transform_Matrix', 'layer': 'trn', 'value': 400},
 
-    {'id': 'dwh_ods', 'dataset': 'ODS', 'layer': 'dwh', 'value': 400},
+    {'id': 'dwh_ods', 'label': 'ODS', 'layer': 'dwh', 'value': 400},
 
-    // {'id': 'dwh_dwh', 'dataset': 'DWH', 'layer': 'dwh', 'value': 400},
+    // {'id': 'dwh_dwh', 'label': 'DWH', 'layer': 'dwh', 'value': 400},
 
-    // {'id': 'raw_dwh', 'dataset': 'DWH', 'layer': 'raw', 'value': 400},
-    // {'id': 'raw_arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'raw', 'value': 200},
-    // {'id': 'raw_arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'raw', 'value': 300},
-    // {'id': 'raw_arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'raw', 'value': 400},
-    // {'id': 'raw_bnv', 'dataset': 'Bankview', 'layer': 'raw', 'value': 200},
-    // {'id': 'raw_mtx', 'dataset': 'Matrix', 'layer': 'raw', 'value': 200},
+    // {'id': 'raw_dwh', 'label': 'DWH', 'layer': 'raw', 'value': 400},
+    // {'id': 'raw_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'raw', 'value': 200},
+    // {'id': 'raw_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'raw', 'value': 300},
+    // {'id': 'raw_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'raw', 'value': 400},
+    // {'id': 'raw_bnv', 'label': 'Bankview', 'layer': 'raw', 'value': 200},
+    // {'id': 'raw_mtx', 'label': 'Matrix', 'layer': 'raw', 'value': 200},
 
-    // {'id': 'base_dwh', 'dataset': 'DWH', 'layer': 'base', 'value': 400},
-    // {'id': 'base_arc_bnv', 'dataset': 'STG_Archive_Bankview', 'layer': 'base', 'value': 200},
-    // {'id': 'base_arc_fid', 'dataset': 'STG_Archive_Fidor', 'layer': 'base', 'value': 300},
-    // {'id': 'base_arc_mtx', 'dataset': 'STG_Archive_Matrix', 'layer': 'base', 'value': 400},
-    // {'id': 'base_bnv', 'dataset': 'Bankview', 'layer': 'base', 'value': 200},
-    // {'id': 'base_mtx', 'dataset': 'Matrix', 'layer': 'base', 'value': 200},
+    // {'id': 'base_dwh', 'label': 'DWH', 'layer': 'base', 'value': 400},
+    // {'id': 'base_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'base', 'value': 200},
+    // {'id': 'base_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'base', 'value': 300},
+    // {'id': 'base_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'base', 'value': 400},
+    // {'id': 'base_bnv', 'label': 'Bankview', 'layer': 'base', 'value': 200},
+    // {'id': 'base_mtx', 'label': 'Matrix', 'layer': 'base', 'value': 200},
 ]
  
 let links = [
@@ -108,16 +108,16 @@ let links = [
 
 d3.select('#data_container')
     .selectAll('p')
-    .data(datasets)
+    .data(nodes)
     .join('p')
-    .text(d => d.layer + '.' + d.dataset);
+    .text(d => d.layer + '.' + d.label);
 
 // create visualisation
 var container_width = 200;
 var container_separator = 10;
 
-var dataset_width = 160;
-var dataset_height = 40;
+var label_width = 160;
+var label_height = 40;
 
 var width = 1700;
 var height = 600;
@@ -131,12 +131,42 @@ var container = d3.select('#svg_container')
     .attr("height", height)
     .attr("class", "container");
 
+    // Create the lanes
+    container
+        .selectAll('rect')
+        .data(layers)
+        .join("rect")
+        .attr('x', function(d, i) {
+            return container_separator + i * (container_separator + container_width);
+        })
+        .attr("y", 20)
+        .attr("width", container_width)
+        .attr("height", 400)
+        .attr("id", function(d, i) {
+            return d.id
+        })
+        .attr("class", function(d, i) {
+            return i%2==0 ? 'lane lane1' : "lane lane2"
+        });
+  
+    container
+        .selectAll('.lanelabel')
+        .data(layers)
+        .join("text")
+        .attr('x', function(d, i) {
+            return (container_separator + container_width/2) + i * (container_separator + container_width);
+            })
+        .attr("y", 14)
+        .text(d => d.layer)
+        .attr("class", 'lanelabel');
+
+
 var links_container = d3.select('#links')
 var nodes_container = d3.select('#nodes')
     
 console.log('Force simulation')
 
-var simulation = d3.forceSimulation(datasets)
+var simulation = d3.forceSimulation(nodes)
     .force('link', d3.forceLink()
         .id(d => d.id)
         .links(links)
@@ -154,18 +184,23 @@ var tickedRefreshCount = 1
 function ticked() {
     console.log('Ticked');
     tickedCount++;
+
+
+
+
+    // refresh display to see the changes animate
     if (tickedCount % tickedRefreshCount === 0 )
     {
         console.log('refresh display');
-        tickedRefreshCount*=2;
+        tickedRefreshCount*=1.2;
         renderNodes();
     }
 }
 
 simulation.on("end", function() {
     console.log("simulation end"); 
-    console.log("datasets:"); 
-    console.log(datasets);
+    console.log("nodes:"); 
+    console.log(nodes);
     console.log("links:"); 
     console.log(links);
     renderAll();
@@ -208,8 +243,8 @@ function getlinkPoint(source, target)
 {
     
     // TODO: determine best link point dynamically
-    var link_x = source.x + dataset_width /2;
-    var link_y = source.y + dataset_height /2;
+    var link_x = source.x + label_width /2;
+    var link_y = source.y + label_height /2;
     
     return {
         x: link_x,
@@ -249,8 +284,8 @@ function computeLinks()
 
 function renderNodes() {
     nodes_container
-    .selectAll('.dataset')
-    .data(datasets)
+    .selectAll('.label')
+    .data(nodes)
     .join("rect")
     .attr("x", function(d) {
         return d.x;
@@ -258,25 +293,25 @@ function renderNodes() {
     .attr('y', function(d) {
         return d.y;
       })
-    .attr("width", dataset_width)
-    .attr("height", dataset_height)
-    .attr("class", 'dataset')
+    .attr("width", label_width)
+    .attr("height", label_height)
+    .attr("class", 'label')
     .attr("id", function(d, i) {
         return d.id
     });
 
     nodes_container
-    .selectAll('.datasetlabel')
-    .data(datasets)
+    .selectAll('.labellabel')
+    .data(nodes)
     .join("text")
     .attr("x", function(d, i) {
-        return d.x + dataset_width/ 2;
+        return d.x + label_width/ 2;
       })
     .attr('y', function(d, i) {
-        return 5 + d.y + dataset_height / 2;
+        return 5 + d.y + label_height / 2;
       })
-    .text((d) => d.dataset)
-    .attr("class", 'datasetlabel');
+    .text((d) => d.label)
+    .attr("class", 'labellabel');
 }
 
 function renderLinks() {
@@ -300,3 +335,39 @@ function renderAll() {
     renderNodes();
     renderLinks();
 }
+
+/*
+ */
+// collide = function(alpha)
+// {
+//   // https://bl.ocks.org/mbostock/7882658
+//   const quadtree = d3.quadtree()
+//     .x(function (d) { return d.x; })
+//     .y(function (d) { return d.y; })
+//     .extent([[0, 0], [width, height]])
+//     .addAll(nodes);
+//   return function (d) {
+//     let r = d.radius + (maxRadius * 8) + Math.max(padding, clusterPadding),
+//         nx1 = d.x - r,
+//         nx2 = d.x + r,
+//         ny1 = d.y - r,
+//         ny2 = d.y + r;
+//     quadtree.visit(function (quad, x1, y1, x2, y2) {
+//       let data = quad.data;
+//       if (data && data !== d) {
+//         let x = d.x - data.x,
+//             y = d.y - data.y,
+//             l = Math.sqrt(x * x + y * y),
+//             r = d.radius + data.radius + (d.cluster == data.cluster ? padding : clusterPadding);
+//         if (l < r) {
+//           l = (l - r) / l * alpha;
+//           d.x -= x *= l;
+//           d.y -= y *= l;
+//           data.x += x;
+//           data.y += y;
+//         }
+//       }
+//       return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+//     });
+//   };
+// }
