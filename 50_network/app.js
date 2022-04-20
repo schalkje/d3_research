@@ -1,5 +1,5 @@
+console.log(d3);
 
-console.log(d3)
 
 let layers = [
     {'id': 'app', 'layer': 'Application'},
@@ -87,17 +87,6 @@ let links = [
     // {'source': 'raw_mtx',     'target': 'base_mtx'},
 ]
 
-// var color = d3.scale.category10();
-
-// const xScale = d3.scaleBand().domain(layers.map((datapoint) => datapoint.layer)).rangeRound([0, 1500]).padding(0,1);
-// const yScale = d3.scaleLinear.domain([0,15]).range([600,0]);
-
-d3.select('#data_container')
-    .selectAll('p')
-    .data(nodes)
-    .join('p')
-    .text(d => d.layer + '.' + d.label);
-
 // create visualisation
 var container_width = 200;
 var container_height = 600;
@@ -113,26 +102,48 @@ var dataset_height = 40;
 var dataset_separator = 10;
 var label_width = dataset_width;
 var label_height = dataset_height;
+const line_padding = 2;
 
 var width = layers.length * (container_width + container_separator) + container_separator;
 //1700;
 var height = 600;
 
+// create a cluster map, to use in the simulations
+function createClusterMap()
+{
+    const clusterMap = {};
+    var i = 0;
+    layers.forEach(n => {
+        //if (!clusterMap[n.layer] || (n.radius > clusterMap[n.layer].radius)) clusterMap[n.layer] = n;
+        if (!clusterMap[n.id]) 
+        {
+            clusterMap[n.id] = n;
+            clusterMap[n.id].x = container_separator + i * (container_separator + container_width);
+            clusterMap[n.id].y = 20;
+            clusterMap[n.id].width = container_width;
+            clusterMap[n.id].height = container_height;
+            clusterMap[n.id].xMiddle = clusterMap[n.id].x + (container_width / 2);
+            clusterMap[n.id].yMiddle = clusterMap[n.id].y + (container_height);
+            i++;
+        }
+      });
+      return clusterMap;
+  }
+
+let clusters = createClusterMap();
+
+d3.select('#data_container')
+    .selectAll('p')
+    .data(nodes)
+    .join('p')
+    .text(d => d.layer + '.' + d.label);
+
+
 console.log('Initialize container:')
 console.log('   Width = ' + width)
 console.log('   Height = ' + height)
 
-// const forceX_lanes = function (alpha) {
-//     // https://bl.ocks.org/mbostock/7881887
-//     return function (d) {
-//         const cluster = clusters[d.layer];
-//         if (!cluster) return;
-//         // d.x -= (d.x - (cluster.x + clusterPadding))*alpha;
-//             d.fx = (cluster.x + clusterPadding);
-//     }
-// }
-
-const forceX_lanesd = function (alpha) {
+const forceX_lanes = function (alpha) {
     for (i in nodes)
     {
         let node = nodes[i];
@@ -144,20 +155,12 @@ const forceX_lanesd = function (alpha) {
         }
         else
         {
-            // node.x -= (node.x - (cluster.x + clusterPadding))*alpha; // relative positioning
-            // d.fx = (cluster.x + clusterPadding);
-            node.x = (cluster.x + clusterPadding); // absolute positioning
+            // node.x -= (node.x - cluster.xMiddle) * alpha; // relative positioning
+            // d.fx = (cluster.xMiddle);
+            node.x = cluster.xMiddle; // absolute positioning
         }
     }
 }
-
-// const forceX_lanes2 = function (d, alpha) {
-//     // https://bl.ocks.org/mbostock/7881887
-//         const cluster = clusters[d.layer];
-//         if (!cluster) return;
-//             // d.x -= (d.x - (cluster.x + clusterPadding))*alpha;
-//             d.x = (cluster.x + clusterPadding);
-// }
 
 
 const link_alignment = function (alpha, traveldegradation) {
@@ -254,27 +257,6 @@ var container = d3.select('#svg_container')
         .text(d => d.layer)
         .attr("class", 'lanelabel');
 
-// create a cluster map, to use in the simulations
-function createClusterMap()
-{
-    const clusterMap = {};
-    var i = 0;
-    layers.forEach(n => {
-        //if (!clusterMap[n.layer] || (n.radius > clusterMap[n.layer].radius)) clusterMap[n.layer] = n;
-        if (!clusterMap[n.id]) 
-        {
-            clusterMap[n.id] = n;
-            clusterMap[n.id].x = container_separator + i * (container_separator + container_width);
-            clusterMap[n.id].y = 20;
-            clusterMap[n.id].width = container_width;
-            clusterMap[n.id].height = container_height;
-            i++;
-        }
-      });
-      return clusterMap;
-  }
-
-let clusters = createClusterMap();
 
 var links_container = d3.select('#links')
 var nodes_container = d3.select('#nodes')
@@ -282,34 +264,34 @@ var nodes_container = d3.select('#nodes')
 
 
 var node = nodes_container
-    .selectAll('.label')
+    .selectAll('.dataset')
     .data(nodes)
     .join("rect")
     .attr("x", function(d) {
-        return d.x;
+        return d.x - (dataset_width / 2);
       })
     .attr('y', function(d) {
-        return d.y;
+        return d.y - (dataset_height / 2);
       })
-    .attr("width", label_width)
-    .attr("height", label_height)
-    .attr("class", 'label')
+    .attr("width", dataset_width)
+    .attr("height", dataset_height)
+    .attr("class", 'dataset')
     .attr("id", function(d, i) {
         return d.id
     });
 
 var node_label = nodes_container
-    .selectAll('.labellabel')
+    .selectAll('.datasetlabel')
     .data(nodes)
     .join("text")
     .attr("x", function(d, i) {
-        return d.x + label_width/ 2;
+        return d.x;
       })
     .attr('y', function(d, i) {
         return 5 + d.y + label_height / 2;
       })
     .text((d) => d.label)
-    .attr("class", 'labellabel');
+    .attr("class", 'datasetlabel');
 
 
 
@@ -325,10 +307,10 @@ var simulation = d3.forceSimulation(nodes)
         .distance(80)
         .strength(0.5)
     )
-    // .force('charge', d3.forceManyBody())
+    .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
-    .force('x', alpha => forceX_lanesd(alpha) )
-    .force('y', alpha => link_alignment(alpha,0.5))
+    .force('x', alpha => forceX_lanes(alpha) )
+    // .force('y', alpha => link_alignment(alpha,0.5))
     // .force('x', d3.forceX(forceX_lanes(0.2)) )
     // .force('y', d3.forceY(link_alignment(0.1,0.5)))
     .force("collide", d3.forceCollide(-100))
@@ -380,78 +362,54 @@ simulation.on("end", function() {
 renderNodes();
 
 
-
-function getRightlinkPoint(object)
-{    
-    var rect=object._groups[0][0];
-
-    var link_x = rect.x.baseVal.value + rect.width.baseVal.value;
-    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
-
-    return {
-        x: link_x,
-        y: link_y
-    };
-}
-
-function getLeftlinkPoint(object)
-{
-    var rect=object._groups[0][0];
-
-    var link_x = rect.x.baseVal.value;
-    var link_y = rect.y.baseVal.value + rect.height.baseVal.value /2;
-    
-    return {
-        x: link_x,
-        y: link_y
-    };
-}
-
 function getlinkPoint(source, target)
 {
     var link_x = 0;
     var link_y = 0;
     
-    // var alfa = Math.atan(Math.abs(target.y-source.y)/Math.abs(target.x-source.x));
+    var alfa = Math.atan(Math.abs(target.y-source.y)/Math.abs(target.x-source.x));
 
-    // if ( target.x < source.x )
-    // {
-    //     link_x = source.x + label_width;
-    // }
-    // else
-    // {
+    var a1 = Math.atan(Math.abs(dataset_width / 2)/Math.abs(dataset_height/2));
 
-    // }
-
-    // var dx = Math.cos(alfa) * (radius + link_separator);
-    // return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
-
-    // TODO: determine best link point dynamically
-    if ( (target.x - source.x) > container_separator )
+    if ( alfa > a1 ) // top or bottom
     {
-        link_x = source.x + label_width;
+        let yDist = (dataset_height / 2 + line_padding); // distance from center to y location for connector
+        if ( target.y < source.y ) // target is above source
+        {
+            if ( source.x < target.x)            
+                link_x = source.x + yDist / Math.tan(alfa) 
+            else
+                link_x = source.x - yDist / Math.tan(alfa) 
+            link_y = source.y - yDist;
+        }
+        else // target is below source
+        {
+            if ( source.x < target.x)            
+                link_x = source.x + yDist / Math.tan(alfa) 
+            else
+                link_x = source.x - yDist / Math.tan(alfa) 
+            link_y = source.y + yDist;
+        }
     }
-    else if ( (source.x - target.x) > container_separator )
+    else // left or right
     {
-        link_x = source.x;
-    }
-    else // ( source.x > target.x )
-    {
-        link_x = source.x + (label_width / 2);
-    }
-
-    // vertical positioning
-    if ( (source.y - target.y) > (label_height + label_height) )
-    {
-        link_y = source.y;
-    }
-    else if ( (target.y - source.y) > (label_height + container_separator) )
-    {
-        link_y = source.y + label_height;
-    }
-    else 
-    {
-        link_y = source.y + label_height /2;
+        let xDist = (dataset_width / 2 + line_padding); // distance from center to x location for connector
+        if ( target.x < source.x ) // target is left
+        {
+            link_x = source.x - xDist;
+            if ( source.y < target.y)            
+                link_y = source.y + Math.tan(alfa) * xDist 
+            else
+                link_y = source.y - Math.tan(alfa) * xDist 
+        }
+        else // target is right
+        {
+            link_x = source.x + xDist;
+            if ( source.y < target.y)            
+                link_y = source.y + Math.tan(alfa) * xDist 
+            else
+                link_y = source.y - Math.tan(alfa) * xDist 
+        }
     }
 
     return {
@@ -493,25 +451,25 @@ function computeLinks() {
 function renderNodes() {
     node
         .attr("x", function (d) {
-            return d.x;
+            return d.x - (dataset_width / 2);
         })
         .attr('y', function (d) {
-            return d.y;
+            return d.y - label_height / 2;
         });
 
     node_label
         .attr("x", function (d, i) {
-            return d.x + label_width / 2;
+            return d.x;
         })
         .attr('y', function (d, i) {
-            return 5 + d.y + label_height / 2;
+            return 5 + d.y;
         })
 }
 
 function renderLinks() {
     computeLinks();
 
-    container
+    links_container
         .selectAll('.link')
         .data(links)
         .enter()
