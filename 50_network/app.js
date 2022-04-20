@@ -122,6 +122,104 @@ console.log('Initialize container:')
 console.log('   Width = ' + width)
 console.log('   Height = ' + height)
 
+// const forceX_lanes = function (alpha) {
+//     // https://bl.ocks.org/mbostock/7881887
+//     return function (d) {
+//         const cluster = clusters[d.layer];
+//         if (!cluster) return;
+//         // d.x -= (d.x - (cluster.x + clusterPadding))*alpha;
+//             d.fx = (cluster.x + clusterPadding);
+//     }
+// }
+
+const forceX_lanesd = function (alpha) {
+    for (i in nodes)
+    {
+        let node = nodes[i];
+        const cluster = clusters[node.layer];
+
+        if (!cluster) 
+        {   
+            console.log('Cluser not found for layer: "' +node.layer+ '"');
+        }
+        else
+        {
+            // node.x -= (node.x - (cluster.x + clusterPadding))*alpha; // relative positioning
+            // d.fx = (cluster.x + clusterPadding);
+            node.x = (cluster.x + clusterPadding); // absolute positioning
+        }
+    }
+}
+
+// const forceX_lanes2 = function (d, alpha) {
+//     // https://bl.ocks.org/mbostock/7881887
+//         const cluster = clusters[d.layer];
+//         if (!cluster) return;
+//             // d.x -= (d.x - (cluster.x + clusterPadding))*alpha;
+//             d.x = (cluster.x + clusterPadding);
+// }
+
+
+const link_alignment = function (alpha, traveldegradation) {
+    // https://bl.ocks.org/mbostock/7881887
+    return function (d) {
+
+        // cluster linked object between different layers on the same y
+        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
+        {
+            var targets = links.filter(function (link) {
+                return link.source.id === d.id;
+            });
+            var y = 0;
+            for (i in targets) {
+                if (Math.abs(y) < Math.abs(targets[i].target.y))
+                    y = targets[i].target.y;
+            }
+            var dy = d.y - y;
+
+            console.log( '  ' + d.id + ':  d.y=' + d.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy*alpha)
+
+            d.y -= dy * alpha;
+
+            for (i in targets) {
+                travelLinks(d, targets[i].target, alpha * traveldegradation, traveldegradation, [d.id]);
+            }
+        }
+    };
+
+}
+
+const link_alignmentD = function (alpha, traveldegradation) {
+    // https://bl.ocks.org/mbostock/7881887
+    for (i in nodes)
+    {
+        let node = nodes[i];
+        // cluster linked object between different layers on the same y
+        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
+        {
+            var targets = links.filter(function (link) {
+                return link.source.id === node.id;
+            });
+            var y = 0;
+            for (i in targets) {
+                if (Math.abs(y) < Math.abs(targets[i].target.y))
+                    y = targets[i].target.y;
+            }
+            var dy = node.y - y;
+
+            console.log( '  ' + node.id + ':  d.y=' + node.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
+
+            node.y -= dy * alpha;
+
+            for (i in targets) {
+                travelLinks(node, targets[i].target, alpha * traveldegradation, traveldegradation, [node.id]);
+            }
+        }
+    };
+
+}
+
+
 var container = d3.select('#svg_container')
     .attr("width", width)
     .attr("height", height)
@@ -225,16 +323,15 @@ var simulation = d3.forceSimulation(nodes)
         .id(d => d.id)
         .links(links)
         .distance(80)
-        .strength(0.9)
+        .strength(0.5)
     )
-    .force('charge', d3.forceManyBody())
+    // .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
-    // .force("collide", d3.forceCollide(30))
-    // .force('x', d3.forceX().x(function (d) {
-    //     const cluster = clusters[d.layer];
-    //     if (!cluster) return;
-    //       d.x= (cluster.x + clusterPadding);
-    //   } ))
+    .force('x', alpha => forceX_lanesd(alpha) )
+    .force('y', alpha => link_alignment(alpha,0.5))
+    // .force('x', d3.forceX(forceX_lanes(0.2)) )
+    // .force('y', d3.forceY(link_alignment(0.1,0.5)))
+    .force("collide", d3.forceCollide(-100))
     .on('tick',ticked);
 
 var tickedCount = 0
@@ -244,14 +341,14 @@ function ticked() {
     // console.log('Ticked');
     tickedCount++;
 
-      node
+    //    node
          
         //   
     //      .each(cluster(0.2));
         
-        // .each(collide(0.2))
-          .each(forceX_lanes(0.2))
-          .each(link_alignment(0.4));
+        //  .each(collide(0.2));
+        //   .each(forceX_lanes(0.2));
+        //   .each(link_alignment(0.4));
     
     renderNodes();
 
@@ -509,47 +606,11 @@ const collide1 = function (alpha) {
     };
 }
 
-var traveldegradation = 1;
 
-const forceX_lanes = function (alpha) {
-    // https://bl.ocks.org/mbostock/7881887
-    return function (d) {
-        const cluster = clusters[d.layer];
-        if (!cluster) return;
-        d.x -= (d.x - (cluster.x + clusterPadding))*alpha;
-    }
-}
 
-const link_alignment = function (alpha) {
-    // https://bl.ocks.org/mbostock/7881887
-    return function (d) {
 
-        // cluster linked object between different layers on the same y
-        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
-        {
-            var targets = links.filter(function (link) {
-                return link.source.id === d.id;
-            });
-            var y = 0;
-            for (i in targets) {
-                if (Math.abs(y) < Math.abs(targets[i].target.y))
-                    y = targets[i].target.y;
-            }
-            var dy = d.y - y;
 
-            //console.log( '  ' + d.id + ':  d.y=' + d.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy*alpha)
-
-            d.y -= dy * alpha;
-
-            for (i in targets) {
-                travelLinks(d, targets[i].target, alpha * traveldegradation, [d.id]);
-            }
-        }
-    };
-
-}
-
-const cluster = function(alpha) {
+const cluster = function(alpha,traveldegradation) {
     // https://bl.ocks.org/mbostock/7881887
     return function (d) {
       const cluster = clusters[d.layer];
@@ -591,7 +652,7 @@ const cluster = function(alpha) {
   }
 
 
-function travelLinks(origin, destination, alpha, visited)
+function travelLinks(origin, destination, alpha,traveldegradation, visited)
 {
     // console.log('  o:' + origin.id + '-->' + destination.id + '   (len=' + visited.length+')')
     visited.push(destination.id);
@@ -607,7 +668,7 @@ function travelLinks(origin, destination, alpha, visited)
     for (i in targets)
     {
         if ( !visited.includes(targets[i].target.id))
-            travelLinks(origin,targets[i].target,alpha * traveldegradation,visited);
+            travelLinks(origin,targets[i].target,alpha * traveldegradation,traveldegradation,visited);
     }    
 
     // check for sources that are not the origninator
@@ -619,6 +680,6 @@ function travelLinks(origin, destination, alpha, visited)
     for (i in sources)
     {
         if ( !visited.includes(sources[i].source.id))
-            travelLinks(origin,sources[i].source,alpha * traveldegradation,visited);
+            travelLinks(origin,sources[i].source,alpha * traveldegradation,traveldegradation,visited);
     }    
 }
