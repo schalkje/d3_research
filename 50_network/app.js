@@ -7,9 +7,9 @@ let layers = [
     {'id': 'arc', 'layer': 'Staging Archive'},
     {'id': 'trn', 'layer': 'Transform'},
     {'id': 'dwh', 'layer': 'DWH'},
-    // {'id': 'dm', 'layer': 'DM'},
-    // {'id': 'raw', 'layer': 'RAW (Strada)'},
-    // {'id': 'base', 'layer': 'BASE (Strada)'},
+    {'id': 'dm', 'layer': 'DM'},
+    {'id': 'raw', 'layer': 'RAW (Strada)'},
+    {'id': 'base', 'layer': 'BASE (Strada)'},
 ]
 
 let nodes = [
@@ -34,19 +34,19 @@ let nodes = [
 
     {'id': 'dwh_dwh', 'label': 'DWH', 'layer': 'dwh', 'value': 400},
 
-    // {'id': 'raw_dwh', 'label': 'DWH', 'layer': 'raw', 'value': 400},
-    // {'id': 'raw_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'raw', 'value': 200},
-    // {'id': 'raw_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'raw', 'value': 300},
-    // {'id': 'raw_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'raw', 'value': 400},
-    // {'id': 'raw_bnv', 'label': 'Bankview', 'layer': 'raw', 'value': 200},
-    // {'id': 'raw_mtx', 'label': 'Matrix', 'layer': 'raw', 'value': 200},
+    {'id': 'raw_dwh', 'label': 'DWH', 'layer': 'raw', 'value': 400},
+    {'id': 'raw_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'raw', 'value': 200},
+    {'id': 'raw_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'raw', 'value': 300},
+    {'id': 'raw_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'raw', 'value': 400},
+    {'id': 'raw_bnv', 'label': 'Bankview', 'layer': 'raw', 'value': 200},
+    {'id': 'raw_mtx', 'label': 'Matrix', 'layer': 'raw', 'value': 200},
 
-    // {'id': 'base_dwh', 'label': 'DWH', 'layer': 'base', 'value': 400},
-    // {'id': 'base_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'base', 'value': 200},
-    // {'id': 'base_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'base', 'value': 300},
-    // {'id': 'base_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'base', 'value': 400},
-    // {'id': 'base_bnv', 'label': 'Bankview', 'layer': 'base', 'value': 200},
-    // {'id': 'base_mtx', 'label': 'Matrix', 'layer': 'base', 'value': 200},
+    {'id': 'base_dwh', 'label': 'DWH', 'layer': 'base', 'value': 400},
+    {'id': 'base_arc_bnv', 'label': 'STG_Archive_Bankview', 'layer': 'base', 'value': 200},
+    {'id': 'base_arc_fid', 'label': 'STG_Archive_Fidor', 'layer': 'base', 'value': 300},
+    {'id': 'base_arc_mtx', 'label': 'STG_Archive_Matrix', 'layer': 'base', 'value': 400},
+    {'id': 'base_bnv', 'label': 'Bankview', 'layer': 'base', 'value': 200},
+    {'id': 'base_mtx', 'label': 'Matrix', 'layer': 'base', 'value': 200},
 ]
 
 
@@ -72,24 +72,25 @@ let links = [
 
     {'source': 'dwh_ods', 'target': 'dwh_dwh'},
 
-    // {'source': 'dwh_dwh', 'target': 'raw_dwh'},
-    // {'source': 'arc_bnv', 'target': 'raw_arc_bnv'},
-    // {'source': 'arc_fid', 'target': 'raw_arc_fid'},
-    // {'source': 'arc_mtx', 'target': 'raw_arc_mtx'},
-    // {'source': 'app_bnv', 'target': 'raw_bnv'},
-    // {'source': 'app_mtx', 'target': 'raw_mtx'},
+    {'source': 'dwh_dwh', 'target': 'raw_dwh'},
+    {'source': 'arc_bnv', 'target': 'raw_arc_bnv'},
+    {'source': 'arc_fid', 'target': 'raw_arc_fid'},
+    {'source': 'arc_mtx', 'target': 'raw_arc_mtx'},
+    {'source': 'app_bnv', 'target': 'raw_bnv'},
+    {'source': 'app_mtx', 'target': 'raw_mtx'},
 
-    // {'source': 'raw_dwh',     'target': 'base_dwh'},
-    // {'source': 'raw_arc_bnv', 'target': 'base_arc_bnv'},
-    // {'source': 'raw_arc_fid', 'target': 'base_arc_fid'},
-    // {'source': 'raw_arc_mtx', 'target': 'base_arc_mtx'},
-    // {'source': 'raw_bnv',     'target': 'base_bnv'},
-    // {'source': 'raw_mtx',     'target': 'base_mtx'},
+    {'source': 'raw_dwh',     'target': 'base_dwh'},
+    {'source': 'raw_arc_bnv', 'target': 'base_arc_bnv'},
+    {'source': 'raw_arc_fid', 'target': 'base_arc_fid'},
+    {'source': 'raw_arc_mtx', 'target': 'base_arc_mtx'},
+    {'source': 'raw_bnv',     'target': 'base_bnv'},
+    {'source': 'raw_mtx',     'target': 'base_mtx'},
 ]
 
 // create visualisation
 var container_width = 200;
 var container_height = 600;
+var container_top = 20;
 var container_separator = 10;
 
 var padding = 5;
@@ -105,8 +106,7 @@ var label_height = dataset_height;
 const line_padding = 2;
 
 var width = layers.length * (container_width + container_separator) + container_separator;
-//1700;
-var height = 600;
+var height = container_height + container_top + container_separator;
 
 // create a cluster map, to use in the simulations
 function createClusterMap()
@@ -163,36 +163,35 @@ const forceX_lanes = function (alpha) {
 }
 
 
+// const link_alignment = function (alpha, traveldegradation) {
+//     // https://bl.ocks.org/mbostock/7881887
+//     return function (d) {
+
+//         // cluster linked object between different layers on the same y
+//         // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
+//         {
+//             var targets = links.filter(function (link) {
+//                 return link.source.id === d.id;
+//             });
+//             var dy = 0;
+//             for (i in targets) {
+//                 if (Math.abs(dy) < Math.abs(d.y - targets[i].target.y))
+//                     dy = d.y - targets[i].target.y;
+//             }
+
+//             console.log( '  ' + d.id + ':  d.y=' + d.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy*alpha)
+
+//             d.y -= dy * alpha;
+
+//             for (i in targets) {
+//                 travelLinks(d, targets[i].target, alpha * traveldegradation, traveldegradation, [d.id]);
+//             }
+//         }
+//     };
+
+// }
+
 const link_alignment = function (alpha, traveldegradation) {
-    // https://bl.ocks.org/mbostock/7881887
-    return function (d) {
-
-        // cluster linked object between different layers on the same y
-        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
-        {
-            var targets = links.filter(function (link) {
-                return link.source.id === d.id;
-            });
-            var y = 0;
-            for (i in targets) {
-                if (Math.abs(y) < Math.abs(targets[i].target.y))
-                    y = targets[i].target.y;
-            }
-            var dy = d.y - y;
-
-            console.log( '  ' + d.id + ':  d.y=' + d.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy*alpha)
-
-            d.y -= dy * alpha;
-
-            for (i in targets) {
-                travelLinks(d, targets[i].target, alpha * traveldegradation, traveldegradation, [d.id]);
-            }
-        }
-    };
-
-}
-
-const link_alignmentD = function (alpha, traveldegradation) {
     // https://bl.ocks.org/mbostock/7881887
     for (i in nodes)
     {
@@ -203,14 +202,14 @@ const link_alignmentD = function (alpha, traveldegradation) {
             var targets = links.filter(function (link) {
                 return link.source.id === node.id;
             });
-            var y = 0;
+            var dy = 0;
             for (i in targets) {
-                if (Math.abs(y) < Math.abs(targets[i].target.y))
-                    y = targets[i].target.y;
+                let target = targets[i].target;
+                if (Math.abs(dy) < Math.abs(node.y - target.y))
+                    dy = node.y - target.y;
             }
-            var dy = node.y - y;
 
-            console.log( '  ' + node.id + ':  d.y=' + node.y + '     y=' + y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
+            console.log( '  ' + node.id + ':  node.y=' + node.y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
 
             node.y -= dy * alpha;
 
@@ -236,9 +235,9 @@ var container = d3.select('#svg_container')
         .attr('x', function(d, i) {
             return container_separator + i * (container_separator + container_width);
         })
-        .attr("y", 20)
+        .attr("y", container_top)
         .attr("width", container_width)
-        .attr("height", 400)
+        .attr("height", container_height)
         .attr("id", function(d, i) {
             return d.id
         })
@@ -313,7 +312,7 @@ var simulation = d3.forceSimulation(nodes)
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
     .force('x', alpha => forceX_lanes(alpha) )
-    // .force('y', alpha => link_alignment(alpha,0.5))
+    .force('y', alpha => link_alignment(alpha,0.5))
     // .force('x', d3.forceX(forceX_lanes(0.2)) )
     // .force('y', d3.forceY(link_alignment(0.1,0.5)))
     // .force("collide", alpha => d3.collide(alpha))
@@ -329,10 +328,7 @@ function ticked() {
     tickedCount++;
 
        node
-         
-        //   
     //      .each(cluster(0.2));
-        
          .each(collide(0.2));
         //   .each(forceX_lanes(0.2));
         //   .each(link_alignment(0.4));
