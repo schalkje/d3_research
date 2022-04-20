@@ -209,7 +209,7 @@ const link_alignment = function (alpha, traveldegradation) {
                     dy = node.y - target.y;
             }
 
-            console.log( '  ' + node.id + ':  node.y=' + node.y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
+            // console.log( '  ' + node.id + ':  node.y=' + node.y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
 
             node.y -= dy * alpha;
 
@@ -220,6 +220,61 @@ const link_alignment = function (alpha, traveldegradation) {
     };
 
 }
+
+var maxRadius = 10;
+var heightRadius = dataset_height + dataset_separator;
+var widthRadius = dataset_width + dataset_separator;
+
+const collideD = function (alpha) {
+    const quadtree = d3.quadtree()
+    .x(function (d) { return d.x; })
+    .y(function (d) { return d.y; })
+    .extent([[0, 0], [width, height]])
+    .addAll(nodes);
+    // https://bl.ocks.org/mbostock/7882658
+    for (i in nodes)
+    {
+        let node = nodes[i];
+        let nx1 = node.x - widthRadius,
+            nx2 = node.x + widthRadius,
+            ny1 = node.y - heightRadius,
+            ny2 = node.y + heightRadius;
+        quadtree.visit(function (quad, x1, y1, x2, y2) {
+            let data = quad.data;
+            if (data && data !== node) {
+                let dx = node.x - data.x,
+                    dy = node.y - data.y,
+                    l = Math.sqrt(dx * dx + dy * dy), // distance between the 2 nodes
+
+                    // when they collide push them away from each other
+                    overlap = !(
+                        (data.x - node.x > widthRadius) || // rect1.right < rect2.left: fully on the right side
+                        (node.x - data.x > widthRadius) || // rect1.left > rect2.right: fully on the keft side
+                        (data.y - node.y > heightRadius) || // rect1.bottom < rect2.top: fully above
+                        (node.y - data.y > heightRadius) // rect1.top > rect2.bottom: fully below
+                        //  (node.x + widthRadius) < data.x || // rect1.right < rect2.left: fully on the right side
+                        //  node.x > (data.x + widthRadius) || // rect1.left > rect2.right: fully on the keft side
+                        // (node.y + heightRadius) < data.y || // rect1.bottom < rect2.top: fully above
+                        //  node.y > (data.y + heightRadius) // rect1.top > rect2.bottom: fully below                    
+                    );
+                    console.log('  overlap=' + overlap + ' <-- x1=' + node.x + ', y1=' + node.y+ ' (' + node.id + ')' + ' - x2=' + data.x + ', y2=' + data.y + ' (' + data.id + ')')
+                if ( overlap ) {
+                    lx = (l - widthRadius) / l * alpha;
+                    ly = (l - heightRadius) / l * alpha;
+                    dx *= lx;
+                    dy *= ly;
+                    node.x -= dx; 
+                    node.y -= dy;
+                    data.x += dx;
+                    data.y += dy;
+                    console.log('                -> x1=' + node.x + ', y1=' + node.y + ' - x2=' + data.x + ', y2=' + data.y)
+                }
+            }
+            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+        });
+    };
+}
+
 
 
 var container = d3.select('#svg_container')
@@ -307,7 +362,7 @@ var simulation = d3.forceSimulation(nodes)
         .id(d => d.id)
         .links(links)
         .distance(80)
-        .strength(0.5)
+        .strength(0.9)
     )
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width/2,height/2))
@@ -315,33 +370,24 @@ var simulation = d3.forceSimulation(nodes)
     .force('y', alpha => link_alignment(alpha,0.5))
     // .force('x', d3.forceX(forceX_lanes(0.2)) )
     // .force('y', d3.forceY(link_alignment(0.1,0.5)))
-    // .force("collide", alpha => d3.collide(alpha))
+    //  .force("collide", alpha => collideD(alpha))
     // .force("collide", d3.forceCollide(-100))
     .on('tick',ticked);
 
 
 var tickedCount = 0
-var tickedRefreshCount = 1
 
 function ticked() {
     // console.log('Ticked');
     tickedCount++;
 
        node
-    //      .each(cluster(0.2));
+    // //      .each(cluster(0.2));
          .each(collide(0.2));
         //   .each(forceX_lanes(0.2));
         //   .each(link_alignment(0.4));
     
     renderNodes();
-
-    // // refresh display to see the changes animate
-    // if (tickedCount % tickedRefreshCount === 0 )
-    // {
-    //     console.log('refresh display');
-    //     tickedRefreshCount*=1.2;
-    //     renderNodes();
-    // }
 }
 
 simulation.on("end", function() {
@@ -491,9 +537,7 @@ function renderAll() {
 
 /*
  */
-var maxRadius = 10;
-var heightRadius = dataset_height + dataset_separator;
-var widthRadius = dataset_width + dataset_separator;
+
 const collide = function (alpha) {
     // https://bl.ocks.org/mbostock/7882658
     const quadtree = d3.quadtree()
