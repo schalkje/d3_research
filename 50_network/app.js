@@ -297,6 +297,9 @@ var node_label = nodes_container
 
 
 
+
+
+
 console.log('Force simulation')
 
 var simulation = d3.forceSimulation(nodes)
@@ -313,8 +316,10 @@ var simulation = d3.forceSimulation(nodes)
     // .force('y', alpha => link_alignment(alpha,0.5))
     // .force('x', d3.forceX(forceX_lanes(0.2)) )
     // .force('y', d3.forceY(link_alignment(0.1,0.5)))
-    .force("collide", d3.forceCollide(-100))
+    // .force("collide", alpha => d3.collide(alpha))
+    // .force("collide", d3.forceCollide(-100))
     .on('tick',ticked);
+
 
 var tickedCount = 0
 var tickedRefreshCount = 1
@@ -323,12 +328,12 @@ function ticked() {
     // console.log('Ticked');
     tickedCount++;
 
-    //    node
+       node
          
         //   
     //      .each(cluster(0.2));
         
-        //  .each(collide(0.2));
+         .each(collide(0.2));
         //   .each(forceX_lanes(0.2));
         //   .each(link_alignment(0.4));
     
@@ -491,6 +496,8 @@ function renderAll() {
 /*
  */
 var maxRadius = 10;
+var heightRadius = dataset_height + dataset_separator;
+var widthRadius = dataset_width + dataset_separator;
 const collide = function (alpha) {
     // https://bl.ocks.org/mbostock/7882658
     const quadtree = d3.quadtree()
@@ -499,10 +506,10 @@ const collide = function (alpha) {
         .extent([[0, 0], [width, height]])
         .addAll(nodes);
     return function (d) {
-        let nx1 = d.x - dataset_separator,
-            nx2 = d.x + dataset_width + dataset_separator,
-            ny1 = d.y - dataset_separator,
-            ny2 = d.y + dataset_height + dataset_separator;
+        let nx1 = d.x - widthRadius,
+            nx2 = d.x + widthRadius,
+            ny1 = d.y - heightRadius,
+            ny2 = d.y + heightRadius;
         quadtree.visit(function (quad, x1, y1, x2, y2) {
             let data = quad.data;
             if (data && data !== d) {
@@ -512,14 +519,14 @@ const collide = function (alpha) {
 
                     // when they collide push them away from each other
                     overlap = !(
-                        (d.x + dataset_width + dataset_separator) < data.x || // rect1.right < rect2.left: fully on the right side
-                         d.x > (data.x + dataset_width + dataset_separator) || // rect1.left > rect2.right: fully on the keft side
-                        (d.y + dataset_height + dataset_separator) < data.y || // rect1.bottom < rect2.top: fully above
-                         d.y > (data.y + dataset_height + dataset_separator) // rect1.top > rect2.bottom: fully below
+                        (d.x + widthRadius) < data.x || // rect1.right < rect2.left: fully on the right side
+                         d.x > (data.x + widthRadius) || // rect1.left > rect2.right: fully on the keft side
+                        (d.y + heightRadius) < data.y || // rect1.bottom < rect2.top: fully above
+                         d.y > (data.y + heightRadius) // rect1.top > rect2.bottom: fully below
                     );
                 if ( overlap ) {
-                    lx = (l - dataset_width) / l * alpha;
-                    ly = (l - dataset_height) / l * alpha;
+                    lx = (l - widthRadius) / l * alpha;
+                    ly = (l - heightRadius) / l * alpha;
                     d.x -= dx *= lx;
                     d.y -= dy *= ly;
                     data.x += dx;
@@ -531,38 +538,38 @@ const collide = function (alpha) {
     };
 }
 
-const collide1 = function (alpha) {
-    // https://bl.ocks.org/mbostock/7882658
-    const quadtree = d3.quadtree()
-        .x(function (d) { return d.x; })
-        .y(function (d) { return d.y; })
-        .extent([[0, 0], [width, height]])
-        .addAll(nodes);
-    return function (d) {
-        let r = d.radius + (maxRadius * 8) + Math.max(padding, clusterPadding),
-            nx1 = d.x - r,
-            nx2 = d.x + r,
-            ny1 = d.y - r,
-            ny2 = d.y + r;
-        quadtree.visit(function (quad, x1, y1, x2, y2) {
-            let data = quad.data;
-            if (data && data !== d) {
-                let x = d.x - data.x,
-                    y = d.y - data.y,
-                    l = Math.sqrt(x * x + y * y),
-                    r = d.radius + data.radius + (d.cluster == data.cluster ? padding : clusterPadding);
-                if (l < r) { // the two elements collide
-                    l = (l - r) / l * alpha;
-                    d.x -= x *= l;
-                    d.y -= y *= l;
-                    data.x += x;
-                    data.y += y;
-                }
-            }
-            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-        });
-    };
-}
+// const collide1 = function (alpha) {
+//     // https://bl.ocks.org/mbostock/7882658
+//     const quadtree = d3.quadtree()
+//         .x(function (d) { return d.x; })
+//         .y(function (d) { return d.y; })
+//         .extent([[0, 0], [width, height]])
+//         .addAll(nodes);
+//     return function (d) {
+//         let r = d.radius + (maxRadius * 8) + Math.max(padding, clusterPadding),
+//             nx1 = d.x - r,
+//             nx2 = d.x + r,
+//             ny1 = d.y - r,
+//             ny2 = d.y + r;
+//         quadtree.visit(function (quad, x1, y1, x2, y2) {
+//             let data = quad.data;
+//             if (data && data !== d) {
+//                 let x = d.x - data.x,
+//                     y = d.y - data.y,
+//                     l = Math.sqrt(x * x + y * y),
+//                     r = d.radius + data.radius + (d.cluster == data.cluster ? padding : clusterPadding);
+//                 if (l < r) { // the two elements collide
+//                     l = (l - r) / l * alpha;
+//                     d.x -= x *= l;
+//                     d.y -= y *= l;
+//                     data.x += x;
+//                     data.y += y;
+//                 }
+//             }
+//             return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+//         });
+//     };
+// }
 
 
 
