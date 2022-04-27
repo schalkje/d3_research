@@ -1,5 +1,23 @@
-
 console.log(d3)
+
+var width = 1700;
+var height = 600;
+
+var container_width = 200;
+var container_separator = 10;
+
+var node_width = 160;
+var node_height = 40;
+var node_separator = 10;
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Setup data
+//
 
 let layers = [
     {'id': 'app', 'layer': 'Application'},
@@ -86,8 +104,18 @@ let connections = [
 ]
 
 
-// const xScale = d3.scaleBand().domain(layers.map((datapoint) => datapoint.layer)).rangeRound([0, 1500]).padding(0,1);
-// const yScale = d3.scaleLinear.domain([0,15]).range([600,0]);
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Initialize drawing container
+//
 
 d3.select('#data_container')
     .selectAll('p')
@@ -96,49 +124,54 @@ d3.select('#data_container')
     .text(d => d.layer + '.' + d.dataset);
 
 // create visualisation
-var container_width = 200;
-var container_separator = 10;
 
 var container = d3.select('#svg_container')
-    .attr("width", 1700)
-    .attr("height", 600);
+    .attr("width", width)
+    .attr("height", height)
+    .attr("class", "container");
+
+var links_container = d3.select('#links')
+var ghostlinks_container = d3.select('#ghostlinks')
+var nodes_container = d3.select('#nodes')
 
 // Create the lanes
-    container
-        .selectAll('rect')
-        .data(layers)
-        .join("rect")
-        .attr('x', function(d, i) {
-            return container_separator + i * (container_separator + container_width);
+container
+    .selectAll('rect')
+    .data(layers)
+    .join("rect")
+    .attr('x', function(d, i) {
+        return container_separator + i * (container_separator + container_width);
+    })
+    .attr("y", 22)
+    .attr("width", container_width)
+    .attr("height", 400)
+    .attr("id", function(d, i) {
+        return d.id
+    })
+    .attr("class", function(d, i) {
+        return i%2==0 ? 'lane lane1' : "lane lane2"
+    });
+
+container
+    .selectAll('.lanelabel')
+    .data(layers)
+    .join("text")
+    .attr('x', function(d, i) {
+        return (container_separator + container_width/2) + i * (container_separator + container_width);
         })
-        .attr("y", 20)
-        .attr("width", container_width)
-        .attr("height", 400)
-        .attr("id", function(d, i) {
-            return d.id
-        })
-        .attr("class", function(d, i) {
-            return i%2==0 ? 'lane lane1' : "lane lane2"
-        });
-  
-    container
-        .selectAll('.lanelabel')
-        .data(layers)
-        .join("text")
-        .attr('x', function(d, i) {
-            return (container_separator + container_width/2) + i * (container_separator + container_width);
-            })
-        .attr("y", 12)
-        .text(d => d.layer)
-        .attr("class", 'lanelabel');
+    .attr("y", 14)
+    .text(d => d.layer)
+    .attr("class", 'lanelabel');
 
 
 
-        
+
+//////////////////////////////////////////////////////////////
+//
+// Possition the nodes and connections in a programmed way
+//
+    
 // create datasets
-var dataset_width = 160;
-var dataset_height = 40;
-var dataset_separator = 10;
 // var layer;
 for (i in layers){
     var layer = layers[i];
@@ -154,8 +187,8 @@ for (i in layers){
     // var layer_data = data.filter(d => d.layer === layer.id);
 
 
-    container
-        .selectAll('.dataset')
+    nodes_container
+        .selectAll('.node')
         .data(data)
         .join("rect")
         .filter(function(d,i){ 
@@ -165,30 +198,30 @@ for (i in layers){
             return 20 + parent_x;
           })
         .attr('y', function(d, i) {
-            return parent_y + dataset_separator+ i * (dataset_height+dataset_separator); // + parent_x;
+            return parent_y + node_separator+ i * (node_height+node_separator); // + parent_x;
           })
-        .attr("width", dataset_width)
-        .attr("height", dataset_height)
-        .attr("class", 'dataset')
+        .attr("width", node_width)
+        .attr("height", node_height)
+        .attr("class", 'node')
         .attr("id", function(d, i) {
             return d.id
         });
 
-    container
-        .selectAll('.datasetlabel')
+    nodes_container
+        .selectAll('.node_label')
         .data(data)
         .join("text")
         .filter(function(d,i){ 
             return d.layer == layer.id;
          })
         .attr("x", function(d, i) {
-            return 20 + parent_x + dataset_width/ 2;
+            return 20 + parent_x + node_width/ 2;
           })
         .attr('y', function(d, i) {
-            return 5 + parent_y + dataset_separator + dataset_height / 2 + i * (dataset_height+dataset_separator); // + parent_x;
+            return 5 + parent_y + node_separator + node_height / 2 + i * (node_height+node_separator); // + parent_x;
           })
         .text((d) => d.dataset)
-        .attr("class", 'datasetlabel');
+        .attr("class", 'node_label');
 }
 
 
@@ -248,17 +281,16 @@ function computeLinks()
 
 computeLinks();
 
-    container
-        .selectAll('.link')
-        .data(connections)
-        .enter()
-        .append('line')
-        .attr('x1', d => d.x1)
-        .attr('y1', d => d.y1)
-        .attr('x2', d => d.x2)
-        .attr('y2', d => d.y2)
-        // .attr('id',d => d.source + '_' + d.target)
-        .attr('class','link')
-        .attr("marker-end", "url(#arrow)");
+links_container
+    .selectAll('.link')
+    .data(connections)
+    .enter()
+    .append('line')
+    .attr('x1', d => d.x1)
+    .attr('y1', d => d.y1)
+    .attr('x2', d => d.x2)
+    .attr('y2', d => d.y2)
+    .attr('class','link')
+    .attr("marker-end", "url(#arrow)");
 
 

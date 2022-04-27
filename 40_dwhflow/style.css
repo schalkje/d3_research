@@ -15,18 +15,22 @@ body {
     stroke: none;
   }
 
-  rect {
-    fill: cadetblue;
-    opacity: 0.3;
-    stroke: white;
-  }
-
   .lanelabel
   {
     font-size: 16px;
     fill: gray;
     text-anchor: middle;
   }
+
+  
+svg.container {
+  background-color:#FAFAFA;
+  border-color: #d3d3d3;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 4px 3px 8px 1px #969696;
+  -webkit-box-shadow: 4px 3px 8px 1px #969696;
+}
 
 
   .container {
@@ -35,15 +39,15 @@ body {
     stroke-width: 2;
   }
 
-  .dataset {
-    fill: rgb(65, 65, 151);
-    fill-opacity: 0.6;
-    stroke: rgb(65, 65, 151);
+  .node {
+    fill: #9a9ab9;
+    fill-opacity: 0.8; 
+    stroke: #414197;
     stroke-opacity: 0.4;
     stroke-width: 2;
   }
 
-  .datasetlabel
+  .node_label
   {
     font-size: 12px;
     fill: rgb(66, 66, 88);
@@ -55,6 +59,12 @@ line.link {
     stroke-width: 2px;
     stroke: #999;
     stroke-opacity: 0.6;
+}
+
+line.ghostlink {
+  stroke-width: 2px;
+  stroke: #FFF;
+  stroke-opacity: 0.15;
 }
 
 marker#arrow {
