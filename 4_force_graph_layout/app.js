@@ -1,6 +1,11 @@
 const radius = 40;
 const link_separator = 4;
 
+
+
+
+
+
 //////////////////////////////////////////////////////////////
 //
 // Setup data
@@ -37,6 +42,10 @@ console.log(links);
 
 
 
+
+
+
+
 //////////////////////////////////////////////////////////////
 //
 // Initialize drawing container
@@ -56,6 +65,9 @@ var links_container = d3.select('#links')
 var ghostlinks_container = d3.select('#ghostlinks')
 
 var nodes_container = d3.select('#nodes')
+
+
+
 
 
 
@@ -115,7 +127,12 @@ var nodes_objects = nodes_container
   .attr("cx", d => d.x)
   .attr('cy', (d) => d.y)
   .attr('r', d => radius)
-  .attr("class", 'node');
+  .attr("class", 'node')
+  .call(d3.drag()
+    .on('start', drag_started)
+    .on('drag', dragged)
+    .on('end', drag_ended)
+  )
 
 var nodeLabels_objects = nodes_container
         .selectAll('.node_label')
@@ -165,6 +182,9 @@ var ghostlinks_objects = ghostlinks_container
 
 
 
+
+
+
 //////////////////////////////////////////////////////////////
 //
 // Update the location for the simulation
@@ -207,4 +227,27 @@ function update()
       var dy = Math.sin(alfa) * (radius + link_separator);
       return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
     })
+}
+
+// drag
+function drag_started (d) {
+  if (!d3.event.active) {
+    // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
+    simulation.alphaTarget(0.8).restart() 
+  }
+  d.fx = d.x
+  d.fy = d.y
+}
+
+function dragged (d) {
+  d.fx = d3.event.x
+  d.fy = d3.event.y
+}
+
+function drag_ended (d) {
+  if (!d3.event.active) {
+    simulation.alphaTarget(0)
+  }
+  d.fx = null
+  d.fy = null
 }
