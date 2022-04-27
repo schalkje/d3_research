@@ -53,6 +53,8 @@ var container = d3.select('#svg_container')
     .attr("class", "container");
 
 var links_container = d3.select('#links')
+var ghostlinks_container = d3.select('#ghostlinks')
+
 var nodes_container = d3.select('#nodes')
 
 
@@ -127,52 +129,84 @@ var links_objects = links_container
     .selectAll('.link')
     .data(links)
     .join("line")
-    .attr('x1', function (d) { return 10 })
-    .attr('y1', function (d) { return 10 })
-    .attr('x2', function (d) { return 100 })
-    .attr('y2', function (d) { return 100 })
     // .attr('x1', function (d) { return d.source.x })
     // .attr('y1', function (d) { return d.source.y })
     // .attr('x2', function (d) { return d.target.x })
     // .attr('y2', function (d) { return d.target.y })
-    // .attr("x1", function(d) {
-    //   var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-    //   var dx = Math.cos(alfa) * (radius + link_separator);
-    //   return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
-    // } )
-    // .attr("y1", function(d) {
-    //   var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-    //   var dy = Math.sin(alfa) * (radius + link_separator);
-    //   return d.source.y < d.target.y ? d.source.y + dy : d.source.y - dy;
-    // } )
-    // .attr("x2", function(d) {
-    //   var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-    //   var dx = Math.cos(alfa) * (radius + link_separator);
-    //   return d.source.x < d.target.x ? d.target.x - dx : d.target.x + dx;
-    // } )
-    // .attr('y2', function(d) {
-    //   var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-    //   var dy = Math.sin(alfa) * (radius + link_separator);
-    //   return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
-    // })
-    // .attr('marker-end','url(#suit)')
+    .attr("x1", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dx = Math.cos(alfa) * (radius + link_separator);
+      return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
+    } )
+    .attr("y1", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dy = Math.sin(alfa) * (radius + link_separator);
+      return d.source.y < d.target.y ? d.source.y + dy : d.source.y - dy;
+    } )
+    .attr("x2", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dx = Math.cos(alfa) * (radius + link_separator);
+      return d.source.x < d.target.x ? d.target.x - dx : d.target.x + dx;
+    } )
+    .attr('y2', function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dy = Math.sin(alfa) * (radius + link_separator);
+      return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
+    })
+    .attr('marker-end','url(#suit)')
     .attr("class", 'link');
 
-
-function update()
-{
- 
-  nodes_objects
-    .attr("transform", d => "translate(" +d.x+ ","+d.y+")");
-
-  nodeLabels_objects
-    .attr("transform", d => "translate(" +d.x+ ","+d.y+")");
-
-  links_objects
+var ghostlinks_objects = ghostlinks_container
+    .selectAll('.ghostlink')
+    .data(links)
+    .join("line")
     .attr('x1', function (d) { return d.source.x })
     .attr('y1', function (d) { return d.source.y })
     .attr('x2', function (d) { return d.target.x })
     .attr('y2', function (d) { return d.target.y })
+    .attr("class", 'ghostlink');
+
+function update()
+{ 
+  nodes_objects
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y);
+
+  nodeLabels_objects
+    .attr("x", d => d.x)
+    .attr('y', d => d.y + 4);
+
+  ghostlinks_objects
+    .attr('x1', function (d) { return d.source.x })
+    .attr('y1', function (d) { return d.source.y })
+    .attr('x2', function (d) { return d.target.x })
+    .attr('y2', function (d) { return d.target.y })
+
+    links_objects
+    // .attr('x1', function (d) { return d.source.x })
+    // .attr('y1', function (d) { return d.source.y })
+    // .attr('x2', function (d) { return d.target.x })
+    // .attr('y2', function (d) { return d.target.y })
+    .attr("x1", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dx = Math.cos(alfa) * (radius + link_separator);
+      return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
+    } )
+    .attr("y1", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dy = Math.sin(alfa) * (radius + link_separator);
+      return d.source.y < d.target.y ? d.source.y + dy : d.source.y - dy;
+    } )
+    .attr("x2", function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dx = Math.cos(alfa) * (radius + link_separator);
+      return d.source.x < d.target.x ? d.target.x - dx : d.target.x + dx;
+    } )
+    .attr('y2', function(d) {
+      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
+      var dy = Math.sin(alfa) * (radius + link_separator);
+      return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
+    })
 }
 
 // function render() {
