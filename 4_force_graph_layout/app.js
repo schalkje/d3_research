@@ -63,7 +63,6 @@ var container = d3.select('#svg_container')
 
 var links_container = d3.select('#links')
 var ghostlinks_container = d3.select('#ghostlinks')
-
 var nodes_container = d3.select('#nodes')
 
 
@@ -72,10 +71,10 @@ var nodes_container = d3.select('#nodes')
 
 
 
-//////////////////////////////////////////////////////////////
-//
-// Simulation
-//
+  //////////////////////////////////////////////////////////////
+  //
+  // Simulation
+  //
 
 var simulation = d3.forceSimulation(nodes)
 .force('charge', d3.forceManyBody())

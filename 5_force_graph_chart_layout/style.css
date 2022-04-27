@@ -38,7 +38,7 @@ svg.container {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
-.dataset {
+.node {
   fill: #9b9bfa;
   fill-opacity: 0.95;
   stroke: rgb(65, 65, 151);
@@ -46,7 +46,7 @@ svg.container {
   stroke-width: 2;
 }
 
-.datasetlabel
+.node_label
 {
   font-size: 14px;
   font-weight: bold;
@@ -59,6 +59,12 @@ line.link {
   stroke-width: 2px;
   stroke: #4679BD;
   stroke-opacity: 0.6;
+}
+
+line.ghostlink {
+  stroke-width: 2px;
+  stroke: #FFF;
+  stroke-opacity: 0.15;
 }
 
 marker#arrow {
