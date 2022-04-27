@@ -275,6 +275,49 @@ const collideD = function (alpha) {
     };
 }
 
+/*
+ */
+
+const collide = function (alpha) {
+    // https://bl.ocks.org/mbostock/7882658
+    const quadtree = d3.quadtree()
+        .x(function (d) { return d.x; })
+        .y(function (d) { return d.y; })
+        .extent([[0, 0], [width, height]])
+        .addAll(nodes);
+    return function (d) {
+        let nx1 = d.x - widthRadius,
+            nx2 = d.x + widthRadius,
+            ny1 = d.y - heightRadius,
+            ny2 = d.y + heightRadius;
+        quadtree.visit(function (quad, x1, y1, x2, y2) {
+            let data = quad.data;
+            if (data && data !== d) {
+                let dx = d.x - data.x,
+                    dy = d.y - data.y,
+                    l = Math.sqrt(dx * dx + dy * dy), // distance between the 2 nodes
+
+                    // when they collide push them away from each other
+                    overlap = !(
+                        (d.x + widthRadius) < data.x || // rect1.right < rect2.left: fully on the right side
+                         d.x > (data.x + widthRadius) || // rect1.left > rect2.right: fully on the keft side
+                        (d.y + heightRadius) < data.y || // rect1.bottom < rect2.top: fully above
+                         d.y > (data.y + heightRadius) // rect1.top > rect2.bottom: fully below
+                    );
+                if ( overlap ) {
+                    lx = (l - widthRadius) / l * alpha;
+                    ly = (l - heightRadius) / l * alpha;
+                    d.x -= dx *= lx;
+                    d.y -= dy *= ly;
+                    data.x += dx;
+                    data.y += dy;
+                }
+            }
+            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+        });
+    };
+}
+
 
 
 var container = d3.select('#svg_container')
@@ -313,8 +356,10 @@ var container = d3.select('#svg_container')
 
 
 var links_container = d3.select('#links')
-var nodes_container = d3.select('#nodes')
+var nodes_container = d3.select('#nodes');
 
+// var drag = d3.drag()
+//     .on("drag", dragged);
 
 
 var node = nodes_container
@@ -332,7 +377,14 @@ var node = nodes_container
     .attr("class", 'dataset')
     .attr("id", function(d, i) {
         return d.id
-    });
+    })
+    // .call(drag);
+        .call(
+            d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+    );
 
 var node_label = nodes_container
     .selectAll('.datasetlabel')
@@ -374,6 +426,7 @@ var simulation = d3.forceSimulation(nodes)
     // .force("collide", d3.forceCollide(-100))
     .on('tick',ticked);
 
+//  nodes.call(drag);
 
 var tickedCount = 0
 
@@ -389,6 +442,40 @@ function ticked() {
     
     renderNodes();
 }
+
+//https://dev.to/taowen/make-react-svg-component-draggable-2kc
+//https://www.d3indepth.com/interaction/
+
+function dragstarted()
+{
+    // when alpha hits 0 it stops. restart again
+    simulation.alphaTarget(0.3).restart();
+    // d3.select(this).attr("stroke", "black");
+}
+
+function dragged(d)
+{
+    d.fx = d3.event.x;
+    d.fx = d3.event.y;
+    // d3.select(this).raise().attr("cx", d.x = event.x).attr("cy", d.y = event.y);
+}
+
+function dragended()
+{
+    // alpha min is 0, head there
+    simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+
+    //d3.select(this).attr("stroke", null); 
+}
+//clamp: https://observablehq.com/@d3/sticky-force-layout?collection=@d3/d3-drag
+// function click(event, d) {
+//     delete d.fx;
+//     delete d.fy;
+//     d3.select(this).classed("fixed", false);
+//     simulation.alpha(1).restart();
+//   }
 
 simulation.on("end", function() {
     console.log("simulation end"); 
@@ -533,49 +620,6 @@ function renderLinks() {
 function renderAll() {
     renderNodes();
     renderLinks();
-}
-
-/*
- */
-
-const collide = function (alpha) {
-    // https://bl.ocks.org/mbostock/7882658
-    const quadtree = d3.quadtree()
-        .x(function (d) { return d.x; })
-        .y(function (d) { return d.y; })
-        .extent([[0, 0], [width, height]])
-        .addAll(nodes);
-    return function (d) {
-        let nx1 = d.x - widthRadius,
-            nx2 = d.x + widthRadius,
-            ny1 = d.y - heightRadius,
-            ny2 = d.y + heightRadius;
-        quadtree.visit(function (quad, x1, y1, x2, y2) {
-            let data = quad.data;
-            if (data && data !== d) {
-                let dx = d.x - data.x,
-                    dy = d.y - data.y,
-                    l = Math.sqrt(dx * dx + dy * dy), // distance between the 2 nodes
-
-                    // when they collide push them away from each other
-                    overlap = !(
-                        (d.x + widthRadius) < data.x || // rect1.right < rect2.left: fully on the right side
-                         d.x > (data.x + widthRadius) || // rect1.left > rect2.right: fully on the keft side
-                        (d.y + heightRadius) < data.y || // rect1.bottom < rect2.top: fully above
-                         d.y > (data.y + heightRadius) // rect1.top > rect2.bottom: fully below
-                    );
-                if ( overlap ) {
-                    lx = (l - widthRadius) / l * alpha;
-                    ly = (l - heightRadius) / l * alpha;
-                    d.x -= dx *= lx;
-                    d.y -= dy *= ly;
-                    data.x += dx;
-                    data.y += dy;
-                }
-            }
-            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-        });
-    };
 }
 
 // const collide1 = function (alpha) {
