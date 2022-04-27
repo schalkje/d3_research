@@ -64,7 +64,7 @@ line.link {
 line.ghostlink {
   stroke-width: 2px;
   stroke: #FFF;
-  stroke-opacity: 0.1;
+  stroke-opacity: 0.15;
 }
 
 marker#arrow {
