@@ -1,54 +1,58 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
-      <style>
-         body { font-family: Arial; }
-      </style>
-      <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
-   </head>
 
-   <body>
-      <h1>Hello d3 (d3.js)</h1>
-    <div id = "svgcontainer"></div>
-    <script>
-       var width = 1000;
-       var height = 800;
-       //Create SVG element
-       var svg = d3.select("#svgcontainer")
-          .append("svg")
-          .attr("width", width)
-          .attr("height", height);
+<head>
+   <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+   <style>
+      body {
+         font-family: Arial;
+      }
+   </style>
+   <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
 
-       //Create and append rectangle element
-       svg.append("rect")
-          .attr("x", 20)
-          .attr("y", 20)
-          .attr("width", 200)
-          .attr("height", 600)
-          .attr("class", "lane lane1");
+<body>
+   <h1>Hello d3 (d3.js)</h1>
+   <div id="svgcontainer"></div>
+   <script>
+      var width = 1000;
+      var height = 800;
+      //Create SVG element
+      var svg = d3.select("#svgcontainer")
+         .append("svg")
+         .attr("width", width)
+         .attr("height", height);
 
-          var databaseHight = 80
-          svg.append("rect")
-          .attr("x", 30)
-          .attr("y", 30)
-          .attr("width", 180)
-          .attr("height", databaseHight)
-          .attr("class", "database");
+      //Create and append rectangle element
+      svg.append("rect")
+         .attr("x", 20)
+         .attr("y", 20)
+         .attr("width", 200)
+         .attr("height", 600)
+         .attr("class", "lane lane1");
 
-          svg.append("rect")
-          .attr("x", 30)
-          .attr("y", 130)
-          .attr("width", 180)
-          .attr("height", databaseHight)
-          .attr("class", "database");
+      var databaseHight = 80
+      svg.append("rect")
+         .attr("x", 30)
+         .attr("y", 30)
+         .attr("width", 180)
+         .attr("height", databaseHight)
+         .attr("class", "database");
 
-          svg.append("rect")
-          .attr("x", 240)
-          .attr("y", 20)
-          .attr("width", 200)
-          .attr("height", 600)
-          .attr("class", "lane lane2");
-</script>
- </body>
+      svg.append("rect")
+         .attr("x", 30)
+         .attr("y", 130)
+         .attr("width", 180)
+         .attr("height", databaseHight)
+         .attr("class", "database");
+
+      svg.append("rect")
+         .attr("x", 240)
+         .attr("y", 20)
+         .attr("width", 200)
+         .attr("height", 600)
+         .attr("class", "lane lane2");
+   </script>
+</body>
+
 </html>

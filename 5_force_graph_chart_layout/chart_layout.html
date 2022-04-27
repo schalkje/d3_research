@@ -8,7 +8,7 @@
 </head>
 
 <body>
-   <h1>Char layout (d3.js)</h1>
+   <h1>Chart layout (d3.js)</h1>
    <p>Inspired by <a
          href="https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1">https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1</a>
    </p>
@@ -31,9 +31,12 @@
                <path d="M0,-5L10,0L0,5 L10,0 L0, -5" stroke="#4679BD" opacity=0.6 />
             </marker>
          </defs>
+         <!-- using multiple g-object to support layers in the drawing -->
          <g id="links">
          </g>
          <g id="nodes">
+         </g>
+         <g id="ghostlinks">
          </g>
       </svg>
    </div>
