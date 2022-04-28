@@ -1,5 +1,36 @@
-console.log(d3);
+console.log(d3)
 
+var width = 1700;
+var height = 600;
+
+var container_width = 200;
+var container_separator = 10;
+
+var node_width = 160;
+var node_height = 40;
+var node_separator = 10;
+
+var label_width = node_width;
+var label_height = node_height;
+const line_padding = 2;
+
+var container_width = 200;
+var container_height = 600;
+var container_top = 20;
+var container_separator = 10;
+
+var padding = 5;
+var clusterPadding = 20;
+// var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Setup data
+//
 
 let layers = [
     {'id': 'app', 'layer': 'Application'},
@@ -88,26 +119,6 @@ let links = [
 ]
 
 // create visualisation
-var container_width = 200;
-var container_height = 600;
-var container_top = 20;
-var container_separator = 10;
-
-var padding = 5;
-var clusterPadding = 20;
-var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-
-var dataset_width = 160;
-var dataset_height = 40;
-var dataset_separator = 10;
-var label_width = dataset_width;
-var label_height = dataset_height;
-const line_padding = 2;
-
-var width = layers.length * (container_width + container_separator) + container_separator;
-var height = container_height + container_top + container_separator;
-
 // create a cluster map, to use in the simulations
 function createClusterMap()
 {
@@ -131,6 +142,29 @@ function createClusterMap()
   }
 
 let clusters = createClusterMap();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Initialize drawing container
+//
+
+var width = layers.length * (container_width + container_separator) + container_separator;
+var height = container_height + container_top + container_separator;
 
 d3.select('#data_container')
     .selectAll('p')
@@ -222,8 +256,8 @@ const link_alignment = function (alpha, traveldegradation) {
 }
 
 var maxRadius = 10;
-var heightRadius = dataset_height + dataset_separator;
-var widthRadius = dataset_width + dataset_separator;
+var heightRadius = node_height + node_separator;
+var widthRadius = node_width + node_separator;
 
 const collideD = function (alpha) {
     const quadtree = d3.quadtree()
@@ -320,6 +354,20 @@ const collide = function (alpha) {
 
 
 
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Initialize drawing container
+//
+
 var container = d3.select('#svg_container')
     .attr("width", width)
     .attr("height", height)
@@ -356,25 +404,23 @@ var container = d3.select('#svg_container')
 
 
 var links_container = d3.select('#links')
+var ghostlinks_container = d3.select('#ghostlinks')
 var nodes_container = d3.select('#nodes');
-
-// var drag = d3.drag()
-//     .on("drag", dragged);
 
 
 var node = nodes_container
-    .selectAll('.dataset')
+    .selectAll('.node')
     .data(nodes)
     .join("rect")
     .attr("x", function(d) {
-        return d.x - (dataset_width / 2);
+        return d.x - (node_width / 2);
       })
     .attr('y', function(d) {
-        return d.y - (dataset_height / 2);
+        return d.y - (node_height / 2);
       })
-    .attr("width", dataset_width)
-    .attr("height", dataset_height)
-    .attr("class", 'dataset')
+    .attr("width", node_width)
+    .attr("height", node_height)
+    .attr("class", 'node')
     .attr("id", function(d, i) {
         return d.id
     })
@@ -387,7 +433,7 @@ var node = nodes_container
     );
 
 var node_label = nodes_container
-    .selectAll('.datasetlabel')
+    .selectAll('.node_label')
     .data(nodes)
     .join("text")
     .attr("x", function(d, i) {
@@ -397,7 +443,31 @@ var node_label = nodes_container
         return 5 + d.y + label_height / 2;
       })
     .text((d) => d.label)
-    .attr("class", 'datasetlabel');
+    .attr("class", 'node_label');
+
+
+var ghostlink = ghostlinks_container
+    .selectAll('.ghostlink')
+    .data(links)
+    .enter()
+    .append('line')
+    .attr('x1', d => d.x1)
+    .attr('y1', d => d.y1)
+    .attr('x2', d => d.x2)
+    .attr('y2', d => d.y2)
+    .attr('class', 'ghostlink');
+
+var link = links_container
+    .selectAll('.link')
+    .data(links)
+    .enter()
+    .append('line')
+    .attr('x1', d => d.x1)
+    .attr('y1', d => d.y1)
+    .attr('x2', d => d.x2)
+    .attr('y2', d => d.y2)
+    .attr('class', 'link')
+    .attr("marker-end", "url(#arrow)");
 
 
 
@@ -405,6 +475,14 @@ var node_label = nodes_container
 
 
 
+
+
+
+//////////////////////////////////////////////////////////////
+//
+// Possition the nodes using a simulation
+//
+    
 
 console.log('Force simulation')
 
@@ -440,7 +518,7 @@ function ticked() {
         //   .each(forceX_lanes(0.2));
         //   .each(link_alignment(0.4));
     
-    renderNodes();
+    update();
 }
 
 //https://dev.to/taowen/make-react-svg-component-draggable-2kc
@@ -484,16 +562,14 @@ simulation.on("end", function() {
     console.log("clusters:"); 
     console.log(clusters);
 
-    renderAll();
+    // one final time updating the drawing
+    update();
 
     console.log("links:"); 
     console.log(links);
 });
 
 
-// Initial display render 
-// only the nodes, because they will be moving to the right places in the simulation
-renderNodes();
 
 
 function getlinkPoint(source, target)
@@ -503,11 +579,11 @@ function getlinkPoint(source, target)
     
     var alfa = Math.atan(Math.abs(target.y-source.y)/Math.abs(target.x-source.x));
 
-    var a1 = Math.atan(Math.abs(dataset_width / 2)/Math.abs(dataset_height/2));
+    var a1 = Math.atan(Math.abs(node_width / 2)/Math.abs(node_height/2));
 
     if ( alfa > a1 ) // top or bottom
     {
-        let yDist = (dataset_height / 2 + line_padding); // distance from center to y location for connector
+        let yDist = (node_height / 2 + line_padding); // distance from center to y location for connector
         if ( target.y < source.y ) // target is above source
         {
             if ( source.x < target.x)            
@@ -527,7 +603,7 @@ function getlinkPoint(source, target)
     }
     else // left or right
     {
-        let xDist = (dataset_width / 2 + line_padding); // distance from center to x location for connector
+        let xDist = (node_width / 2 + line_padding); // distance from center to x location for connector
         if ( target.x < source.x ) // target is left
         {
             link_x = source.x - xDist;
@@ -582,13 +658,13 @@ function computeLinks() {
 }
 
 
-function renderNodes() {
+function update() {
     node
         .attr("x", function (d) {
-            return d.x - (dataset_width / 2);
+            return d.x - (node_width / 2);
         })
         .attr('y', function (d) {
-            return d.y - label_height / 2;
+            return d.y - (node_height / 2);
         });
 
     node_label
@@ -598,28 +674,25 @@ function renderNodes() {
         .attr('y', function (d, i) {
             return 5 + d.y;
         })
-}
 
-function renderLinks() {
-    computeLinks();
+    ghostlink
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
 
-    links_container
-        .selectAll('.link')
-        .data(links)
-        .enter()
-        .append('line')
-        .attr('x1', d => d.x1)
-        .attr('y1', d => d.y1)
-        .attr('x2', d => d.x2)
-        .attr('y2', d => d.y2)
-        // .attr('id',d => d.source + '_' + d.target)
-        .attr('class', 'link')
-        .attr("marker-end", "url(#arrow)");
-}
 
-function renderAll() {
-    renderNodes();
-    renderLinks();
+
+    // link
+    //     .attr("x1", d => {
+    //         var source = getlinkPoint(d.source, d.target);
+    //         var target = getlinkPoint(d.target, d.source);        
+    //     })
+
+    // link.x1 = source.x;
+    // link.y1 = source.y;
+    // link.x2 = target.x;
+    // link.y2 = target.y;
 }
 
 // const collide1 = function (alpha) {

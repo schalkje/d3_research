@@ -5,7 +5,7 @@
    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
    <script type="module">
-      import {scaleLinear} from "https://cdn.skypack.dev/d3-scale@4";
+      import { scaleLinear } from "https://cdn.skypack.dev/d3-scale@4";
       const x = scaleLinear();
    </script>
    <script type="text/javascript" src="app.js" defer></script>
@@ -32,9 +32,12 @@
             <path d="M0,-5L10,0L0,5 L10,0 L0, -5" stroke="#4679BD" opacity=0.6 />
          </marker>
       </defs>
+      <!-- using multiple g-object to support layers in the drawing -->
       <g id="links">
       </g>
       <g id="nodes">
+      </g>
+      <g id="ghostlinks">
       </g>
    </svg>
 
