@@ -683,16 +683,24 @@ function update() {
 
 
 
-    // link
-    //     .attr("x1", d => {
-    //         var source = getlinkPoint(d.source, d.target);
-    //         var target = getlinkPoint(d.target, d.source);        
-    //     })
+    link
+        .attr("x1", d => {
+            var source = getlinkPoint(d.source, d.target);
+            return source.x;
+        })
+        .attr("y1", d => {
+            var source = getlinkPoint(d.source, d.target);
+            return source.y;
+        })
+        .attr("x2", d => {
+            var target = getlinkPoint(d.target, d.source);
+            return target.x;
+        })
+        .attr("y2", d => {
+            var target = getlinkPoint(d.target, d.source);
+            return target.y;
+        });
 
-    // link.x1 = source.x;
-    // link.y1 = source.y;
-    // link.x2 = target.x;
-    // link.y2 = target.y;
 }
 
 // const collide1 = function (alpha) {
