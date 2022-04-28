@@ -628,34 +628,34 @@ function getlinkPoint(source, target)
     };
 }
 
-// Links:
-// per link
-// - lookup source location
-// - lookup destination location
-// draw arrows
-function computeLinks() {
-    for (i in links) {
-        var link = links[i];
-        var linkName = link.source.id + '_' + link.target.id
-        // console.log('compute link ' + i + ': ' + linkName)
+// // Links:
+// // per link
+// // - lookup source location
+// // - lookup destination location
+// // draw arrows
+// function computeLinks() {
+//     for (i in links) {
+//         var link = links[i];
+//         var linkName = link.source.id + '_' + link.target.id
+//         // console.log('compute link ' + i + ': ' + linkName)
 
-        // var sourceObject = d3.select('#' + link.source.id );
-        // var source = getlinkPoint(sourceObject,targetObject);
+//         // var sourceObject = d3.select('#' + link.source.id );
+//         // var source = getlinkPoint(sourceObject,targetObject);
 
-        // var targetObject = d3.select('#' + link.target.id );
-        // var target = getlinkPoint(targetObject,sourceObject);
+//         // var targetObject = d3.select('#' + link.target.id );
+//         // var target = getlinkPoint(targetObject,sourceObject);
 
-        var source = getlinkPoint(link.source, link.target);
-        var target = getlinkPoint(link.target, link.source);
+//         var source = getlinkPoint(link.source, link.target);
+//         var target = getlinkPoint(link.target, link.source);
 
-        link.x1 = source.x;
-        link.y1 = source.y;
-        link.x2 = target.x;
-        link.y2 = target.y;
-        // console.log(link)
-    }
+//         link.x1 = source.x;
+//         link.y1 = source.y;
+//         link.x2 = target.x;
+//         link.y2 = target.y;
+//         // console.log(link)
+//     }
 
-}
+// }
 
 
 function update() {
@@ -700,7 +700,6 @@ function update() {
             var target = getlinkPoint(d.target, d.source);
             return target.y;
         });
-
 }
 
 // const collide1 = function (alpha) {

@@ -140,8 +140,13 @@ var nodeLabels_objects = nodes_container
         .attr("x", d => d.x)
         .attr('y', d => d.y + 4)
         .text(d => d.name)
-        .attr("class", 'node_label');   
-
+        .attr("class", 'node_label')
+        .call(d3.drag()
+          .on('start', drag_started)
+          .on('drag', dragged)
+          .on('end', drag_ended)
+        );
+    
 var links_objects = links_container
     .selectAll('.link')
     .data(links)
@@ -234,8 +239,8 @@ function drag_started (d) {
     // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
     simulation.alphaTarget(0.8).restart() 
   }
-  d.fx = d.x
-  d.fy = d.y
+  d.fx = d.x;
+  d.fy = d.y;
 }
 
 function dragged (d) {
