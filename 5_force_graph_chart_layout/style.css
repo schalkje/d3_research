@@ -15,11 +15,6 @@ text {
   stroke: none;
 }
 
-rect {
-  fill: cadetblue;
-  opacity: 0.3;
-  stroke: white;
-}
 
 .lanelabel
 {
@@ -44,6 +39,7 @@ svg.container {
   stroke: rgb(65, 65, 151);
   stroke-opacity: 0.4;
   stroke-width: 2;
+  cursor: grab;
 }
 
 .node_label
@@ -53,6 +49,7 @@ svg.container {
   fill: rgb(216, 216, 241);
   fill-opacity: 0.8;
   text-anchor: middle;
+  cursor: grab;
 }
 
 line.link {

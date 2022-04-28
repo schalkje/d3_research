@@ -168,7 +168,13 @@ var nodeLabels_objects = nodes_container
       .attr("x", d => d.x)
       .attr('y', d => d.y + 4)
       .text(d => d.name)
-      .attr("class", 'node_label');    
+      .attr("class", 'node_label')
+      .call(d3.drag()
+        .on('start', drag_started)
+        .on('drag', dragged)
+        .on('end', drag_ended)
+      );
+  
 
 
 var ghostlinks_objects = ghostlinks_container
