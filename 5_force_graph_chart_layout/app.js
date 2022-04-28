@@ -269,8 +269,7 @@ function drag_started (d) {
   }
   d.fx = d.x
   d.fy = d.y
-  element = d3.select(this)
-  element.attr("class", "node_grabbing");
+  d3.select(this).attr("class", "node_grabbing");
 }
 
 function dragged (d) { 
