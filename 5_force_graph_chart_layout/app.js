@@ -168,12 +168,7 @@ var nodeLabels_objects = nodes_container
       .attr("x", d => d.x)
       .attr('y', d => d.y + 4)
       .text(d => d.name)
-      .attr("class", 'node_label')
-      .call(d3.drag()
-        .on('start', drag_started)
-        .on('drag', dragged)
-        .on('end', drag_ended)
-      );
+      .attr("class", 'node_label');
   
 
 
@@ -274,9 +269,11 @@ function drag_started (d) {
   }
   d.fx = d.x
   d.fy = d.y
+  element = d3.select(this)
+  element.attr("class", "node_grabbing");
 }
 
-function dragged (d) {
+function dragged (d) { 
   d.fx = d3.event.x
   d.fy = d3.event.y
 }
@@ -287,6 +284,7 @@ function drag_ended (d) {
   }
   d.fx = null
   d.fy = null
+  d3.select(this).attr("class", "node");
 }
 
 

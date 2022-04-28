@@ -373,34 +373,34 @@ var container = d3.select('#svg_container')
     .attr("height", height)
     .attr("class", "container");
 
-    // Create the lanes
-    container
-        .selectAll('rect')
-        .data(layers)
-        .join("rect")
-        .attr('x', function(d, i) {
-            return container_separator + i * (container_separator + container_width);
+// Create the lanes
+container
+    .selectAll('rect')
+    .data(layers)
+    .join("rect")
+    .attr('x', function(d, i) {
+        return container_separator + i * (container_separator + container_width);
+    })
+    .attr("y", container_top)
+    .attr("width", container_width)
+    .attr("height", container_height)
+    .attr("id", function(d, i) {
+        return d.id
+    })
+    .attr("class", function(d, i) {
+        return i%2==0 ? 'lane lane1' : "lane lane2"
+    });
+
+container
+    .selectAll('.lanelabel')
+    .data(layers)
+    .join("text")
+    .attr('x', function(d, i) {
+        return (container_separator + container_width/2) + i * (container_separator + container_width);
         })
-        .attr("y", container_top)
-        .attr("width", container_width)
-        .attr("height", container_height)
-        .attr("id", function(d, i) {
-            return d.id
-        })
-        .attr("class", function(d, i) {
-            return i%2==0 ? 'lane lane1' : "lane lane2"
-        });
-  
-    container
-        .selectAll('.lanelabel')
-        .data(layers)
-        .join("text")
-        .attr('x', function(d, i) {
-            return (container_separator + container_width/2) + i * (container_separator + container_width);
-            })
-        .attr("y", 14)
-        .text(d => d.layer)
-        .attr("class", 'lanelabel');
+    .attr("y", 14)
+    .text(d => d.layer)
+    .attr("class", 'lanelabel');
 
 
 var links_container = d3.select('#links')
@@ -424,12 +424,10 @@ var node = nodes_container
     .attr("id", function(d, i) {
         return d.id
     })
-    // .call(drag);
-        .call(
-            d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended)
+    .call(d3.drag()
+        .on("start", drag_started)
+        .on("drag", dragged)
+        .on("end", drag_ended)
     );
 
 var node_label = nodes_container
@@ -524,7 +522,7 @@ function ticked() {
 //https://dev.to/taowen/make-react-svg-component-draggable-2kc
 //https://www.d3indepth.com/interaction/
 
-function dragstarted()
+function drag_started()
 {
     // when alpha hits 0 it stops. restart again
     simulation.alphaTarget(0.3).restart();
@@ -538,7 +536,7 @@ function dragged(d)
     // d3.select(this).raise().attr("cx", d.x = event.x).attr("cy", d.y = event.y);
 }
 
-function dragended()
+function drag_ended()
 {
     // alpha min is 0, head there
     simulation.alphaTarget(0);
