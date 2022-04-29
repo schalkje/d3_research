@@ -43,6 +43,15 @@ rect.node {
   ry: 4;
 }
 
+
+.node_grabbing {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
+   stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.8;
+  stroke-width: 4;
+  cursor: grabbing;
+}
 .node_label
 {
   font-size: 12px;
@@ -69,7 +78,7 @@ line.ghostlink2 {
 line.ghostlink {
   stroke-width: 2px;
   stroke: #FFF;
-  stroke-opacity: 0.25;
+  stroke-opacity: 0.0;
 }
 
 

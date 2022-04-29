@@ -189,6 +189,8 @@ const forceX_lanes = function (alpha) {
         }
         else
         {
+            console.log("forceX_lanes: id="+node.id +" ("+ node.layer + ") d.x="+node.x+" --> xMiddle="+cluster.xMiddle + " - alpha="+alpha);
+
             // node.x -= (node.x - cluster.xMiddle) * alpha; // relative positioning
             // d.fx = (cluster.xMiddle);
             node.x = cluster.xMiddle; // absolute positioning
@@ -230,26 +232,24 @@ const link_alignment = function (alpha, traveldegradation) {
     for (i in nodes)
     {
         let node = nodes[i];
+
         // cluster linked object between different layers on the same y
-        // if (d.id === 'app_bnv' || d.id === 'stg_bnv' )
-        {
-            var targets = links.filter(function (link) {
-                return link.source.id === node.id;
-            });
-            var dy = 0;
-            for (i in targets) {
-                let target = targets[i].target;
-                if (Math.abs(dy) < Math.abs(node.y - target.y))
-                    dy = node.y - target.y;
-            }
+        var targets = links.filter(function (link) {
+            return link.source.id === node.id;
+        });
+        var dy = 0;
+        for (i in targets) {
+            let target = targets[i].target;
+            if (Math.abs(dy) < Math.abs(node.y - target.y))
+                dy = node.y - target.y;
+        }
 
-            // console.log( '  ' + node.id + ':  node.y=' + node.y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
+        console.log( 'link_alignment:  ' + node.id + ':  node.y=' + node.y + '      dy=' + dy + '      dy*alpha=' + dy * alpha)
 
-            node.y -= dy * alpha;
+        node.y -= dy * alpha;
 
-            for (i in targets) {
-                travelLinks(node, targets[i].target, alpha * traveldegradation, traveldegradation, [node.id]);
-            }
+        for (i in targets) {
+            travelLinks(node, targets[i].target, alpha * traveldegradation, traveldegradation, [node.id]);
         }
     };
 
@@ -492,14 +492,16 @@ var simulation = d3.forceSimulation(nodes)
         .distance(80)
         .strength(0.9)
     )
-    .force('charge', d3.forceManyBody())
+    .force('charge', d3.forceManyBody().strength(-20))
     .force('center', d3.forceCenter(width/2,height/2))
     .force('x', alpha => forceX_lanes(alpha) )
-    .force('y', alpha => link_alignment(alpha,0.5))
+    .force('y', alpha => link_alignment(alpha,1))
     // .force('x', d3.forceX(forceX_lanes(0.2)) )
     // .force('y', d3.forceY(link_alignment(0.1,0.5)))
     //  .force("collide", alpha => collideD(alpha))
     // .force("collide", d3.forceCollide(-100))
+    .force('collision', d3.forceCollide().radius(function(d) {
+        return node_height}))
     .on('tick',ticked);
 
 //  nodes.call(drag);
@@ -510,9 +512,9 @@ function ticked() {
     // console.log('Ticked');
     tickedCount++;
 
-       node
-    // //      .each(cluster(0.2));
-         .each(collide(0.2));
+    //    node
+    // // //      .each(cluster(0.2));
+    //      .each(collide(0.2));
         //   .each(forceX_lanes(0.2));
         //   .each(link_alignment(0.4));
     
@@ -525,8 +527,11 @@ function ticked() {
 function drag_started()
 {
     // when alpha hits 0 it stops. restart again
-    simulation.alphaTarget(0.3).restart();
-    // d3.select(this).attr("stroke", "black");
+    if (!d3.event.active) {
+        // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
+        simulation.alphaTarget(0.3).restart() 
+      }
+        d3.select(this).attr("class", "node_grabbing");
 }
 
 function dragged(d)
@@ -539,11 +544,16 @@ function dragged(d)
 function drag_ended()
 {
     // alpha min is 0, head there
-    simulation.alphaTarget(0);
+    if (!d3.event.active) {
+        simulation.alphaTarget(0)
+      }
+
     d.fx = null;
     d.fy = null;
 
-    //d3.select(this).attr("stroke", null); 
+    d3.select(this).attr("class", "node");
+
+    update();
 }
 //clamp: https://observablehq.com/@d3/sticky-force-layout?collection=@d3/d3-drag
 // function click(event, d) {
@@ -781,7 +791,7 @@ const cluster = function(alpha,traveldegradation) {
 
 function travelLinks(origin, destination, alpha,traveldegradation, visited)
 {
-    // console.log('  o:' + origin.id + '-->' + destination.id + '   (len=' + visited.length+')')
+    console.log('travelLinks  o:' + origin.id + '-->' + destination.id + '   (len=' + visited.length+')')
     visited.push(destination.id);
     destination.y -= (destination.y - origin.y)* alpha;
 
