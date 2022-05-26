@@ -3,9 +3,7 @@ import Collapse from '@mui/material/Collapse';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggle_overviewVisible, toggle_dataDomainVisible, toggle_networkVisible, toggle_recentVisible } from './SidebarSlicer';
 import { selectDrawer } from './DashboardSlicer';
-import { getDataDomains } from '../../data/data_domains'
-import { getBusinessDomains } from '../../data/business_domains'
-import { getRecentReports } from '../../data/recent_reports'
+import { getLineageGraphs } from '../../data/lineage_graphs'
 import { Link } from "react-router-dom";
 
 import List from '@mui/material/List';
@@ -57,12 +55,12 @@ export default function MainMenu() {
       </ListItemButton>
       <Collapse in={networkVisible} timeout="auto" unmountOnExit>
         <List component="div" disablePadding dense={!drawer}>
-        {getBusinessDomains().map((domain,index) =>
-            <ListItemButton key={'bm'+index} sx={{ pl: 4 }} component={Link} to={"/network/" + domain.label.substring(0, 3).toLowerCase()}>
+        {getLineageGraphs().map((graph,index) =>
+            <ListItemButton key={'bm'+index} sx={{ pl: 4 }} component={Link} to={"/network/" + graph.key}>
               <ListItemIcon>
-                {domain.label.substring(0, 3).toLowerCase()}
+                {graph.label.substring(0, 3).toLowerCase()}
               </ListItemIcon>
-              <ListItemText primary={domain.label} secundary="team:" />
+              <ListItemText primary={graph.label} secundary="team:" />
             </ListItemButton>
           )}
         </List>

@@ -3,6 +3,22 @@
 // https://www.onlinewebtoolkit.com/hash-generator
 export const getNetworks = () => [
   {
+    key: 'cre',
+    title: 'Credit Model',
+    version: '1.7',
+    owner: ['John Bradley'],
+    team: 'DM-Strada',
+    SME_technical: ['Kit Harington'],
+    SME_business: [{name:'Blake Lively', email:'b.lively@somewhere.com'}],
+    type: 'Domain Model',
+    language: ['NL'],
+    description: '',
+    created: '5-3-2021',
+    last_update: '11-5-2022',
+    documentation_link: 'https://company.visualstudio.com/project/_git/Project-DM-PreventiveMaintenance',
+    repo: 'https://company.visualstudio.com/project/_git/Project-DM-PreventiveMaintenance'
+  },
+  {
     key: 'f492682eee46a8f102ac977796e1f7f5',
     title: 'Preventief Beheer',
     version: '2.1',

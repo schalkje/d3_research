@@ -16,6 +16,7 @@ import GraphLayoutDemo from "../features/graph/GraphLayoutDemo";
 import LayerNetworkGraph from "../features/graph/LayerNetworkGraph";
 import LayerNetworkGraph2 from "../features/graph/LayerNetworkGraph2";
 import { getNetworkBlockLayers, getNetworkBlocks, getNetworkBlockLinks } from "../data/data_product_lineage";
+import { getLineageGraphs } from "../data/lineage_graphs";
 
 //////////////////////////////////////////////////////////////
 //
@@ -45,40 +46,45 @@ nodes.forEach(node => {
 console.log('nodes: ' + nodes.length)
 console.log(nodes)
 
-export default function Networks() {
+export default function Network() {
   let params = useParams();
   // get product from data set
-  const filteredProduct = getNetworks().filter((product) => product.key === params.productId)
-  const product = filteredProduct[0]
-  console.log(product)
-  const value = 4
+  const filteredGraph = getLineageGraphs().filter((network) => network.key === params.networkId)
+  const graph = filteredGraph[0]
+  console.log(graph)
+  const rating = 4
 
   return (
     <main style={{ padding: "1rem 0" }}>
      <h2>Lineage</h2>
-      {/* <GraphLayoutDemo nodes={nodes} links={links} /> */}
-      <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} />
+      {params.networkId == 'GraphLayout'?
+        <GraphLayoutDemo nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraph2' ?
+        <LayerNetworkGraph layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraph' ?
+        <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} /> 
+          : <GraphLayoutDemo nodes={nodes} links={links} /> }
  
       <Card sx={{ minWidth: 275 }} variant="outlined">
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            data product - {product.type}: {params.productId}
+            data product - {graph.type}: {params.networkId}
           </Typography>
           <Typography variant="h5" component="div">
-            {product.title}
+            {graph.label}
           </Typography>
           <Typography sx={{ mb: 1.5 }} color="text.secondary">
 
             <Rating
               name="simple-controlled"
-              value={value}
+              value={rating}
               onChange={(event, newValue) => {
                 // setValue(newValue);
               }}
             />
           </Typography>
           <Typography variant="body2" display="block">
-            {parse(product.description)}
+            {parse(graph.description)}
           </Typography>
         </CardContent>
         <CardActions>
