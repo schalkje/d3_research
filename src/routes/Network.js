@@ -25,12 +25,19 @@ import { getLineageGraphs } from "../data/lineage_graphs";
 // Setup data
 //
 
+var nodes
+console.log('Network.js - nodes: ')
+console.log(nodes)
+
 
 var layers = getNetworkBlockLayers('credit')
-var nodes = getNetworkBlocks('credit')
+nodes = getNetworkBlocks('credit')
 var links = getNetworkBlockLinks('credit')
 
-console.log('links: ' + links.length)
+console.log('Network.js - nodes: ' + nodes.length)
+console.log(nodes)
+
+console.log('Network.js - links: ' + links.length)
 console.log(links)
 
 nodes.forEach(node => {
@@ -45,7 +52,7 @@ nodes.forEach(node => {
   node.dependsOn = dependsOn
 })
 
-console.log('nodes: ' + nodes.length)
+console.log('Network.js - nodes: ' + nodes.length)
 console.log(nodes)
 
 export default function Network() {

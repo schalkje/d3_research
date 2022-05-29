@@ -46,6 +46,19 @@ function NetworkGraph({ nodes, links }) {
       console.log('   Width = ' + width)
       console.log('   Height = ' + height)
 
+
+      initializeNodes();
+
+      function initializeNodes() {
+        for (var i = 0, n = nodes.length, node; i < n; ++i) {
+          node = nodes[i];
+          node.index = i;
+
+          node.width = node_width;
+          node.height = node_height;
+        }
+      }
+
       const link_alignment = function (alpha, traveldegradation) {
         // https://bl.ocks.org/mbostock/7881887
         for (i in nodes) {
@@ -71,6 +84,26 @@ function NetworkGraph({ nodes, links }) {
           }
         };
 
+      }
+
+      // create the rectangle from the center out
+      function getRect(node)
+      {
+        let x1 = node.x - (node.width / 2);
+        let y1 = node.y - (node.height / 2);
+        let x2 = node.x + (node.width / 2);
+        let y2 = node.y + (node.height / 2);
+        return {x1,y1,x2,y2}
+      }
+
+      // create the personal space from the center out
+      function getPersonalSpace(node)
+      {
+        let x1 = node.x - (node.width / 2) - node_separator;
+        let y1 = node.y - (node.height / 2) - node_separator;
+        let x2 = node.x + (node.width / 2) + node_separator;
+        let y2 = node.y + (node.height / 2) + node_separator;
+        return {x1,y1,x2,y2}
       }
 
       // var maxRadius = 10;
@@ -183,34 +216,8 @@ function NetworkGraph({ nodes, links }) {
         .data(nodes)
         .join("rect")
         // initialize size
-        .attr("width", node_width)
-        .attr("height", node_height)
-        // rectangle coordinates
-        .attr("x1", function (d) {
-          return d.x - (d.width / 2);
-        })
-        .attr('y1', function (d) {
-          return d.y - (d.height / 2);
-        })
-        .attr("x2", function (d) {
-          return d.x + (d.width / 2);
-        })
-        .attr('y2', function (d) {
-          return d.y + (d.height / 2);
-        })
-        // separator boundary
-        .attr("sx1", function (d) {
-          return d.x1 - node_separator;
-        })
-        .attr('ay1', function (d) {
-          return d.y1 - node_separator;
-        })
-        .attr("ax2", function (d) {
-          return d.x2 + node_separator;
-        })
-        .attr('sy2', function (d) {
-          return d.y2 + node_separator;
-        })
+        .attr("width", d => d.width)
+        .attr("height", d => d.height)
         .attr("class", 'node')
         .attr("id", function (d, i) {
           return d.id
@@ -267,19 +274,19 @@ function NetworkGraph({ nodes, links }) {
 
       console.log('Force simulation')
 
-      var simulation = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink()
-          .id(d => d.id)
-          .links(links)
-          .distance(80)
-          .strength(0.01)
-        )
-        .force('charge', d3.forceManyBody().strength(-20))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        // .force('y', alpha => link_alignment(alpha, 1))
-        .force("collide", alpha => collideD(alpha))
-        .on('tick', ticked)
-        .on("end", endSimulation);
+      // var simulation = d3.forceSimulation(nodes)
+      //   .force('link', d3.forceLink()
+      //     .id(d => d.id)
+      //     .links(links)
+      //     .distance(80)
+      //     .strength(0.01)
+      //   )
+      //   .force('charge', d3.forceManyBody().strength(-20))
+      //   .force('center', d3.forceCenter(width / 2, height / 2))
+      //   // .force('y', alpha => link_alignment(alpha, 1))
+      //   .force("collide", alpha => collideD(alpha))
+      //   .on('tick', ticked)
+      //   .on("end", endSimulation);
 
       var tick_counter = 0
 
