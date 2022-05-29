@@ -225,7 +225,7 @@ export const getNetworkBlockLayers = ({productKey}) => [
 export const getNetworkBlocks = ({productKey}) => [
   {
       "id": "dwh_dwh",
-      "name": "thefirm DWH",
+      "name": "DWH",
       "system": "dwh",
       "subsystem": "dwh",
       "layer": "source",

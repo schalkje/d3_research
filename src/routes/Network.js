@@ -13,8 +13,10 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import GraphLayoutDemo from "../features/graph/GraphLayoutDemo";
+import NetworkGraph from "../features/graph/NetworkGraph";
 import LayerNetworkGraph from "../features/graph/LayerNetworkGraph";
 import LayerNetworkGraph2 from "../features/graph/LayerNetworkGraph2";
+import LayerNetworkGraphClass from "../features/graph/LayerNetworkGraphClass";
 import { getNetworkBlockLayers, getNetworkBlocks, getNetworkBlockLinks } from "../data/data_product_lineage";
 import { getLineageGraphs } from "../data/lineage_graphs";
 
@@ -58,11 +60,15 @@ export default function Network() {
     <main style={{ padding: "1rem 0" }}>
      <h2>Lineage</h2>
       {params.networkId == 'GraphLayout'?
-        <GraphLayoutDemo nodes={nodes} links={links} /> 
-        : params.networkId == 'LayerNetworkGraph2' ?
         <LayerNetworkGraph layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'NetworkGraph' ?
+        <NetworkGraph layers={layers} nodes={nodes} links={links} /> 
         : params.networkId == 'LayerNetworkGraph' ?
+        <LayerNetworkGraph layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraph2' ?
         <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraphClass' ?
+        <LayerNetworkGraphClass layers={layers} nodes={nodes} links={links} /> 
           : <GraphLayoutDemo nodes={nodes} links={links} /> }
  
       <Card sx={{ minWidth: 275 }} variant="outlined">

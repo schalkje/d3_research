@@ -582,9 +582,9 @@ function NetworkGraph({ nodes, links }) {
       {/* using multiple g-object to support layers in the drawing */}
       <g id="links">
       </g>
-      <g id="ghostlinks">
-      </g>
       <g id="nodes">
+      </g>
+      <g id="ghostlinks">
       </g>
     </svg>
   );
