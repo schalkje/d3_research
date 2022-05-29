@@ -73,11 +73,48 @@ function NetworkGraph({ nodes, links }) {
 
       }
 
-      var maxRadius = 10;
-      var heightRadius = node_height + node_separator;
-      var widthRadius = node_width + node_separator;
+      // var maxRadius = 10;
+      // var heightRadius = node_height + node_separator;
+      // var widthRadius = node_width + node_separator;
+      function getDistance(rect1,rect2)
+      {
+        let dx = 0
+        let dy = 0
+
+        if (rect1.x2<rect2.x1)  // fully on the right side
+          dx = rect2.x1-rect1.x2
+        else if (rect1.x1>rect2.x2) // fully on the keft side
+          dx = rect1.x1-rect2.x2
+
+        if (rect1.y2<rect2.y1) // fully above
+          dy = rect2.y1-rect1.y2
+        else if (rect1.y1 > rect2.y2) // fully below
+          dy = rect1.y1-rect2.y2
+
+        let l = Math.sqrt(dx * dx + dy * dy); // distance between the 2 nodes
+        let overlap = (dx == 0 && dy == 0)
+        return {overlap, dx, dy, l}
+      }
+
+      function getHeartDistance(rect1,rect2)
+      {
+        let dx = Math.abs(rect2.x-rect1.x)
+        let dy = Math.abs(rect2.y-rect1.y)
+
+        let l = Math.sqrt(dx * dx + dy * dy); // distance between the 2 nodes
+
+        let overlap = !(
+          (rect1.x2 < rect2.x1) || // rect1.right < rect2.left: fully on the right side
+          (rect1.x1 > rect2.x2) || // rect1.left > rect2.right: fully on the keft side
+          (rect1.y2 < rect2.y1) || // rect1.bottom < rect2.top: fully above
+          (rect1.y1 > rect2.y2) // rect1.top > rect2.bottom: fully below
+        );
+
+        return {overlap, dx, dy, l}
+      }
 
       const collideD = function (alpha) {
+        console.log('collideD')
         const quadtree = d3.quadtree()
           .x(function (d) { return d.x; })
           .y(function (d) { return d.y; })
@@ -87,118 +124,44 @@ function NetworkGraph({ nodes, links }) {
         // https://bl.ocks.org/mbostock/7882658
         for (i in nodes) {
           let node = nodes[i];
-          let nx1 = node.x - widthRadius
-          let nx2 = node.x + widthRadius
-          let ny1 = node.y - heightRadius;
-          let ny2 = node.y + heightRadius;
 
           quadtree.visit(function (quad, x1, y1, x2, y2) {
             let data = quad.data;
             if (data && data !== node) {
 
-                // when they collide push them away from each other
-              let overlap = !(
-                  (data.x - node.x > widthRadius) || // rect1.right < rect2.left: fully on the right side
-                  (node.x - data.x > widthRadius) || // rect1.left > rect2.right: fully on the keft side
-                  (data.y - node.y > heightRadius) || // rect1.bottom < rect2.top: fully above
-                  (node.y - data.y > heightRadius) // rect1.top > rect2.bottom: fully below
-                );
+              // when they collide push them away from each other
+              let distance = getHeartDistance(node,data);
               // console.log('  overlap=' + overlap + ' <-- x1=' + node.x + ', y1=' + node.y + ' (' + node.id + ')' + ' - x2=' + data.x + ', y2=' + data.y + ' (' + data.id + ')')
-              if (overlap) {
-                let dx = node.x - data.x;
-                let dy = node.y - data.y;
-                let l = Math.sqrt(dx * dx + dy * dy); // distance between the 2 nodes
-  
 
-                let lx = (l - widthRadius) / l * alpha;
-                let ly = (l - heightRadius) / l * alpha;
-                let delta = 0
-
+              if (distance.overlap) {
                 if ( node.y < data.y )
                 {
-                  delta = ((heightRadius+dy) * (alpha)) / 2
-                  node.y -= delta;
-                  data.y += delta;
+                  node.y -= node.height - (distance.dy/2 * (1+alpha));
+                  data.y += data.height - (distance.dy/2 * (1+alpha));
                 }
                 else
                 {
-                  delta = ((heightRadius-dy) * (alpha)) / 2
-                  node.y += delta;
-                  data.y -= delta;
+                  node.y += node.height - (distance.dy/2 * (1+alpha));
+                  data.y -= data.height - (distance.dy/2 * (1+alpha));
                 }
 
                 if ( node.x < data.x )
                 {
-                  delta = ((widthRadius+dx) * (alpha)) / 2
-                  node.x -= delta;
-                  data.x += delta;
+                  node.x -= node.width - (distance.dx/2 * (1+alpha));
+                  data.x += data.width - (distance.dx/2 * (1+alpha));
                 }
                 else
                 {
-                  delta = ((widthRadius+dx) * (alpha)) / 2
-                  node.x += delta;
-                  data.x -= delta;
+                  node.x += node.width - (distance.dx/2 * (1+alpha));
+                  data.x -= data.width - (distance.dx/2 * (1+alpha));
                 }
-
-                // delta = ((heightRadius-dy) * (1 + alpha)) / 2
-                // else
-            //        delta = dy * alpha
-                // ly = (l - heightRadius) / l * alpha;
-                // dx *= lx;
-
-
-
                 // console.log('                -> heightRadius='+heightRadius+', delta=' +delta+', x1=' + node.x + ', y1=' + node.y + ' - x2=' + data.x + ', y2=' + data.y)
               }
+              return distance.overlap;
             }
-            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
           });
         };
       }
-
-      /*
-       */
-
-      const collide = function (alpha) {
-        // https://bl.ocks.org/mbostock/7882658
-        const quadtree = d3.quadtree()
-          .x(function (d) { return d.x; })
-          .y(function (d) { return d.y; })
-          .extent([[0, 0], [width, height]])
-          .addAll(nodes);
-        return function (d) {
-          let nx1 = d.x - widthRadius,
-            nx2 = d.x + widthRadius,
-            ny1 = d.y - heightRadius,
-            ny2 = d.y + heightRadius;
-          quadtree.visit(function (quad, x1, y1, x2, y2) {
-            let data = quad.data;
-            if (data && data !== d) {
-              let dx = d.x - data.x,
-                dy = d.y - data.y,
-                l = Math.sqrt(dx * dx + dy * dy), // distance between the 2 nodes
-
-                // when they collide push them away from each other
-                overlap = !(
-                  (d.x + widthRadius) < data.x || // rect1.right < rect2.left: fully on the right side
-                  d.x > (data.x + widthRadius) || // rect1.left > rect2.right: fully on the keft side
-                  (d.y + heightRadius) < data.y || // rect1.bottom < rect2.top: fully above
-                  d.y > (data.y + heightRadius) // rect1.top > rect2.bottom: fully below
-                );
-              if (overlap) {
-                let lx = (l - widthRadius) / l * alpha;
-                let ly = (l - heightRadius) / l * alpha;
-                d.x -= dx *= lx;
-                d.y -= dy *= ly;
-                data.x += dx;
-                data.y += dy;
-              }
-            }
-            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-          });
-        };
-      }
-
 
       //////////////////////////////////////////////////////////////
       //
@@ -219,23 +182,42 @@ function NetworkGraph({ nodes, links }) {
         .selectAll('.node')
         .data(nodes)
         .join("rect")
-        .attr("x", function (d) {
-          return d.x - (node_width / 2);
-        })
-        .attr('y', function (d) {
-          return d.y - (node_height / 2);
-        })
+        // initialize size
         .attr("width", node_width)
         .attr("height", node_height)
+        // rectangle coordinates
+        .attr("x1", function (d) {
+          return d.x - (d.width / 2);
+        })
+        .attr('y1', function (d) {
+          return d.y - (d.height / 2);
+        })
+        .attr("x2", function (d) {
+          return d.x + (d.width / 2);
+        })
+        .attr('y2', function (d) {
+          return d.y + (d.height / 2);
+        })
+        // separator boundary
+        .attr("sx1", function (d) {
+          return d.x1 - node_separator;
+        })
+        .attr('ay1', function (d) {
+          return d.y1 - node_separator;
+        })
+        .attr("ax2", function (d) {
+          return d.x2 + node_separator;
+        })
+        .attr('sy2', function (d) {
+          return d.y2 + node_separator;
+        })
         .attr("class", 'node')
         .attr("id", function (d, i) {
           return d.id
         });
-        // .call(d3.drag()
-        //   .on("start", drag_started)
-        //   .on("drag", dragged)
-        //   .on("end", drag_ended)
-        // );
+
+    console.log("node_objects initialized:");
+    console.log(node_objects);
 
       var node_label_objects = nodes_container
         .selectAll('.node_label')
@@ -273,13 +255,6 @@ function NetworkGraph({ nodes, links }) {
         .attr('y2', d => getlinkPoint(d.target, d.source).y)
         .attr('class', 'link')
         .attr("marker-end", "url(#arrow)");
-
-
-
-
-
-
-
 
 
 
@@ -356,40 +331,6 @@ function NetworkGraph({ nodes, links }) {
           .on("end", dragended);
       }
 
-      // function drag_started(event) {
-      //   // when alpha hits 0 it stops. restart again
-      //   // if (!event.active) {
-      //   //   // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
-      //   //   simulation.alphaTarget(0.3).restart()
-      //   // }
-
-      //   event.subject.fx = event.subject.x;
-      //   event.subject.fy = event.subject.y;
-      //   // d.fx = d.x
-      //   // d.fy = d.y
-      //   d3.select(this).attr("class", "node_grabbing");
-      // }
-
-      // function dragged(event) {
-      //   // d.fx = event.x;
-      //   // d.fx = event.y;
-      //   event.subject.fx = event.x;
-      //   event.subject.fy = event.y;
-      // }
-
-      // function drag_ended(event) {
-      //   // alpha min is 0, head there
-      //   if (!event.active) {
-      //     simulation.alphaTarget(0)
-      //   }
-
-      //   event.subject.fx = null;
-      //   event.subject.fy = null;
-
-      //   d3.select(this).attr("class", "node");
-
-      //   update();
-      // }
       //clamp: https://observablehq.com/@d3/sticky-force-layout?collection=@d3/d3-drag
       // function click(event, d) {
       //     delete d.fx;
@@ -422,8 +363,8 @@ function NetworkGraph({ nodes, links }) {
 
         var a1 = Math.atan(Math.abs(node_width / 2) / Math.abs(node_height / 2));
 
-        let yDist = (node_height / 2 + line_padding); // distance from center to y location for connector
-        let xDist = (node_width / 2 + line_padding); // distance from center to x location for connector
+        let yDist = (source.height / 2 + line_padding); // distance from center to y location for connector
+        let xDist = (source.width / 2 + line_padding); // distance from center to x location for connector
 
         if (alfa > a1) // top or bottom
         {
@@ -434,7 +375,7 @@ function NetworkGraph({ nodes, links }) {
             else
               link_x = source.x - yDist / Math.tan(alfa)
 
-            link_y = source.y - yDist;
+            link_y = source.sy1;
           }
           else // target is below source
           {
@@ -443,35 +384,35 @@ function NetworkGraph({ nodes, links }) {
             else
               link_x = source.x - yDist / Math.tan(alfa)
 
-            link_y = source.y + yDist;
+            link_y = source.sy2;
           }
         }
         else // left or right
         {
           if (target.x < source.x) // target is left
           {
-            link_x = source.x - xDist;
+            link_x = source.sx1;
 
             if (source.y < target.y) { // target is left and below
               link_y = source.y + Math.tan(alfa) * xDist
-              link_y = link_y > source.y + (node_height / 2) ? source.y + (node_height / 2) : link_y
+              link_y = link_y > source.y + (source.height / 2) ? source.y + (source.height / 2) : link_y
             }
             else { // target is left and above
               link_y = source.y - Math.tan(alfa) * xDist
-              link_y = link_y < source.y - (node_height / 2) ? source.y - (node_height / 2) : link_y
+              link_y = link_y < source.y - (source.height / 2) ? source.y - (source.height / 2) : link_y
             }
           }
           else // target is right
           {
-            link_x = source.x + xDist;
+            link_x = source.sx2;
 
             if (source.y < target.y) {
               link_y = source.y + Math.tan(alfa) * xDist
-              link_y = link_y > source.y + (node_height / 2) ? source.y + (node_height / 2) : link_y
+              link_y = link_y > source.y + (source.height / 2) ? source.y + (source.height / 2) : link_y
             }
             else {
               link_y = source.y - Math.tan(alfa) * xDist
-              link_y = link_y < source.y - (node_height / 2) ? source.y - (node_height / 2) : link_y
+              link_y = link_y < source.y - (source.height / 2) ? source.y - (source.height / 2) : link_y
             }
           }
         }
@@ -487,45 +428,45 @@ function NetworkGraph({ nodes, links }) {
       function update() {
         node_objects
           .attr("x", function (d) {
-            return d.x - (node_width / 2);
-          })
-          .attr('y', function (d) {
-            return d.y - (node_height / 2);
-          });
-
-        node_label_objects
-          .attr("x", function (d, i) {
             return d.x;
           })
-          .attr('y', function (d, i) {
-            return 5 + d.y;
-          })
-
-        ghostlink_objects
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
-
-
-
-        link_objects
-          .attr("x1", d => {
-            var source = getlinkPoint(d.source, d.target);
-            return source.x;
-          })
-          .attr("y1", d => {
-            var source = getlinkPoint(d.source, d.target);
-            return source.y;
-          })
-          .attr("x2", d => {
-            var target = getlinkPoint(d.target, d.source);
-            return target.x;
-          })
-          .attr("y2", d => {
-            var target = getlinkPoint(d.target, d.source);
-            return target.y;
+          .attr('y', function (d) {
+            return d.y;
           });
+
+        // node_label_objects
+        //   .attr("x", function (d, i) {
+        //     return d.x;
+        //   })
+        //   .attr('y', function (d, i) {
+        //     return 5 + d.y;
+        //   })
+
+        // ghostlink_objects
+        //   .attr("x1", d => d.source.x)
+        //   .attr("y1", d => d.source.y)
+        //   .attr("x2", d => d.target.x)
+        //   .attr("y2", d => d.target.y);
+
+
+
+        // link_objects
+        //   .attr("x1", d => {
+        //     var source = getlinkPoint(d.source, d.target);
+        //     return source.x;
+        //   })
+        //   .attr("y1", d => {
+        //     var source = getlinkPoint(d.source, d.target);
+        //     return source.y;
+        //   })
+        //   .attr("x2", d => {
+        //     var target = getlinkPoint(d.target, d.source);
+        //     return target.x;
+        //   })
+        //   .attr("y2", d => {
+        //     var target = getlinkPoint(d.target, d.source);
+        //     return target.y;
+        //   });
       }
 
 
