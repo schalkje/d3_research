@@ -17,6 +17,7 @@ import NetworkGraph from "../features/graph/NetworkGraph";
 import LayerNetworkGraph from "../features/graph/LayerNetworkGraph";
 import LayerNetworkGraph2 from "../features/graph/LayerNetworkGraph2";
 import LayerNetworkGraphClass from "../features/graph/LayerNetworkGraphClass";
+import DivNetworkGraph from "../features/graph/DivNetworkGraph";
 import { getNetworkBlockLayers, getNetworkBlocks, getNetworkBlockLinks } from "../data/data_product_lineage";
 import { getLineageGraphs } from "../data/lineage_graphs";
 
@@ -65,20 +66,7 @@ export default function Network() {
 
   return (
     <main style={{ padding: "1rem 0" }}>
-     <h2>Lineage</h2>
-      {params.networkId == 'GraphLayout'?
-        <GraphLayout layers={layers} nodes={nodes} links={links} /> 
-        : params.networkId == 'NetworkGraph' ?
-        <NetworkGraph layers={layers} nodes={nodes} links={links} /> 
-        : params.networkId == 'LayerNetworkGraph' ?
-        <LayerNetworkGraph layers={layers} nodes={nodes} links={links} /> 
-        : params.networkId == 'LayerNetworkGraph2' ?
-        <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} /> 
-        : params.networkId == 'LayerNetworkGraphClass' ?
-        <LayerNetworkGraphClass layers={layers} nodes={nodes} links={links} /> 
-          : <LayerNetworkGraph nodes={nodes} links={links} /> }
- 
-      <Card sx={{ minWidth: 275 }} variant="outlined">
+     <Card sx={{ minWidth: 275 }} variant="outlined">
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
             data product - {graph.type}: {params.networkId}
@@ -101,9 +89,25 @@ export default function Network() {
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Learn More</Button>
+          <Button size="small" onClick={() => window.open(graph.documentation_link)}>Learn More</Button>
         </CardActions>
       </Card>
+
+      <h2>Lineage</h2>
+      {params.networkId == 'GraphLayout'?
+        <GraphLayout layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'NetworkGraph' ?
+        <NetworkGraph layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraph' ?
+        <LayerNetworkGraph layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraph2' ?
+        <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'LayerNetworkGraphClass' ?
+        <LayerNetworkGraphClass layers={layers} nodes={nodes} links={links} /> 
+        : params.networkId == 'DivNetworkGraph' ?
+        <DivNetworkGraph layers={layers} nodes={nodes} links={links} />         
+          : <LayerNetworkGraph nodes={nodes} links={links} /> }
+ 
 
     </main>
   );

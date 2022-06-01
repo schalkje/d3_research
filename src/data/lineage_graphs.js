@@ -33,11 +33,25 @@ export const getLineageGraphs = () => [
     documentation_link: 'https://cdm.thefirm.nl/'
   },
   {
+    key: 'DivNetworkGraph',
+    label: '<div> node graph',
+    type: 'lineage',
+    description: 'Get a network graph up and running with divs as the nodes. Div\'s are more flexible compared to rect\'s to create complicated text based views.',
+    documentation_link: 'https://cdm.thefirm.nl/'
+  },
+  {
     key: 'LayerNetworkGraphClass',
     label: 'Layer Network Graph Class',
     type: 'lineage',
     description: 'A class based component',
     documentation_link: 'https://cdm.thefirm.nl/'
+  },
+  {
+    key: 'OverviewFlow',
+    label: 'Overview react flow',
+    type: 'flow',
+    description: 'This is the overview example from the default examples. Added to see the base functionality and check if the setup is working.',
+    documentation_link: 'https://reactflow.dev/docs/examples/overview/'
   },
   {
     key: 'GraphLayout',
@@ -47,7 +61,7 @@ export const getLineageGraphs = () => [
     documentation_link: 'https://cdm.thefirm.nl/'
   },
   {
-    key: 'GraphLayout',
+    key: 'Tables',
     label: 'Table views',
     type: 'database',
     description: '',
