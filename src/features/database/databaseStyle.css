@@ -33,6 +33,7 @@ svg.table rect.background {
 svg.table rect.header {
   fill: grey;
   opacity: 1;
+  cursor: grab;
 }
 
 svg.table rect.body {
@@ -71,5 +72,6 @@ svg.table line.separator {
   stroke-opacity: 1;
   stroke: grey;
   stroke-width: 1px;
+  cursor: ew-resize;
 }
 
