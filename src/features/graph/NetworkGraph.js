@@ -48,16 +48,27 @@ function NetworkGraph({ nodes, links }) {
 
 
       initializeNodes();
+      console.log('Initialize nodes:')
+      console.log(nodes);
+      console.log(links);
 
       function initializeNodes() {
         for (var i = 0, n = nodes.length, node; i < n; ++i) {
           node = nodes[i];
-          node.index = i;
+          // node.index = i;
 
           node.width = node_width;
           node.height = node_height;
+
+          // randomize initial position
+          node.x = node_width/2 + Math.random()*(width-node_width);
+          node.y = node_height/2 + Math.random()*(height-node_height);
+
+          updateNode(node);
         }
       }
+
+      
 
       const link_alignment = function (alpha, traveldegradation) {
         // https://bl.ocks.org/mbostock/7881887
@@ -87,13 +98,20 @@ function NetworkGraph({ nodes, links }) {
       }
 
       // create the rectangle from the center out
+      function updateNode(node)
+      {
+        node.rect = getRect(node);
+        node.personal_space = getPersonalSpace(node);
+      }
+
+      // create the rectangle from the center out
       function getRect(node)
       {
         let x1 = node.x - (node.width / 2);
         let y1 = node.y - (node.height / 2);
         let x2 = node.x + (node.width / 2);
         let y2 = node.y + (node.height / 2);
-        return {x1,y1,x2,y2}
+        return {x1,y1,x2,y2};
       }
 
       // create the personal space from the center out
@@ -103,7 +121,7 @@ function NetworkGraph({ nodes, links }) {
         let y1 = node.y - (node.height / 2) - node_separator;
         let x2 = node.x + (node.width / 2) + node_separator;
         let y2 = node.y + (node.height / 2) + node_separator;
-        return {x1,y1,x2,y2}
+        return {x1,y1,x2,y2};
       }
 
       // var maxRadius = 10;
@@ -163,7 +181,7 @@ function NetworkGraph({ nodes, links }) {
             if (data && data !== node) {
 
               // when they collide push them away from each other
-              let distance = getHeartDistance(node,data);
+              let distance = getHeartDistance(node.rect,data.rect);
               // console.log('  overlap=' + overlap + ' <-- x1=' + node.x + ', y1=' + node.y + ' (' + node.id + ')' + ' - x2=' + data.x + ', y2=' + data.y + ' (' + data.id + ')')
 
               if (distance.overlap) {
@@ -189,6 +207,8 @@ function NetworkGraph({ nodes, links }) {
                   data.x -= data.width - (distance.dx/2 * (1+alpha));
                 }
                 // console.log('                -> heightRadius='+heightRadius+', delta=' +delta+', x1=' + node.x + ', y1=' + node.y + ' - x2=' + data.x + ', y2=' + data.y)
+                updateNode(node);
+                updateNode(data);
               }
               return distance.overlap;
             }
@@ -215,7 +235,12 @@ function NetworkGraph({ nodes, links }) {
         .selectAll('.node')
         .data(nodes)
         .join("rect")
-        // initialize size
+        .attr("x", function (d) {
+          return d.rect.x1;
+        })
+        .attr('y', function (d) {
+          return d.rect.y1;
+        })
         .attr("width", d => d.width)
         .attr("height", d => d.height)
         .attr("class", 'node')
@@ -234,7 +259,7 @@ function NetworkGraph({ nodes, links }) {
           return d.x;
         })
         .attr('y', function (d, i) {
-          return 5 + d.y + label_height / 2;
+          return 5 + d.y;
         })
         .text((d) => d.name)
         .attr("class", 'node_label');
@@ -245,10 +270,10 @@ function NetworkGraph({ nodes, links }) {
         .data(links)
         .enter()
         .append('line')
-        .attr('x1', d => d.x1)
-        .attr('y1', d => d.y1)
-        .attr('x2', d => d.x2)
-        .attr('y2', d => d.y2)
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y)
         .attr('class', 'ghostlink');
 
       var link_objects = links_container
@@ -274,19 +299,19 @@ function NetworkGraph({ nodes, links }) {
 
       console.log('Force simulation')
 
-      // var simulation = d3.forceSimulation(nodes)
-      //   .force('link', d3.forceLink()
-      //     .id(d => d.id)
-      //     .links(links)
-      //     .distance(80)
-      //     .strength(0.01)
-      //   )
-      //   .force('charge', d3.forceManyBody().strength(-20))
-      //   .force('center', d3.forceCenter(width / 2, height / 2))
-      //   // .force('y', alpha => link_alignment(alpha, 1))
-      //   .force("collide", alpha => collideD(alpha))
-      //   .on('tick', ticked)
-      //   .on("end", endSimulation);
+      var simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink()
+          .id(d => d.id)
+          .links(links)
+          .distance(80)
+          .strength(0.01)
+        )
+        .force('charge', d3.forceManyBody().strength(-20))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        // .force('y', alpha => link_alignment(alpha, 1))
+        .force("collide", alpha => collideD(alpha))
+        .on('tick', ticked)
+        .on("end", endSimulation);
 
       var tick_counter = 0
 
@@ -363,6 +388,21 @@ function NetworkGraph({ nodes, links }) {
 
 
       function getlinkPoint(source, target) {
+        // console.log('getlinkPoint')
+        // console.log(source)
+        // console.log(target)
+
+        if (source.x == null || isNaN(source.x) )
+        {
+          // console.log('No objects')
+          return {x:100,y:100}
+
+        }
+        else
+        {
+          console.log('getlinkPoint <<<<<<<<<<<<<<<<<  YEAH')
+        }
+
         var link_x = 0;
         var link_y = 0;
 
@@ -382,7 +422,7 @@ function NetworkGraph({ nodes, links }) {
             else
               link_x = source.x - yDist / Math.tan(alfa)
 
-            link_y = source.sy1;
+            link_y = source.personal_space.y1;
           }
           else // target is below source
           {
@@ -391,14 +431,14 @@ function NetworkGraph({ nodes, links }) {
             else
               link_x = source.x - yDist / Math.tan(alfa)
 
-            link_y = source.sy2;
+            link_y = source.personal_space.y2;
           }
         }
         else // left or right
         {
           if (target.x < source.x) // target is left
           {
-            link_x = source.sx1;
+            link_x = source.personal_space.x1;
 
             if (source.y < target.y) { // target is left and below
               link_y = source.y + Math.tan(alfa) * xDist
@@ -411,7 +451,7 @@ function NetworkGraph({ nodes, links }) {
           }
           else // target is right
           {
-            link_x = source.sx2;
+            link_x = source.personal_space.x2;
 
             if (source.y < target.y) {
               link_y = source.y + Math.tan(alfa) * xDist
@@ -439,41 +479,44 @@ function NetworkGraph({ nodes, links }) {
           })
           .attr('y', function (d) {
             return d.y;
+          })
+          .attr('rect', function (d) {
+            return getRect(d);
           });
 
-        // node_label_objects
-        //   .attr("x", function (d, i) {
-        //     return d.x;
-        //   })
-        //   .attr('y', function (d, i) {
-        //     return 5 + d.y;
-        //   })
+        node_label_objects
+          .attr("x", function (d, i) {
+            return d.x;
+          })
+          .attr('y', function (d, i) {
+            return 5 + d.y;
+          })
 
-        // ghostlink_objects
-        //   .attr("x1", d => d.source.x)
-        //   .attr("y1", d => d.source.y)
-        //   .attr("x2", d => d.target.x)
-        //   .attr("y2", d => d.target.y);
+        ghostlink_objects
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
 
 
 
-        // link_objects
-        //   .attr("x1", d => {
-        //     var source = getlinkPoint(d.source, d.target);
-        //     return source.x;
-        //   })
-        //   .attr("y1", d => {
-        //     var source = getlinkPoint(d.source, d.target);
-        //     return source.y;
-        //   })
-        //   .attr("x2", d => {
-        //     var target = getlinkPoint(d.target, d.source);
-        //     return target.x;
-        //   })
-        //   .attr("y2", d => {
-        //     var target = getlinkPoint(d.target, d.source);
-        //     return target.y;
-        //   });
+        link_objects
+          .attr("x1", d => {
+            var source = getlinkPoint(d.source, d.target);
+            return source.x;
+          })
+          .attr("y1", d => {
+            var source = getlinkPoint(d.source, d.target);
+            return source.y;
+          })
+          .attr("x2", d => {
+            var target = getlinkPoint(d.target, d.source);
+            return target.x;
+          })
+          .attr("y2", d => {
+            var target = getlinkPoint(d.target, d.source);
+            return target.y;
+          });
       }
 
 

@@ -1,11 +1,16 @@
+export function getLineageGraphsByType(type) {
+  return getLineageGraphs().filter((graph) => graph.type === type);
+}
+
+
 export const getLineageGraphs = () => [
   {
     key: 'GraphLayout',
-    label: 'Graph LayoutDemo',
-    type: 'lineage',
+    label: 'Graph Layout',
+    type: 'network',
     description: '',
     documentation_link: 'https://cdm.thefirm.nl/'
-  },  
+  },
   {
     key: 'NetworkGraph',
     label: 'Network Graph',
@@ -32,6 +37,20 @@ export const getLineageGraphs = () => [
     label: 'Layer Network Graph Class',
     type: 'lineage',
     description: 'A class based component',
+    documentation_link: 'https://cdm.thefirm.nl/'
+  },
+  {
+    key: 'GraphLayout',
+    label: 'Hello react flow',
+    type: 'flow',
+    description: '',
+    documentation_link: 'https://cdm.thefirm.nl/'
+  },
+  {
+    key: 'GraphLayout',
+    label: 'Table views',
+    type: 'database',
+    description: '',
     documentation_link: 'https://cdm.thefirm.nl/'
   },
 ]

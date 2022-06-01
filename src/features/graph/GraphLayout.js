@@ -15,7 +15,7 @@ const node_distance = radius * 2;
 const link_separator = 4;
 
 
-function GraphLayoutDemo({ nodes, links }) {
+function GraphLayout({ nodes, links }) {
   const ref = useD3(
     (svg) => {
       //////////////////////////////////////////////////////////////
@@ -311,4 +311,4 @@ function GraphLayoutDemo({ nodes, links }) {
   );
 }
 
-export default GraphLayoutDemo;
+export default GraphLayout;

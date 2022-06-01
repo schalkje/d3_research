@@ -11,6 +11,12 @@ import App from './layout/App';
 import Overview from './routes/Overview'
 import Networks from './routes/Networks';
 import Network from './routes/Network';
+import Lineages from './routes/Lineages'
+import Lineage from './routes/Lineage'
+import Databases from './routes/Databases'
+import Database from './routes/Database'
+import Flows from './routes/Flows'
+import Flow from './routes/Flow'
 
 
 const container = document.getElementById('root');
@@ -28,6 +34,20 @@ root.render(
             <Route index element={<Networks />} />
             <Route path=":networkId" element={<Network />} />
           </Route>
+          <Route path="lineage" >
+            <Route index element={<Lineages />} />
+            <Route path=":networkId" element={<Lineage />} />
+          </Route>
+          <Route path="flow" >
+            <Route index element={<Flows />} />
+            <Route path=":graphId" element={<Flow />} />
+          </Route>
+          <Route path="database" >
+            <Route index element={<Databases />} />
+            <Route path=":graphId" element={<Database />} />
+          </Route>
+          
+          
         </Route>
         
       </Routes>

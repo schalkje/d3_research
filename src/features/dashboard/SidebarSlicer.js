@@ -5,6 +5,9 @@ export const sideBarSlice = createSlice({
   initialState: {
     overviewVisible: true,
     networkVisible: false,
+    lineageVisible: false,
+    flowVisible: false,
+    databaseVisible: false,
   },
   reducers: {
       // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -19,10 +22,22 @@ export const sideBarSlice = createSlice({
         console.log('sideBarSlice.networkVisible')
         state.networkVisible = !state.networkVisible
       },
+      toggle_lineageVisible: (state) => {
+        console.log('sideBarSlice.lineageVisible')
+        state.lineageVisible = !state.lineageVisible
+      },
+      toggle_flowVisible: (state) => {
+        console.log('sideBarSlice.flowVisible')
+        state.flowVisible = !state.flowVisible
+      },
+      toggle_databaseVisible: (state) => {
+        console.log('sideBarSlice.databaseVisible')
+        state.databaseVisible = !state.databaseVisible
+      },
   }
 })
 
-export const { toggle_overviewVisible, toggle_networkVisible } = sideBarSlice.actions
+export const { toggle_overviewVisible, toggle_networkVisible, toggle_lineageVisible, toggle_flowVisible, toggle_databaseVisible } = sideBarSlice.actions
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
