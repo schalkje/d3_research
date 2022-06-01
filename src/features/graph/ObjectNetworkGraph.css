@@ -64,7 +64,7 @@ svg.container {
 
 line.link {
   stroke-width: 2px;
-  stroke: #4679BD;
+  stroke: #666;
   stroke-opacity: 0.6;
 }
 
@@ -76,9 +76,9 @@ line.ghostlink {
 
 marker#arrow {
   stroke: #999;
-  stroke-opacity: 0.4;
+  stroke-opacity: 1;
   fill: #999;
-  fill-opacity: 0.4;
+  fill-opacity: 1;
 }
 
 .lane {
@@ -144,8 +144,15 @@ svg.table text {
 }
 
 svg.table text.name {
-  fill: red;
-  font-size: 12px;
+  fill: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+svg.table text.subname {
+  fill: #DDD;
+  font-size: 11px;
+  font-weight: normal;
 }
 
 svg.table text.column {

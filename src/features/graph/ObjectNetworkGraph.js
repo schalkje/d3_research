@@ -305,18 +305,26 @@ function ObjectNetworkGraph({ layers, nodes, links }) {
         .attr("class", 'header')
         .attr("x","2")
         .attr("x","2")
-        .attr("width","96")
-        .attr("height","18")
+        .attr("width","156")
+        .attr("height","36")
 
         node_objects.append("text", ":first-child")
         .attr("class", 'name')
         .attr("width","100%")
         .attr("x","5")
-        .attr("y","24")
+        .attr("y","18")
         .html(function (d) {
           return d.name;
         })
       
+        node_objects.append("text", ":first-child")
+        .attr("class", 'subname')
+        .attr("width","100%")
+        .attr("x","6")
+        .attr("y","32")
+        .html(function (d) {
+          return `${d.system}.${d.subsystem}`;
+        })
 
 
 
