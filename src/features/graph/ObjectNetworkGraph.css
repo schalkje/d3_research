@@ -1,0 +1,177 @@
+line {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+
+text {
+  font-size: 12px;
+  text-anchor: middle;
+  stroke: none;
+}
+
+rect {
+  fill: cadetblue;
+  opacity: 0.3;
+  stroke: white;
+}
+
+.lanelabel
+{
+  font-size: 16px;
+  fill: gray;
+  text-anchor: middle;
+}
+
+
+svg.container {
+  background-color:#e6e3e3;
+  border-color: #d3d3d3;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 4px 3px 8px 1px #969696;
+  -webkit-box-shadow: 4px 3px 8px 1px #969696;
+}
+
+.node {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
+  stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.4;
+  stroke-width: 2;
+  cursor: grab;
+}
+
+
+.node_grabbing {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
+  stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.8;
+  stroke-width: 4;
+  cursor: grabbing;
+}
+
+.node_label
+{
+  font-size: 14px;
+  font-weight: bold;
+  fill: #333;
+  fill-opacity: 0.8;
+  text-anchor: middle;
+  cursor: grab;
+}
+
+line.link {
+  stroke-width: 2px;
+  stroke: #4679BD;
+  stroke-opacity: 0.6;
+}
+
+line.ghostlink {
+  stroke-width: 2px;
+  stroke: #FFF;
+  stroke-opacity: 0;
+}
+
+marker#arrow {
+  stroke: #999;
+  stroke-opacity: 0.4;
+  fill: #999;
+  fill-opacity: 0.4;
+}
+
+.lane {
+  stroke: rgb(211, 211, 211);
+  stroke-opacity: 1;
+  stroke-width: 1;
+}
+
+.lane1 {
+  text-align: center;
+  fill:rgb(83, 142, 194);
+  fill-opacity: 0.1;
+}
+
+
+.lane2 {
+  text-align: center;
+  fill: #2fc792;
+  fill-opacity: 0.1;
+}
+
+.database {
+  text-align: center;
+  fill:lightgray;
+  fill-opacity: 0.4;
+  stroke: gray;
+  stroke-opacity: 0.4;
+  stroke-width: 1;
+}
+
+svg.table {
+  padding: 0px;
+}
+
+svg.table rect.background {
+  fill: grey;
+  stroke: grey;
+  opacity: 0.5;
+  rx: 4px;
+  ry: 4px;
+}
+
+svg.table rect.header {
+  fill: grey;
+  stroke: grey;
+  fill-opacity: 0.5;
+  opacity: 1;
+  cursor: grab;
+}
+
+svg.table rect.body {
+  fill: #DDD;
+  opacity: 1;
+  stroke: none;
+  rx: 2px;
+  ry: 2px;
+  
+}
+
+svg.table text {
+  text-anchor: start;
+  alignment-baseline: auto;
+}
+
+svg.table text.name {
+  fill: red;
+  font-size: 12px;
+}
+
+svg.table text.column {
+  fill: black;
+  font-size: 9px;
+}
+
+svg.table text.key {
+  fill: rgb(64, 104, 72);
+  opacity: 1;
+  font-size: 7px;
+  font-weight: bolder;
+}
+
+svg.table text.type {
+  fill: #666;
+  opacity: 1;
+  font-size: 8px;
+  font-weight: normal;
+  font-style: italic;
+}
+
+svg.table line.separator {
+  stroke-opacity: 1;
+  stroke: grey;
+  stroke-width: 1px;
+  cursor: ew-resize;
+}
+

@@ -2,11 +2,10 @@ import React from 'react';
 import * as d3 from 'd3';
 import { select, selectAll, event } from 'd3-selection'
 import { useD3 } from '../../hooks/useD3'
-import './DivNetworkGraph.css';
+import './ObjectNetworkGraph.css';
 
-// https://www.jotform.com/blog/better-positioning-and-transforming-with-nested-svgs/
-// https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Positions
-// https://svgwrite.readthedocs.io/en/latest/classes/group.html
+
+
 
 var width = 1000;
 var height = 600;
@@ -30,7 +29,7 @@ var clusterPadding = 20;
 var i = 0;
 
 
-function DivNetworkGraph({ layers, nodes, links }) {
+function ObjectNetworkGraph({ layers, nodes, links }) {
   const ref = useD3(
     (svg) => {
 
@@ -280,9 +279,9 @@ function DivNetworkGraph({ layers, nodes, links }) {
 
 
       var node_objects = nodes_container
-        .selectAll('.node')
+        .selectAll('.table')
         .data(nodes)
-        .join("div")
+        .join("svg")
         .attr("x", function (d) {
           return d.x - (node_width / 2);
         })
@@ -291,28 +290,35 @@ function DivNetworkGraph({ layers, nodes, links }) {
         })
         .attr("width", node_width)
         .attr("height", node_height)
-        .attr("class", 'node')
+        .attr("viewBox", "0 0 160 40")
+        .attr("class", 'table')
         .attr("id", function (d, i) {
           return d.id
-        });
-        // .call(d3.drag()
-        //   .on("start", drag_started)
-        //   .on("drag", dragged)
-        //   .on("end", drag_ended)
-        // );
+        })
 
-      var node_label_objects = nodes_container
-        .selectAll('.node_label')
-        .data(nodes)
-        .join("text")
-        .attr("x", function (d, i) {
-          return d.x;
+        node_objects.append("rect", ":first-child")
+        .attr("class", 'background')
+        .attr("width","100%")
+        .attr("height","100%")
+
+        node_objects.append("rect", ":first-child")
+        .attr("class", 'header')
+        .attr("x","2")
+        .attr("x","2")
+        .attr("width","96")
+        .attr("height","18")
+
+        node_objects.append("text", ":first-child")
+        .attr("class", 'name')
+        .attr("width","100%")
+        .attr("x","5")
+        .attr("y","24")
+        .html(function (d) {
+          return d.name;
         })
-        .attr('y', function (d, i) {
-          return 5 + d.y + label_height / 2;
-        })
-        .text((d) => d.name)
-        .attr("class", 'node_label');
+      
+
+
 
 
       var ghostlink_objects = ghostlinks_container
@@ -560,13 +566,6 @@ function DivNetworkGraph({ layers, nodes, links }) {
             return d.y - (node_height / 2);
           });
 
-        node_label_objects
-          .attr("x", function (d, i) {
-            return d.x;
-          })
-          .attr('y', function (d, i) {
-            return 5 + d.y;
-          })
 
         ghostlink_objects
           .attr("x1", d => d.source.x)
@@ -663,13 +662,12 @@ function DivNetworkGraph({ layers, nodes, links }) {
   );
 
   return (
-    <div id="svg_container" className="container"
+    <svg id="svg_container" className="container"
       ref={ref}
       style={{
         width: "100%",
       }}
     >
-      <svg width="100%" height="100%">
       <defs>
         <marker id="arrow" viewBox="0 -5 10 10" refX="10" refY="0" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M0,-5L10,0L0,5Z" />
@@ -690,25 +688,12 @@ function DivNetworkGraph({ layers, nodes, links }) {
       </g>
       <g id="links">
       </g>
+      <g id="nodes">
+      </g>
       <g id="ghostlinks">
       </g>
-      <svg x="200" y="100" width="200" height="200" viewBox="0 0 100 100" style={{outline: "1px solid #DDDDDD"}}>
-        <rect style={{x:"0px",y:"0px",width: "100%", height:"20px",fill: "black"}} />
-        <rect style={{x:"0px",y:"20",width: "100%", height:"70",fill:"grey"}} />
-        <text x="5" y="14" width="100%" className="header">TableName</text>
-        <text x="5" y="30" className="column">id_table</text>
-        <text x="5" y="40" className="column">number</text>
-        <text x="5" y="50" className="column">name</text>
-
-
-      </svg>
-      <g transform="translate(50 45.5)
-                  scale(1 1)">
-        </g>      </svg>
-      <div id="nodes"  width="100%" height="100%">
-      </div>
-    </div>
+    </svg>
   );
 }
 
-export default DivNetworkGraph;
+export default ObjectNetworkGraph;

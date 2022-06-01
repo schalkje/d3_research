@@ -32,6 +32,7 @@ svg.table rect.background {
 
 svg.table rect.header {
   fill: grey;
+  stroke: grey;
   opacity: 1;
   cursor: grab;
 }
@@ -42,6 +43,12 @@ svg.table rect.body {
   stroke: none;
   rx: 2px;
   ry: 2px;
+  
+}
+
+svg.table text {
+  text-anchor: start;
+  alignment-baseline: auto;
 }
 
 svg.table text.name {

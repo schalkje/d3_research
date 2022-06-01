@@ -33,10 +33,10 @@ export const getLineageGraphs = () => [
     documentation_link: 'https://cdm.thefirm.nl/'
   },
   {
-    key: 'DivNetworkGraph',
-    label: '<div> node graph',
+    key: 'ObjectNetworkGraph',
+    label: 'Object node graph',
     type: 'lineage',
-    description: 'Get a network graph up and running with divs as the nodes. Div\'s are more flexible compared to rect\'s to create complicated text based views.',
+    description: 'Get a network graph up and running with a svg based complex object as the nodes.',
     documentation_link: 'https://cdm.thefirm.nl/'
   },
   {

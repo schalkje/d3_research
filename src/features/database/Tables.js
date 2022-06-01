@@ -39,6 +39,7 @@ const Tables = () => {
         <text x="20" y="50" className="column">name</text>
         <text x="20" y="60" className="column">description</text>
         <text x="20" y="70" className="column">amount</text>
+        <line x1="18" y1="18" x2="18" y2="98" className='separator'></line>
       </svg>
 
       <h3>With datatypes</h3>

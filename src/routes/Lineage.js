@@ -17,7 +17,7 @@ import NetworkGraph from "../features/graph/NetworkGraph";
 import LayerNetworkGraph from "../features/graph/LayerNetworkGraph";
 import LayerNetworkGraph2 from "../features/graph/LayerNetworkGraph2";
 import LayerNetworkGraphClass from "../features/graph/LayerNetworkGraphClass";
-import DivNetworkGraph from "../features/graph/DivNetworkGraph";
+import ObjectNetworkGraph from "../features/graph/ObjectNetworkGraph";
 import { getNetworkBlockLayers, getNetworkBlocks, getNetworkBlockLinks } from "../data/data_product_lineage";
 import { getLineageGraphs } from "../data/lineage_graphs";
 
@@ -104,8 +104,8 @@ export default function Network() {
         <LayerNetworkGraph2 layers={layers} nodes={nodes} links={links} /> 
         : params.networkId == 'LayerNetworkGraphClass' ?
         <LayerNetworkGraphClass layers={layers} nodes={nodes} links={links} /> 
-        : params.networkId == 'DivNetworkGraph' ?
-        <DivNetworkGraph layers={layers} nodes={nodes} links={links} />         
+        : params.networkId == 'ObjectNetworkGraph' ?
+        <ObjectNetworkGraph layers={layers} nodes={nodes} links={links} />         
           : <LayerNetworkGraph nodes={nodes} links={links} /> }
  
 
