@@ -66,10 +66,10 @@ function ForeignObject() {
 
                 var header = container
                 .append('rect')
-                .attr("x", "2")
-                .attr("y", "2")
-                .attr("width", "196")
-                .attr("height", "36")
+                .attr("x", "4")
+                .attr("y", "4")
+                .attr("width", "194")
+                .attr("height", "34")
                 .attr("class", "header")
 
                 var name = container
@@ -83,18 +83,18 @@ function ForeignObject() {
 
                 var body = container
                 .append('rect')
-                .attr("x", "2")
-                .attr("y", "36")
-                .attr("width", "196")
-                .attr("height", "160")
+                .attr("x", "4")
+                .attr("y", "34")
+                .attr("width", "192")
+                .attr("height", "162")
                 .attr("class", "body")
 
                 var foreign_body = container
                 .append('foreignObject')
-                .attr("x", 4)
-                .attr("y", 40)
-                .attr("width", 192)
-                .attr("height", 156)
+                .attr("x", 6)
+                .attr("y", 38)
+                .attr("width", 186)
+                .attr("height", 154)
                 
             var div_body = foreign_body
                 .append("xhtml:div")
@@ -102,6 +102,7 @@ function ForeignObject() {
 
             div_body.append("div")
                 .attr("class", "column")
+                .append("b")
                 .html("id_table")
 
             for (let i = 0; i < 30; i++) {

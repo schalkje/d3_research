@@ -26,8 +26,8 @@ svg.table rect.background {
   fill: grey;
   stroke: grey;
   opacity: 1;
-  rx: 4px;
-  ry: 4px;
+  rx: 8px;
+  ry: 8px;
 }
 
 svg.table rect.header {
@@ -41,8 +41,8 @@ svg.table rect.body {
   fill: #DDD;
   opacity: 1;
   stroke: none;
-  rx: 2px;
-  ry: 2px;
+  rx: 4px;
+  ry: 4px;
   
 }
 
