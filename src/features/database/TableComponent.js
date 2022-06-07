@@ -48,7 +48,8 @@ function TableComponent() {
                 .attr("width", "200")
                 .attr("height", state == state_header ? "40" : "200")
                 .attr("class", "table")
-                .on("click", click);
+                .on("click", click)
+
 
                 var background = container
                 .append('rect')
@@ -57,6 +58,11 @@ function TableComponent() {
                 .attr("width", "100")
                 .attr("height", state == state_header ? "10" : "100")
                 .attr("class", "background")
+
+                // add a tooltip to the background container
+                container
+                    .append("title")
+                    .text("Click to resize");
 
                 var header = container
                 .append('rect')
