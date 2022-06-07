@@ -10,6 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Tables from "../features/database/Tables";
+import TableComponent from "../features/database/TableComponent";
 import { getLineageGraphs } from "../data/lineage_graphs";
 
 
@@ -50,9 +51,14 @@ export default function Database() {
         </CardActions>
       </Card>
       <h2>Database tables</h2>
-      {params.graphId == 'Tables' ?
-        <Tables />
-        : <Tables />}
+      {
+        params.graphId == 'Tables' ?
+          <Tables />
+        : params.graphId == 'TableComponent' ?
+          <TableComponent />
+        : 
+          <Tables />
+      }
     </main>
   );
 }

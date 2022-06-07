@@ -67,4 +67,11 @@ export const getLineageGraphs = () => [
     description: '',
     documentation_link: 'https://cdm.thefirm.nl/'
   },
+  {
+    key: 'TableComponent',
+    label: 'Table component',
+    type: 'database',
+    description: 'A clickable table component, that changes it\'s size and display details on a mouse click.',
+    documentation_link: 'https://cdm.thefirm.nl/'
+  },
 ]
