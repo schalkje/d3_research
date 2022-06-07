@@ -74,4 +74,11 @@ export const getLineageGraphs = () => [
     description: 'A clickable table component, that changes it\'s size and display details on a mouse click.',
     documentation_link: 'https://cdm.thefirm.nl/'
   },
+  {
+    key: 'ForeignObject',
+    label: 'Table component foreign',
+    type: 'database',
+    description: 'A clickable table component, that changes it\'s size and display details on a mouse click. The columns are wrapped inside a html div object, not in native SVG, to provide a scrollbar.',
+    documentation_link: 'https://cdm.thefirm.nl/'
+  },
 ]

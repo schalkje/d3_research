@@ -51,7 +51,7 @@ function TableComponent() {
                 .on("click", click)
 
 
-                var background = container
+            var background = container
                 .append('rect')
                 .attr("x", "0")
                 .attr("y", "0")
@@ -59,12 +59,12 @@ function TableComponent() {
                 .attr("height", state == state_header ? "10" : "100")
                 .attr("class", "background")
 
-                // add a tooltip to the background container
-                container
-                    .append("title")
-                    .text("Click to resize");
+            // add a tooltip to the background container
+            container
+                .append("title")
+                .text("Click to resize");
 
-                var header = container
+            var header = container
                 .append('rect')
                 .attr("x", "2")
                 .attr("y", "2")
@@ -111,7 +111,7 @@ function TableComponent() {
                 .html("number")
 
 
-                container
+            container
                 .append('text')
                 .attr("x", "5")
                 .attr("y", "60")
@@ -119,14 +119,14 @@ function TableComponent() {
                 .html("name")
 
 
-                container
+            container
                 .append('text')
                 .attr("x", "5")
                 .attr("y", "70")
                 .attr("class", "column")
                 .html("amount")
 
-                
+
             function click() {
                 console.log('click ' + state + ' ---> ')
                 if (state == state_header)
@@ -137,7 +137,7 @@ function TableComponent() {
                 container.attr("height", state == state_header ? "40" : "200")
                 container.attr("viewBox", state == state_header ? "0 0 100 20" : "0 0 100 100")
                 background.attr("height", state == state_header ? "20" : "100")
-                body.attr("visibility",state == state_header ? "hidden":"visible")
+                body.attr("visibility", state == state_header ? "hidden" : "visible")
 
                 console.log('                 --> ' + state)
             }
@@ -147,7 +147,7 @@ function TableComponent() {
     return (
         <svg
             id="svg_container"
-            ref={ref}            
+            ref={ref}
             className='table'>
         </svg>
     );

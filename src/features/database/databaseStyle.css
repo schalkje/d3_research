@@ -46,6 +46,22 @@ svg.table rect.body {
   
 }
 
+svg.table div.body {
+  background-color: #DDD;
+  opacity: 1;
+  stroke: none;
+  max-height: 156px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+svg.table div.column {
+  color: Black;
+  font-size: 10px;
+  border-bottom: solid 1px #CCC;
+}
+
+
 svg.table text {
   text-anchor: start;
   alignment-baseline: auto;
