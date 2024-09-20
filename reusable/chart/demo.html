@@ -3,96 +3,75 @@
 
 <head>
     <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
-    
+
     <style>
-      body {
-         font-family: Arial;
-      }
-   </style>
-   <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+        body {
+            font-family: Arial;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 </head>
 
 <body>
-   <h1>Chart</h1>
-   <div id="svgcontainer" style="border:1px solid steelblue"></div>
-   <script src="../circleNode.js"></script>
-   <script>
-      var width = 1000;
-      var height = 800;
-      //Create SVG element
-      var svg = d3.select("#svgcontainer")
-         .append("svg")
-         .attr("width", width)
-         .attr("height", height);
+    <h1>Chart</h1>
+    <div id="svgcontainer" style="border:1px solid steelblue"></div>
+    <script src="../circleNode.js"></script>
+    <script>
+        var width = 1000;
+        var height = 800;
+        //Create SVG element
+        var svg = d3.select("#svgcontainer")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
 
-      //Create and append rectangle element
-      svg.append("rect")
-         .attr("x", 20)
-         .attr("y", 20)
-         .attr("width", 20)
-         .attr("height", 60)
-         .attr("class", "lane lane1");
-
-        //  svg.append(circleNode())
-        //  .radius(120)
-    var node = circleNode()
-                .radius(60);
-                // .attr("fill","steelblue"); 
-    
-    svg
-        // .datum(exampleData())
-        .call(node);
-        // .radius(120);
-
-    
-    svg
-        // .datum(exampleData())
-        .call(
-            circleNode()
-                .cx(200)
-                .radius(40));
+        //Create and append rectangle element
+        svg.append("rect")
+            .attr("x", 20)
+            .attr("y", 20)
+            .attr("width", 20)
+            .attr("height", 60)
+            .attr("class", "lane lane1");
 
 
-    function exampleData() {
-     return  [
-        {
-          label: "Sample A",
-          values: {
-            Q1: 120,
-            Q2: 150,
-            Q3: 200,
-            whisker_low: 115,
-            whisker_high: 210,
-            outliers: [50, 100, 225]
-          },
-        },
-        {
-          label: "Sample B",
-          values: {
-            Q1: 300,
-            Q2: 350,
-            Q3: 400,
-            whisker_low: 225,
-            whisker_high: 425,
-            outliers: [175]
-          },
-        },
-        {
-          label: "Sample C",
-          values: {
-            Q1: 50,
-            Q2: 100,
-            Q3: 125,
-            whisker_low: 25,
-            whisker_high: 175,
-            outliers: [0]
-          },
-        }
-      ]
-    };
+        svg
+            .selectAll(".node")
+            .data(exampleData())
+            .enter()
+            .call(
+                circleNode()
+                    .cx(d => {
+                        console.log("d:",d);
+                        return d.cx;
+                    })
+                    .cy(d => d.cy)
+                    .radius(d => d.radius));
+
+        function exampleData() {
+            return [
+                {
+                    label: "Sample A",
+                    cx: 100,
+                    cy: 100,
+                    radius: 50
+                },
+                {
+                    label: "Sample B",
+                    cx: 200,
+                    cy: 100,
+                    radius: 20
+                },
+                {
+                    label: "Sample C",
+                    cx: 100,
+                    cy: 200,
+                    radius: 10,
+                }
+            ]
+        };
 
 
-   </script>
+    </script>
 </body>
 
 </html>

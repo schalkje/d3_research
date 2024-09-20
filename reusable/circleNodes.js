@@ -4,7 +4,7 @@ function circleNode() {
         cx = 50, // default cx
         cy = 50; // default cy
   
-    // function my(data) {
+    // function my() {
     //   // generate chart here, using `width` and `height`
     //   var container = d3.select(this);
     //   container.append("circle")
@@ -23,21 +23,8 @@ function circleNode() {
             .attr("cy", cy)
             .attr("stroke", "green")
             .attr("fill", "blue");
-        // container.append("circle")
-        //     .attr("r", radius)
-        //     .attr("cx", cx + 5)
-        //     .attr("cy", cy + 5)
-        //     .attr("stroke", "green")
-        //     .attr("fill", "red");
-
-        container.append("rect")
-            .attr("width", radius)
-            .attr("height", radius)
-            .attr("x", cx)
-            .attr("y", cy)
-            .attr("opacity", 0.5)
-            .attr("fill", "red");
-          });
+            // .fill("blue");
+      });
     }
 
     // getters and setters
