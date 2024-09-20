@@ -5,6 +5,7 @@ https://github.com/d3/d3
 - [Towards Updatable D3.js Charts (Rob Moore)](https://www.toptal.com/d3-js/towards-reusable-d3-js-charts)
     - Add data as a parameter
     - Add transitions to changing paramters
+    - reimplementation: https://gist.github.com/ThomasBurleson/c23f4a14917ad54551f9
 - [NVD3 - A reusable D3 charting library](https://github.com/novus/nvd3)
 
 - https://github.com/caged/d3-tip

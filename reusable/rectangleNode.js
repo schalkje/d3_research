@@ -11,7 +11,9 @@ function rectangleNode() {
   function my(selection) {
     selection.each(function(data) {
       console.log("rectangleNode data: ", data);
-      var container = d3.select(this).append("g").attr("class", classValue);
+      var container = d3.select(this).append("g")
+                        .attr("class", classValue);
+                        
 
       container.append("rect")
           .attr("width", width)
@@ -20,8 +22,6 @@ function rectangleNode() {
           .attr("y", y)
           .attr("stroke", "green")
           .attr("fill", "steelblue");
-
-      
 
       container.append("text")
           .text(label)
