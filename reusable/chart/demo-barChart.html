@@ -29,14 +29,15 @@
 
             // Ensure that BarChart is correctly instantiated
             var runningChart = BarChart.instanceOf({ barPadding: 2 });
+            // var runningChart = barChart().barPadding(2);
             d3.select('#runningHistory')
                 .datum(milesRun)
                 .call(runningChart.render);
 
-            var weatherChart = BarChart.instanceOf().fillColor('coral');
-            d3.select('#weatherHistory')
-                .datum(highTemperatures)
-                .call(weatherChart.render);
+            // var weatherChart = BarChart.instanceOf().fillColor('coral');
+            // d3.select('#weatherHistory')
+            //     .datum(highTemperatures)
+            //     .call(weatherChart.render);
         });
     </script>
 </body>

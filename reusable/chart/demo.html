@@ -44,6 +44,8 @@
             .y(d => d.y)
             .width(d => d.width)
             .height(d => d.height)
+            .x(100)
+            .y(200)
             .label(d => d.label);
 
         svg
@@ -52,6 +54,11 @@
             .enter()
             .call(rectangle);
 
+
+        // var last = svg.selectAll(".rectangleNode")
+        //     // .attr("transform", `translate(100,0)`);
+        //     .attr("x",500);
+        
         function circleData() {
             return [
                 {
