@@ -37,12 +37,16 @@
 
 <body>
     <h1>Layout with D3-dag.js</h1>
-    <svg id="graph" width="800" height="600"></svg>
+    <svg id="graph"></svg>
 
     <script>
 
         const stratify = d3.graphStratify();
-        const graph = stratify([{ id: "parent" }, { id: "child", parentIds: ["parent"] }]);
+        const graph = stratify([{ id: "root" }, 
+            { id: "child", parentIds: ["root"] }, 
+            { id: "child2", parentIds: ["root"] }, 
+            { id: "end", parentIds: ["child","child2"] }
+        ]);
 
         const layout = d3.sugiyama();
         const { width, height } = layout(graph);
@@ -58,8 +62,8 @@
         }
 
         const svg = d3.select("svg")
-            .attr("viewBox", [0, 0, width, height])
-            .attr("style", "max-width: 100%; height: auto;");
+            .attr("viewBox", [0, 0, width, height]);
+            // .attr("style", "max-width: 100%; height: auto;");
 
         var lineGenerator = d3.line()
             .x((p) => {
@@ -67,7 +71,8 @@
                 return p[0];
             })
             .y((p) => p[1])
-            .curve(d3.curveBasis);
+            .curve(d3.curveCatmullRom.alpha(0.5));
+            // .curve(d3.curveBasis);
 
 
         svg.append("g")
