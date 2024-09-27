@@ -59,14 +59,12 @@
         const graphData = {
             nodes: [
                 { id: "1", label: "Node 1", state: "A", height: 40, width: 80 },
-                { id: "2", label: "Node 2.1", state: "B", height: 50, width: 100 },
-                { id: "3", label: "Node 2.2", state: "B", height: 50, width: 100 },
-                { id: "4", label: "Node 3", state: "C", height: 40, width: 80 }
+                { id: "2", label: "Node 2", state: "B", height: 50, width: 100 },
+                { id: "3", label: "Node 3", state: "C", height: 40, width: 80 }
             ],
             edges: [
-                { id: "1-2.1", label: "Edge 1-2.1", sourceNode: "1", targetNode: "2" },
-                { id: "1-2.2", label: "Edge 1-2.2", sourceNode: "1", targetNode: "3" },
-                { id: "2-3", label: "Edge 2-3", sourceNode: "2", targetNode: "4" }
+                { id: "1-2", label: "Edge 1-2", sourceNode: "1", targetNode: "2" },
+                { id: "2-3", label: "Edge 2-3", sourceNode: "2", targetNode: "3" }
             ]
         };
 
@@ -165,44 +163,15 @@
             .domain([0, height])
             .range([maxNodeHeight / 2 + marginY, dagHeight]);
 
+        var lineGenerator = d3.line()
+            .x((p) => {
+                console.log("p: ", p, p[0], p[1], layoutScaleX(p[0]), layoutScaleY(p[1]));
+                return layoutScaleX(p[0]);
+            })
+            .y((p) => layoutScaleY(p[1]))
+            .curve(d3.curveCatmullRom.alpha(0.5));
+        // .curve(d3.curveBasis);
 
-            function lineGenerator(points) {
-                    const [p0, p1] = points;
-                    const path = d3.path();
-                    p0.x = layoutScaleX(p0[0]);
-                    p0.y = layoutScaleY(p0[1]);
-                    p1.x = layoutScaleX(p1[0]);
-                    p1.y = layoutScaleY(p1[1]);
-                    console.log("p0: ", p0);
-                    console.log("p1: ", p1);
-                    
-
-                    // Move to the starting point
-                    path.moveTo(p0.x, p0.y);
-
-                    // Control points for the cubic curve
-                    const cp1x = p0.x;
-                    const cp1y = (p0.y + p1.y) / 2;
-                    const cp2x = p1.x;
-                    const cp2y = (p0.y + p1.y) / 2;
-
-                    // Draw a cubic curve from p0 to p1
-                    path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1.x, p1.y);
-
-                    return path.toString();
-                }
-
-            // var lineGenerator = d3.line()
-            //     .x((p) => layoutScaleX(p[0]))
-            //     .y((p) => layoutScaleY(p[1]))
-            //     .curve(d3.customCubicCurve);
-
-        // var lineGenerator = d3.line()
-        //     .x((p) => layoutScaleX(p[0]))
-        //     .y((p) => layoutScaleY(p[1]))
-        //     .curve(d3.curveMonotoneY);
-        // //     .curve(d3.curveCatmullRom.alpha(0.5));
-        // // .curve(d3.curveBasis);
 
 
         const drawing_boundary = svg.append("g")
@@ -237,9 +206,7 @@
             .append("path")
             .attr("class", "edge")
             .attr("d", d => {
-                console.log("link points for path d: ", d);
                 console.log("link points for path: ", d.points);
-                // return lineGenerator(d.points);
                 return lineGenerator(d.points);
             });
 
