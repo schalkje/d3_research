@@ -29,8 +29,9 @@
         }
 
         .label {
-            font-size: 12px;
+            font-size: 1%;
             text-anchor: middle;
+            fill: rgb(255, 255, 255);
         }
     </style>
 </head>
@@ -42,22 +43,22 @@
     <script>
 
         const stratify = d3.graphStratify();
-        const graph = stratify([{ id: "root" }, 
+        const dag = stratify([{ id: "root" }, 
             { id: "child", parentIds: ["root"] }, 
             { id: "child2", parentIds: ["root"] }, 
             { id: "end", parentIds: ["child","child2"] }
         ]);
 
         const layout = d3.sugiyama();
-        const { width, height } = layout(graph);
+        const { width, height } = layout(dag);
         console.log("size", width, height);
 
 
         // Debug the dag
-        for (const node of graph.nodes()) {
+        for (const node of dag.nodes()) {
             console.log("node: ", node.data.id, node.x, node.y, node);
         }
-        for (const { points } of graph.links()) {
+        for (const { points } of dag.links()) {
             console.log("link point:", points);
         }
 
@@ -76,8 +77,8 @@
 
 
         svg.append("g")
-            .selectAll("line")
-            .data(graph.links())
+            .selectAll(".edge")
+            .data(dag.links())
             .enter()
             .append("path")
             .attr("class", "edge")
@@ -91,7 +92,7 @@
         // Render nodes
         svg.append("g")
             .selectAll("circle")
-            .data(graph.nodes())
+            .data(dag.nodes())
             .join("circle")
             .attr("class", "node")
             .attr("cx", d => d.x)
@@ -102,15 +103,13 @@
         // Add labels for nodes
         svg.append("g")
             .selectAll("text")
-            .data(graph.nodes())
+            .data(dag.nodes())
             .join("text")
             .attr("class", "label")
             .attr("x", d => d.x)
-            .attr("y", d => d.y - 15)
+            .attr("y", d => d.y + 0.04)
             .attr("text-anchor", "middle")
-            .text(d => d.data.id)
-            .attr("fill", "black")
-            .attr("font-size", 12);
+            .text(d => d.data.id);
 
     </script>
 </body>
