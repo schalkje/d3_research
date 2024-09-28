@@ -51,7 +51,24 @@
 </head>
 
 <body>
-    <h1>Sugiyama Layout with D3.js</h1>
+    <h1 id="pageTitle">Title to be replaced with filename</h1>
+    <script>
+        // Separate block for handling the h1 content (page title and filename)
+        (function() {
+            // Function to get the filename from the URL
+            function getFilename() {
+                const path = window.location.pathname;
+                const filename = path.substring(path.lastIndexOf('/') + 1);
+                return filename || 'index.html'; // Default to 'index.html' if no filename
+            }
+
+            // Set the content of the h1 tag to the page title and filename
+            const pageTitle = document.title;
+            const filename = getFilename();
+            document.getElementById('pageTitle').textContent = `${pageTitle} - ${filename}`;
+        })();
+    </script>
+
     <svg id="graph" width="800" height="600"></svg>
 
     <script>
