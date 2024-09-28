@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugiyama Layout with D3.js</title>
+    <script src="libs/d3.min.js"></script>
+    <script src="libs/d3-shape.min.js"></script>
+    <script src="libs/d3-dag.iife.min.js"></script>
+    <style>
+        svg {
+            border: 1px solid black;
+            /* width: 100%; */
+            width: 700px;
+            height: 500px;
+        }
+
+        .drawing_boundary {
+            stroke: gray;
+            stroke-width: 0.05;
+            fill: rgba(255, 255, 224, 0.26);
+        }
+
+        .node {
+            stroke: rgba(70, 131, 180, 0.5);
+            stroke-width: 0.05;
+            fill: steelblue;
+        }
+
+        .edge {
+            stroke: #ccc;
+            stroke-width: 4px;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+
+        .marker {
+            stroke: #ccc;
+            stroke-width: 4px;
+            fill: none;
+            /* marker-end: url(#arrowhead); */
+        }
+
+        .label {
+            font-size: 12px;
+            text-anchor: middle;
+            fill: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sugiyama Layout with D3.js</h1>
+    <svg id="graph" width="800" height="600"></svg>
+
+    <script>
+        // Sample data format
+        const graphData = {
+            nodes: [
+                { id: "1", label: "Node 1", state: "A", height: 40, width: 80 },
+                { id: "2", label: "Node 2.1", state: "B", height: 50, width: 100 },
+                { id: "3", label: "Node 2.2", state: "B", height: 50, width: 100 },
+                { id: "4", label: "Node 3", state: "C", height: 40, width: 80 }
+            ],
+            edges: [
+                { id: "1-2.1", label: "Edge 1-2.1", sourceNode: "1", targetNode: "2" },
+                { id: "1-2.2", label: "Edge 1-2.2", sourceNode: "1", targetNode: "3" },
+                { id: "2-3", label: "Edge 2-3", sourceNode: "2", targetNode: "4" }
+            ]
+        };
+
+        // Convert graphData to the structure required by d3.dagStratify
+        function convertToStratifyData(graphData) {
+            const nodesMap = new Map(graphData.nodes.map(node => [node.id, { ...node, parentIds: [] }]));
+
+            graphData.edges.forEach(edge => {
+                const targetNode = nodesMap.get(edge.targetNode);
+                if (targetNode) {
+                    targetNode.parentIds.push(edge.sourceNode);
+                }
+            });
+
+            return Array.from(nodesMap.values());
+        }
+
+
+
+        // function initializeGraphData(graphData) {
+        //     // Initialize nodes with default width, height, and placeholder x, y attributes if not present
+        //     graphData.nodes.forEach(node => {
+        //         node.x = node.x || 0;  // Placeholder x value (will be set by layout later)
+        //         node.y = node.y || 0;  // Placeholder y value (will be set by layout later)
+        //         node.width = node.width || 80;  // Default width if not present
+        //         node.height = node.height || 40;  // Default height if not present
+        //     });
+
+        //     // Initialize edges with placeholder x1, y1, x2, y2 attributes
+        //     graphData.edges.forEach(edge => {
+        //         edge.x1 = edge.x1 || 0;  // Placeholder x1 value (will be set by layout later)
+        //         edge.y1 = edge.y1 || 0;  // Placeholder y1 value (will be set by layout later)
+        //         edge.x2 = edge.x2 || 0;  // Placeholder x2 value (will be set by layout later)
+        //         edge.y2 = edge.y2 || 0;  // Placeholder y2 value (will be set by layout later)
+        //     });
+        // }
+
+
+        // initializeGraphData(graphData);
+        console.log(graphData);
+        const maxNodeHeight = Math.max(...graphData.nodes.map(node => node.height));
+        const maxNodeWidth = Math.max(...graphData.nodes.map(node => node.width));
+        console.log("maxHeight", maxNodeHeight, maxNodeWidth);
+        const stratifyData = convertToStratifyData(graphData);
+
+        const stratify = d3.graphStratify();
+        const dag = stratify(stratifyData);
+
+        // Apply the Sugiyama layout
+        // const layout = d3.sugiyama()
+        //     .layering(d3.layeringLongestPath())
+        //     .decross(d3.decrossOpt())
+        //     .coord(d3.coordVertical());  // Use coordVertical instead of coordVert
+
+        // Apply the Sugiyama layout
+        const layout = d3.sugiyama()
+            .layering(d3.layeringLongestPath())
+            .decross(d3.decrossOpt())
+            // Replace d3.coordVertical with d3.coordQuad or d3.coordGreedy
+            .coord(d3.coordQuad());
+
+        const { width, height } = layout(dag);
+        console.log("size", width, height);
+
+        // Debug the dag
+        for (const node of dag.nodes()) {
+            console.log("node: ", node.data.id, node.x, node.y, node);
+        }
+        for (const { points } of dag.links()) {
+            console.log("link point:", points);
+        }
+
+        // Set up SVG canvas
+        const svg = d3.select("#graph");
+        const svgWidth = +svg.attr("width");
+        const svgHeight = +svg.attr("height");
+        svg.attr("viewBox", [0, 0, svgWidth, svgHeight]);
+        console.log("svg size", svgWidth, svgHeight);
+
+        const marginX = 4;
+        const marginY = 4;
+        // Scale and transform
+        const nodeSize = 40; // 0.25;
+        console.log("nodeSize", nodeSize);
+        const dagWidth = svgWidth - maxNodeWidth - (2 * marginX);
+        const dagHeight = svgHeight - maxNodeHeight - (2 * marginY);
+        console.log("dagWidth", dagWidth);
+        console.log("dagHeight", dagHeight);
+
+
+        console.log("create layoutScaleX", width, nodeSize, dagWidth);
+        const layoutScaleX = d3.scaleLinear()
+            .domain([0, width])
+            .range([maxNodeWidth / 2 + marginX, dagWidth]);
+        const layoutScaleY = d3.scaleLinear()
+            .domain([0, height])
+            .range([maxNodeHeight / 2 + marginY, dagHeight]);
+
+
+            function lineGenerator(points) {
+                    const [p0, p1] = points;
+                    const path = d3.path();
+                    p0.x = layoutScaleX(p0[0]);
+                    p0.y = layoutScaleY(p0[1]);
+                    p1.x = layoutScaleX(p1[0]);
+                    p1.y = layoutScaleY(p1[1]);
+                    console.log("p0: ", p0);
+                    console.log("p1: ", p1);
+                    
+
+                    // Move to the starting point
+                    path.moveTo(p0.x, p0.y);
+
+                    // Control points for the cubic curve
+                    const cp1x = p0.x;
+                    const cp1y = (p0.y + p1.y) / 2;
+                    const cp2x = p1.x;
+                    const cp2y = (p0.y + p1.y) / 2;
+
+                    // Draw a cubic curve from p0 to p1
+                    path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1.x, p1.y);
+
+                    return path.toString();
+                }
+
+            // var lineGenerator = d3.line()
+            //     .x((p) => layoutScaleX(p[0]))
+            //     .y((p) => layoutScaleY(p[1]))
+            //     .curve(d3.customCubicCurve);
+
+        // var lineGenerator = d3.line()
+        //     .x((p) => layoutScaleX(p[0]))
+        //     .y((p) => layoutScaleY(p[1]))
+        //     .curve(d3.curveMonotoneY);
+        // //     .curve(d3.curveCatmullRom.alpha(0.5));
+        // // .curve(d3.curveBasis);
+
+
+        const drawing_boundary = svg.append("g")
+            // .attr("transform", d => `translate(${layoutScaleX(0) - d.data.width / 2},${layoutScaleY(0) - d.data.height / 2})`);
+            .append("rect")
+            .attr("class", d => `drawing_boundary`)
+            // .attr("class", d => `node s${d.data.data.state}`)
+            .attr("x", d => layoutScaleX(0))
+            .attr("y", d => layoutScaleY(0))
+            .attr("width", d => layoutScaleX(width))
+            .attr("height", d => layoutScaleY(height));
+
+
+        // Draw edges (lines for now)
+        svg.append("defs").append("marker")
+            .attr("id", "arrowhead")
+            .attr("class", "marker")
+            .attr("viewBox", "-0 -5 10 10")
+            .attr("refX", 25)
+            .attr("refY", 0)
+            .attr("orient", "auto")
+            .attr("markerWidth", 4)
+            .attr("markerHeight", 4)
+            .attr("xoverflow", "visible")
+            .append("svg:path")
+            .attr("d", "M 0,-5 L 10 ,0 L 0,5");
+
+        const edges = svg.append("g")
+            .selectAll(".edge")
+            .data(dag.links())
+            .enter()
+            .append("path")
+            .attr("class", "edge")
+            .attr("d", d => {
+                console.log("link points for path d: ", d);
+                console.log("link points for path: ", d.points);
+                // return lineGenerator(d.points);
+                return lineGenerator(d.points);
+            });
+
+        // Draw nodes
+        const node = svg.append("g")
+            .selectAll(".nodecontainer")
+            .data(dag.nodes())
+            .enter()
+            .append("g")
+            .attr("class", d => `nodecontainer`)
+            .attr("transform", d => `translate(${layoutScaleX(d.x) - d.data.width / 2},${layoutScaleY(d.y) - d.data.height / 2})`);
+
+        node.append("rect")
+            .attr("class", d => `node`)
+            // .attr("class", d => `node s${d.data.data.state}`)
+            .attr("width", d => d.data.width)
+            .attr("height", d => d.data.height)
+            .attr("rx", 5)
+            .attr("ry", 5);
+
+        node.append("text")
+            .attr("class", "label")
+            .attr("x", d => d.data.width / 2)
+            .attr("y", d => d.data.height / 2 + 5)
+            .text(d => d.data.label);
+
+
+    </script>
+</body>
+
+</html>
