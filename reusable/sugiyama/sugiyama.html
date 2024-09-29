@@ -11,9 +11,9 @@
     <style>
         svg {
             border: 1px solid black;
-            /* width: 100%; */
-            width: 700px;
-            height: 500px;
+            width: 100%;
+            /* width: 700px; */
+            height: 800px;
         }
 
         .drawing_boundary {
@@ -127,8 +127,6 @@
             });
         }
 
-        let horizontal = true;
-
         // Add an event listener to update the horizontal variable when the checkbox changes
         const checkbox = document.getElementById('horizontalCheckbox');
         checkbox.addEventListener('change', function () {
@@ -138,8 +136,9 @@
             drawLayout();
         });
 
+        let horizontal = checkbox.checked; // Default to horizontal layout
 
-        let selectedFile = jsonFiles[0]; // Default to the first JSON file
+        let selectedFile = jsonFiles[3]; // Default to the first JSON file
 
         // Event listener to update selected filename from the dropdown
         fileSelect.addEventListener("change", function() {
@@ -162,12 +161,14 @@
         const svg = d3.select("#graph");
         const svgWidth = +svg.attr("width");
         const svgHeight = +svg.attr("height");
-        svg.attr("viewBox", [0, 0, svgWidth, svgHeight]);
-        console.log("svg size", svgWidth, svgHeight);
 
         function drawLayout() {
             // start with a clean slate
             svg.selectAll("*").remove();
+
+            const marginX = 14;
+            const marginY = 14;
+
 
             // Load the JSON file
             d3.json(`data/${selectedFile}`).then(graphData => {
@@ -182,25 +183,33 @@
                 const stratify = d3.graphStratify();
                 const dag = stratify(stratifyData);
 
+                function getNodeSize({ data }) {
+                    return [
+                        changeDirection(data.width + marginX, data.height + marginY, horizontal).x,
+                        changeDirection(data.width + marginX, data.height + marginY, horizontal).y
+                    ];
+                }
 
                 // Apply the Sugiyama layout
-                // const layout = d3.sugiyama()
-                //     .layering(d3.layeringLongestPath())
-                //     .decross(d3.decrossOpt())
-                //     .coord(d3.coordVertical());  // Use coordVertical instead of coordVert
-
-                // Apply the Sugiyama layout
-                // const layout = d3.sugiyama();
                 const layout = d3.sugiyama()
                     .layering(d3.layeringLongestPath())
                     .decross(d3.decrossOpt())
-                    // Replace d3.coordVertical with d3.coordQuad or d3.coordGreedy
-                    .coord(d3.coordCenter());
-                // .coord(d3.coordHoriz());
-                // .coord(d3.coordQuad());
+                    // Replace d3.coordVertical with d3.coordQuad or d3.coordGreedy, coordSimplex
+                    // .coord(d3.coordSimplex())
+                    .coord(d3.coordQuad())
+                    // .coord(d3.coordGreedy())                    
+                    .nodeSize(d => getNodeSize(d))
+                    .gap([marginX,marginY]);
 
                 const { width, height } = layout(dag);
-                console.log("size", width, height);
+                console.log("layout size", width, height);
+                svg.attr("viewBox", [
+                    0, 
+                    0, 
+                    changeDirection(width, height, horizontal).x,
+                    changeDirection(width, height, horizontal).y
+                ]);
+
 
                 // Debug the dag
                 for (const node of dag.nodes()) {
@@ -210,34 +219,13 @@
                     console.log("link point:", points);
                 }
 
-                const marginX = 4;
-                const marginY = 4;
-                // Scale and transform
-                const nodeSize = 100; // 0.25;
-                console.log("nodeSize", nodeSize);
-                const dagWidth = svgWidth - maxNodeWidth - (2 * marginX);
-                const dagHeight = svgHeight - maxNodeHeight - (2 * marginY);
-                console.log("dagWidth", dagWidth);
-                console.log("dagHeight", dagHeight);
-
-
-                console.log("create layoutScaleX", width, nodeSize, dagWidth);
-                const layoutScaleX = d3.scaleLinear()
-                    .domain([0, changeDirection(width, height, horizontal).x])
-                    .range([maxNodeWidth / 2 + marginX, dagWidth]);
-                const layoutScaleY = d3.scaleLinear()
-                    .domain([0, changeDirection(width, height, horizontal).y])
-                    .range([maxNodeHeight / 2 + marginY, dagHeight]);
-
-
-
                 function lineGenerator(points) {
                     const [p0, p1] = points;
                     const path = d3.path();
-                    p0.x = layoutScaleX(changeDirection(p0[0], p0[1], horizontal).x);
-                    p0.y = layoutScaleY(changeDirection(p0[0], p0[1], horizontal).y);
-                    p1.x = layoutScaleX(changeDirection(p1[0], p1[1], horizontal).x);
-                    p1.y = layoutScaleY(changeDirection(p1[0], p1[1], horizontal).y);
+                    p0.x = changeDirection(p0[0], p0[1], horizontal).x;
+                    p0.y = changeDirection(p0[0], p0[1], horizontal).y;
+                    p1.x = changeDirection(p1[0], p1[1], horizontal).x;
+                    p1.y = changeDirection(p1[0], p1[1], horizontal).y;
                     console.log("p0: ", p0);
                     console.log("p1: ", p1);
 
@@ -273,10 +261,10 @@
                 const drawing_boundary = svg.append("g")
                     .append("rect")
                     .attr("class", d => `drawing_boundary`)
-                    .attr("x", d => layoutScaleX(0))
-                    .attr("y", d => layoutScaleY(0))
-                    .attr("width", d => layoutScaleX(changeDirection(width, height, horizontal).x))
-                    .attr("height", d => layoutScaleY(changeDirection(width, height, horizontal).y))
+                    .attr("x", d => 0)
+                    .attr("y", d => 0)
+                    .attr("width", d => changeDirection(width, height, horizontal).x)
+                    .attr("height", d => changeDirection(width, height, horizontal).y)
 
 
                 // Draw edges (lines for now)
@@ -313,7 +301,7 @@
                     .enter()
                     .append("g")
                     .attr("class", d => `nodecontainer`)
-                    .attr("transform", d => `translate(${layoutScaleX(changeDirection(d.x, d.y, horizontal).x) - d.data.width / 2},${layoutScaleY(changeDirection(d.x, d.y, horizontal).y) - d.data.height / 2})`);
+                    .attr("transform", d => `translate(${changeDirection(d.x, d.y, horizontal).x - d.data.width / 2},${changeDirection(d.x, d.y, horizontal).y - d.data.height / 2})`);
 
                 node.append("rect")
                     .attr("class", d => `node`)

@@ -195,15 +195,13 @@
             const marginX = 4;
             const marginY = 4;
             // Scale and transform
-            const nodeSize = 40; // 0.25;
-            console.log("nodeSize", nodeSize);
             const dagWidth = svgWidth - maxNodeWidth - (2 * marginX);
             const dagHeight = svgHeight - maxNodeHeight - (2 * marginY);
             console.log("dagWidth", dagWidth);
             console.log("dagHeight", dagHeight);
 
 
-            console.log("create layoutScaleX", width, nodeSize, dagWidth);
+            console.log("create layoutScaleX", width, dagWidth);
             const layoutScaleX = d3.scaleLinear()
                 .domain([0, changeDirection(width, height, horizontal).x])
                 .range([maxNodeWidth / 2 + marginX, dagWidth]);
