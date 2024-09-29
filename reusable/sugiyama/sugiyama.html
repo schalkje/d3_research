@@ -157,6 +157,14 @@
             }
         }
 
+        function changePointDirection(points, horizontal) {
+            if (horizontal) {
+                return points.map(point => [point[1], point[0]]); // Swap x and y when horizontal is true
+            }
+            return points; // Return points unchanged when horizontal is false
+        }
+    
+
         // Set up SVG canvas
         const svg = d3.select("#graph");
         const svgWidth = +svg.attr("width");
@@ -200,6 +208,8 @@
                     // .coord(d3.coordGreedy())                    
                     .nodeSize(d => getNodeSize(d))
                     .gap([marginX,marginY]);
+                    // .tweakFlip("diagonal");
+                    // .tweakShape(d => getNodeSize(d), d3.shapeRect);
 
                 const { width, height } = layout(dag);
                 console.log("layout size", width, height);
@@ -219,7 +229,7 @@
                     console.log("link point:", points);
                 }
 
-                function lineGenerator(points) {
+                function lineGenerator1(points) {
                     const [p0, p1] = points;
                     const path = d3.path();
                     p0.x = changeDirection(p0[0], p0[1], horizontal).x;
@@ -244,6 +254,13 @@
 
                     return path.toString();
                 }
+
+                  // How to draw edges
+                const curve = d3.curveCatmullRom; // d3.curveMonotoneY; //
+
+                    // splines.get(spline) ??
+                    // (coord === "Simplex (medium)" ? d3.curveMonotoneY : d3.curveCatmullRom);
+                const lineGenerator = d3.line().curve(curve);
 
                 // var lineGenerator = d3.line()
                 //     .x((p) => layoutScaleX(p[0]))
@@ -291,7 +308,7 @@
                         console.log("link points for path d: ", d);
                         console.log("link points for path: ", d.points);
                         // return lineGenerator(d.points);
-                        return lineGenerator(d.points);
+                        return lineGenerator(changePointDirection(d.points, horizontal));
                     });
 
                 // Draw nodes
