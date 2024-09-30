@@ -94,6 +94,8 @@
             fileSelect.appendChild(option);
         });
     </script>
+    <label for="curveCheckbox">Curve</label>
+    <input type="checkbox" id="curveCheckbox" checked>
 
     <div>
         <svg id="graph" width="800" height="600"></svg>
@@ -137,12 +139,19 @@
         const checkbox = document.getElementById('horizontalCheckbox');
         checkbox.addEventListener('change', function () {
             horizontal = this.checked;
-            const p = changeDirection(5, 10, horizontal);
-            console.log("New direction:", p);
             drawLayout();
         });
 
         let horizontal = checkbox.checked; // Default to horizontal layout
+
+        const curveCheckbox = document.getElementById('curveCheckbox');
+        let isEdgeCurved = curveCheckbox.checked; // Default to horizontal layout
+
+        curveCheckbox.addEventListener('change', function () {
+            isEdgeCurved = this.checked;
+            console.log("isEdgeCurved", isEdgeCurved);
+            drawLayout();
+        });
 
         let selectedFile = jsonFiles[3]; // Default to the first JSON file
 
@@ -266,7 +275,16 @@
 
                 // splines.get(spline) ??
                 // (coord === "Simplex (medium)" ? d3.curveMonotoneY : d3.curveCatmullRom);
-                const lineGenerator = d3.line().curve(curve);
+                let lineGenerator;
+                if (isEdgeCurved) {
+                    lineGenerator = d3.line().curve(curve);
+                } 
+                else {
+                    lineGenerator  = d3.line();
+
+                }
+
+                // const lineGenerator = d3.line().curve(curve);
 
                 // var lineGenerator = d3.line()
                 //     .x((p) => layoutScaleX(p[0]))
@@ -354,14 +372,9 @@
             console.log("d", d);
             const sourceNode = d.source;
             const targetNode = d.target;
-            // console.log("sourceNode", sourceNode);
-            // console.log("targetNode", targetNode);
 
             const sourceConnectionPoints = computeConnectionPoints(sourceNode.data.width, sourceNode.data.height);
             const targetConnectionPoints = computeConnectionPoints(targetNode.data.width, targetNode.data.height);
-
-            // console.log("sourceConnectionPoints", sourceConnectionPoints);
-            // console.log("targetConnectionPoints", targetConnectionPoints);
 
             let sourcePoint, targetPoint;
 
@@ -373,10 +386,6 @@
                 targetPoint = targetConnectionPoints.top;
             }
 
-            // console.log("sourcePoint", sourcePoint);
-            // console.log("targetPoint", targetPoint);
-
-
             sourcePoint = [
                 changeDirection(sourceNode.x, sourceNode.y, horizontal).x + sourcePoint.x - sourceNode.data.width / 2,
                 changeDirection(sourceNode.x, sourceNode.y, horizontal).y + sourcePoint.y - sourceNode.data.height / 2
@@ -387,11 +396,41 @@
                 changeDirection(targetNode.x, targetNode.y, horizontal).y + targetPoint.y - targetNode.data.height / 2
             ];
 
-            // console.log("sourcePoint", sourcePoint);
-            // console.log("targetPoint", targetPoint);
+            // Calculate waypoints
+            let waypoints;
+            const midX = (targetPoint[0] - sourcePoint[0]) / 2;
+            const midY = (targetPoint[1] - sourcePoint[1]) / 2;
+            if (horizontal) {
+                if (isEdgeCurved) {
+                    waypoints = [
+                        // // for a curve
+                        [sourcePoint[0] + (midX * 0.4), sourcePoint[1] + (midY * 0.1)], // Move horizontally to half the distance
+                        [sourcePoint[0] + (midX * 1.1), targetPoint[1] - (midY * 0.1)]  // Stay on x and move vertically
+                    ];
+                }
+                else {
+                    waypoints = [
+                        [sourcePoint[0] + (midX * 1), sourcePoint[1] + midY], // Move horizontally to half the distance
+                        [sourcePoint[0] + (midX * 1), targetPoint[1] - midY]  // Stay on x and move vertically
+                    ];
+                }
+            } else {
+                if (isEdgeCurved) {
+                    // // for a curve
+                    waypoints = [
+                        [sourcePoint[0] + (midX * 0.1), sourcePoint[1] + (midY * 0.9)], // Move horizontally to half the distance
+                        [targetPoint[0] - (midX * 0.1), sourcePoint[1] + (midY * 1.5)]  // Stay on x and move vertically
+                    ];
+                }
+                else {
+                    waypoints = [
+                        [sourcePoint[0], sourcePoint[1] + midY], // Move horizontally to half the distance
+                        [targetPoint[0], sourcePoint[1] + midY]  // Stay on x and move vertically
+                    ];
+                }
+            }
 
-
-            return [sourcePoint, targetPoint];
+            return [sourcePoint, ...waypoints, targetPoint];
         }
 
         function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
@@ -401,7 +440,7 @@
                 .attr("id", "arrowhead")
                 .attr("class", "marker")
                 .attr("viewBox", "-0 -5 10 10")
-                .attr("refX", changeDirection(25, 44, horizontal).x)
+                .attr("refX", changeDirection(10, 10, horizontal).x)
                 .attr("refY", 0)
                 .attr("orient", "auto")
                 .attr("markerWidth", 4)
