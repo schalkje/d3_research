@@ -9,11 +9,20 @@
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
     <style>
-        svg {
+        #graph {
             border: 1px solid black;
             width: 100%;
             /* width: 700px; */
             height: 800px;
+        }
+
+        #minimap-container {
+            border: 1px solid black;
+        }
+
+        #minimap {
+            border: 1px solid darkblue;
+            background-color: lightgoldenrodyellow;
         }
 
         .drawing_boundary {
@@ -98,7 +107,17 @@
     <input type="checkbox" id="curveCheckbox" checked>
 
     <div>
-        <svg id="graph" width="800" height="600"></svg>
+        <svg id="graph"></svg>
+    </div>
+    <div id="zoom-controls">
+        <button id="zoom-in">Zoom In</button>
+        <button id="zoom-out">Zoom Out</button>
+        <button id="zoom-reset">Reset Zoom</button>
+        <button id="zoom-random">Random Zoom</button>
+    </div>
+
+    <div id="minimap-container">
+        <svg id="minimap" width="200" height="200"></svg>
     </div>
 
     <script>
@@ -185,9 +204,31 @@
         const svgWidth = +svg.attr("width");
         const svgHeight = +svg.attr("height");
 
+
+        // Zoom functions
+        // const zoom = d3.zoom().on("zoom", function(event) {
+        //     g.attr("transform", event.transform);
+        // });
+
+        // svg.call(zoom);
+
+        // // Set up minimap
+        // // Create the minimap SVG container
+        // const minimapWidth = 200;
+        // const minimapHeight = 200;
+
+        // const minimap = d3.select("#minimap")
+        //     .attr("width", minimapWidth)
+        //     .attr("height", minimapHeight)
+        //     .append("g");
+
+        // const minimapG = minimap.append("g");
+
         function drawLayout() {
             // start with a clean slate
             svg.selectAll("*").remove();
+
+            const svg_canvas = svg.append("g");
 
             const marginX = changeDirection(8, 100, horizontal).x;
             const marginY = changeDirection(50, 8, horizontal).x;
@@ -235,6 +276,67 @@
                     changeDirection(width, height, horizontal).y
                 ]);
 
+                const zoom = d3.zoom()
+                    .extent([[0, 0], [width, height]])
+                    .scaleExtent([1, 8])
+                    .on("zoom", zoomed);
+
+                svg.call(zoom);
+
+                function zoomed({ transform }) {
+                    svg_canvas.attr("transform", transform);
+                }
+
+                function random() {
+                    console.log("random", dag);
+                    const data = [];
+                    for (const node of dag.nodes()) {
+                        data.push([node.x, node.y]);
+                }
+                    const [x, y] = data[Math.floor(Math.random() * data.length)];
+                    svg.transition().duration(2500).call(
+                        zoom.transform,
+                        d3.zoomIdentity.translate(width / 2, height / 2).scale(40).translate(-x, -y)
+                    );
+                }
+
+                function reset() {
+                    svg.transition().duration(750).call(
+                        zoom.transform,
+                        d3.zoomIdentity,
+                        d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
+                    );
+                }
+
+                function clicked(event, [x, y]) {
+                    event.stopPropagation();
+                    svg.transition().duration(750).call(
+                        zoom.transform,
+                        d3.zoomIdentity.translate(width / 2, height / 2).scale(40).translate(-x, -y),
+                        d3.pointer(event)
+                    );
+                }
+
+
+                d3.select("#zoom-in").on("click", function () {
+                    svg.transition().call(zoom.scaleBy, 1.2);
+                });
+
+                d3.select("#zoom-out").on("click", function () {
+                    svg.transition().call(zoom.scaleBy, 0.8);
+                });
+
+                d3.select("#zoom-reset").on("click", function () {
+                    // svg.transition().call(zoom.scaleTo, 1);
+                    reset();
+                });
+
+                d3.select("#zoom-random").on("click", function () {
+                    random();
+                });
+
+
+
 
                 // Debug the dag
                 for (const node of dag.nodes()) {
@@ -277,16 +379,16 @@
                 let lineGenerator;
                 if (isEdgeCurved) {
                     lineGenerator = d3.line().curve(curve);
-                } 
+                }
                 else {
-                    lineGenerator  = d3.line();
+                    lineGenerator = d3.line();
 
                 }
 
                 // Draw drawing boundary
                 let drawBoundary = false;
                 if (drawBoundary) {
-                    const drawingBoundary = svg.append("g")
+                    const drawingBoundary = svg_canvas.append("g")
                         .append("rect")
                         .attr("class", d => `drawing_boundary`)
                         .attr("x", d => 0)
@@ -297,10 +399,10 @@
 
 
                 // Draw edges
-                drawEdges(svg, dag, width, height, horizontal, lineGenerator);
+                drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
 
                 // Draw nodes
-                drawNodes(svg, dag, horizontal);
+                drawNodes(svg_canvas, dag, horizontal);
             })
         }
 
@@ -419,7 +521,6 @@
         }
 
         function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
-
             // Define arrowhead marker
             svg.append("defs").append("marker")
                 .attr("id", "arrowhead")
@@ -453,6 +554,42 @@
                     return lineGenerator(points);
                 });
         }
+
+        // // Draw your DAG on the minimap
+        // function drawMinimap(dag) {
+        //     // Draw nodes
+        //     minimapG.selectAll(".node")
+        //         .data(dag.nodes())
+        //         .enter()
+        //         .append("rect")
+        //         .attr("class", "node")
+        //         .attr("x", d => d.x * (minimapWidth / width))
+        //         .attr("y", d => d.y * (minimapHeight / height))
+        //         .attr("width", d => d.data.width * (minimapWidth / width))
+        //         .attr("height", d => d.data.height * (minimapHeight / height))
+        //         .attr("fill", "gray");
+
+        //     // Draw edges
+        //     minimapG.selectAll(".edge")
+        //         .data(dag.links())
+        //         .enter()
+        //         .append("line")
+        //         .attr("class", "edge")
+        //         .attr("x1", d => d.source.x * (minimapWidth / width))
+        //         .attr("y1", d => d.source.y * (minimapHeight / height))
+        //         .attr("x2", d => d.target.x * (minimapWidth / width))
+        //         .attr("y2", d => d.target.y * (minimapHeight / height))
+        //         .attr("stroke", "black")
+        //         .attr("stroke-width", 1);
+        // }
+
+        // // Function to update the minimap based on zoom transform
+        // function updateMinimap(transform) {
+        //     minimapG.attr("transform", `scale(${1 / transform.k}) translate(${-transform.x}, ${-transform.y})`);
+        // }
+
+        // Call drawMinimap after the main graph is drawn
+        // drawMinimap(dag);
 
         drawLayout();
     </script>
