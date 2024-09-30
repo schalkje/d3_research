@@ -174,8 +174,8 @@
             // start with a clean slate
             svg.selectAll("*").remove();
 
-            const marginX = 14;
-            const marginY = 14;
+            const marginX = changeDirection(4,100, horizontal).x;
+            const marginY = changeDirection(50,4, horizontal).x;
 
 
             // Load the JSON file
@@ -206,8 +206,8 @@
                     // .coord(d3.coordSimplex())
                     .coord(d3.coordQuad())
                     // .coord(d3.coordGreedy())                    
-                    .nodeSize(d => getNodeSize(d))
-                    .gap([marginX,marginY]);
+                    .nodeSize(d => getNodeSize(d));
+                    // .gap([marginX,marginY]);
                     // .tweakFlip("diagonal");
                     // .tweakShape(d => getNodeSize(d), d3.shapeRect);
 
