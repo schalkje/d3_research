@@ -31,7 +31,7 @@
 
         .edge {
             stroke: #ccc;
-            stroke-width: 4px;
+            stroke-width: 2px;
             fill: none;
             marker-end: url(#arrowhead);
         }
@@ -47,6 +47,12 @@
             font-size: 12px;
             text-anchor: middle;
             fill: white;
+        }
+
+        .connection-point {
+            fill: rgb(70, 130, 180, 0.8);
+            stroke: rgb(154, 169, 182);
+            /* stroke: rgba(70, 131, 180, 0.5); */
         }
     </style>
 </head>
@@ -141,7 +147,7 @@
         let selectedFile = jsonFiles[3]; // Default to the first JSON file
 
         // Event listener to update selected filename from the dropdown
-        fileSelect.addEventListener("change", function() {
+        fileSelect.addEventListener("change", function () {
             console.log("Old Selected file:", selectedFile);
             selectedFile = this.value;
             console.log("Selected file:", selectedFile);
@@ -163,7 +169,7 @@
             }
             return points; // Return points unchanged when horizontal is false
         }
-    
+
 
         // Set up SVG canvas
         const svg = d3.select("#graph");
@@ -174,8 +180,8 @@
             // start with a clean slate
             svg.selectAll("*").remove();
 
-            const marginX = changeDirection(4,100, horizontal).x;
-            const marginY = changeDirection(50,4, horizontal).x;
+            const marginX = changeDirection(8, 100, horizontal).x;
+            const marginY = changeDirection(50, 8, horizontal).x;
 
 
             // Load the JSON file
@@ -207,15 +213,15 @@
                     .coord(d3.coordQuad())
                     // .coord(d3.coordGreedy())                    
                     .nodeSize(d => getNodeSize(d));
-                    // .gap([marginX,marginY]);
-                    // .tweakFlip("diagonal");
-                    // .tweakShape(d => getNodeSize(d), d3.shapeRect);
+                // .gap([marginX,marginY]);
+                // .tweakFlip("diagonal");
+                // .tweakShape(d => getNodeSize(d), d3.shapeRect);
 
                 const { width, height } = layout(dag);
                 console.log("layout size", width, height);
                 svg.attr("viewBox", [
-                    0, 
-                    0, 
+                    0,
+                    0,
                     changeDirection(width, height, horizontal).x,
                     changeDirection(width, height, horizontal).y
                 ]);
@@ -255,11 +261,11 @@
                     return path.toString();
                 }
 
-                  // How to draw edges
+                // How to draw edges
                 const curve = d3.curveCatmullRom; // d3.curveMonotoneY; //
 
-                    // splines.get(spline) ??
-                    // (coord === "Simplex (medium)" ? d3.curveMonotoneY : d3.curveCatmullRom);
+                // splines.get(spline) ??
+                // (coord === "Simplex (medium)" ? d3.curveMonotoneY : d3.curveCatmullRom);
                 const lineGenerator = d3.line().curve(curve);
 
                 // var lineGenerator = d3.line()
@@ -274,66 +280,154 @@
                 // //     .curve(d3.curveCatmullRom.alpha(0.5));
                 // // .curve(d3.curveBasis);
 
+                // Draw drawing boundary
+                let drawBoundary = false;
+                if (drawBoundary) {
+                    const drawingBoundary = svg.append("g")
+                        .append("rect")
+                        .attr("class", d => `drawing_boundary`)
+                        .attr("x", d => 0)
+                        .attr("y", d => 0)
+                        .attr("width", d => changeDirection(width, height, horizontal).x)
+                        .attr("height", d => changeDirection(width, height, horizontal).y);
+                }
 
-                const drawing_boundary = svg.append("g")
-                    .append("rect")
-                    .attr("class", d => `drawing_boundary`)
-                    .attr("x", d => 0)
-                    .attr("y", d => 0)
-                    .attr("width", d => changeDirection(width, height, horizontal).x)
-                    .attr("height", d => changeDirection(width, height, horizontal).y)
 
-
-                // Draw edges (lines for now)
-                svg.append("defs").append("marker")
-                    .attr("id", "arrowhead")
-                    .attr("class", "marker")
-                    .attr("viewBox", "-0 -5 10 10")
-                    .attr("refX", changeDirection(25, 44, horizontal).x)
-                    .attr("refY", 0)
-                    .attr("orient", "auto")
-                    .attr("markerWidth", 4)
-                    .attr("markerHeight", 4)
-                    .attr("xoverflow", "visible")
-                    .append("svg:path")
-                    .attr("d", "M 0,-5 L 10 ,0 L 0,5");
-
-                const edges = svg.append("g")
-                    .selectAll(".edge")
-                    .data(dag.links())
-                    .enter()
-                    .append("path")
-                    .attr("class", "edge")
-                    .attr("d", d => {
-                        console.log("link points for path d: ", d);
-                        console.log("link points for path: ", d.points);
-                        // return lineGenerator(d.points);
-                        return lineGenerator(changePointDirection(d.points, horizontal));
-                    });
+                // Draw edges
+                drawEdges(svg, dag, width, height, horizontal, lineGenerator);
 
                 // Draw nodes
-                const node = svg.append("g")
-                    .selectAll(".nodecontainer")
-                    .data(dag.nodes())
-                    .enter()
-                    .append("g")
-                    .attr("class", d => `nodecontainer`)
-                    .attr("transform", d => `translate(${changeDirection(d.x, d.y, horizontal).x - d.data.width / 2},${changeDirection(d.x, d.y, horizontal).y - d.data.height / 2})`);
-
-                node.append("rect")
-                    .attr("class", d => `node`)
-                    // .attr("class", d => `node s${d.data.data.state}`)
-                    .attr("width", d => d.data.width)
-                    .attr("height", d => d.data.height)
-                    .attr("rx", 5)
-                    .attr("ry", 5);
-
-                node.append("text")
-                    .attr("class", "label")
-                    .attr("x", d => d.data.width / 2)
-                    .attr("y", d => d.data.height / 2 + 5)
-                    .text(d => d.data.label);
+                drawNodes(svg, dag, horizontal);
             })
+        }
+
+
+
+        function drawNodes(svg, dag, horizontal, showConnectionPoints = true) {
+            // Draw nodes
+            const node = svg.append("g")
+                .selectAll(".nodecontainer")
+                .data(dag.nodes())
+                .enter()
+                .append("g")
+                .attr("class", d => `nodecontainer`)
+                .attr("transform", d => `translate(${changeDirection(d.x, d.y, horizontal).x - d.data.width / 2},${changeDirection(d.x, d.y, horizontal).y - d.data.height / 2})`);
+
+            node.append("rect")
+                .attr("class", d => `node`)
+                // .attr("class", d => `node s${d.data.data.state}`)
+                .attr("width", d => d.data.width)
+                .attr("height", d => d.data.height)
+                .attr("rx", 5)
+                .attr("ry", 5);
+
+            node.append("text")
+                .attr("class", "label")
+                .attr("x", d => d.data.width / 2)
+                .attr("y", d => d.data.height / 2 + 5)
+                .text(d => d.data.label);
+
+            if (showConnectionPoints) {
+                node.each(function (d) {
+                    const connectionPoints = computeConnectionPoints(d.data.width, d.data.height);
+                    Object.values(connectionPoints).forEach(point => {
+                        d3.select(this).append("circle")
+                            .attr("class", "connection-point")
+                            .attr("cx", point.x)
+                            .attr("cy", point.y)
+                            .attr("r", 3);
+                    });
+                });
+            }
+        }
+
+        function computeConnectionPoints(width, height) {
+            return {
+                top: { x: width / 2, y: 0 },
+                bottom: { x: width / 2, y: height },
+                left: { x: 0, y: height / 2 },
+                right: { x: width, y: height / 2 }
+            };
+        }
+
+        function generateEdgePath(d, horizontal) {
+            console.log("d", d);
+            const sourceNode = d.source;
+            const targetNode = d.target;
+            // console.log("sourceNode", sourceNode);
+            // console.log("targetNode", targetNode);
+
+            const sourceConnectionPoints = computeConnectionPoints(sourceNode.data.width, sourceNode.data.height);
+            const targetConnectionPoints = computeConnectionPoints(targetNode.data.width, targetNode.data.height);
+
+            // console.log("sourceConnectionPoints", sourceConnectionPoints);
+            // console.log("targetConnectionPoints", targetConnectionPoints);
+
+            let sourcePoint, targetPoint;
+
+            if (horizontal) {
+                sourcePoint = sourceConnectionPoints.right;
+                targetPoint = targetConnectionPoints.left;
+            } else {
+                sourcePoint = sourceConnectionPoints.bottom;
+                targetPoint = targetConnectionPoints.top;
+            }
+
+            // console.log("sourcePoint", sourcePoint);
+            // console.log("targetPoint", targetPoint);
+
+
+            sourcePoint = [
+                changeDirection(sourceNode.x, sourceNode.y, horizontal).x + sourcePoint.x - sourceNode.data.width / 2,
+                changeDirection(sourceNode.x, sourceNode.y, horizontal).y + sourcePoint.y - sourceNode.data.height / 2
+            ];
+
+            targetPoint = [
+                changeDirection(targetNode.x, targetNode.y, horizontal).x + targetPoint.x - targetNode.data.width / 2,
+                changeDirection(targetNode.x, targetNode.y, horizontal).y + targetPoint.y - targetNode.data.height / 2
+            ];
+
+            // console.log("sourcePoint", sourcePoint);
+            // console.log("targetPoint", targetPoint);
+
+
+            return [sourcePoint, targetPoint];
+        }
+
+        function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
+
+            // Define arrowhead marker
+            svg.append("defs").append("marker")
+                .attr("id", "arrowhead")
+                .attr("class", "marker")
+                .attr("viewBox", "-0 -5 10 10")
+                .attr("refX", changeDirection(25, 44, horizontal).x)
+                .attr("refY", 0)
+                .attr("orient", "auto")
+                .attr("markerWidth", 4)
+                .attr("markerHeight", 4)
+                .attr("xoverflow", "visible")
+                .append("svg:path")
+                .attr("d", "M 0,-5 L 10 ,0 L 0,5");
+
+            // Draw edges
+            svg.append("g")
+                .selectAll(".edge")
+                .data(dag.links())
+                .enter()
+                .append("path")
+                .attr("class", "edge")
+                .attr("d", d => {
+                    console.log("link points for path d: ", d);
+                    console.log("link points for path: ", d.points);
+                    console.log("link points for path changed: ", changePointDirection(d.points, horizontal));
+                    // // return lineGenerator(d.points);
+                    // return lineGenerator(changePointDirection(d.points, horizontal));
+
+                    const points = generateEdgePath(d, horizontal);
+                    console.log("points", points);
+                    return lineGenerator(points);
+                });
         }
 
         drawLayout();
