@@ -271,10 +271,9 @@
                 }
 
                 // How to draw edges
-                const curve = d3.curveCatmullRom; // d3.curveMonotoneY; //
+                const curve = d3.curveBasis; //d3.curveCatmullRom; // d3.curveMonotoneY; //
 
                 // splines.get(spline) ??
-                // (coord === "Simplex (medium)" ? d3.curveMonotoneY : d3.curveCatmullRom);
                 let lineGenerator;
                 if (isEdgeCurved) {
                     lineGenerator = d3.line().curve(curve);
@@ -283,20 +282,6 @@
                     lineGenerator  = d3.line();
 
                 }
-
-                // const lineGenerator = d3.line().curve(curve);
-
-                // var lineGenerator = d3.line()
-                //     .x((p) => layoutScaleX(p[0]))
-                //     .y((p) => layoutScaleY(p[1]))
-                //     .curve(d3.customCubicCurve);
-
-                // var lineGenerator = d3.line()
-                //     .x((p) => layoutScaleX(p[0]))
-                //     .y((p) => layoutScaleY(p[1]))
-                //     .curve(d3.curveMonotoneY);
-                // //     .curve(d3.curveCatmullRom.alpha(0.5));
-                // // .curve(d3.curveBasis);
 
                 // Draw drawing boundary
                 let drawBoundary = false;
@@ -404,14 +389,14 @@
                 if (isEdgeCurved) {
                     waypoints = [
                         // // for a curve
-                        [sourcePoint[0] + (midX * 0.4), sourcePoint[1] + (midY * 0.1)], // Move horizontally to half the distance
-                        [sourcePoint[0] + (midX * 1.1), targetPoint[1] - (midY * 0.1)]  // Stay on x and move vertically
+                        [sourcePoint[0] + (midX * 0.9), sourcePoint[1] + (midY * 0.1)], // Move horizontally to half the distance
+                        [sourcePoint[0] + (midX * 1.1), targetPoint[1] + (midY * 0.1)]  // Stay on x and move vertically
                     ];
                 }
                 else {
                     waypoints = [
-                        [sourcePoint[0] + (midX * 1), sourcePoint[1] + midY], // Move horizontally to half the distance
-                        [sourcePoint[0] + (midX * 1), targetPoint[1] - midY]  // Stay on x and move vertically
+                        [sourcePoint[0] + midX, sourcePoint[1]], // Move horizontally to half the distance
+                        [sourcePoint[0] + midX, targetPoint[1]]  // Stay on x and move vertically
                     ];
                 }
             } else {
