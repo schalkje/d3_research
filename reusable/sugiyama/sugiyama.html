@@ -322,96 +322,27 @@
                     svg_canvas.attr("transform", transform);
                 }
 
-                // function zoomToNode(node) {
-                //     console.log("random node=", node.data.label, node);
-                //     console.log("margin", marginX, marginY);
-                //     const scale = 2;
-                //      const x =changeDirection(node.x, node.y, horizontal).x; // - (node.data.width) + marginX,
-                //      const y = changeDirection(node.x, node.y, horizontal).y + (node.data.height * (4.78));// + marginY
-                //         // changeDirection(node.x - (node.data.width/2) - marginX/2, node.y - (node.data.height/2), horizontal).x,
-                //         // changeDirection(node.x - (node.data.width/2) - marginX/2, node.y - (node.data.height/2), horizontal).y
-                //         // 2 -> 4.78
-                //         // 3 -> 3.2
-                //         // 5 -> 2
-                //         // 10 -> 1
-                //         // 20 -> 0.5
-
-                        
-                        
-                //     console.log("x, y", x, y, width/node.data.width);
-
-                //     svg.transition().duration(2500).call(
-                //         zoom.transform,
-                //         d3.zoomIdentity
-                //         .translate(width / 2, height / 2)
-                //         .scale(scale)
-                //         .translate(-x, -y)
-                //     );
-                // }
-
-                function zoomToNodeByName(name) {
-                    console.log("zoomToNodeByName", name);
-                    for (const node of dag.nodes()) {
-                        if (node.data.label === name) {
-                            zoomToNode(node, dag, zoom, width, height, horizontal);
-                            // node.call(d3.zoom().on("zoom", zoomed));
-                            break;
-                        }
-                    }
-                }
-
-                function random() {
-                    console.log("random", dag);
-                    const data = [];
-                    for (const node of dag.nodes()) {
-                        // data.push([node.x, node.y]);
-                        data.push(node);
-                    }
-                    const node = data[Math.floor(Math.random() * data.length)];
-                    console.log("random node=", node.data.label, node);
-                    zoomToNode(node, dag, zoom, width, height, horizontal);
-                }
-
-                function reset() {
-                    svg.transition().duration(750).call(
-                        zoom.transform,
-                        d3.zoomIdentity,
-                        d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
-                    );
-                }
-
-                function clicked(event, [x, y]) {
-                    event.stopPropagation();
-                    svg.transition().duration(750).call(
-                        zoom.transform,
-                        d3.zoomIdentity.translate(width / 2, height / 2).scale(40).translate(-x, -y),
-                        d3.pointer(event)
-                    );
-                }
-
-
+                // Connect the zoom buttons to the zoom functions
                 d3.select("#zoom-in").on("click", function () {
-                    svg.transition().call(zoom.scaleBy, 1.2);
+                    zoomIn(svg,zoom);
                 });
 
                 d3.select("#zoom-out").on("click", function () {
-                    svg.transition().call(zoom.scaleBy, 0.8);
+                    zoomOut(svg,zoom);
                 });
 
                 d3.select("#zoom-reset").on("click", function () {
                     // svg.transition().call(zoom.scaleTo, 1);
-                    reset();
+                    zoomReset(svg,zoom, width, height, horizontal);
                 });
 
                 d3.select("#zoom-random").on("click", function () {
-                    random();
+                    zoomRandom(dag, zoom, width, height, horizontal);
                 });
 
                 d3.select("#zoom-node").on("click", function () {
-                    zoomToNodeByName("TRANSFORM_Stater");
+                    zoomToNodeByName("STG_ARCHIVE_Fidor", dag, zoom, width, height, horizontal);
                 });
-
-
 
 
                 // Debug the dag
@@ -420,32 +351,6 @@
                 }
                 for (const { points } of dag.links()) {
                     console.log("link point:", points);
-                }
-
-                function lineGenerator1(points) {
-                    const [p0, p1] = points;
-                    const path = d3.path();
-                    p0.x = changeDirection(p0[0], p0[1], horizontal).x;
-                    p0.y = changeDirection(p0[0], p0[1], horizontal).y;
-                    p1.x = changeDirection(p1[0], p1[1], horizontal).x;
-                    p1.y = changeDirection(p1[0], p1[1], horizontal).y;
-                    console.log("p0: ", p0);
-                    console.log("p1: ", p1);
-
-
-                    // Move to the starting point
-                    path.moveTo(p0.x, p0.y);
-
-                    // Control points for the cubic curve
-                    const cp1x = p0.x;
-                    const cp1y = (p0.y + p1.y) / 2;
-                    const cp2x = p1.x;
-                    const cp2y = (p0.y + p1.y) / 2;
-
-                    // Draw a cubic curve from p0 to p1
-                    path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1.x, p1.y);
-
-                    return path.toString();
                 }
 
                 // How to draw edges
@@ -462,16 +367,8 @@
                 }
 
                 // Draw drawing boundary
-                let drawBoundary = false;
-                if (drawBoundary) {
-                    const drawingBoundary = svg_canvas.append("g")
-                        .append("rect")
-                        .attr("class", d => `drawing_boundary`)
-                        .attr("x", d => 0)
-                        .attr("y", d => 0)
-                        .attr("width", d => changeDirection(width, height, horizontal).x)
-                        .attr("height", d => changeDirection(width, height, horizontal).y);
-                }
+                let showBoudary = true;
+                drawBoundary(svg_canvas, dag, horizontal, width, height, showBoudary)
 
 
                 // Draw edges
@@ -482,6 +379,17 @@
             })
         }
 
+        function drawBoundary(svg_canvas, dag, horizontal, width, height, showBoudary = false) {
+            if (showBoudary) {
+                    const drawingBoundary = svg_canvas.append("g")
+                        .append("rect")
+                        .attr("class", d => `drawing_boundary`)
+                        .attr("x", d => 0)
+                        .attr("y", d => 0)
+                        .attr("width", d => changeDirection(width, height, horizontal).x)
+                        .attr("height", d => changeDirection(width, height, horizontal).y);
+                }
+        }
 
 
         function drawNodes(svg, dag, horizontal, showConnectionPoints = false) {
