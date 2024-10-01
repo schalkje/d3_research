@@ -8,6 +8,7 @@
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
+    <script src="js/zoom.js"></script>
     <style>
         #graph {
             border: 1px solid black;
@@ -114,6 +115,7 @@
         <button id="zoom-out">Zoom Out</button>
         <button id="zoom-reset">Reset Zoom</button>
         <button id="zoom-random">Random Zoom</button>
+        <button id="zoom-node">Zoom stater</button>
     </div>
 
     <div id="minimap-container">
@@ -135,22 +137,55 @@
             return Array.from(nodesMap.values());
         }
 
+        // function initializeGraphData(graphData) {
+        //     // Initialize nodes with default width, height, and placeholder x, y attributes if not present
+        //     graphData.nodes.forEach(node => {
+        //         // node.x = node.x || 0;  // Placeholder x value (will be set by layout later)
+        //         // node.y = node.y || 0;  // Placeholder y value (will be set by layout later)
+        //         node.width = node.width || 150;  // Default width if not present
+        //         node.height = node.height || 40;  // Default height if not present
+        //     });
+        //     // Initialize edges with placeholder x1, y1, x2, y2 attributes
+        //     graphData.edges.forEach(edge => {
+        //         // edge.x1 = edge.x1 || 0;  // Placeholder x1 value (will be set by layout later)
+        //         // edge.y1 = edge.y1 || 0;  // Placeholder y1 value (will be set by layout later)
+        //         // edge.x2 = edge.x2 || 0;  // Placeholder x2 value (will be set by layout later)
+        //         // edge.y2 = edge.y2 || 0;  // Placeholder y2 value (will be set by layout later)
+        //         edge.sourceNode = edge.source || 0;  // Placeholder source value (will be set by layout later)
+        //         edge.targetNode = edge.target || 0;  // Placeholder source value (will be set by layout later)
+        //     });
+        // }
+
         function initializeGraphData(graphData) {
-            // Initialize nodes with default width, height, and placeholder x, y attributes if not present
-            graphData.nodes.forEach(node => {
-                // node.x = node.x || 0;  // Placeholder x value (will be set by layout later)
-                // node.y = node.y || 0;  // Placeholder y value (will be set by layout later)
+            // Ensure each node has an id
+            graphData.nodes.forEach((node, index) => {
+                node.id = node.id || index; // Assign an ID if not present
                 node.width = node.width || 150;  // Default width if not present
                 node.height = node.height || 40;  // Default height if not present
+                node.children = []; // Initialize children array
+                node.childrenIds = []; // Initialize children array
+                node.parents = [];  // Initialize parents array
             });
-            // Initialize edges with placeholder x1, y1, x2, y2 attributes
+
+            // Build the children and parents relationships
             graphData.edges.forEach(edge => {
-                // edge.x1 = edge.x1 || 0;  // Placeholder x1 value (will be set by layout later)
-                // edge.y1 = edge.y1 || 0;  // Placeholder y1 value (will be set by layout later)
-                // edge.x2 = edge.x2 || 0;  // Placeholder x2 value (will be set by layout later)
-                // edge.y2 = edge.y2 || 0;  // Placeholder y2 value (will be set by layout later)
-                edge.sourceNode = edge.source || 0;  // Placeholder source value (will be set by layout later)
-                edge.targetNode = edge.target || 0;  // Placeholder source value (will be set by layout later)
+                // link up edges                    
+                edge.sourceNode = edge.source || 0;  
+                edge.targetNode = edge.target || 0;  
+
+                const sourceNode = graphData.nodes.find(n => n.id === edge.sourceNode);
+                const targetNode = graphData.nodes.find(n => n.id === edge.targetNode);
+
+                // link up nodes
+                if (sourceNode && targetNode) {
+                    // Add the target node to the source node's children
+                    sourceNode.children.push(targetNode);
+                    sourceNode.childrenIds.push(targetNode.id);
+                    // Add the source node to the target node's parents
+                    targetNode.parents.push(sourceNode);
+                } else {
+                    console.warn('Edge refers to non-existent node:', edge);
+                }
             });
         }
 
@@ -277,8 +312,8 @@
                 ]);
 
                 const zoom = d3.zoom()
-                    .extent([[0, 0], [width, height]])
-                    .scaleExtent([1, 8])
+                    // .extent([[0, 0], [width, height]])
+                    .scaleExtent([1, 40])
                     .on("zoom", zoomed);
 
                 svg.call(zoom);
@@ -287,17 +322,54 @@
                     svg_canvas.attr("transform", transform);
                 }
 
+                // function zoomToNode(node) {
+                //     console.log("random node=", node.data.label, node);
+                //     console.log("margin", marginX, marginY);
+                //     const scale = 2;
+                //      const x =changeDirection(node.x, node.y, horizontal).x; // - (node.data.width) + marginX,
+                //      const y = changeDirection(node.x, node.y, horizontal).y + (node.data.height * (4.78));// + marginY
+                //         // changeDirection(node.x - (node.data.width/2) - marginX/2, node.y - (node.data.height/2), horizontal).x,
+                //         // changeDirection(node.x - (node.data.width/2) - marginX/2, node.y - (node.data.height/2), horizontal).y
+                //         // 2 -> 4.78
+                //         // 3 -> 3.2
+                //         // 5 -> 2
+                //         // 10 -> 1
+                //         // 20 -> 0.5
+
+                        
+                        
+                //     console.log("x, y", x, y, width/node.data.width);
+
+                //     svg.transition().duration(2500).call(
+                //         zoom.transform,
+                //         d3.zoomIdentity
+                //         .translate(width / 2, height / 2)
+                //         .scale(scale)
+                //         .translate(-x, -y)
+                //     );
+                // }
+
+                function zoomToNodeByName(name) {
+                    console.log("zoomToNodeByName", name);
+                    for (const node of dag.nodes()) {
+                        if (node.data.label === name) {
+                            zoomToNode(node, dag, zoom, width, height, horizontal);
+                            // node.call(d3.zoom().on("zoom", zoomed));
+                            break;
+                        }
+                    }
+                }
+
                 function random() {
                     console.log("random", dag);
                     const data = [];
                     for (const node of dag.nodes()) {
-                        data.push([node.x, node.y]);
-                }
-                    const [x, y] = data[Math.floor(Math.random() * data.length)];
-                    svg.transition().duration(2500).call(
-                        zoom.transform,
-                        d3.zoomIdentity.translate(width / 2, height / 2).scale(40).translate(-x, -y)
-                    );
+                        // data.push([node.x, node.y]);
+                        data.push(node);
+                    }
+                    const node = data[Math.floor(Math.random() * data.length)];
+                    console.log("random node=", node.data.label, node);
+                    zoomToNode(node, dag, zoom, width, height, horizontal);
                 }
 
                 function reset() {
@@ -333,6 +405,10 @@
 
                 d3.select("#zoom-random").on("click", function () {
                     random();
+                });
+
+                d3.select("#zoom-node").on("click", function () {
+                    zoomToNodeByName("TRANSFORM_Stater");
                 });
 
 
