@@ -1,94 +1,143 @@
 // Connect default zoom buttons
-function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport) {
-    const zoom = d3.zoom()
+function initializeZoom(
+  svg,
+  svg_canvas,
+  width,
+  height,
+  horizontal,
+  dag,
+  updateViewport
+) {
+  const zoom = d3
+    .zoom()
     .scaleExtent([1, 40])
     // .extent([[0, 0], [mainWidth, mainHeight]])  // Define the size of the viewport
     // .translateExtent([[0, 0], [mainWidth, mainHeight]])  // Define the panning boundaries
     .on("zoom", function (event) {
-        console.log("zoom", event.transform);
-        svg_canvas.attr("transform", event.transform);
-        updateViewport(event.transform);
+      //   console.log("zoom", event);
+      svg_canvas.attr("transform", event.transform);
+      updateViewport(event.transform);
     });
 
-    svg_canvas.call(zoom)
+  svg_canvas.call(zoom);
 
-    d3.select("#zoom-in").on("click", function () {
-        zoomIn(svg_canvas, zoom);
-    });
+  d3.select("#zoom-in").on("click", function () {
+    zoomIn(svg_canvas, zoom);
+  });
 
-    d3.select("#zoom-out").on("click", function () {
-        zoomOut(svg_canvas, zoom);
-    });
+  d3.select("#zoom-out").on("click", function () {
+    zoomOut(svg_canvas, zoom);
+  });
 
-    d3.select("#zoom-reset").on("click", function () {
-        zoomReset(svg_canvas, zoom, width, height, horizontal);
-    });
+  d3.select("#zoom-reset").on("click", function () {
+    zoomReset(svg_canvas, zoom, width, height, horizontal);
+  });
 
-    d3.select("#zoom-random").on("click", function () {
-        zoomRandom(svg_canvas, dag, zoom, width, height, horizontal);
-    });
+  d3.select("#zoom-random").on("click", function () {
+    zoomRandom(svg_canvas, dag, zoom, width, height, horizontal);
+  });
 
-    d3.select("#zoom-node").on("click", function () {
-        zoomToNodeByName(svg_canvas, "EM_Stater", dag, zoom, width, height, horizontal);
-    });
+  d3.select("#zoom-node").on("click", function () {
+    zoomToNodeByName(
+      svg_canvas,
+      "EM_Stater",
+      dag,
+      zoom,
+      width,
+      height,
+      horizontal
+    );
+  });
 
-    return zoom;
+  return zoom;
 }
 
 // Define zoom functions
 function zoomIn(svg, zoom) {
-    svg.transition().duration(750).call(zoom.scaleBy, 1.2);
+  svg.transition().duration(750).call(zoom.scaleBy, 1.2);
 }
+
 function zoomOut(svg, zoom) {
-    svg.transition().duration(750).call(zoom.scaleBy, 0.8);
+  svg.transition().duration(750).call(zoom.scaleBy, 0.8);
 }
 
 function zoomReset(svg, zoom, width, height) {
-    svg.transition().duration(750).call(
-        zoom.transform,
-        d3.zoomIdentity,
-        d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
+  svg
+    .transition()
+    .duration(750)
+    .call(
+      zoom.transform,
+      d3.zoomIdentity,
+      d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
     );
 }
 
 function zoomClicked(event, [x, y]) {
-    event.stopPropagation();
-    svg.transition().duration(750).call(
-        zoom.transform,
-        d3.zoomIdentity.translate(width / 2, height / 2).scale(40).translate(-x, -y),
-        d3.pointer(event)
+  event.stopPropagation();
+  svg
+    .transition()
+    .duration(750)
+    .call(
+      zoom.transform,
+      d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(40)
+        .translate(-x, -y),
+      d3.pointer(event)
     );
 }
 
 function zoomToNodeByName(svg, name, dag, zoom, width, height, horizontal) {
-    console.log("zoomToNodeByName", name);
-    for (const node of dag.nodes()) {
-        if (node.data.label === name) {
-            zoomToNode(svg, node, dag, zoom, width, height, horizontal);
-            break;
-        }
+  console.log("zoomToNodeByName", name);
+  for (const node of dag.nodes()) {
+    if (node.data.label === name) {
+      zoomToNode(svg, node, dag, zoom, width, height, horizontal);
+      break;
     }
+  }
 }
 
 function zoomRandom(svg, dag, zoom, width, height, horizontal) {
-    // console.log("zoomRandom", dag);
-    const data = [];
-    for (const node of dag.nodes()) {
-        // data.push([node.x, node.y]);
-        data.push(node);
-    }
-    const node = data[Math.floor(Math.random() * data.length)];
-    console.log("random node=", node.data.label, node);
-    zoomToNode(svg, node, dag, zoom, width, height, horizontal);
+  // console.log("zoomRandom", dag);
+  const data = [];
+  for (const node of dag.nodes()) {
+    // data.push([node.x, node.y]);
+    data.push(node);
+  }
+  const node = data[Math.floor(Math.random() * data.length)];
+  console.log("random node=", node.data.label, node);
+  zoomToNode(svg, node, dag, zoom, width, height, horizontal);
 }
 
-function zoomToNode(svg, node, graphData, zoom, width, height, horizontal) {
+function zoomToNode(
+  svg,
+  node,
+  graphData,
+  zoom,
+  width,
+  height,
+  horizontal,
+  showboundingBox = true
+) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, graphData);
 
   // 2. Compute the bounding box
-  const boundingBox = computeBoundingBox(neighbors);
-  // console.log("boundingBox", boundingBox);
+  const boundingBox = computeBoundingBox(neighbors, horizontal);
+
+  if (showboundingBox) {
+    console.log("boundingBox", boundingBox);
+    svg.selectAll(".boundingBox").remove();
+    svg
+      .append("rect")
+      .attr("class", "boundingBox")
+      .attr("x", boundingBox.x)
+      .attr("y", boundingBox.y)
+      .attr("width", boundingBox.width)
+      .attr("height", boundingBox.height)
+      .attr("fill", "none")
+      .attr("stroke", "red");
+  }
 
   // 3. Calculate the zoom scale and translation
   const { scale, translate } = calculateScaleAndTranslate(
@@ -98,8 +147,8 @@ function zoomToNode(svg, node, graphData, zoom, width, height, horizontal) {
     horizontal
   );
 
-//   console.log("scale", scale);
-//   console.log("translate", translate);
+  console.log("scale", scale);
+  console.log("translate", translate);
 
   // 4. Apply the zoom transform
   svg
@@ -130,26 +179,31 @@ function getImmediateNeighbors(baseNode, graphData) {
   return neighbors;
 }
 
-function computeBoundingBox(nodes) {
-  const padding = 20; // Add some padding
-  // console.log("computeBoundingBox nodes",nodes);
+function computeBoundingBox(nodes, horizontal) {
+  const padding = 2; // Add some padding
+  console.log("computeBoundingBox nodes", nodes);
 
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
+  let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
+
+  const updateBounds = (x, y, dimension1, dimension2) => {
+    minX = Math.min(minX, x - dimension1 / 2);
+    minY = Math.min(minY, y - dimension2 / 2);
+    maxX = Math.max(maxX, x + dimension1 / 2);
+    maxY = Math.max(maxY, y + dimension2 / 2);
+  };
 
   nodes.forEach((n) => {
-    // console.log("computeBoundingBox node", n);
-    const x = n.x;
-    const y = n.y;
-    const width = n.data.width;
-    const height = n.data.height;
+    const {
+      x,
+      y,
+      data: { width, height },
+    } = n;
 
-    minX = Math.min(minX, x - width / 2);
-    minY = Math.min(minY, y - height / 2);
-    maxX = Math.max(maxX, x + width / 2);
-    maxY = Math.max(maxY, y + height / 2);
+    if (horizontal) {
+      updateBounds(y, x, width, height);
+    } else {
+      updateBounds(x, y, width, height);
+    }
   });
 
   return {
@@ -166,15 +220,15 @@ function calculateScaleAndTranslate(
   svgHeight,
   horizontal
 ) {
-    const scale = Math.min(
-        svgWidth / boundingBox.width,
-        svgHeight / boundingBox.height
-      );
-    
-    const translateX =
-      svgWidth / 2 - scale * (boundingBox.x + boundingBox.width / 2);
-    const translateY =
-      svgHeight / 2 - scale * (boundingBox.y + boundingBox.height / 2);
+  const scale = Math.min(
+    svgWidth / boundingBox.width,
+    svgHeight / boundingBox.height
+  );
+
+  const translateX =
+    svgWidth / 2 - scale * (boundingBox.x + boundingBox.width / 2);
+  const translateY =
+    svgHeight / 2 - scale * (boundingBox.y + boundingBox.height / 2);
 
   if (horizontal) {
     // Reverse the x and y translations
@@ -195,5 +249,3 @@ function calculateScaleAndTranslate(
     };
   }
 }
-
-

@@ -16,7 +16,6 @@ function changePointDirection(points, horizontal) {
 function drawBoundary(
   svg_canvas,
   dag,
-  horizontal,
   width,
   height,
   showBoudary = false
@@ -28,8 +27,8 @@ function drawBoundary(
       .attr("class", (d) => `drawing_boundary`)
       .attr("x", (d) => 0)
       .attr("y", (d) => 0)
-      .attr("width", (d) => changeDirection(width, height, horizontal).x)
-      .attr("height", (d) => changeDirection(width, height, horizontal).y);
+      .attr("width", (d) => width)
+      .attr("height", (d) => height);
   }
 }
 

@@ -19,20 +19,22 @@ function computeLayout(svg, minimapSvg, dag, horizontal) {
         .coord(d3.coordQuad())
         .nodeSize(d => getNodeSize(d));
 
-    const { width, height } = layout(dag);
-    console.log("layout size", width, height);
+    const { width: layoutWidth, height: layoutHeight } = layout(dag);
+    width = changeDirection(layoutWidth, layoutHeight, horizontal).x;
+    height = changeDirection(layoutWidth, layoutHeight, horizontal).y;
+
     svg.attr("viewBox", [
         0,
         0,
-        changeDirection(width, height, horizontal).x,
-        changeDirection(width, height, horizontal).y
+        width,
+        height
     ]);
 
     minimapSvg.attr("viewBox", [
         0,
         0,
-        changeDirection(width, height, horizontal).x,
-        changeDirection(width, height, horizontal).y
+        width,
+        height
     ]);
 
     return { svg_canvas, width, height };

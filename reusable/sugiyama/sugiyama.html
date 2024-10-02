@@ -232,7 +232,7 @@
 
             // Draw drawing boundary
             let showBoundary = true;
-            drawBoundary(svg_canvas, dag, horizontal, width, height, showBoundary);
+            drawBoundary(svg_canvas, dag, width, height, showBoundary);
 
             // Draw edges
             drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
@@ -247,7 +247,7 @@
 
             // Draw drawing boundary
             let showBoundary = true;
-            drawBoundary(svg_canvas, dag, horizontal, width, height, showBoundary);
+            drawBoundary(svg_canvas, dag, width, height, showBoundary);
 
             // Draw edges
             drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
@@ -291,6 +291,11 @@
             //     console.log("correctDimension",correctDimension, transformCoord);
             // }
 
+            // if (position > maxDimension) {
+            //     correctDimension = Math.max(position + dimension - maxDimension, correctDimension);
+            //     console.log("correctDimension position + dimension > maxDimension", correctDimension, position, dimension, maxDimension);
+            // }
+
             // // Adjust correctDimension if the rectangle's edge exceeds the maxDimension
             // if (position + dimension > maxDimension) {
             //     correctDimension = Math.max(position + dimension - maxDimension, correctDimension);
@@ -302,15 +307,15 @@
         }
 
             function updateViewport(transform) {
-                console.log("updateViewport", horizontal,transform, width, height);
+                // console.log("updateViewport", horizontal,transform, width, height);
 
                 let rectX, rectY, rectWidth, rectHeight;
                 if (horizontal) {
-                    rectX = Math.max(-transform.x,0);
-                    rectY = Math.max(-transform.y,0);
+                    rectX = Math.min( Math.max(-transform.x,0), width);
+                    rectY = Math.min( Math.max(-transform.y,0), height);
                     // console.log(" border",transform.x, Math.min(-transform.x,0),transform.y, Math.min(-transform.y,0))
-                    rectWidth = adjustDimension(rectX, height, transform.k, transform.x);
-                    rectHeight = adjustDimension(rectY, width, transform.k, transform.y);
+                    rectWidth = adjustDimension(rectX, width, transform.k, transform.x);
+                    rectHeight = adjustDimension(rectY, height, transform.k, transform.y);
                     // let correctWidth = 0;
                     // if (transform.x < 0) correctWidth = Math.min(-transform.x,0);
                     // if (rectX + height / transform.k > height) correctWidth = Math.max(rectX + rectWidth - height,0)
@@ -324,7 +329,7 @@
                     rectWidth = width / transform.k;
                     rectHeight = height / transform.k;
                 }
-                // console.log("  updateViewport   ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));                
+                // console.log("  updateViewport   ", horizontal,transform, width, height, Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));                
                 // if (horizontal) {
                 //     if (rectX + rectWidth > height) {
                 //         console.log("    correctWidth", Math.round(rectWidth), Math.round(height - rectX), Math.round(height), Math.round(rectX));
@@ -396,6 +401,7 @@
 
         function computeAndDraw(svg, minimapSvg, lineGenerator) {
             ({ svg_canvas, width, height } = computeLayout(svg, minimapSvg, dag, horizontal));
+            console.log("-----------------  computeAndDraw", width, height);
 
 
             zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport);
