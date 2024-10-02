@@ -139,6 +139,8 @@ function zoomToNode(
       .attr("stroke", "red");
   }
 
+  console.log("main", mainWidth, mainHeight);
+
   // 3. Calculate the zoom scale and translation
   const { scale, translate } = calculateScaleAndTranslate(
     boundingBox,
@@ -216,20 +218,180 @@ function computeBoundingBox(nodes, horizontal) {
 
 function calculateScaleAndTranslate(
   boundingBox,
-  svgWidth,
-  svgHeight,
+  canvasWidth,
+  canvasHeight,
   horizontal
 ) {
-  const scale = Math.min(
-    svgWidth / boundingBox.width,
-    svgHeight / boundingBox.height
+  const originalCanvasWidth = canvasWidth;
+  const originalCanvasHeight = canvasHeight;
+  // correct canvas size for scaling
+  console.log(
+    "canvas           ",
+    mainWidth,
+    mainHeight,
+    canvasWidth,
+    canvasHeight,
+    canvasWidth / canvasHeight
+  );
+  if (canvasWidth / canvasHeight > 1) {
+    console.log(
+      "canvas correction height",
+      canvasHeight,
+      (canvasWidth * mainHeight) / mainWidth
+    );
+    canvasHeight = (canvasWidth * mainHeight) / mainWidth;
+  } else {
+    console.log(
+      "canvas correction width",
+      canvasWidth,
+      (canvasHeight * mainWidth) / mainHeight
+    );
+    canvasWidth = (canvasHeight * mainWidth) / mainHeight;
+  }
+  console.log(
+    "canvas correction",
+    mainWidth,
+    mainHeight,
+    canvasWidth,
+    canvasHeight
   );
 
-  const translateX =
-    svgWidth / 2 - scale * (boundingBox.x + boundingBox.width / 2);
-  const translateY =
-    svgHeight / 2 - scale * (boundingBox.y + boundingBox.height / 2);
+  let scale;
+  console.log(
+    "calculateScaleAndTranslate scale",
+    horizontal,
+    canvasWidth,
+    canvasHeight,
+    boundingBox
+  );
+  if (horizontal) {
+    scale = Math.min(
+      canvasWidth / boundingBox.width,
+      canvasHeight / boundingBox.height
+    );
+  } else {
+    scale = Math.min(
+      canvasWidth / boundingBox.width,
+      canvasHeight / boundingBox.height
+    );
+  }
+  scaleY = canvasHeight / boundingBox.height;
+  scaleX = canvasWidth / boundingBox.width;
+  console.log(
+    "calculateScaleAndTranslate scale",
+    scale,
+    scaleX,
+    scaleY,
+    mainWidth / mainHeight,
+    canvasWidth / canvasHeight,
+    originalCanvasWidth / originalCanvasHeight
+  );
 
+  // compute the vertical border above the canvas
+  const whiteSpaceY = ((width * mainHeight) / mainWidth - height) * 0.5;
+  console.log(
+    "whiteSpaceY",
+    whiteSpaceY,
+    width,
+    height,
+    originalCanvasWidth,
+    originalCanvasHeight,
+    mainWidth,
+    mainHeight
+  );
+
+  let translateX, translateY;
+  if (horizontal) {
+    if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
+      console.log(
+        "boundingBox.width/boundingBox.height > originalCanvasWidth/originalCanvasHeight",
+        boundingBox.width,
+        boundingBox.height,
+        boundingBox.width / boundingBox.height,
+        canvasWidth / canvasHeight,
+        width / height
+      );
+      // const centerCorrection = (boundingBox.width*canvasHeight/canvasWidth - boundingBox.height) * 0.5;
+      const centerCorrection =
+        ((boundingBox.width * originalCanvasHeight) / originalCanvasWidth -
+          boundingBox.height) *
+        0.5;
+      console.log(
+        "centerCorrection",
+        centerCorrection,
+        boundingBox.height,
+        canvasHeight,
+        canvasHeight / canvasWidth,
+        (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
+      );
+      translateX = -boundingBox.y * scale + centerCorrection * scale;
+      translateY = -boundingBox.x * scale;
+    } else {
+      console.log(
+        "boundingBox.width/boundingBox.height < width/height",
+        boundingBox.width,
+        boundingBox.height,
+        boundingBox.width / boundingBox.height,
+        canvasWidth / canvasHeight,
+        width / height
+      );
+      const centerCorrection =
+        ((boundingBox.height * originalCanvasWidth) / originalCanvasHeight -
+          boundingBox.width) *
+        0.5;
+      console.log("centerCorrection", centerCorrection);
+      translateX = -boundingBox.y * scaleY - whiteSpaceY;
+      translateY = -boundingBox.x * scale + centerCorrection;
+    }
+  } else {
+    if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
+      console.log(
+        "boundingBox.width/boundingBox.height > originalCanvasWidth/originalCanvasHeight",
+        boundingBox.width,
+        boundingBox.height,
+        boundingBox.width / boundingBox.height,
+        canvasWidth / canvasHeight,
+        width / height
+      );
+      // const centerCorrection = (boundingBox.width*canvasHeight/canvasWidth - boundingBox.height) * 0.5;
+      const centerCorrection =
+        ((boundingBox.width * originalCanvasHeight) / originalCanvasWidth -
+          boundingBox.height) *
+        0.5;
+      console.log(
+        "centerCorrection",
+        centerCorrection,
+        boundingBox.height,
+        canvasHeight,
+        canvasHeight / canvasWidth,
+        (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
+      );
+      translateX = -boundingBox.y * scale + centerCorrection * scale;
+      translateY = -boundingBox.x * scale;
+    } else {
+      console.log(
+        "boundingBox.width/boundingBox.height < width/height",
+        boundingBox.width,
+        boundingBox.height,
+        boundingBox.width / boundingBox.height,
+        canvasWidth / canvasHeight,
+        width / height
+      );
+      const visualWidth = (boundingBox.height * canvasWidth) / canvasHeight;
+      const centerCorrection = (visualWidth - boundingBox.width) * 0.5;
+
+      console.log("centerCorrection", centerCorrection, visualWidth);
+      translateX = -boundingBox.y * scaleY - whiteSpaceY;
+      translateY = -boundingBox.x * scale + centerCorrection * scale;
+    }
+  }
+
+  console.log(
+    "calculateScaleAndTranslate scale, x, y",
+    scale,
+    translateX,
+    translateY
+  );
   if (horizontal) {
     // Reverse the x and y translations
     return {
@@ -243,8 +405,8 @@ function calculateScaleAndTranslate(
     return {
       scale: scale,
       translate: {
-        x: translateX,
-        y: translateY,
+        x: translateY,
+        y: translateX,
       },
     };
   }
