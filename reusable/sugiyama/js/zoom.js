@@ -1,13 +1,16 @@
 // Connect default zoom buttons
 function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport) {
     const zoom = d3.zoom()
-        .scaleExtent([1, 40])
-        .on("zoom", function (event) {
-            svg_canvas.attr("transform", event.transform);
-            updateViewport(event.transform);
-        });
-        
-        svg.call(zoom)
+    .scaleExtent([1, 40])
+    // .extent([[0, 0], [mainWidth, mainHeight]])  // Define the size of the viewport
+    // .translateExtent([[0, 0], [mainWidth, mainHeight]])  // Define the panning boundaries
+    .on("zoom", function (event) {
+        console.log("zoom", event.transform);
+        svg_canvas.attr("transform", event.transform);
+        updateViewport(event.transform);
+    });
+
+    svg_canvas.call(zoom)
 
     d3.select("#zoom-in").on("click", function () {
         zoomIn(svg_canvas, zoom);

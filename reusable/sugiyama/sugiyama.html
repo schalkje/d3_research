@@ -45,6 +45,7 @@
             stroke: rgba(70, 131, 180, 0.5);
             stroke-width: 0.05;
             fill: steelblue;
+            cursor: zoom-in;
         }
 
         .edge {
@@ -255,7 +256,7 @@
             drawNodes(svg_canvas, dag, horizontal);
 
             // Initial update of the viewport rectangle
-            updateViewport(d3.zoomIdentity);
+            // updateViewport(d3.zoomIdentity);
 
         }
 
@@ -280,14 +281,41 @@
         //         .attr("height", mainHeight / transform.k * minimapScale);
         // }
         // Function to update the viewport rectangle based on the current zoom transform
+        function adjustDimension(position, maxDimension, transformK, transformCoord) {
+            let correctDimension = 0;
+            let dimension = maxDimension / transformK;
+
+            // // Adjust correctDimension if the transform.x or transform.y is less than 0
+            // if (transformCoord > 0) {
+            //     correctDimension = -transformCoord;
+            //     console.log("correctDimension",correctDimension, transformCoord);
+            // }
+
+            // // Adjust correctDimension if the rectangle's edge exceeds the maxDimension
+            // if (position + dimension > maxDimension) {
+            //     correctDimension = Math.max(position + dimension - maxDimension, correctDimension);
+            //     console.log("correctDimension position + dimension > maxDimension", correctDimension, position, dimension, maxDimension);
+            // }
+
+            // Calculate the new dimension
+            return (maxDimension + correctDimension) / transformK;
+        }
+
             function updateViewport(transform) {
-                // console.log("updateViewport", horizontal,transform, width, height);
+                console.log("updateViewport", horizontal,transform, width, height);
+
                 let rectX, rectY, rectWidth, rectHeight;
                 if (horizontal) {
-                    rectX = Math.max(-transform.y);
-                    rectY = Math.max(-transform.x);
-                    rectWidth = height / transform.k;
-                    rectHeight = width / transform.k;
+                    rectX = Math.max(-transform.x,0);
+                    rectY = Math.max(-transform.y,0);
+                    // console.log(" border",transform.x, Math.min(-transform.x,0),transform.y, Math.min(-transform.y,0))
+                    rectWidth = adjustDimension(rectX, height, transform.k, transform.x);
+                    rectHeight = adjustDimension(rectY, width, transform.k, transform.y);
+                    // let correctWidth = 0;
+                    // if (transform.x < 0) correctWidth = Math.min(-transform.x,0);
+                    // if (rectX + height / transform.k > height) correctWidth = Math.max(rectX + rectWidth - height,0)
+                    // rectWidth = (height + correctWidth) / transform.k;
+                    // rectHeight = (width + Math.min(-transform.y,0)) / transform.k;
                 } else {
                     rectX = Math.max(-transform.x,0);
                     rectY = Math.max(-transform.y,0);
@@ -296,27 +324,31 @@
                     rectWidth = width / transform.k;
                     rectHeight = height / transform.k;
                 }
-                // console.log("updateViewport   ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));                
-                if (horizontal) {
-                    if (rectX + rectWidth > height) {
-                        // console.log("correctWidth", rectWidth, height - rectX);
-                        rectWidth = height - rectX;
-                    }
-                    if (rectY + rectHeight > width) {
-                        // console.log("correctHeight", rectHeight, width - rectY);
-                        rectHeight = width - rectY;
-                    }
-                } else {
-                    if (rectX + rectWidth > width) {
-                        // console.log("correctWidth", rectWidth, width - rectX);
-                        rectWidth = width - rectX;
-                    }
-                    if (rectY + rectHeight > height) {
-                        // console.log("correctHeight", rectHeight, height - rectY);
-                        rectHeight = height - rectY;
-                    }
-                }
-                // console.log("                 ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));
+                // console.log("  updateViewport   ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));                
+                // if (horizontal) {
+                //     if (rectX + rectWidth > height) {
+                //         console.log("    correctWidth", Math.round(rectWidth), Math.round(height - rectX), Math.round(height), Math.round(rectX));
+                //         rectWidth = height - rectX;
+                //     }
+                //     if (rectY + rectHeight > width) {
+                //         console.log("    correctHeight", Math.round(rectHeight), Math.round(width - rectY), Math.round(width), Math.round(rectY));
+                //         rectHeight = Math.max(width - rectY,0);
+                //     }
+                //     // if (rectY + rectHeight > height) {
+                //     //     console.log("correctHeight", rectHeight, height - rectY, height, rectY);
+                //     //     rectHeight = height - rectY;
+                //     // }
+                // } else {
+                //     if (rectX + rectWidth > width) {
+                //         console.log("correctWidth", rectWidth, width - rectX);
+                //         rectWidth = width - rectX;
+                //     }
+                //     if (rectY + rectHeight > height) {
+                //         console.log("correctHeight", rectHeight, height - rectY);
+                //         rectHeight = height - rectY;
+                //     }
+                // }
+                // console.log("                     ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));
                 
                 viewportRect.attr("x", rectX)
                         .attr("y", rectY)
@@ -326,12 +358,12 @@
 
         // Function to update the main SVG based on the viewport rectangle position
         function updateMainView() {
-            const x = -viewportRect.attr("x") / minimapScale;
-            const y = -viewportRect.attr("y") / minimapScale;
-            const k = 1 / minimapScale; // Adjust this if you implement zooming
+            // const x = -viewportRect.attr("x") / minimapScale;
+            // const y = -viewportRect.attr("y") / minimapScale;
+            // const k = 1 / minimapScale; // Adjust this if you implement zooming
 
-            const transform = d3.zoomIdentity.translate(x, y).scale(k);
-            mainSvg.call(zoom.transform, transform);
+            // const transform = d3.zoomIdentity.translate(x, y).scale(k);
+            // mainSvg.call(zoom.transform, transform);
         }
 
         // Add drag behavior to the viewport rectangle
@@ -348,6 +380,8 @@
         let dag, zoom;
         let width, height;
 
+        
+
         fetchFileToDag(selectedFile).then(result => {
             if (result) {
                 ({ dag, maxNodeHeight, maxNodeWidth } = result);
@@ -362,6 +396,8 @@
 
         function computeAndDraw(svg, minimapSvg, lineGenerator) {
             ({ svg_canvas, width, height } = computeLayout(svg, minimapSvg, dag, horizontal));
+
+
             zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport);
 
             minimapScale = Math.min(minimapWidth / mainWidth, minimapHeight / mainHeight);
