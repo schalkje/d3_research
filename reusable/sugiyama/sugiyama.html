@@ -9,11 +9,13 @@
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
     <script src="js/zoom.js"></script>
+    <script src="js/graphData.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/layout.js"></script>
     <style>
         #graph {
             border: 1px solid black;
             width: 100%;
-            /* width: 700px; */
             height: 800px;
         }
 
@@ -23,7 +25,13 @@
 
         #minimap {
             border: 1px solid darkblue;
-            background-color: lightgoldenrodyellow;
+            background-color: rgb(210, 255, 212);
+        }
+        .viewport {
+            fill: none;
+            stroke: rgba(255, 0, 0, 0.616);
+            stroke-width: 8;
+            cursor: move;
         }
 
         .drawing_boundary {
@@ -115,7 +123,7 @@
         <button id="zoom-out">Zoom Out</button>
         <button id="zoom-reset">Reset Zoom</button>
         <button id="zoom-random">Random Zoom</button>
-        <button id="zoom-node">Zoom stater</button>
+        <button id="zoom-node">Zoom Node</button>
     </div>
 
     <div id="minimap-container">
@@ -123,77 +131,11 @@
     </div>
 
     <script>
-        // Convert graphData to the structure required by d3.dagStratify
-        function convertToStratifyData(graphData) {
-            const nodesMap = new Map(graphData.nodes.map(node => [node.id, { ...node, parentIds: [] }]));
-
-            graphData.edges.forEach(edge => {
-                const targetNode = nodesMap.get(edge.targetNode);
-                if (targetNode) {
-                    targetNode.parentIds.push(edge.sourceNode);
-                }
-            });
-
-            return Array.from(nodesMap.values());
-        }
-
-        // function initializeGraphData(graphData) {
-        //     // Initialize nodes with default width, height, and placeholder x, y attributes if not present
-        //     graphData.nodes.forEach(node => {
-        //         // node.x = node.x || 0;  // Placeholder x value (will be set by layout later)
-        //         // node.y = node.y || 0;  // Placeholder y value (will be set by layout later)
-        //         node.width = node.width || 150;  // Default width if not present
-        //         node.height = node.height || 40;  // Default height if not present
-        //     });
-        //     // Initialize edges with placeholder x1, y1, x2, y2 attributes
-        //     graphData.edges.forEach(edge => {
-        //         // edge.x1 = edge.x1 || 0;  // Placeholder x1 value (will be set by layout later)
-        //         // edge.y1 = edge.y1 || 0;  // Placeholder y1 value (will be set by layout later)
-        //         // edge.x2 = edge.x2 || 0;  // Placeholder x2 value (will be set by layout later)
-        //         // edge.y2 = edge.y2 || 0;  // Placeholder y2 value (will be set by layout later)
-        //         edge.sourceNode = edge.source || 0;  // Placeholder source value (will be set by layout later)
-        //         edge.targetNode = edge.target || 0;  // Placeholder source value (will be set by layout later)
-        //     });
-        // }
-
-        function initializeGraphData(graphData) {
-            // Ensure each node has an id
-            graphData.nodes.forEach((node, index) => {
-                node.id = node.id || index; // Assign an ID if not present
-                node.width = node.width || 150;  // Default width if not present
-                node.height = node.height || 40;  // Default height if not present
-                node.children = []; // Initialize children array
-                node.childrenIds = []; // Initialize children array
-                node.parents = [];  // Initialize parents array
-            });
-
-            // Build the children and parents relationships
-            graphData.edges.forEach(edge => {
-                // link up edges                    
-                edge.sourceNode = edge.source || 0;  
-                edge.targetNode = edge.target || 0;  
-
-                const sourceNode = graphData.nodes.find(n => n.id === edge.sourceNode);
-                const targetNode = graphData.nodes.find(n => n.id === edge.targetNode);
-
-                // link up nodes
-                if (sourceNode && targetNode) {
-                    // Add the target node to the source node's children
-                    sourceNode.children.push(targetNode);
-                    sourceNode.childrenIds.push(targetNode.id);
-                    // Add the source node to the target node's parents
-                    targetNode.parents.push(sourceNode);
-                } else {
-                    console.warn('Edge refers to non-existent node:', edge);
-                }
-            });
-        }
-
         // Add an event listener to update the horizontal variable when the checkbox changes
         const checkbox = document.getElementById('horizontalCheckbox');
         checkbox.addEventListener('change', function () {
             horizontal = this.checked;
-            drawLayout();
+            computeAndDraw(mainSvg, minimapSvg, lineGenerator);
         });
 
         let horizontal = checkbox.checked; // Default to horizontal layout
@@ -203,341 +145,247 @@
 
         curveCheckbox.addEventListener('change', function () {
             isEdgeCurved = this.checked;
+            lineGenerator = getLineGenerator();
             console.log("isEdgeCurved", isEdgeCurved);
-            drawLayout();
+            computeAndDraw(mainSvg, minimapSvg, lineGenerator);
         });
 
         let selectedFile = jsonFiles[3]; // Default to the first JSON file
 
         // Event listener to update selected filename from the dropdown
         fileSelect.addEventListener("change", function () {
-            console.log("Old Selected file:", selectedFile);
-            selectedFile = this.value;
-            console.log("Selected file:", selectedFile);
-            drawLayout(); // Redraw the layout when a new file is selected
-        });
+                console.log("Old Selected file:", selectedFile);
+                selectedFile = this.value;
+                console.log("Selected file:", selectedFile);
+                // computeLayout(); // Redraw the layout when a new file is selected
+                fetchFileToDag(selectedFile).then(result => {
+                    if (result) {
+                        ({ dag, maxNodeHeight, maxNodeWidth } = result);
+                        console.log("DAG:", dag);
+                        console.log("Max Node Height:", maxNodeHeight);
+                        console.log("Max Node Width:", maxNodeWidth);
+
+                        // Initial layout computation and drawing
+                        computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+                    }
+                });
+            });
 
 
-        function changeDirection(x, y, horizontal = true) {
-            if (horizontal) {
-                return { x: y, y: x };
-            } else {
-                return { x: x, y: y };
-            }
-        }
 
-        function changePointDirection(points, horizontal) {
-            if (horizontal) {
-                return points.map(point => [point[1], point[0]]); // Swap x and y when horizontal is true
-            }
-            return points; // Return points unchanged when horizontal is false
-        }
+
 
 
         // Set up SVG canvas
-        const svg = d3.select("#graph");
-        const svgWidth = +svg.attr("width");
-        const svgHeight = +svg.attr("height");
+        const mainSvg = d3.select("#graph");
+        const { width: mainWidth, height: mainHeight } = getComputedDimensions(mainSvg);
+        // const mainWidth = +mainSvg.attr("width");
+        // const mainHeight = +mainSvg.attr("height");
 
+        // Define the maximum dimension for the minimap
+        const MAX_MINIMAP_DIMENSION = 200;
 
-        // Zoom functions
-        // const zoom = d3.zoom().on("zoom", function(event) {
-        //     g.attr("transform", event.transform);
-        // });
+        // Calculate the aspect ratio of the main SVG
+        const aspectRatio = mainWidth / mainHeight;
 
-        // svg.call(zoom);
+        // Determine the appropriate dimensions for the minimap
+        let minimapWidth, minimapHeight;
+        if (mainWidth >= mainHeight) {
+            minimapWidth = MAX_MINIMAP_DIMENSION;
+            minimapHeight = minimapWidth / aspectRatio;
+        } else {
+            minimapHeight = MAX_MINIMAP_DIMENSION;
+            minimapWidth = minimapHeight * aspectRatio;
+        }
 
-        // // Set up minimap
-        // // Create the minimap SVG container
-        // const minimapWidth = 200;
-        // const minimapHeight = 200;
+        // Set the dimensions of the minimap SVG
+        const minimapSvg = d3.select("#minimap")
+            .attr("width", minimapWidth + 1)
+            .attr("height", minimapHeight + 1);
+        console.log("minimap", minimapWidth, minimapHeight, mainWidth, mainHeight);
 
-        // const minimap = d3.select("#minimap")
-        //     .attr("width", minimapWidth)
-        //     .attr("height", minimapHeight)
-        //     .append("g");
+        let minimapScale = Math.min(minimapWidth / mainWidth, minimapHeight / mainHeight);
+        console.log("minimapScale", minimapScale);
+  
+
+        // Add viewport rectangle to the minimap
+        const viewportRect = minimapSvg.append("rect")
+            .attr("class", "viewport")
+            .attr("width", minimapWidth)
+            .attr("height", minimapHeight);
+
 
         // const minimapG = minimap.append("g");
 
-        function drawLayout() {
+        function drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator) {
+            console.log("drawMain - clean children", svg_canvas);
             // start with a clean slate
-            svg.selectAll("*").remove();
+            svg_canvas.selectAll("*").remove();
 
-            const svg_canvas = svg.append("g");
-
-            const marginX = changeDirection(8, 100, horizontal).x;
-            const marginY = changeDirection(50, 8, horizontal).x;
-
-
-            // Load the JSON file
-            d3.json(`data/${selectedFile}`).then(graphData => {
-                initializeGraphData(graphData);
-
-                console.log(graphData);
-                const maxNodeHeight = Math.max(...graphData.nodes.map(node => node.height));
-                const maxNodeWidth = Math.max(...graphData.nodes.map(node => node.width));
-                console.log("maxHeight", maxNodeHeight, maxNodeWidth);
-                const stratifyData = convertToStratifyData(graphData);
-
-                const stratify = d3.graphStratify();
-                const dag = stratify(stratifyData);
-
-                function getNodeSize({ data }) {
-                    return [
-                        changeDirection(data.width + marginX, data.height + marginY, horizontal).x,
-                        changeDirection(data.width + marginX, data.height + marginY, horizontal).y
-                    ];
-                }
-
-                // Apply the Sugiyama layout
-                const layout = d3.sugiyama()
-                    .layering(d3.layeringLongestPath())
-                    .decross(d3.decrossOpt())
-                    // Replace d3.coordVertical with d3.coordQuad or d3.coordGreedy, coordSimplex
-                    // .coord(d3.coordSimplex())
-                    .coord(d3.coordQuad())
-                    // .coord(d3.coordGreedy())                    
-                    .nodeSize(d => getNodeSize(d));
-                // .gap([marginX,marginY]);
-                // .tweakFlip("diagonal");
-                // .tweakShape(d => getNodeSize(d), d3.shapeRect);
-
-                const { width, height } = layout(dag);
-                console.log("layout size", width, height);
-                svg.attr("viewBox", [
-                    0,
-                    0,
-                    changeDirection(width, height, horizontal).x,
-                    changeDirection(width, height, horizontal).y
-                ]);
-
-                const zoom = d3.zoom()
-                    // .extent([[0, 0], [width, height]])
-                    .scaleExtent([1, 40])
-                    .on("zoom", zoomed);
-
-                svg.call(zoom);
-
-                function zoomed({ transform }) {
-                    svg_canvas.attr("transform", transform);
-                }
-
-                // Connect the zoom buttons to the zoom functions
-                d3.select("#zoom-in").on("click", function () {
-                    zoomIn(svg,zoom);
-                });
-
-                d3.select("#zoom-out").on("click", function () {
-                    zoomOut(svg,zoom);
-                });
-
-                d3.select("#zoom-reset").on("click", function () {
-                    // svg.transition().call(zoom.scaleTo, 1);
-                    zoomReset(svg,zoom, width, height, horizontal);
-                });
-
-                d3.select("#zoom-random").on("click", function () {
-                    zoomRandom(dag, zoom, width, height, horizontal);
-                });
-
-                d3.select("#zoom-node").on("click", function () {
-                    zoomToNodeByName("STG_ARCHIVE_Fidor", dag, zoom, width, height, horizontal);
-                });
-
-
-                // Debug the dag
-                for (const node of dag.nodes()) {
-                    console.log("node: ", node.data.id, node.x, node.y, node);
-                }
-                for (const { points } of dag.links()) {
-                    console.log("link point:", points);
-                }
-
-                // How to draw edges
-                const curve = d3.curveBasis; //d3.curveCatmullRom; // d3.curveMonotoneY; //
-
-                // splines.get(spline) ??
-                let lineGenerator;
-                if (isEdgeCurved) {
-                    lineGenerator = d3.line().curve(curve);
-                }
-                else {
-                    lineGenerator = d3.line();
-
-                }
-
-                // Draw drawing boundary
-                let showBoudary = true;
-                drawBoundary(svg_canvas, dag, horizontal, width, height, showBoudary)
-
-
-                // Draw edges
-                drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
-
-                // Draw nodes
-                drawNodes(svg_canvas, dag, horizontal);
-            })
-        }
-
-        function drawBoundary(svg_canvas, dag, horizontal, width, height, showBoudary = false) {
-            if (showBoudary) {
-                    const drawingBoundary = svg_canvas.append("g")
-                        .append("rect")
-                        .attr("class", d => `drawing_boundary`)
-                        .attr("x", d => 0)
-                        .attr("y", d => 0)
-                        .attr("width", d => changeDirection(width, height, horizontal).x)
-                        .attr("height", d => changeDirection(width, height, horizontal).y);
-                }
-        }
-
-
-        function drawNodes(svg, dag, horizontal, showConnectionPoints = false) {
-            // Draw nodes
-            const node = svg.append("g")
-                .selectAll(".nodecontainer")
-                .data(dag.nodes())
-                .enter()
-                .append("g")
-                .attr("class", d => `nodecontainer`)
-                .attr("transform", d => `translate(${changeDirection(d.x, d.y, horizontal).x - d.data.width / 2},${changeDirection(d.x, d.y, horizontal).y - d.data.height / 2})`);
-
-            node.append("rect")
-                .attr("class", d => `node`)
-                // .attr("class", d => `node s${d.data.data.state}`)
-                .attr("width", d => d.data.width)
-                .attr("height", d => d.data.height)
-                .attr("rx", 5)
-                .attr("ry", 5);
-
-            node.append("text")
-                .attr("class", "label")
-                .attr("x", d => d.data.width / 2)
-                .attr("y", d => d.data.height / 2 + 5)
-                .text(d => d.data.label);
-
-            if (showConnectionPoints) {
-                node.each(function (d) {
-                    const connectionPoints = computeConnectionPoints(d.data.width, d.data.height);
-                    Object.values(connectionPoints).forEach(point => {
-                        d3.select(this).append("circle")
-                            .attr("class", "connection-point")
-                            .attr("cx", point.x)
-                            .attr("cy", point.y)
-                            .attr("r", 3);
-                    });
-                });
-            }
-        }
-
-        function computeConnectionPoints(width, height) {
-            return {
-                top: { x: width / 2, y: 0 },
-                bottom: { x: width / 2, y: height },
-                left: { x: 0, y: height / 2 },
-                right: { x: width, y: height / 2 }
-            };
-        }
-
-        function generateEdgePath(d, horizontal) {
-            console.log("d", d);
-            const sourceNode = d.source;
-            const targetNode = d.target;
-
-            const sourceConnectionPoints = computeConnectionPoints(sourceNode.data.width, sourceNode.data.height);
-            const targetConnectionPoints = computeConnectionPoints(targetNode.data.width, targetNode.data.height);
-
-            let sourcePoint, targetPoint;
-
-            if (horizontal) {
-                sourcePoint = sourceConnectionPoints.right;
-                targetPoint = targetConnectionPoints.left;
-            } else {
-                sourcePoint = sourceConnectionPoints.bottom;
-                targetPoint = targetConnectionPoints.top;
+            function onNodeClickFunction(event, d) {
+                console.log("onClickFunction", d.data.label, d);
+                zoomToNode(svg_canvas, d, dag, zoom, width, height, horizontal);
             }
 
-            sourcePoint = [
-                changeDirection(sourceNode.x, sourceNode.y, horizontal).x + sourcePoint.x - sourceNode.data.width / 2,
-                changeDirection(sourceNode.x, sourceNode.y, horizontal).y + sourcePoint.y - sourceNode.data.height / 2
-            ];
 
-            targetPoint = [
-                changeDirection(targetNode.x, targetNode.y, horizontal).x + targetPoint.x - targetNode.data.width / 2,
-                changeDirection(targetNode.x, targetNode.y, horizontal).y + targetPoint.y - targetNode.data.height / 2
-            ];
 
-            // Calculate waypoints
-            let waypoints;
-            const midX = (targetPoint[0] - sourcePoint[0]) / 2;
-            const midY = (targetPoint[1] - sourcePoint[1]) / 2;
-            if (horizontal) {
-                if (isEdgeCurved) {
-                    waypoints = [
-                        // // for a curve
-                        [sourcePoint[0] + (midX * 0.9), sourcePoint[1] + (midY * 0.1)], // Move horizontally to half the distance
-                        [sourcePoint[0] + (midX * 1.1), targetPoint[1] + (midY * 0.1)]  // Stay on x and move vertically
-                    ];
-                }
-                else {
-                    waypoints = [
-                        [sourcePoint[0] + midX, sourcePoint[1]], // Move horizontally to half the distance
-                        [sourcePoint[0] + midX, targetPoint[1]]  // Stay on x and move vertically
-                    ];
-                }
-            } else {
-                if (isEdgeCurved) {
-                    // // for a curve
-                    waypoints = [
-                        [sourcePoint[0] + (midX * 0.1), sourcePoint[1] + (midY * 0.9)], // Move horizontally to half the distance
-                        [targetPoint[0] - (midX * 0.1), sourcePoint[1] + (midY * 1.5)]  // Stay on x and move vertically
-                    ];
-                }
-                else {
-                    waypoints = [
-                        [sourcePoint[0], sourcePoint[1] + midY], // Move horizontally to half the distance
-                        [targetPoint[0], sourcePoint[1] + midY]  // Stay on x and move vertically
-                    ];
-                }
-            }
-
-            return [sourcePoint, ...waypoints, targetPoint];
-        }
-
-        function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
-            // Define arrowhead marker
-            svg.append("defs").append("marker")
-                .attr("id", "arrowhead")
-                .attr("class", "marker")
-                .attr("viewBox", "-0 -5 10 10")
-                .attr("refX", changeDirection(10, 10, horizontal).x)
-                .attr("refY", 0)
-                .attr("orient", "auto")
-                .attr("markerWidth", 4)
-                .attr("markerHeight", 4)
-                .attr("xoverflow", "visible")
-                .append("svg:path")
-                .attr("d", "M 0,-5 L 10 ,0 L 0,5");
+            // Draw drawing boundary
+            let showBoundary = true;
+            drawBoundary(svg_canvas, dag, horizontal, width, height, showBoundary);
 
             // Draw edges
-            svg.append("g")
-                .selectAll(".edge")
-                .data(dag.links())
-                .enter()
-                .append("path")
-                .attr("class", "edge")
-                .attr("d", d => {
-                    console.log("link points for path d: ", d);
-                    console.log("link points for path: ", d.points);
-                    console.log("link points for path changed: ", changePointDirection(d.points, horizontal));
-                    // // return lineGenerator(d.points);
-                    // return lineGenerator(changePointDirection(d.points, horizontal));
+            drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
 
-                    const points = generateEdgePath(d, horizontal);
-                    console.log("points", points);
-                    return lineGenerator(points);
-                });
+            // Draw nodes
+            drawNodes(svg_canvas, dag, horizontal, onNodeClickFunction);
         }
+        function drawMinimap(svg_canvas, dag, horizontal, width, height, lineGenerator) {
+            // start with a clean slate
+            svg_canvas.selectAll("*").remove();
+
+
+            // Draw drawing boundary
+            let showBoundary = true;
+            drawBoundary(svg_canvas, dag, horizontal, width, height, showBoundary);
+
+            // Draw edges
+            drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
+
+            // Draw nodes
+            drawNodes(svg_canvas, dag, horizontal);
+
+            // Initial update of the viewport rectangle
+            updateViewport(d3.zoomIdentity);
+
+        }
+
+
+
+
+        let lineGenerator = getLineGenerator();
+
+        function getLineGenerator() {
+            const curve = d3.curveBasis; // d3.curveCatmullRom; // d3.curveMonotoneY; //
+            return isEdgeCurved ? d3.line().curve(curve) : d3.line();
+        }
+
+    // Function to update the viewport rectangle
+        // function updateViewport() {
+        //     console.log("updateViewport");
+        //     const transform = d3.zoomTransform(mainSvg.node());
+        //     console.log("transform", transform);
+        //     viewportRect.attr("x", -transform.x * minimapScale)
+        //         .attr("y", -transform.y * minimapScale)
+        //         .attr("width", mainWidth / transform.k * minimapScale)
+        //         .attr("height", mainHeight / transform.k * minimapScale);
+        // }
+        // Function to update the viewport rectangle based on the current zoom transform
+            function updateViewport(transform) {
+                // console.log("updateViewport", horizontal,transform, width, height);
+                let rectX, rectY, rectWidth, rectHeight;
+                if (horizontal) {
+                    rectX = Math.max(-transform.y);
+                    rectY = Math.max(-transform.x);
+                    rectWidth = height / transform.k;
+                    rectHeight = width / transform.k;
+                } else {
+                    rectX = Math.max(-transform.x,0);
+                    rectY = Math.max(-transform.y,0);
+                    // rectX = -transform.x;
+                    // rectY = -transform.y;
+                    rectWidth = width / transform.k;
+                    rectHeight = height / transform.k;
+                }
+                // console.log("updateViewport   ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));                
+                if (horizontal) {
+                    if (rectX + rectWidth > height) {
+                        // console.log("correctWidth", rectWidth, height - rectX);
+                        rectWidth = height - rectX;
+                    }
+                    if (rectY + rectHeight > width) {
+                        // console.log("correctHeight", rectHeight, width - rectY);
+                        rectHeight = width - rectY;
+                    }
+                } else {
+                    if (rectX + rectWidth > width) {
+                        // console.log("correctWidth", rectWidth, width - rectX);
+                        rectWidth = width - rectX;
+                    }
+                    if (rectY + rectHeight > height) {
+                        // console.log("correctHeight", rectHeight, height - rectY);
+                        rectHeight = height - rectY;
+                    }
+                }
+                // console.log("                 ", Math.round(rectX), Math.round(rectY), Math.round(rectWidth), Math.round(rectHeight), horizontal, Math.round(width), Math.round(height), Math.round(rectX + rectWidth), Math.round(rectY + rectHeight));
+                
+                viewportRect.attr("x", rectX)
+                        .attr("y", rectY)
+                        .attr("width", rectWidth)
+                        .attr("height", rectHeight);
+            }
+
+        // Function to update the main SVG based on the viewport rectangle position
+        function updateMainView() {
+            const x = -viewportRect.attr("x") / minimapScale;
+            const y = -viewportRect.attr("y") / minimapScale;
+            const k = 1 / minimapScale; // Adjust this if you implement zooming
+
+            const transform = d3.zoomIdentity.translate(x, y).scale(k);
+            mainSvg.call(zoom.transform, transform);
+        }
+
+        // Add drag behavior to the viewport rectangle
+        viewportRect.call(d3.drag()
+            .on("drag", (event) => {
+                const newX = Math.max(0, Math.min(minimapWidth - viewportRect.attr("width"), event.x));
+                const newY = Math.max(0, Math.min(minimapHeight - viewportRect.attr("height"), event.y));
+
+                viewportRect.attr("x", newX).attr("y", newY);
+                updateMainView();
+            }));
+
+        // Main execution
+        let dag, zoom;
+        let width, height;
+
+        fetchFileToDag(selectedFile).then(result => {
+            if (result) {
+                ({ dag, maxNodeHeight, maxNodeWidth } = result);
+                console.log("DAG:", dag);
+                console.log("Max Node Height:", maxNodeHeight);
+                console.log("Max Node Width:", maxNodeWidth);
+
+                // Initial layout computation and drawing
+                computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+            }
+        });
+
+        function computeAndDraw(svg, minimapSvg, lineGenerator) {
+            ({ svg_canvas, width, height } = computeLayout(svg, minimapSvg, dag, horizontal));
+            zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport);
+
+            minimapScale = Math.min(minimapWidth / mainWidth, minimapHeight / mainHeight);
+            console.log("minimapScale", minimapScale);
+            // minimapScale = Math.min(minimapWidth / width, minimapHeight / height);
+            // console.log(width, height);
+            // console.log("minimapScale", minimapScale);
+
+
+            drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator);
+
+            console.log("minimapScale",minimapScale)
+            
+            // Create minimap content group
+            minimapSvg.selectAll("g").remove();
+
+            const minimapContent = minimapSvg.insert("g", ":first-child")
+            //minimapSvg.append("g");
+                // .attr("transform", `scale(${minimapScale})`);
+
+            drawMinimap(minimapContent, dag, horizontal, width, height, lineGenerator);
+        }
+
+
 
         // // Draw your DAG on the minimap
         // function drawMinimap(dag) {
@@ -575,7 +423,8 @@
         // Call drawMinimap after the main graph is drawn
         // drawMinimap(dag);
 
-        drawLayout();
+        // computeLayout();
+        // drawwMain();
     </script>
 </body>
 

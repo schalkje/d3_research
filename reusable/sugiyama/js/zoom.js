@@ -1,3 +1,38 @@
+// Connect default zoom buttons
+function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport) {
+    const zoom = d3.zoom()
+        .scaleExtent([1, 40])
+        .on("zoom", function (event) {
+            svg_canvas.attr("transform", event.transform);
+            updateViewport(event.transform);
+        });
+        
+        svg.call(zoom)
+
+    d3.select("#zoom-in").on("click", function () {
+        zoomIn(svg_canvas, zoom);
+    });
+
+    d3.select("#zoom-out").on("click", function () {
+        zoomOut(svg_canvas, zoom);
+    });
+
+    d3.select("#zoom-reset").on("click", function () {
+        zoomReset(svg_canvas, zoom, width, height, horizontal);
+    });
+
+    d3.select("#zoom-random").on("click", function () {
+        zoomRandom(svg_canvas, dag, zoom, width, height, horizontal);
+    });
+
+    d3.select("#zoom-node").on("click", function () {
+        zoomToNodeByName(svg_canvas, "EM_Stater", dag, zoom, width, height, horizontal);
+    });
+
+    return zoom;
+}
+
+// Define zoom functions
 function zoomIn(svg, zoom) {
     svg.transition().duration(750).call(zoom.scaleBy, 1.2);
 }
@@ -22,17 +57,17 @@ function zoomClicked(event, [x, y]) {
     );
 }
 
-function zoomToNodeByName(name, dag, zoom, width, height, horizontal) {
+function zoomToNodeByName(svg, name, dag, zoom, width, height, horizontal) {
     console.log("zoomToNodeByName", name);
     for (const node of dag.nodes()) {
         if (node.data.label === name) {
-            zoomToNode(node, dag, zoom, width, height, horizontal);
+            zoomToNode(svg, node, dag, zoom, width, height, horizontal);
             break;
         }
     }
 }
 
-function zoomRandom(dag, zoom, width, height, horizontal) {
+function zoomRandom(svg, dag, zoom, width, height, horizontal) {
     // console.log("zoomRandom", dag);
     const data = [];
     for (const node of dag.nodes()) {
@@ -41,10 +76,10 @@ function zoomRandom(dag, zoom, width, height, horizontal) {
     }
     const node = data[Math.floor(Math.random() * data.length)];
     console.log("random node=", node.data.label, node);
-    zoomToNode(node, dag, zoom, width, height, horizontal);
+    zoomToNode(svg, node, dag, zoom, width, height, horizontal);
 }
 
-function zoomToNode(node, graphData, zoom, width, height, horizontal) {
+function zoomToNode(svg, node, graphData, zoom, width, height, horizontal) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, graphData);
 
