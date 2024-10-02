@@ -271,8 +271,8 @@ function calculateScaleAndTranslate(
     );
   } else {
     scale = Math.min(
-      canvasWidth / boundingBox.width,
-      canvasHeight / boundingBox.height
+        canvasWidth / boundingBox.width,
+        canvasHeight / boundingBox.height
     );
   }
   scaleY = canvasHeight / boundingBox.height;
@@ -287,13 +287,24 @@ function calculateScaleAndTranslate(
     originalCanvasWidth / originalCanvasHeight
   );
 
+
   // compute the vertical border above the canvas
   const whiteSpaceY = ((width * mainHeight) / mainWidth - height) * 0.5;
+  const whiteSpaceX = ((height * mainWidth) / mainHeight - width) * 0.5;
+
+  const isHorizontalCanvas = originalCanvasWidth / originalCanvasHeight > 1;
+  const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > canvasWidth / canvasHeight;
+  console.log("orientation",isHorizontalCanvas, isHorizontalBoundingBox);
+  
+
   console.log(
-    "whiteSpaceY",
+    "whiteSpace X, Y ",
+    whiteSpaceX,
     whiteSpaceY,
     width,
     height,
+    canvasWidth,
+    canvasHeight,
     originalCanvasWidth,
     originalCanvasHeight,
     mainWidth,
@@ -324,8 +335,8 @@ function calculateScaleAndTranslate(
         canvasHeight / canvasWidth,
         (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
       );
-      translateX = -boundingBox.y * scale + centerCorrection * scale;
-      translateY = -boundingBox.x * scale;
+      translateX = -boundingBox.x * scale;
+      translateY = -boundingBox.y * scale + centerCorrection * scale;
     } else {
       console.log(
         "boundingBox.width/boundingBox.height < width/height",
@@ -340,8 +351,8 @@ function calculateScaleAndTranslate(
           boundingBox.width) *
         0.5;
       console.log("centerCorrection", centerCorrection);
-      translateX = -boundingBox.y * scaleY - whiteSpaceY;
-      translateY = -boundingBox.x * scale + centerCorrection;
+      translateX = -boundingBox.x * scale + centerCorrection;
+      translateY = -boundingBox.y * scale - whiteSpaceY;
     }
   } else {
     if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
@@ -353,36 +364,68 @@ function calculateScaleAndTranslate(
         canvasWidth / canvasHeight,
         width / height
       );
-      // const centerCorrection = (boundingBox.width*canvasHeight/canvasWidth - boundingBox.height) * 0.5;
-      const centerCorrection =
-        ((boundingBox.width * originalCanvasHeight) / originalCanvasWidth -
-          boundingBox.height) *
-        0.5;
+
+      const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
+      const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
+      console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
+
+      const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
+      const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
+      console.log("widthCorrection", widthCorrection, visualWidth);
+
+
       console.log(
         "centerCorrection",
-        centerCorrection,
+        heightCorrection,
         boundingBox.height,
         canvasHeight,
         canvasHeight / canvasWidth,
         (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
       );
-      translateX = -boundingBox.y * scale + centerCorrection * scale;
-      translateY = -boundingBox.x * scale;
+
+      translateX = -boundingBox.x * scale;
+      translateY = -boundingBox.y * scale;
+      if (isHorizontalCanvas) 
+        translateY -= whiteSpaceY;
+      else
+        translateX -= whiteSpaceX;
+
+      if (isHorizontalBoundingBox) 
+        translateY += heightCorrection * scale; 
+      else
+        translateX += widthCorrection * scale;
+    
+
     } else {
       console.log(
-        "boundingBox.width/boundingBox.height < width/height",
+        "boundingBox.width/boundingBox.height < width/height", horizontal,
         boundingBox.width,
         boundingBox.height,
         boundingBox.width / boundingBox.height,
         canvasWidth / canvasHeight,
         width / height
       );
-      const visualWidth = (boundingBox.height * canvasWidth) / canvasHeight;
-      const centerCorrection = (visualWidth - boundingBox.width) * 0.5;
 
-      console.log("centerCorrection", centerCorrection, visualWidth);
-      translateX = -boundingBox.y * scaleY - whiteSpaceY;
-      translateY = -boundingBox.x * scale + centerCorrection * scale;
+      const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
+      const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
+      console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
+
+      const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
+      const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
+      console.log("widthCorrection", widthCorrection, visualWidth);
+
+      translateX = -boundingBox.x * scale;
+      translateY = -boundingBox.y * scale;
+
+      if (isHorizontalCanvas) 
+        translateY -= whiteSpaceY;
+      else
+        translateX -= whiteSpaceX;
+
+      if (isHorizontalBoundingBox) 
+        translateY += heightCorrection * scale; 
+      else
+        translateX += widthCorrection * scale;
     }
   }
 
@@ -392,22 +435,11 @@ function calculateScaleAndTranslate(
     translateX,
     translateY
   );
-  if (horizontal) {
-    // Reverse the x and y translations
-    return {
-      scale: scale,
-      translate: {
-        x: translateY,
-        y: translateX,
-      },
-    };
-  } else {
-    return {
-      scale: scale,
-      translate: {
-        x: translateY,
-        y: translateX,
-      },
-    };
-  }
+  return {
+    scale: scale,
+    translate: {
+      x: translateX,
+      y: translateY,
+    },
+  };
 }
