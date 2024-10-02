@@ -295,6 +295,15 @@ function calculateScaleAndTranslate(
   const isHorizontalCanvas = originalCanvasWidth / originalCanvasHeight > 1;
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > canvasWidth / canvasHeight;
   console.log("orientation",isHorizontalCanvas, isHorizontalBoundingBox);
+
+  const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
+  const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
+  console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
+
+  const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
+  const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
+  console.log("widthCorrection", widthCorrection, visualWidth);
+
   
 
   console.log(
@@ -322,37 +331,32 @@ function calculateScaleAndTranslate(
         canvasWidth / canvasHeight,
         width / height
       );
-      // const centerCorrection = (boundingBox.width*canvasHeight/canvasWidth - boundingBox.height) * 0.5;
-      const centerCorrection =
-        ((boundingBox.width * originalCanvasHeight) / originalCanvasWidth -
-          boundingBox.height) *
-        0.5;
-      console.log(
-        "centerCorrection",
-        centerCorrection,
-        boundingBox.height,
-        canvasHeight,
-        canvasHeight / canvasWidth,
-        (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
-      );
+
       translateX = -boundingBox.x * scale;
-      translateY = -boundingBox.y * scale + centerCorrection * scale;
+      translateY = -boundingBox.y * scale;
+      if (isHorizontalCanvas) 
+        translateY -= whiteSpaceY;
+      else
+        translateX -= whiteSpaceX;
+
+      if (isHorizontalBoundingBox) 
+        translateY += heightCorrection * scale; 
+      else
+        translateX += widthCorrection * scale;
+
     } else {
-      console.log(
-        "boundingBox.width/boundingBox.height < width/height",
-        boundingBox.width,
-        boundingBox.height,
-        boundingBox.width / boundingBox.height,
-        canvasWidth / canvasHeight,
-        width / height
-      );
-      const centerCorrection =
-        ((boundingBox.height * originalCanvasWidth) / originalCanvasHeight -
-          boundingBox.width) *
-        0.5;
-      console.log("centerCorrection", centerCorrection);
-      translateX = -boundingBox.x * scale + centerCorrection;
-      translateY = -boundingBox.y * scale - whiteSpaceY;
+        translateX = -boundingBox.x * scale;
+        translateY = -boundingBox.y * scale;
+  
+        if (isHorizontalCanvas) 
+          translateY -= whiteSpaceY;
+        else
+          translateX -= whiteSpaceX;
+  
+        if (isHorizontalBoundingBox) 
+          translateY += heightCorrection * scale; 
+        else
+          translateX += widthCorrection * scale;
     }
   } else {
     if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
@@ -365,13 +369,6 @@ function calculateScaleAndTranslate(
         width / height
       );
 
-      const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
-      const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
-      console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
-
-      const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
-      const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
-      console.log("widthCorrection", widthCorrection, visualWidth);
 
 
       console.log(
@@ -405,14 +402,6 @@ function calculateScaleAndTranslate(
         canvasWidth / canvasHeight,
         width / height
       );
-
-      const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
-      const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
-      console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
-
-      const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
-      const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
-      console.log("widthCorrection", widthCorrection, visualWidth);
 
       translateX = -boundingBox.x * scale;
       translateY = -boundingBox.y * scale;
