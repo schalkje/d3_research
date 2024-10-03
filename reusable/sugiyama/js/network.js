@@ -1,3 +1,5 @@
+// const { min } = require("d3");
+
 function changeDirection(x, y, horizontal = true) {
   if (horizontal) {
     return { x: y, y: x };
@@ -32,7 +34,7 @@ function drawBoundary(
   }
 }
 
-function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints = false) {
+function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints = false, minimap = false) {
   // Draw nodes
   const node = svg
     .append("g")
@@ -64,12 +66,14 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
         onClickFunction(event,d);
     });
 
-  node
-    .append("text")
-    .attr("class", "label")
-    .attr("x", (d) => d.data.width / 2)
-    .attr("y", (d) => d.data.height / 2 + 5)
-    .text((d) => d.data.label);
+  if (!minimap) {
+    node
+      .append("text")
+      .attr("class", "label")
+      .attr("x", (d) => d.data.width / 2)
+      .attr("y", (d) => d.data.height / 2 + 5)
+      .text((d) => d.data.label);
+  }
 
   if (showConnectionPoints) {
     node.each(function (d) {
