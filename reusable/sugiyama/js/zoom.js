@@ -71,8 +71,7 @@ function zoomToNodeByName(svg, name, dag, zoom, width, height, horizontal) {
   console.log("zoomToNodeByName", name);
   for (const node of dag.nodes()) {
     if (node.data.label === name) {
-      zoomToNode(svg, node, dag, zoom, width, height, horizontal);
-      break;
+      return zoomToNode(svg, node, dag, zoom, width, height, horizontal);
     }
   }
 }
@@ -86,7 +85,7 @@ function zoomRandom(svg, dag, zoom, width, height, horizontal) {
   }
   const node = data[Math.floor(Math.random() * data.length)];
   console.log("random node=", node.data.label, node);
-  zoomToNode(svg, node, dag, zoom, width, height, horizontal);
+  return zoomToNode(svg, node, dag, zoom, width, height, horizontal);
 }
 
 function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
@@ -120,6 +119,8 @@ function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showb
 
   // 4. Apply the zoom transform
   svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+
+  return computeBoundingBox;
 }
 
 function getImmediateNeighbors(baseNode, graphData) {
