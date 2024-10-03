@@ -1,13 +1,5 @@
 // Connect default zoom buttons
-function initializeZoom(
-  svg,
-  svg_canvas,
-  width,
-  height,
-  horizontal,
-  dag,
-  updateViewport
-) {
+function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport) {
   const zoom = d3
     .zoom()
     .scaleExtent([1, 40])
@@ -38,15 +30,7 @@ function initializeZoom(
   });
 
   d3.select("#zoom-node").on("click", function () {
-    zoomToNodeByName(
-      svg_canvas,
-      "EM_Stater",
-      dag,
-      zoom,
-      width,
-      height,
-      horizontal
-    );
+    zoomToNodeByName(svg_canvas, "EM_Stater", dag, zoom, width, height, horizontal);
   });
 
   return zoom;
@@ -65,11 +49,7 @@ function zoomReset(svg, zoom, width, height) {
   svg
     .transition()
     .duration(750)
-    .call(
-      zoom.transform,
-      d3.zoomIdentity,
-      d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
-    );
+    .call(zoom.transform, d3.zoomIdentity, d3.zoomTransform(svg.node()).invert([width / 2, height / 2]));
 }
 
 function zoomClicked(event, [x, y]) {
@@ -109,16 +89,7 @@ function zoomRandom(svg, dag, zoom, width, height, horizontal) {
   zoomToNode(svg, node, dag, zoom, width, height, horizontal);
 }
 
-function zoomToNode(
-  svg,
-  node,
-  graphData,
-  zoom,
-  width,
-  height,
-  horizontal,
-  showboundingBox = true
-) {
+function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, graphData);
 
@@ -142,24 +113,13 @@ function zoomToNode(
   console.log("main", mainWidth, mainHeight);
 
   // 3. Calculate the zoom scale and translation
-  const { scale, translate } = calculateScaleAndTranslate(
-    boundingBox,
-    width,
-    height,
-    horizontal
-  );
+  const { scale, translate } = calculateScaleAndTranslate(boundingBox, width, height, horizontal);
 
   console.log("scale", scale);
   console.log("translate", translate);
 
   // 4. Apply the zoom transform
-  svg
-    .transition()
-    .duration(750)
-    .call(
-      zoom.transform,
-      d3.zoomIdentity.translate(translate.x, translate.y).scale(scale)
-    );
+  svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 }
 
 function getImmediateNeighbors(baseNode, graphData) {
@@ -169,10 +129,7 @@ function getImmediateNeighbors(baseNode, graphData) {
 
   // Iterate over all edges to find connected nodes
   for (const node of graphData.nodes()) {
-    if (
-      baseNode.data.parentIds.includes(node.data.id) ||
-      baseNode.data.childrenIds.includes(node.data.id)
-    ) {
+    if (baseNode.data.parentIds.includes(node.data.id) || baseNode.data.childrenIds.includes(node.data.id)) {
       // console.log("getImmediateNeighbors node", node);
       neighbors.push(node);
     }
@@ -216,67 +173,28 @@ function computeBoundingBox(nodes, horizontal) {
   };
 }
 
-function calculateScaleAndTranslate(
-  boundingBox,
-  canvasWidth,
-  canvasHeight,
-  horizontal
-) {
+function calculateScaleAndTranslate(boundingBox, canvasWidth, canvasHeight, horizontal) {
   const originalCanvasWidth = canvasWidth;
   const originalCanvasHeight = canvasHeight;
+
   // correct canvas size for scaling
-  console.log(
-    "canvas           ",
-    mainWidth,
-    mainHeight,
-    canvasWidth,
-    canvasHeight,
-    canvasWidth / canvasHeight
-  );
   if (canvasWidth / canvasHeight > 1) {
-    console.log(
-      "canvas correction height",
-      canvasHeight,
-      (canvasWidth * mainHeight) / mainWidth
-    );
     canvasHeight = (canvasWidth * mainHeight) / mainWidth;
   } else {
-    console.log(
-      "canvas correction width",
-      canvasWidth,
-      (canvasHeight * mainWidth) / mainHeight
-    );
     canvasWidth = (canvasHeight * mainWidth) / mainHeight;
   }
-  console.log(
-    "canvas correction",
-    mainWidth,
-    mainHeight,
-    canvasWidth,
-    canvasHeight
-  );
+  console.log("canvas correction", mainWidth, mainHeight, canvasWidth, canvasHeight);
 
   let scale;
-  console.log(
-    "calculateScaleAndTranslate scale",
-    horizontal,
-    canvasWidth,
-    canvasHeight,
-    boundingBox
-  );
+  console.log("calculateScaleAndTranslate scale", horizontal, canvasWidth, canvasHeight, boundingBox);
   if (horizontal) {
-    scale = Math.min(
-      canvasWidth / boundingBox.width,
-      canvasHeight / boundingBox.height
-    );
+    scale = Math.min(canvasWidth / boundingBox.width, canvasHeight / boundingBox.height);
   } else {
-    scale = Math.min(
-        canvasWidth / boundingBox.width,
-        canvasHeight / boundingBox.height
-    );
+    scale = Math.min(canvasWidth / boundingBox.width, canvasHeight / boundingBox.height);
   }
   scaleY = canvasHeight / boundingBox.height;
   scaleX = canvasWidth / boundingBox.width;
+
   console.log(
     "calculateScaleAndTranslate scale",
     scale,
@@ -287,143 +205,29 @@ function calculateScaleAndTranslate(
     originalCanvasWidth / originalCanvasHeight
   );
 
-
   // compute the vertical border above the canvas
   const whiteSpaceY = ((width * mainHeight) / mainWidth - height) * 0.5;
   const whiteSpaceX = ((height * mainWidth) / mainHeight - width) * 0.5;
 
   const isHorizontalCanvas = originalCanvasWidth / originalCanvasHeight > 1;
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > canvasWidth / canvasHeight;
-  console.log("orientation",isHorizontalCanvas, isHorizontalBoundingBox);
 
   const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
   const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
-  console.log("heightCorrection", heightCorrection, visualHeight,boundingBox);
 
   const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
   const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
-  console.log("widthCorrection", widthCorrection, visualWidth);
 
-  
+  let translateX = -boundingBox.x * scale;
+  let translateY = -boundingBox.y * scale;
 
-  console.log(
-    "whiteSpace X, Y ",
-    whiteSpaceX,
-    whiteSpaceY,
-    width,
-    height,
-    canvasWidth,
-    canvasHeight,
-    originalCanvasWidth,
-    originalCanvasHeight,
-    mainWidth,
-    mainHeight
-  );
+  if (isHorizontalCanvas) translateY -= whiteSpaceY;
+  else translateX -= whiteSpaceX;
 
-  let translateX, translateY;
-  if (horizontal) {
-    if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
-      console.log(
-        "boundingBox.width/boundingBox.height > originalCanvasWidth/originalCanvasHeight",
-        boundingBox.width,
-        boundingBox.height,
-        boundingBox.width / boundingBox.height,
-        canvasWidth / canvasHeight,
-        width / height
-      );
+  if (isHorizontalBoundingBox) translateY += heightCorrection * scale;
+  else translateX += widthCorrection * scale;
 
-      translateX = -boundingBox.x * scale;
-      translateY = -boundingBox.y * scale;
-      if (isHorizontalCanvas) 
-        translateY -= whiteSpaceY;
-      else
-        translateX -= whiteSpaceX;
-
-      if (isHorizontalBoundingBox) 
-        translateY += heightCorrection * scale; 
-      else
-        translateX += widthCorrection * scale;
-
-    } else {
-        translateX = -boundingBox.x * scale;
-        translateY = -boundingBox.y * scale;
-  
-        if (isHorizontalCanvas) 
-          translateY -= whiteSpaceY;
-        else
-          translateX -= whiteSpaceX;
-  
-        if (isHorizontalBoundingBox) 
-          translateY += heightCorrection * scale; 
-        else
-          translateX += widthCorrection * scale;
-    }
-  } else {
-    if (boundingBox.width / boundingBox.height > canvasWidth / canvasHeight) {
-      console.log(
-        "boundingBox.width/boundingBox.height > originalCanvasWidth/originalCanvasHeight",
-        boundingBox.width,
-        boundingBox.height,
-        boundingBox.width / boundingBox.height,
-        canvasWidth / canvasHeight,
-        width / height
-      );
-
-
-
-      console.log(
-        "centerCorrection",
-        heightCorrection,
-        boundingBox.height,
-        canvasHeight,
-        canvasHeight / canvasWidth,
-        (boundingBox.width * originalCanvasHeight) / originalCanvasWidth
-      );
-
-      translateX = -boundingBox.x * scale;
-      translateY = -boundingBox.y * scale;
-      if (isHorizontalCanvas) 
-        translateY -= whiteSpaceY;
-      else
-        translateX -= whiteSpaceX;
-
-      if (isHorizontalBoundingBox) 
-        translateY += heightCorrection * scale; 
-      else
-        translateX += widthCorrection * scale;
-    
-
-    } else {
-      console.log(
-        "boundingBox.width/boundingBox.height < width/height", horizontal,
-        boundingBox.width,
-        boundingBox.height,
-        boundingBox.width / boundingBox.height,
-        canvasWidth / canvasHeight,
-        width / height
-      );
-
-      translateX = -boundingBox.x * scale;
-      translateY = -boundingBox.y * scale;
-
-      if (isHorizontalCanvas) 
-        translateY -= whiteSpaceY;
-      else
-        translateX -= whiteSpaceX;
-
-      if (isHorizontalBoundingBox) 
-        translateY += heightCorrection * scale; 
-      else
-        translateX += widthCorrection * scale;
-    }
-  }
-
-  console.log(
-    "calculateScaleAndTranslate scale, x, y",
-    scale,
-    translateX,
-    translateY
-  );
+  console.log("calculateScaleAndTranslate scale, x, y", scale, translateX, translateY);
   return {
     scale: scale,
     translate: {

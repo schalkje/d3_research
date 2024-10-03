@@ -1,3 +1,6 @@
 {
-    "livePreview.defaultPreviewPath": "/reusable/sugiyama/d3-dag-chart.html"
+    "livePreview.defaultPreviewPath": "/reusable/sugiyama/d3-dag-chart.html",
+    "Prettier-SQL.tabSizeOverride": 4,
+    "prettier.printWidth": 120,
+    "Prettier-SQL.ignoreTabSettings": true
 }
