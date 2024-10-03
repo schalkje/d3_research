@@ -174,60 +174,50 @@ function computeBoundingBox(nodes, horizontal) {
 }
 
 function calculateScaleAndTranslate(boundingBox, canvasWidth, canvasHeight, horizontal) {
-  const originalCanvasWidth = canvasWidth;
-  const originalCanvasHeight = canvasHeight;
-
   // correct canvas size for scaling
-  if (canvasWidth / canvasHeight > 1) {
-    canvasHeight = (canvasWidth * mainHeight) / mainWidth;
+  let correctedCanvasHeight = canvasHeight;
+  let correctedCanvasWidth = canvasWidth;
+  if (canvasWidth / canvasHeight > mainWidth / mainHeight) {
+    correctedCanvasHeight = canvasWidth * (mainHeight / mainWidth);
   } else {
-    canvasWidth = (canvasHeight * mainWidth) / mainHeight;
+    correctedCanvasWidth = canvasHeight * (mainWidth / mainHeight);
   }
-  console.log("canvas correction", mainWidth, mainHeight, canvasWidth, canvasHeight);
 
+  // compute the scale
   let scale;
-  console.log("calculateScaleAndTranslate scale", horizontal, canvasWidth, canvasHeight, boundingBox);
   if (horizontal) {
-    scale = Math.min(canvasWidth / boundingBox.width, canvasHeight / boundingBox.height);
+    scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   } else {
-    scale = Math.min(canvasWidth / boundingBox.width, canvasHeight / boundingBox.height);
+    scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   }
-  scaleY = canvasHeight / boundingBox.height;
-  scaleX = canvasWidth / boundingBox.width;
 
-  console.log(
-    "calculateScaleAndTranslate scale",
-    scale,
-    scaleX,
-    scaleY,
-    mainWidth / mainHeight,
-    canvasWidth / canvasHeight,
-    originalCanvasWidth / originalCanvasHeight
-  );
+  // compute the vertical border next to and above the canvas
+  const whiteSpaceY = (width * (mainHeight / mainWidth) - height) * 0.5;
+  const whiteSpaceX = (height * (mainWidth / mainHeight) - width) * 0.5;
 
-  // compute the vertical border above the canvas
-  const whiteSpaceY = ((width * mainHeight) / mainWidth - height) * 0.5;
-  const whiteSpaceX = ((height * mainWidth) / mainHeight - width) * 0.5;
+  // determine if the canvas and bounding box are horizontal or vertical compared to the main view
+  const isHorizontalCanvas = canvasWidth / canvasHeight > mainWidth / mainHeight;
+  const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
 
-  const isHorizontalCanvas = originalCanvasWidth / originalCanvasHeight > 1;
-  const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > canvasWidth / canvasHeight;
-
-  const visualHeight = boundingBox.width * (canvasHeight / canvasWidth);
+  // compute the visual height and width of the bounding box
+  const visualHeight = boundingBox.width * (correctedCanvasHeight / correctedCanvasWidth);
   const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
 
-  const visualWidth = boundingBox.height * (canvasWidth / canvasHeight);
+  const visualWidth = boundingBox.height * (correctedCanvasWidth / correctedCanvasHeight);
   const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
 
+  // compute the base translation
   let translateX = -boundingBox.x * scale;
   let translateY = -boundingBox.y * scale;
 
+  // add the white space to the translation
   if (isHorizontalCanvas) translateY -= whiteSpaceY;
   else translateX -= whiteSpaceX;
 
+  // add the height correction to the translation
   if (isHorizontalBoundingBox) translateY += heightCorrection * scale;
   else translateX += widthCorrection * scale;
 
-  console.log("calculateScaleAndTranslate scale, x, y", scale, translateX, translateY);
   return {
     scale: scale,
     translate: {
