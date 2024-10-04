@@ -88,17 +88,17 @@ export function zoomRandom(canvas, layout, zoom, dag){
 }
 
 // export function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
-export function zoomToNode(node, canvas, layout, zoom, dag, showboundingBox = true) {
+export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, dag);
 
   // 2. Compute the bounding box
-  const boundingBox = computeBoundingBox(neighbors, layout.horizontal);
+  const boundingBox = computeBoundingBox(neighbors, dashboard.layout.horizontal);
 
   if (showboundingBox) {
     console.log("boundingBox", boundingBox);
-    canvas.svg.selectAll(".boundingBox").remove();
-    canvas.svg
+    dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
+    dashboard.main.canvas.svg
       .append("rect")
       .attr("class", "boundingBox")
       .attr("x", boundingBox.x)
@@ -110,13 +110,14 @@ export function zoomToNode(node, canvas, layout, zoom, dag, showboundingBox = tr
   }
 
   // 3. Calculate the zoom scale and translation
-  const { scale, translate } = calculateScaleAndTranslate(boundingBox, canvas, layout);
+  const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
 
   console.log("scale", scale);
   console.log("translate", translate);
 
   // 4. Apply the zoom transform
-  svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+  // JS: main.view or main.canvas?
+  dashboard.main.view.svg.transition().duration(750).call(dashboard.main.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 
   return boundingBox;
 }
@@ -168,30 +169,30 @@ export function computeBoundingBox(nodes, horizontal) {
   };
 }
 
-function calculateScaleAndTranslate(boundingBox, canvas, layout) {
+function calculateScaleAndTranslate(boundingBox, dashboard) {
   // correct canvas size for scaling
-  let correctedCanvasHeight = canvas.height;
-  let correctedCanvasWidth = canvas.width;
-  if (canvas.width / canvas.height > mainView.width / mainView.height) {
-    correctedCanvasHeight = canvas.width * (mainView.height / mainView.width);
+  let correctedCanvasHeight = dashboard.main.canvas.height;
+  let correctedCanvasWidth = dashboard.main.canvas.width;
+  if (dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height) {
+    correctedCanvasHeight = dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width);
   } else {
-    correctedCanvasWidth = canvas.height * (mainView.width / mainView.height);
+    correctedCanvasWidth = dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height);
   }
 
   // compute the scale
   let scale;
-  if (horizontal) {
+  if (dashboard.layout.horizontal) {
     scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   } else {
     scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   }
 
   // compute the vertical border next to and above the canvas
-  const whiteSpaceY = (width * (mainView.height / mainView.width) - height) * 0.5;
-  const whiteSpaceX = (height * (mainView.width / mainView.height) - width) * 0.5;
+  const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
+  const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
 
   // determine if the canvas and bounding box are horizontal or vertical compared to the main view
-  const isHorizontalCanvas = canvas.width / canvas.height > mainView.width / mainView.height;
+  const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
 
   // compute the visual height and width of the bounding box

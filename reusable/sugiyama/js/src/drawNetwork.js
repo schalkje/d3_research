@@ -11,28 +11,28 @@ export function setup(divSelector) {
   return { svg: mainSvg, width: mainWidth, height: mainHeight, onDragUpdate: updateMainView };
 }
 
-export function draw(canvas, layout, zoom, dag) {
-  console.log("draw - clean children", canvas, layout);
+export function draw(dashboard, dag) {
   // start with a clean slate
-  canvas.svg.selectAll("*").remove();
+  dashboard.main.canvas.svg.selectAll("*").remove();
 
   // Draw drawing boundary
   let showBoundary = true;
-  if (showBoundary) drawBoundary(canvas);
+  if (showBoundary) drawBoundary(dashboard.main.canvas);
 
   // Draw edges
-  drawEdges(canvas, layout, dag);
+  drawEdges(dashboard.main.canvas, dashboard, dag);
 
   // Draw nodes
-  drawNodes(canvas, layout, zoom, dag, onNodeClickFunction);
+  drawNodes(dashboard.main.canvas, dashboard, dag, onNodeClickFunction);
 }
 
-function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
+function onNodeClickFunction(event, node, dashboard, dag) {
   console.log("onClickFunction", node.data.label, node);
-  zoomToNode(node, canvas, layout, zoom, dag);
+  zoomToNode(node, dashboard, dag);
 }
 
-export function drawMinimap(canvas, layout, zoom, dag) {
+export function drawMinimap(dashboard, dag) {
+  const canvas = dashboard.minimap.canvas;
   // start with a clean slate
   canvas.svg.selectAll("*").remove();
 
@@ -41,10 +41,10 @@ export function drawMinimap(canvas, layout, zoom, dag) {
   if (showBoundary) drawBoundary(canvas);
 
   // Draw edges
-  drawEdges(canvas, layout, dag);
+  drawEdges(canvas, dashboard, dag);
 
   // Draw nodes
-  drawNodes(canvas, layout, zoom, dag, onNodeClickFunction, false, true);
+  drawNodes(canvas, dashboard, dag, onNodeClickFunction, false, true);
 
   // // Initial update of the viewport rectangle
   // updateMinimapViewport(canvas, d3.zoomIdentity);
@@ -76,7 +76,7 @@ function drawBoundary(canvas) {
     .attr("height", (d) => canvas.height);
 }
 
-function drawNodes(canvas, layout, zoom, dag, onClickFunction, showConnectionPoints = false, minimap = false) {
+function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints = false, minimap = false) {
   // Draw nodes
   const node = canvas.svg
     .append("g")
@@ -88,15 +88,14 @@ function drawNodes(canvas, layout, zoom, dag, onClickFunction, showConnectionPoi
     .attr(
       "transform",
       (d) =>
-        `translate(${changeDirection(d.x, d.y, layout.horizontal).x - d.data.width / 2},${
-          changeDirection(d.x, d.y, layout.horizontal).y - d.data.height / 2
+        `translate(${changeDirection(d.x, d.y, dashboard.layout.horizontal).x - d.data.width / 2},${
+          changeDirection(d.x, d.y, dashboard.layout.horizontal).y - d.data.height / 2
         })`
     );
 
   const nodes = node
     .append("rect")
-    .attr("class", (d) => `node`)
-    // .attr("class", d => `node s${d.data.data.state}`)
+    .attr("class", d => `node s${d.data.state}`)
     .attr("width", (d) => d.data.width)
     .attr("height", (d) => d.data.height)
     .attr("rx", 5)
@@ -105,7 +104,7 @@ function drawNodes(canvas, layout, zoom, dag, onClickFunction, showConnectionPoi
   // Add the click event
   nodes.on("click", function (event, node) {
     // console.log("Node clicked:", d);
-    onClickFunction(event, node, canvas, layout, zoom, dag);
+    onClickFunction(event, node, dashboard, dag);
     // function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
   });
 
@@ -142,17 +141,17 @@ function computeConnectionPoints(width, height) {
   };
 }
 
-function generateEdgePath(d, horizontal) {
+function generateEdgePath(edge, layout) {
   //   console.log("d", d);
-  const sourceNode = d.source;
-  const targetNode = d.target;
+  const sourceNode = edge.source;
+  const targetNode = edge.target;
 
   const sourceConnectionPoints = computeConnectionPoints(sourceNode.data.width, sourceNode.data.height);
   const targetConnectionPoints = computeConnectionPoints(targetNode.data.width, targetNode.data.height);
 
   let sourcePoint, targetPoint;
 
-  if (horizontal) {
+  if (layout.horizontal) {
     sourcePoint = sourceConnectionPoints.right;
     targetPoint = targetConnectionPoints.left;
   } else {
@@ -161,21 +160,21 @@ function generateEdgePath(d, horizontal) {
   }
 
   sourcePoint = [
-    changeDirection(sourceNode.x, sourceNode.y, horizontal).x + sourcePoint.x - sourceNode.data.width / 2,
-    changeDirection(sourceNode.x, sourceNode.y, horizontal).y + sourcePoint.y - sourceNode.data.height / 2,
+    changeDirection(sourceNode.x, sourceNode.y, layout.horizontal).x + sourcePoint.x - sourceNode.data.width / 2,
+    changeDirection(sourceNode.x, sourceNode.y, layout.horizontal).y + sourcePoint.y - sourceNode.data.height / 2,
   ];
 
   targetPoint = [
-    changeDirection(targetNode.x, targetNode.y, horizontal).x + targetPoint.x - targetNode.data.width / 2,
-    changeDirection(targetNode.x, targetNode.y, horizontal).y + targetPoint.y - targetNode.data.height / 2,
+    changeDirection(targetNode.x, targetNode.y, layout.horizontal).x + targetPoint.x - targetNode.data.width / 2,
+    changeDirection(targetNode.x, targetNode.y, layout.horizontal).y + targetPoint.y - targetNode.data.height / 2,
   ];
 
   // Calculate waypoints
   let waypoints;
   const midX = (targetPoint[0] - sourcePoint[0]) / 2;
   const midY = (targetPoint[1] - sourcePoint[1]) / 2;
-  if (horizontal) {
-    if (isEdgeCurved) {
+  if (layout.horizontal) {
+    if (layout.isEdgeCurved) {
       waypoints = [
         // // for a curve
         [sourcePoint[0] + midX * 0.9, sourcePoint[1] + midY * 0.1], // Move horizontally to half the distance
@@ -188,7 +187,7 @@ function generateEdgePath(d, horizontal) {
       ];
     }
   } else {
-    if (isEdgeCurved) {
+    if (layout.isEdgeCurved) {
       // // for a curve
       waypoints = [
         [sourcePoint[0] + midX * 0.1, sourcePoint[1] + midY * 0.9], // Move horizontally to half the distance
@@ -205,7 +204,7 @@ function generateEdgePath(d, horizontal) {
   return [sourcePoint, ...waypoints, targetPoint];
 }
 
-function drawEdges(canvas, layout, dag) {
+function drawEdges(canvas, dashboard, dag) {
   // Define arrowhead marker
   canvas.svg
     .append("defs")
@@ -213,7 +212,7 @@ function drawEdges(canvas, layout, dag) {
     .attr("id", "arrowhead")
     .attr("class", "marker")
     .attr("viewBox", "-0 -5 10 10")
-    .attr("refX", changeDirection(10, 10, layout.horizontal).x)
+    .attr("refX", changeDirection(10, 10, dashboard.layout.horizontal).x)
     .attr("refY", 0)
     .attr("orient", "auto")
     .attr("markerWidth", 4)
@@ -231,7 +230,7 @@ function drawEdges(canvas, layout, dag) {
     .append("path")
     .attr("class", "edge")
     .attr("d", (d) => {
-      const points = generateEdgePath(d, layout.horizontal);
-      return layout.lineGenerator(points);
+      const points = generateEdgePath(d, dashboard.layout.horizontal);
+      return dashboard.layout.lineGenerator(points);
     });
 }

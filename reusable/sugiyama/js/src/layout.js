@@ -3,7 +3,7 @@ import {initializeZoom} from "./zoom.js";
 import {updateMinimapViewport} from "./minimap.js";
 import {draw, drawMinimap} from "./drawNetwork.js";
 
-export function computeAndDraw(dag, mainView, minimap, lineGenerator) {
+export function computeAndDraw(dag, mainView, minimap, layout) {
     console.log("computeAndDraw", mainView, minimap, dag);
     let dashboard = {
         main:{
@@ -12,17 +12,14 @@ export function computeAndDraw(dag, mainView, minimap, lineGenerator) {
         minimap:{
             view:minimap
         },
-        layout:{
-            horizontal:horizontal,
-            lineGenerator:lineGenerator
-        }
+        layout:layout
     };
 
     computeLayoutAndCanvas(dashboard, dag);
   
     initializeZoom(dashboard, dag, updateMinimapViewport);
   
-    draw(dashboard.main.canvas, dashboard.layout, dashboard.main.zoom, dag);
+    draw(dashboard, dag);
   
   
     // Create minimap content group
@@ -35,13 +32,15 @@ export function computeAndDraw(dag, mainView, minimap, lineGenerator) {
     }
     
     
-    drawMinimap(dashboard.minimap.canvas, dashboard.layout, dashboard.main.zoom, dag);
+    drawMinimap(dashboard, dag);
   
     return dashboard;
     // { 
     //     layout:{
     //         horizontal:horizontal,
     //         lineGenerator:lineGenerator
+    //         isEdgeCurved:isEdgeCurved
+    //   },     
     //     },
     //     main:{
     //         view:mainView,
@@ -57,7 +56,6 @@ export function computeAndDraw(dag, mainView, minimap, lineGenerator) {
 
  
 export function computeLayoutAndCanvas(dashboard, dag) {
-    console.log("computeLayout", dashboard.main.view, dashboard.minimap.view, dag);
     dashboard.main.view.svg.selectAll("*").remove();
     const svg = dashboard.main.view.svg.append("g");
 
@@ -66,8 +64,8 @@ export function computeLayoutAndCanvas(dashboard, dag) {
 
     function getNodeSize({ data }) {
         return [
-            changeDirection(data.width + marginX, data.height + marginY, horizontal).x,
-            changeDirection(data.width + marginX, data.height + marginY, horizontal).y
+            changeDirection(data.width + marginX, data.height + marginY, dashboard.layout.horizontal).x,
+            changeDirection(data.width + marginX, data.height + marginY, dashboard.layout.horizontal).y
         ];
     }
 
