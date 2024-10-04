@@ -1,5 +1,53 @@
 // const { min } = require("d3");
 
+function setupMainView(divSelector) {
+  // Set up the main view
+  const mainSvg = d3.select(`${divSelector}`);
+  const { width: mainWidth, height: mainHeight } = getComputedDimensions(mainSvg);
+
+  return {svg:mainSvg, width:mainWidth, height:mainHeight};
+}
+
+
+function drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator) {
+  // console.log("drawMain - clean children", svg_canvas);
+  // start with a clean slate
+  svg_canvas.selectAll("*").remove();
+
+  // Draw drawing boundary
+  let showBoundary = true;
+  drawBoundary(svg_canvas, dag, width, height, showBoundary);
+
+  // Draw edges
+  drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
+
+  // Draw nodes
+  drawNodes(svg_canvas, dag, horizontal, onNodeClickFunction);
+}
+
+function onNodeClickFunction(event, d) {
+  console.log("onClickFunction", d.data.label, d);
+  zoomToNode(svg_canvas, d, dag, zoom, width, height, horizontal);
+}
+
+function drawMinimap(svg_canvas, dag, horizontal, width, height, lineGenerator) {
+  // start with a clean slate
+  svg_canvas.selectAll("*").remove();
+
+  // Draw drawing boundary
+  let showBoundary = true;
+  drawBoundary(svg_canvas, dag, width, height, showBoundary);
+
+  // Draw edges
+  drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
+
+  // Draw nodes
+  drawNodes(svg_canvas, dag, horizontal, onNodeClickFunction, false, true);
+
+  // Initial update of the viewport rectangle
+  updateViewport(d3.zoomIdentity);
+}
+
 function changeDirection(x, y, horizontal = true) {
   if (horizontal) {
     return { x: y, y: x };
@@ -95,16 +143,6 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
   }
 }
 
-let boundaryDragInitialX, boundaryDragInitialY;
-// Define drag functions
-function dragStarted(event) {
-  console.log("dragStarted", event);
-  boundaryDragInitialX = event.x - parseFloat(svg_canvas.attr('x'));
-  boundaryDragInitialY = event.y - parseFloat(svg_canvas.attr('y'));
-  console.log("           initial X,Y", boundaryDragInitialX, boundaryDragInitialY);
-
-  d3.select(this).raise().classed("active", true);
-}
 
 
 function computeConnectionPoints(width, height) {

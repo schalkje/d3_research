@@ -3,8 +3,8 @@ function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateV
   const zoom = d3
     .zoom()
     .scaleExtent([1, 40])
-    // .extent([[0, 0], [mainWidth, mainHeight]])  // Define the size of the viewport
-    // .translateExtent([[0, 0], [mainWidth, mainHeight]])  // Define the panning boundaries
+    // .extent([[0, 0], [mainView.width, mainView.height]])  // Define the size of the viewport
+    // .translateExtent([[0, 0], [mainView.width, mainView.height]])  // Define the panning boundaries
     .on("zoom", function (event) {
       //   console.log("zoom", event);
       svg_canvas.attr("transform", event.transform);
@@ -111,7 +111,7 @@ function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showb
       .attr("stroke", "red");
   }
 
-  console.log("main", mainWidth, mainHeight);
+  console.log("main", mainView.width, mainView.height);
 
   // 3. Calculate the zoom scale and translation
   const { scale, translate } = calculateScaleAndTranslate(boundingBox, width, height, horizontal);
@@ -180,10 +180,10 @@ function calculateScaleAndTranslate(boundingBox, canvasWidth, canvasHeight, hori
   // correct canvas size for scaling
   let correctedCanvasHeight = canvasHeight;
   let correctedCanvasWidth = canvasWidth;
-  if (canvasWidth / canvasHeight > mainWidth / mainHeight) {
-    correctedCanvasHeight = canvasWidth * (mainHeight / mainWidth);
+  if (canvasWidth / canvasHeight > mainView.width / mainView.height) {
+    correctedCanvasHeight = canvasWidth * (mainView.height / mainView.width);
   } else {
-    correctedCanvasWidth = canvasHeight * (mainWidth / mainHeight);
+    correctedCanvasWidth = canvasHeight * (mainView.width / mainView.height);
   }
 
   // compute the scale
@@ -195,11 +195,11 @@ function calculateScaleAndTranslate(boundingBox, canvasWidth, canvasHeight, hori
   }
 
   // compute the vertical border next to and above the canvas
-  const whiteSpaceY = (width * (mainHeight / mainWidth) - height) * 0.5;
-  const whiteSpaceX = (height * (mainWidth / mainHeight) - width) * 0.5;
+  const whiteSpaceY = (width * (mainView.height / mainView.width) - height) * 0.5;
+  const whiteSpaceX = (height * (mainView.width / mainView.height) - width) * 0.5;
 
   // determine if the canvas and bounding box are horizontal or vertical compared to the main view
-  const isHorizontalCanvas = canvasWidth / canvasHeight > mainWidth / mainHeight;
+  const isHorizontalCanvas = canvasWidth / canvasHeight > mainView.width / mainView.height;
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
 
   // compute the visual height and width of the bounding box
