@@ -15,8 +15,9 @@ function computeLayout(svg, minimapSvg, dag, horizontal) {
     // Apply the Sugiyama layout
     const layout = d3.sugiyama()
         .layering(d3.layeringLongestPath())
-        // .decross(d3.decrossOpt())
-        // .decross(d3.decrossOpt())
+        // .decross(d3.decrossOpt()) // Option 1: Heuristic Optimization
+        .decross(d3.decrossTwoLayer()) // Option 2: Two-layer Optimization
+        // .decross(d3.decrossDfs()) // Option 3: Naive Approach
         .coord(d3.coordQuad())
         .nodeSize(d => getNodeSize(d));
 

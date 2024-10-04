@@ -36,6 +36,8 @@ function initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateV
   return zoom;
 }
 
+
+
 // Define zoom functions
 function zoomIn(svg, zoom) {
   svg.transition().duration(750).call(zoom.scaleBy, 1.2);

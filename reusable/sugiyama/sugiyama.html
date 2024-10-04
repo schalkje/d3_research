@@ -103,7 +103,7 @@
     <select id="fileSelect"></select>
     <script>
         // Simulating an array of JSON filenames from the data folder
-        const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7.json"];
+        const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7a.json", "dwh-7b.json", "dwh-7.json", "dwh-8.json"];
 
         // Populate the dropdown menu with the JSON filenames
         const fileSelect = document.getElementById("fileSelect");
@@ -411,46 +411,6 @@
             drawMinimap(minimapContent, dag, horizontal, width, height, lineGenerator);
         }
 
-
-
-        // // Draw your DAG on the minimap
-        // function drawMinimap(dag) {
-        //     // Draw nodes
-        //     minimapG.selectAll(".node")
-        //         .data(dag.nodes())
-        //         .enter()
-        //         .append("rect")
-        //         .attr("class", "node")
-        //         .attr("x", d => d.x * (minimapWidth / width))
-        //         .attr("y", d => d.y * (minimapHeight / height))
-        //         .attr("width", d => d.data.width * (minimapWidth / width))
-        //         .attr("height", d => d.data.height * (minimapHeight / height))
-        //         .attr("fill", "gray");
-
-        //     // Draw edges
-        //     minimapG.selectAll(".edge")
-        //         .data(dag.links())
-        //         .enter()
-        //         .append("line")
-        //         .attr("class", "edge")
-        //         .attr("x1", d => d.source.x * (minimapWidth / width))
-        //         .attr("y1", d => d.source.y * (minimapHeight / height))
-        //         .attr("x2", d => d.target.x * (minimapWidth / width))
-        //         .attr("y2", d => d.target.y * (minimapHeight / height))
-        //         .attr("stroke", "black")
-        //         .attr("stroke-width", 1);
-        // }
-
-        // // Function to update the minimap based on zoom transform
-        // function updateMinimap(transform) {
-        //     minimapG.attr("transform", `scale(${1 / transform.k}) translate(${-transform.x}, ${-transform.y})`);
-        // }
-
-        // Call drawMinimap after the main graph is drawn
-        // drawMinimap(dag);
-
-        // computeLayout();
-        // drawwMain();
     </script>
 </body>
 

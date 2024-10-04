@@ -51,6 +51,8 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
         },${changeDirection(d.x, d.y, horizontal).y - d.data.height / 2})`
     );
 
+
+
   const nodes = node
     .append("rect")
     .attr("class", (d) => `node`)
@@ -92,6 +94,18 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
     });
   }
 }
+
+let boundaryDragInitialX, boundaryDragInitialY;
+// Define drag functions
+function dragStarted(event) {
+  console.log("dragStarted", event);
+  boundaryDragInitialX = event.x - parseFloat(svg_canvas.attr('x'));
+  boundaryDragInitialY = event.y - parseFloat(svg_canvas.attr('y'));
+  console.log("           initial X,Y", boundaryDragInitialX, boundaryDragInitialY);
+
+  d3.select(this).raise().classed("active", true);
+}
+
 
 function computeConnectionPoints(width, height) {
   return {
