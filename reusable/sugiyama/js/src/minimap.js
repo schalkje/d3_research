@@ -3,7 +3,7 @@
 let minimapDragInitialX, minimapDragInitialY;
 
 // Define the maximum dimension for the minimap
-function setupMinimap(mainSize, updateMainView) {
+export function setup(mainSize, updateMainView) {
   const MAX_MINIMAP_DIMENSION = 200;
 
   // Calculate the aspect ratio of the main SVG
@@ -56,21 +56,21 @@ function setupMinimap(mainSize, updateMainView) {
 }
 
 
-function updateMinimapViewport(transform) {
+export function updateMinimapViewport(dashboard, transform) {
     // compute the vertical border next to and above the canvas
-    const whiteSpaceY = (width * (mainView.height / mainView.width) - height) * 0.5;
-    const whiteSpaceX = (height * (mainView.width / mainView.height) - width) * 0.5;
+    const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
+    const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
 
-    const isHorizontalCanvas = width / height > mainView.width / mainView.height;
+    const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
 
-    const widthScale = mainView.width / width;
-    const heightScale = mainView.height / height;
+    const widthScale = dashboard.main.view.width / dashboard.main.canvas.width;
+    const heightScale = dashboard.main.view.height / dashboard.main.canvas.height;
 
     let rectX, rectY, rectWidth, rectHeight;
     rectX = -transform.x / transform.k
     rectY = -transform.y / transform.k;
-    rectWidth = mainView.width / transform.k / widthScale;
-    rectHeight = mainView.height / transform.k / heightScale;
+    rectWidth = dashboard.main.view.width / transform.k / widthScale;
+    rectHeight = dashboard.main.view.height / transform.k / heightScale;
 
     if (isHorizontalCanvas) {
         rectY -= whiteSpaceY / transform.k;
@@ -81,7 +81,7 @@ function updateMinimapViewport(transform) {
         rectWidth += whiteSpaceX / transform.k * 2;
     }
 
-    minimap.viewport.attr("x", rectX)
+    dashboard.minimap.view.viewport.attr("x", rectX)
         .attr("y", rectY)
         .attr("width", rectWidth)
         .attr("height", rectHeight);

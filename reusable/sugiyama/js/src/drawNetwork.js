@@ -1,50 +1,53 @@
-// const { min } = require("d3");
+import { getComputedDimensions } from "./layout.js";
+import { changeDirection } from "./util.js";
+import { updateMinimapViewport } from "./minimap.js";
+import { zoomToNode } from "./zoom.js";
 
-function setupMainView(divSelector) {
+export function setup(divSelector) {
   // Set up the main view
   const mainSvg = d3.select(`${divSelector}`);
   const { width: mainWidth, height: mainHeight } = getComputedDimensions(mainSvg);
 
-  return { svg: mainSvg, width: mainWidth, height: mainHeight };
+  return { svg: mainSvg, width: mainWidth, height: mainHeight, onDragUpdate: updateMainView };
 }
 
-function drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator) {
-  // console.log("drawMain - clean children", svg_canvas);
+export function draw(canvas, layout, zoom, dag) {
+  console.log("draw - clean children", canvas, layout);
   // start with a clean slate
-  svg_canvas.selectAll("*").remove();
+  canvas.svg.selectAll("*").remove();
 
   // Draw drawing boundary
   let showBoundary = true;
-  drawBoundary(svg_canvas, dag, width, height, showBoundary);
+  if (showBoundary) drawBoundary(canvas);
 
   // Draw edges
-  drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
+  drawEdges(canvas, layout, dag);
 
   // Draw nodes
-  drawNodes(svg_canvas, dag, horizontal, onNodeClickFunction);
+  drawNodes(canvas, layout, zoom, dag, onNodeClickFunction);
 }
 
-function onNodeClickFunction(event, d) {
-  console.log("onClickFunction", d.data.label, d);
-  zoomToNode(svg_canvas, d, dag, zoom, width, height, horizontal);
+function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
+  console.log("onClickFunction", node.data.label, node);
+  zoomToNode(node, canvas, layout, zoom, dag);
 }
 
-function drawMinimap(svg_canvas, dag, horizontal, width, height, lineGenerator) {
+export function drawMinimap(canvas, layout, zoom, dag) {
   // start with a clean slate
-  svg_canvas.selectAll("*").remove();
+  canvas.svg.selectAll("*").remove();
 
   // Draw drawing boundary
   let showBoundary = true;
-  drawBoundary(svg_canvas, dag, width, height, showBoundary);
+  if (showBoundary) drawBoundary(canvas);
 
   // Draw edges
-  drawEdges(svg_canvas, dag, width, height, horizontal, lineGenerator);
+  drawEdges(canvas, layout, dag);
 
   // Draw nodes
-  drawNodes(svg_canvas, dag, horizontal, onNodeClickFunction, false, true);
+  drawNodes(canvas, layout, zoom, dag, onNodeClickFunction, false, true);
 
-  // Initial update of the viewport rectangle
-  updateMinimapViewport(d3.zoomIdentity);
+  // // Initial update of the viewport rectangle
+  // updateMinimapViewport(canvas, d3.zoomIdentity);
 }
 
 // Function to update the main SVG based on the viewport rectangle position
@@ -62,37 +65,20 @@ function updateMainView(drag) {
   mainView.svg.call(zoom.transform, transformOut);
 }
 
-function changeDirection(x, y, horizontal = true) {
-  if (horizontal) {
-    return { x: y, y: x };
-  } else {
-    return { x: x, y: y };
-  }
+function drawBoundary(canvas) {
+  const drawingBoundary = canvas.svg
+    .append("g")
+    .append("rect")
+    .attr("class", (d) => `drawing_boundary`)
+    .attr("x", (d) => 0)
+    .attr("y", (d) => 0)
+    .attr("width", (d) => canvas.width)
+    .attr("height", (d) => canvas.height);
 }
 
-function changePointDirection(points, horizontal) {
-  if (horizontal) {
-    return points.map((point) => [point[1], point[0]]); // Swap x and y when horizontal is true
-  }
-  return points; // Return points unchanged when horizontal is false
-}
-
-function drawBoundary(svg_canvas, dag, width, height, showBoudary = false) {
-  if (showBoudary) {
-    const drawingBoundary = svg_canvas
-      .append("g")
-      .append("rect")
-      .attr("class", (d) => `drawing_boundary`)
-      .attr("x", (d) => 0)
-      .attr("y", (d) => 0)
-      .attr("width", (d) => width)
-      .attr("height", (d) => height);
-  }
-}
-
-function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints = false, minimap = false) {
+function drawNodes(canvas, layout, zoom, dag, onClickFunction, showConnectionPoints = false, minimap = false) {
   // Draw nodes
-  const node = svg
+  const node = canvas.svg
     .append("g")
     .selectAll(".nodecontainer")
     .data(dag.nodes())
@@ -102,8 +88,8 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
     .attr(
       "transform",
       (d) =>
-        `translate(${changeDirection(d.x, d.y, horizontal).x - d.data.width / 2},${
-          changeDirection(d.x, d.y, horizontal).y - d.data.height / 2
+        `translate(${changeDirection(d.x, d.y, layout.horizontal).x - d.data.width / 2},${
+          changeDirection(d.x, d.y, layout.horizontal).y - d.data.height / 2
         })`
     );
 
@@ -117,9 +103,10 @@ function drawNodes(svg, dag, horizontal, onClickFunction, showConnectionPoints =
     .attr("ry", 5);
 
   // Add the click event
-  nodes.on("click", function (event, d) {
+  nodes.on("click", function (event, node) {
     // console.log("Node clicked:", d);
-    onClickFunction(event, d);
+    onClickFunction(event, node, canvas, layout, zoom, dag);
+    // function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
   });
 
   if (!minimap) {
@@ -218,15 +205,15 @@ function generateEdgePath(d, horizontal) {
   return [sourcePoint, ...waypoints, targetPoint];
 }
 
-function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
+function drawEdges(canvas, layout, dag) {
   // Define arrowhead marker
-  svg
+  canvas.svg
     .append("defs")
     .append("marker")
     .attr("id", "arrowhead")
     .attr("class", "marker")
     .attr("viewBox", "-0 -5 10 10")
-    .attr("refX", changeDirection(10, 10, horizontal).x)
+    .attr("refX", changeDirection(10, 10, layout.horizontal).x)
     .attr("refY", 0)
     .attr("orient", "auto")
     .attr("markerWidth", 4)
@@ -236,7 +223,7 @@ function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
   // Draw edges
-  svg
+  canvas.svg
     .append("g")
     .selectAll(".edge")
     .data(dag.links())
@@ -244,17 +231,7 @@ function drawEdges(svg, dag, width, height, horizontal, lineGenerator) {
     .append("path")
     .attr("class", "edge")
     .attr("d", (d) => {
-      //   console.log("link points for path d: ", d);
-      //   console.log("link points for path: ", d.points);
-      //   console.log(
-      //     "link points for path changed: ",
-      //     changePointDirection(d.points, horizontal)
-      //   );
-      // // return lineGenerator(d.points);
-      // return lineGenerator(changePointDirection(d.points, horizontal));
-
-      const points = generateEdgePath(d, horizontal);
-      //   console.log("points", points);
-      return lineGenerator(points);
+      const points = generateEdgePath(d, layout.horizontal);
+      return layout.lineGenerator(points);
     });
 }

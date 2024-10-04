@@ -1,4 +1,4 @@
-function initializeGraphData(graphData) {
+export function initializeGraphData(graphData) {
   // Ensure each node has an id
   graphData.nodes.forEach((node, index) => {
     node.id = node.id || index; // Assign an ID if not present
@@ -31,27 +31,8 @@ function initializeGraphData(graphData) {
   });
 }
 
-function computeAndDraw(svg, lineGenerator) {
-  ({ svg_canvas, width, height } = computeLayout(svg, minimap.svg, dag, horizontal));
-  // console.log("-----------------  computeAndDraw", width, height);
-
-  zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateMinimapViewport);
-
-  drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator);
-
-  console.log("minimapScale", minimap.scale)
-
-  // Create minimap content group
-  minimap.svg.selectAll("g").remove();
-
-  const minimapContent = minimap.svg.insert("g", ":first-child")
-  drawMinimap(minimapContent, dag, horizontal, width, height, lineGenerator);
-
-  return { svg:svg_canvas, width:width, height:height, zoom:zoom };
-}
-
 // Convert graphData to the structure required by d3.dagStratify
-function convertToStratifyData(graphData) {
+export function convertToStratifyData(graphData) {
   const nodesMap = new Map(
     graphData.nodes.map((node) => [node.id, { ...node, parentIds: [] }])
   );
@@ -68,7 +49,7 @@ function convertToStratifyData(graphData) {
 
 
 
-async function fetchFileToDag(selectedFile) {
+export async function fetchFileToDag(selectedFile) {
     const graphData = await d3.json(`data/${selectedFile}`);
     initializeGraphData(graphData);
     console.log(graphData);

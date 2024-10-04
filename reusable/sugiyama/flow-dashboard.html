@@ -8,7 +8,7 @@
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
-    <!-- <script src="js/src/index.js" type="module" defer></script> -->
+    <script src="js/dist/flow-dashboard.min.js"></script>
     <style>
         #graph {
             border: 1px solid black;
@@ -165,7 +165,7 @@
                     console.log("Max Node Width:", maxNodeWidth);
 
                     // Initial layout computation and drawing
-                    FD.Layout.computeAndDraw(dag, mainView, minimap, lineGenerator);
+                    computeAndDraw(mainView.svg, lineGenerator);
                 }
             });
         });
@@ -177,16 +177,11 @@
 
 
 
-    <script type="module">
-        let dag, dashboard;
-
-        // make sure to import, and not use script in header, otherwse FD will not be initialized
-        import './js/src/index.js';
-
+    <script>
         // Setup the main view and minimap
         const mainView = FD.DrawNetwork.setup("#graph"); 
         const minimap = FD.Minimap.setup({width:mainView.width, height:mainView.height}, mainView.onDragUpdate);
-
+        let dag;
 
         // Main execution
         let lineGenerator = getLineGenerator();
@@ -196,12 +191,12 @@
         }
 
         // initial layout computation and drawing
-        FD.GraphData.fetchFileToDag(selectedFile).then(result => {
+        fetchFileToDag(selectedFile).then(result => {
             if (result) {
-                dag = result.dag;
+                ({ dag, maxNodeHeight, maxNodeWidth } = result);
 
                 // Initial layout computation and drawing
-                dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, lineGenerator);
+                mainCanvas = computeAndDraw(mainView.svg, lineGenerator);
             }
         });
     </script>
