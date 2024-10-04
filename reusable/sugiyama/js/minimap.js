@@ -7,11 +7,11 @@ function setupMinimap(mainSize, updateMainView) {
   const MAX_MINIMAP_DIMENSION = 200;
 
   // Calculate the aspect ratio of the main SVG
-  const aspectRatio = mainSize.x / mainSize.y;
+  const aspectRatio = mainSize.width / mainSize.height;
 
   // Determine the appropriate dimensions for the minimap
   let minimapWidth, minimapHeight;
-  if (mainSize.x >= mainSize.y) {
+  if (mainSize.width >= mainSize.height) {
     minimapWidth = MAX_MINIMAP_DIMENSION;
     minimapHeight = minimapWidth / aspectRatio;
   } else {
@@ -24,9 +24,9 @@ function setupMinimap(mainSize, updateMainView) {
     .select("#minimap")
     .attr("width", minimapWidth + 1)
     .attr("height", minimapHeight + 1);
-  console.log("minimap", minimapWidth, minimapHeight, mainSize.x, mainSize.y);
+  console.log("minimap", minimapWidth, minimapHeight, mainSize.width, mainSize.height);
 
-  let minimapScale = Math.min(minimapWidth / mainSize.x, minimapHeight / mainSize.y);
+  let minimapScale = Math.min(minimapWidth / mainSize.width, minimapHeight / mainSize.height);
   console.log("minimapScale", minimapScale);
 
   // Add viewport rectangle to the minimap

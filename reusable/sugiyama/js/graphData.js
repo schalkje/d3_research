@@ -46,6 +46,8 @@ function computeAndDraw(svg, lineGenerator) {
 
   const minimapContent = minimap.svg.insert("g", ":first-child")
   drawMinimap(minimapContent, dag, horizontal, width, height, lineGenerator);
+
+  return { svg:svg_canvas, width:width, height:height, zoom:zoom };
 }
 
 // Convert graphData to the structure required by d3.dagStratify

@@ -183,39 +183,27 @@
 
 
     <script>
-        // Set up SVG canvas
-        
-        
-
+        // Setup the main view and minimap
         const mainView = setupMainView("#graph"); 
-        const minimap = setupMinimap({x:mainView.width, y:mainView.height}, updateMainView);
+        const minimap = setupMinimap({width:mainView.width, height:mainView.height}, updateMainView);
+        let dag;
 
+        // Main execution
         let lineGenerator = getLineGenerator();
-
         function getLineGenerator() {
             const curve = d3.curveBasis; // d3.curveCatmullRom; // d3.curveMonotoneY; //
             return isEdgeCurved ? d3.line().curve(curve) : d3.line();
         }
 
-        // Main execution
-        let dag, zoom;
-        let width, height;
-
-
         // initial layout computation and drawing
         fetchFileToDag(selectedFile).then(result => {
             if (result) {
                 ({ dag, maxNodeHeight, maxNodeWidth } = result);
-                console.log("DAG:", dag);
-                console.log("Max Node Height:", maxNodeHeight);
-                console.log("Max Node Width:", maxNodeWidth);
 
                 // Initial layout computation and drawing
-                computeAndDraw(mainView.svg, lineGenerator);
+                mainCanvas = computeAndDraw(mainView.svg, lineGenerator);
             }
         });
-
-
     </script>
 </body>
 
