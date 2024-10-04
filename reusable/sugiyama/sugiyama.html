@@ -9,8 +9,9 @@
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
     <script src="js/zoom.js"></script>
+    <script src="js/minimap.js"></script>
     <script src="js/graphData.js"></script>
-    <script src="js/network.js"></script>
+    <script src="js/drawNetwork.js"></script>
     <script src="js/layout.js"></script>
     <style>
         #graph {
@@ -97,7 +98,7 @@
     </script>
 
     <label for="horizontalCheckbox">Horizontal</label>
-    <input type="checkbox" id="horizontalCheckbox" >
+    <input type="checkbox" id="horizontalCheckbox">
     <!-- Dropdown to select JSON file -->
     <label for="fileSelect">Select JSON file:</label>
     <select id="fileSelect"></select>
@@ -137,7 +138,7 @@
         const checkbox = document.getElementById('horizontalCheckbox');
         checkbox.addEventListener('change', function () {
             horizontal = this.checked;
-            computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+            computeAndDraw(mainSvg, lineGenerator);
         });
 
         let horizontal = checkbox.checked; // Default to horizontal layout
@@ -149,7 +150,7 @@
             isEdgeCurved = this.checked;
             lineGenerator = getLineGenerator();
             console.log("isEdgeCurved", isEdgeCurved);
-            computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+            computeAndDraw(mainSvg, lineGenerator);
         });
 
         let selectedFile = jsonFiles[1]; // Default to the first JSON file
@@ -168,61 +169,29 @@
                     console.log("Max Node Width:", maxNodeWidth);
 
                     // Initial layout computation and drawing
-                    computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+                    computeAndDraw(mainSvg, lineGenerator);
                 }
             });
         });
 
 
+    </script>
 
 
 
 
+
+    <script>
         // Set up SVG canvas
         const mainSvg = d3.select("#graph");
         const { width: mainWidth, height: mainHeight } = getComputedDimensions(mainSvg);
-        // const mainWidth = +mainSvg.attr("width");
-        // const mainHeight = +mainSvg.attr("height");
 
-        // Define the maximum dimension for the minimap
-        const MAX_MINIMAP_DIMENSION = 200;
-
-        // Calculate the aspect ratio of the main SVG
-        const aspectRatio = mainWidth / mainHeight;
-
-        // Determine the appropriate dimensions for the minimap
-        let minimapWidth, minimapHeight;
-        if (mainWidth >= mainHeight) {
-            minimapWidth = MAX_MINIMAP_DIMENSION;
-            minimapHeight = minimapWidth / aspectRatio;
-        } else {
-            minimapHeight = MAX_MINIMAP_DIMENSION;
-            minimapWidth = minimapHeight * aspectRatio;
-        }
-
-        // Set the dimensions of the minimap SVG
-        const minimapSvg = d3.select("#minimap")
-            .attr("width", minimapWidth + 1)
-            .attr("height", minimapHeight + 1);
-        console.log("minimap", minimapWidth, minimapHeight, mainWidth, mainHeight);
-
-        let minimapScale = Math.min(minimapWidth / mainWidth, minimapHeight / mainHeight);
-        console.log("minimapScale", minimapScale);
-
-
-        // Add viewport rectangle to the minimap
-        const viewportRect = minimapSvg.append("rect")
-            .attr("class", "viewport")
-            .attr("width", minimapWidth)
-            .attr("height", minimapHeight);
-
-
-        // const minimapG = minimap.append("g");
+        const minimap = setupMinimap({x:mainWidth, y:mainHeight}, updateMainView);
 
         function onNodeClickFunction(event, d) {
-                console.log("onClickFunction", d.data.label, d);
-                zoomToNode(svg_canvas, d, dag, zoom, width, height, horizontal);
-            }
+            console.log("onClickFunction", d.data.label, d);
+            zoomToNode(svg_canvas, d, dag, zoom, width, height, horizontal);
+        }
         function drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator) {
             console.log("drawMain - clean children", svg_canvas);
             // start with a clean slate
@@ -309,17 +278,16 @@
 
             const isHorizontalCanvas = width / height > mainWidth / mainHeight;
 
-            const minimapScale = minimapWidth / minimapHeight;
             const widthScale = mainWidth / width;
             const heightScale = mainHeight / height;
 
             let rectX, rectY, rectWidth, rectHeight;
-            rectX = -transform.x / transform.k 
+            rectX = -transform.x / transform.k
             rectY = -transform.y / transform.k;
             rectWidth = mainWidth / transform.k / widthScale;
             rectHeight = mainHeight / transform.k / heightScale;
 
-            if (isHorizontalCanvas){
+            if (isHorizontalCanvas) {
                 rectY -= whiteSpaceY / transform.k;
                 rectHeight += whiteSpaceY / transform.k * 2;
             }
@@ -328,7 +296,7 @@
                 rectWidth += whiteSpaceX / transform.k * 2;
             }
 
-            viewportRect.attr("x", rectX)
+            minimap.viewport.attr("x", rectX)
                 .attr("y", rectY)
                 .attr("width", rectWidth)
                 .attr("height", rectHeight);
@@ -339,31 +307,19 @@
 
         // Function to update the main SVG based on the viewport rectangle position
         function updateMainView(drag) {
-            console.log("updateMainView", drag, minimapScale);
-            const x = (-drag.x) / minimapScale;
-            const y = (-drag.y) / minimapScale;
-            // const k = 1 / minimapScale; // Adjust this if you implement zooming
-                // Maintain the current scale
+            console.log("updateMainView", drag, minimap.scale);
+            const x = (-drag.x) / minimap.scale;
+            const y = (-drag.y) / minimap.scale;
+
+            // Maintain the current scale
             const currentTransform = d3.zoomTransform(svg_canvas.node());
             const k = currentTransform.k;
-            console.log("              ", x, y, k,currentTransform);
+            console.log("              ", x, y, k, currentTransform);
 
             const transformOut = d3.zoomIdentity.translate(x, y).scale(k);
             mainSvg.call(zoom.transform, transformOut);
         }
 
-        // Add drag behavior to the viewport rectangle
-        viewportRect.call(d3.drag()
-            .on("start", (event) => {
-                initialX = event.x - parseFloat(viewportRect.attr('x'));
-                initialY = event.y - parseFloat(viewportRect.attr('y'));
-            })
-            .on("drag", (event) => {
-                const newX = event.x - initialX;
-                const newY = event.y - initialY;
-                viewportRect.attr('x', newX).attr('y', newY);
-                updateMainView({ x: newX, y: newY });
-            }));
 
         // Main execution
         let dag, zoom;
@@ -379,32 +335,25 @@
                 console.log("Max Node Width:", maxNodeWidth);
 
                 // Initial layout computation and drawing
-                computeAndDraw(mainSvg, minimapSvg, lineGenerator);
+                computeAndDraw(mainSvg, lineGenerator);
             }
         });
 
-        function computeAndDraw(svg, minimapSvg, lineGenerator) {
-            ({ svg_canvas, width, height } = computeLayout(svg, minimapSvg, dag, horizontal));
+        function computeAndDraw(svg, lineGenerator) {
+            ({ svg_canvas, width, height } = computeLayout(svg, minimap.svg, dag, horizontal));
             console.log("-----------------  computeAndDraw", width, height);
 
 
             zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateViewport);
 
-            minimapScale = Math.min(minimapWidth / mainWidth, minimapHeight / mainHeight);
-            console.log("minimapScale", minimapScale);
-            // minimapScale = Math.min(minimapWidth / width, minimapHeight / height);
-            // console.log(width, height);
-            // console.log("minimapScale", minimapScale);
-
-
             drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator);
 
-            console.log("minimapScale", minimapScale)
+            console.log("minimapScale", minimap.scale)
 
             // Create minimap content group
-            minimapSvg.selectAll("g").remove();
+            minimap.svg.selectAll("g").remove();
 
-            const minimapContent = minimapSvg.insert("g", ":first-child")
+            const minimapContent = minimap.svg.insert("g", ":first-child")
             //minimapSvg.append("g");
             // .attr("transform", `scale(${minimapScale})`);
 
