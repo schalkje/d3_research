@@ -31,6 +31,23 @@ function initializeGraphData(graphData) {
   });
 }
 
+function computeAndDraw(svg, lineGenerator) {
+  ({ svg_canvas, width, height } = computeLayout(svg, minimap.svg, dag, horizontal));
+  // console.log("-----------------  computeAndDraw", width, height);
+
+  zoom = initializeZoom(svg, svg_canvas, width, height, horizontal, dag, updateMinimapViewport);
+
+  drawMain(svg_canvas, dag, horizontal, width, height, lineGenerator);
+
+  console.log("minimapScale", minimap.scale)
+
+  // Create minimap content group
+  minimap.svg.selectAll("g").remove();
+
+  const minimapContent = minimap.svg.insert("g", ":first-child")
+  drawMinimap(minimapContent, dag, horizontal, width, height, lineGenerator);
+}
+
 // Convert graphData to the structure required by d3.dagStratify
 function convertToStratifyData(graphData) {
   const nodesMap = new Map(
