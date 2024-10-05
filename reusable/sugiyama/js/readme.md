@@ -24,6 +24,15 @@ A dashboard is the dataset used internally and returned with the first compute a
                 width:mainCanvas.width, 
                 height:mainCanvas.height
                 }
+            boundingbox:{ // set in ZoomToNode
+                    boundingBox: boundingBox,
+                    x: boundingBox.x,
+                    y: boundingBox.y,
+                    width: boundingBox.width,
+                    height: boundingBox.height,
+                    scale:1 // initialized in Layout.computeAndDraw
+            }
+
         },
         minimap:{
             view:{ // Minimap.setup, input for Layout.computeAndDraw
@@ -31,12 +40,16 @@ A dashboard is the dataset used internally and returned with the first compute a
                 scale:minimapScale, 
                 width:minimapWidth,     
                 height:minimapHeight,   
-                viewport:viewportRect   // Layout.computeAndDraw --> Minimap.createViewPort
             }
             canvas:{ // Layout.computeAndDraw --> Layout.createMinimap
                 svg:minimapCanvas,          
                 width:mainCanvas.width, 
                 height:mainCanvas.height
+            }
+            viewport: {
+                rect:viewportRect,   // Layout.computeAndDraw --> Minimap.createViewPort
+
+
             }
         },
         zoom:zoom // Layout.computeAndDraw --> Zoom.initializeZoom

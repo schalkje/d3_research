@@ -12,10 +12,14 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
     // Create the dashboard object (see readme.md for details)
     let dashboard = {
         main:{
-            view:mainView
+            view:mainView,
+            boundingbox:{
+                scale:1
+            }
         },
         minimap:{
-            view:minimap
+            view:minimap,
+            viewport: {}
         },
         layout:layout
     };

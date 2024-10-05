@@ -46,6 +46,7 @@ export function createViewPort(dashboard){
   console.log("               - minimap canvas", dashboard.minimap.canvas);
   console.log("               - margin x", dashboard.minimap.canvas.width - dashboard.minimap.view.width);
   console.log("               - margin y", dashboard.minimap.canvas.height - dashboard.minimap.view.height);
+  console.log("               - boundingbox", dashboard.main.boundingbox);
   // remove any existing viewport
   dashboard.minimap.view.svg.selectAll(".viewport").remove();
 
@@ -53,6 +54,7 @@ export function createViewPort(dashboard){
   const viewportRect = dashboard.minimap.view.svg
       .append("rect")
       .attr("class", "viewport")
+      .attr("stroke-width", dashboard.minimap.canvas.width/dashboard.minimap.view.width*2)
       .attr("x", -dashboard.minimap.canvas.whiteSpaceX)
       .attr("y", -dashboard.minimap.canvas.whiteSpaceY)
       .attr("width", dashboard.main.canvas.width + 2 * dashboard.minimap.canvas.whiteSpaceX)
@@ -65,12 +67,19 @@ export function createViewPort(dashboard){
     d3
       .drag()
       .on("start", (event) => {
+        console.log("drag start", event.x, viewportRect.attr("x"), event.y, viewportRect.attr("y"));
+        console.log("          ",event);
         minimapDragInitialX = event.x - parseFloat(viewportRect.attr("x"));
         minimapDragInitialY = event.y - parseFloat(viewportRect.attr("y"));
+        console.log("          ",minimapDragInitialX, minimapDragInitialY);
+        dashboard.minimap.viewport.dragInitialX = minimapDragInitialX;
+        dashboard.minimap.viewport.dragInitialY = minimapDragInitialY;
       })
       .on("drag", (event) => {
+        console.log("drag", event.x, event.y, minimapDragInitialX, minimapDragInitialY, dashboard.minimap.viewport.dragInitialX, dashboard.minimap.viewport.dragInitialY);
         const newX = event.x - minimapDragInitialX;
         const newY = event.y - minimapDragInitialY;
+        console.log("     newX, newY", newX, newY);
         viewportRect.attr("x", newX).attr("y", newY);
         updateMainView({ x: newX, y: newY }, dashboard);
       })
@@ -92,10 +101,13 @@ export function updateMinimapViewport(dashboard, transform) {
     rectX -= dashboard.minimap.canvas.whiteSpaceX / transform.k;
     rectWidth += dashboard.minimap.canvas.whiteSpaceX / transform.k * 2;
 
+    console.log("updateMinimapViewport", rectX, rectY, rectWidth, rectHeight, dashboard, dashboard.minimap.canvas.width/dashboard.minimap.view.width);
     dashboard.minimap.view.viewport
         .attr("x", rectX)
         .attr("y", rectY)
         .attr("width", rectWidth)
-        .attr("height", rectHeight);
+        .attr("height", rectHeight)
+        .attr("stroke-width", dashboard.minimap.canvas.width/dashboard.minimap.view.width*2);
+
 }
 

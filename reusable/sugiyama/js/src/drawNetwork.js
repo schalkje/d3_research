@@ -45,25 +45,19 @@ export function drawMinimap(dashboard, dag) {
 
   // Draw nodes
   drawNodes(canvas, dashboard, dag, onNodeClickFunction, false, true);
-
-  // // Initial update of the viewport rectangle
-  // updateMinimapViewport(canvas, d3.zoomIdentity);
 }
 
 // Function to update the main SVG based on the viewport rectangle position
 export function updateMainView(drag, dashboard) {
-  console.log("updateMainView", drag, dashboard.minimap.view.scale);
-  const x = -drag.x / dashboard.minimap.view.scale;
-  const y = -drag.y / dashboard.minimap.view.scale;
-
   // Maintain the current scale
-  const currentTransform = d3.zoomTransform(dashboard.minimap.canvas.svg.node());
-  // const k = currentTransform.k;
-  const k = dashboard.minimap.view.scale;
-  console.log("              ", x, y, k, currentTransform);
+  const currentTransform = d3.zoomTransform(dashboard.main.canvas.svg.node());
+  const k = currentTransform.k;
 
-  const transformOut = d3.zoomIdentity.translate(x, y).scale(k);
-  dashboard.minimap.view.svg.call(dashboard.zoom.transform, transformOut);
+  // Calculate the translation
+  const x = -drag.x * k;
+  const y = -drag.y * k;
+
+  dashboard.main.canvas.svg.call(dashboard.zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
 }
 
 function drawBoundary(canvas) {

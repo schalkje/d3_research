@@ -98,22 +98,31 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
   // 2. Compute the bounding box
   const boundingBox = computeBoundingBox(neighbors, dashboard.layout.horizontal);
 
+  // 3. Calculate the zoom scale and translation
+  const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
+
   if (showboundingBox) {
-    console.log("boundingBox", boundingBox);
+    console.log("boundingBox", boundingBox, scale);
     dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
     dashboard.main.canvas.svg
       .append("rect")
       .attr("class", "boundingBox")
+      .attr("stroke-width", scale * 2)
       .attr("x", boundingBox.x)
       .attr("y", boundingBox.y)
       .attr("width", boundingBox.width)
-      .attr("height", boundingBox.height)
-      .attr("fill", "none")
-      .attr("stroke", "red");
+      .attr("height", boundingBox.height);
   }
 
-  // 3. Calculate the zoom scale and translation
-  const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
+  dashboard.main.boundingbox = {
+    boundingBox: boundingBox,
+    x: boundingBox.x,
+    y: boundingBox.y,
+    width: boundingBox.width,
+    height: boundingBox.height,
+    scale: scale,
+  }
+
 
   console.log("scale", scale);
   console.log("translate", translate);
@@ -122,7 +131,7 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
   // JS: main.view or main.canvas?
   dashboard.main.canvas.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 
-  return boundingBox;
+  return dashboard.main.boundingbox;
 }
 
 export function getImmediateNeighbors(baseNode, graphData) {
@@ -189,13 +198,8 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
   } else {
     scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   }
+  console.log("scale", scale);
 
-  // compute the vertical border next to and above the canvas
-  const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
-  const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
-
-  // determine if the canvas and bounding box are horizontal or vertical compared to the main view
-  const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
 
   // compute the visual height and width of the bounding box
@@ -210,8 +214,8 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
   let translateY = -boundingBox.y * scale;
 
   // add the white space to the translation
-  if (isHorizontalCanvas) translateY -= whiteSpaceY;
-  else translateX -= whiteSpaceX;
+  if (dashboard.minimap.canvas.isHorizontalCanvas) translateY -= dashboard.minimap.canvas.whiteSpaceY;
+  else translateX -= dashboard.minimap.canvas.whiteSpaceX;
 
   // add the height correction to the translation
   if (isHorizontalBoundingBox) translateY += heightCorrection * scale;
