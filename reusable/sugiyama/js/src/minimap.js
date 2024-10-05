@@ -44,6 +44,8 @@ export function setup(mainSize, updateMainView) {
 export function createViewPort(dashboard){
   console.log("createViewPort", dashboard);
   console.log("               - minimap canvas", dashboard.minimap.canvas);
+  console.log("               - margin x", dashboard.minimap.canvas.width - dashboard.minimap.view.width);
+  console.log("               - margin y", dashboard.minimap.canvas.height - dashboard.minimap.view.height);
   // remove any existing viewport
   dashboard.minimap.view.svg.selectAll(".viewport").remove();
 
@@ -51,7 +53,7 @@ export function createViewPort(dashboard){
   const viewportRect = dashboard.minimap.view.svg
       .append("rect")
       .attr("class", "viewport")
-      .attr("x", 0) //dashboard.main.canvas.width - dashboard.main.view.width)
+      .attr("x", dashboard.minimap.canvas.width - dashboard.minimap.view.width)
       .attr("y", 0)
       .attr("width", dashboard.main.canvas.width)
       .attr("height", dashboard.main.canvas.height);

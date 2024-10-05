@@ -3,7 +3,7 @@
 A set of javascript files to visualize a flow network using d3 and d3-dag.
 
 
-## dashboard
+## Dashboard object
 A dashboard is the dataset used internally and returned with the first compute and draw function.
 
 ``` javascript

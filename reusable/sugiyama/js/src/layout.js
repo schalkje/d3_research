@@ -9,6 +9,7 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
     layout = setDefaultLayoutValues(layout);
 
     console.log("computeAndDraw", mainView, minimap, dag);
+    // Create the dashboard object (see readme.md for details)
     let dashboard = {
         main:{
             view:mainView
@@ -25,42 +26,36 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
   
     draw(dashboard, dag);
 
+    // Create minimap content group
+    createMinimap(minimap, dashboard);    
+    drawMinimap(dashboard, dag);
+
     createViewPort(dashboard);
   
-  
-    // Create minimap content group
-    createMinimap(minimap, dashboard);
-    
-    drawMinimap(dashboard, dag);
-  
     return dashboard;
-    // { 
-    //     layout:{
-    //         horizontal:horizontal,
-    //         lineGenerator:lineGenerator
-    //         isEdgeCurved:isEdgeCurved
-    //   },     
-    //     },
-    //     main:{
-    //         view:mainView,
-    //         canvas:{svg:mainCanvas, width:mainCanvas.width, height:mainCanvas.height},
-    //         zoom:zoom
-    //     },
-    //     minimap:{
-    //         view:minimap,
-    //         canvas:{svg:minimapCanvas, width:mainCanvas.width, height:mainCanvas.height}
-    //     }
-    // };
   }
 
  
 function createMinimap(minimap, dashboard) {
     minimap.svg.selectAll("g").remove();
 
+    const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
+    const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
+
+    const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
+
+    const widthScale = dashboard.main.view.width / dashboard.main.canvas.width;
+    const heightScale = dashboard.main.view.height / dashboard.main.canvas.height;
+
     dashboard.minimap.canvas = {
         svg: minimap.svg.insert("g", ":first-child"),
         width: dashboard.main.canvas.width,
-        height: dashboard.main.canvas.height
+        height: dashboard.main.canvas.height,
+        whiteSpaceY: whiteSpaceY,
+        whiteSpaceX: whiteSpaceX,
+        isHorizontalCanvas: isHorizontalCanvas,
+        widthScale: widthScale,
+        heightScale: heightScale
     };
 }
 
