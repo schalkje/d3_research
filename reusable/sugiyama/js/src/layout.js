@@ -1,9 +1,13 @@
 import {changeDirection} from "./util.js";
 import {initializeZoom} from "./zoom.js";
-import {updateMinimapViewport} from "./minimap.js";
+import {createViewPort, updateMinimapViewport} from "./minimap.js";
 import {draw, drawMinimap} from "./drawNetwork.js";
 
-export function computeAndDraw(dag, mainView, minimap, layout) {
+
+export function computeAndDraw(dag, mainView, minimap, layout = {}) {
+    // Set default values for missing values in layout
+    layout = setDefaultLayoutValues(layout);
+
     console.log("computeAndDraw", mainView, minimap, dag);
     let dashboard = {
         main:{
@@ -20,17 +24,12 @@ export function computeAndDraw(dag, mainView, minimap, layout) {
     initializeZoom(dashboard, dag, updateMinimapViewport);
   
     draw(dashboard, dag);
+
+    createViewPort(dashboard);
   
   
     // Create minimap content group
-    minimap.svg.selectAll("g").remove();
-  
-    dashboard.minimap.canvas = {
-        svg:minimap.svg.insert("g", ":first-child"), 
-        width:dashboard.main.canvas.width, 
-        height:dashboard.main.canvas.height
-    }
-    
+    createMinimap(minimap, dashboard);
     
     drawMinimap(dashboard, dag);
   
@@ -55,6 +54,16 @@ export function computeAndDraw(dag, mainView, minimap, layout) {
   }
 
  
+function createMinimap(minimap, dashboard) {
+    minimap.svg.selectAll("g").remove();
+
+    dashboard.minimap.canvas = {
+        svg: minimap.svg.insert("g", ":first-child"),
+        width: dashboard.main.canvas.width,
+        height: dashboard.main.canvas.height
+    };
+}
+
 export function computeLayoutAndCanvas(dashboard, dag) {
     dashboard.main.view.svg.selectAll("*").remove();
     const svg = dashboard.main.view.svg.append("g");
@@ -106,4 +115,18 @@ export function computeLayoutAndCanvas(dashboard, dag) {
 export function getComputedDimensions(element) {
     const rect = element.node().getBoundingClientRect();
     return { width: rect.width, height: rect.height };
+}
+
+
+function getDefaultLineGenerator(idEdgeCurved = true) {
+    return isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
+}
+
+// Function to set default values for layout attributes
+function setDefaultLayoutValues(layout) {
+    return {
+        horizontal: layout.horizontal !== undefined ? layout.horizontal : true,
+        lineGenerator: layout.lineGenerator !== undefined ? layout.lineGenerator : getDefaultLineGenerator(layout.isEdgeCurved),
+        isEdgeCurved: layout.isEdgeCurved !== undefined ? layout.isEdgeCurved : false
+    };
 }

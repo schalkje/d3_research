@@ -1,3 +1,4 @@
+import { updateMainView } from "./drawNetwork.js";
 
 // Function to update the main SVG based on the viewport rectangle position
 let minimapDragInitialX, minimapDragInitialY;
@@ -29,14 +30,35 @@ export function setup(mainSize, updateMainView) {
   let minimapScale = Math.min(minimapWidth / mainSize.width, minimapHeight / mainSize.height);
   console.log("minimapScale", minimapScale);
 
-  // Add viewport rectangle to the minimap
-  const viewportRect = minimapSvg
-    .append("rect")
-    .attr("class", "viewport")
-    .attr("width", minimapWidth)
-    .attr("height", minimapHeight);
 
-  // Add drag behavior to the viewport rectangle
+  const minimapView = { 
+    svg:minimapSvg, 
+    scale:minimapScale, 
+    width:minimapWidth, 
+    height:minimapHeight, 
+  };
+
+  return minimapView;
+}
+
+export function createViewPort(dashboard){
+  console.log("createViewPort", dashboard);
+  console.log("               - minimap canvas", dashboard.minimap.canvas);
+  // remove any existing viewport
+  dashboard.minimap.view.svg.selectAll(".viewport").remove();
+
+  // Add viewport rectangle to the minimap
+  const viewportRect = dashboard.minimap.view.svg
+      .append("rect")
+      .attr("class", "viewport")
+      .attr("x", 0) //dashboard.main.canvas.width - dashboard.main.view.width)
+      .attr("y", 0)
+      .attr("width", dashboard.main.canvas.width)
+      .attr("height", dashboard.main.canvas.height);
+
+  dashboard.minimap.view.viewport = viewportRect;
+
+    // Add drag behavior to the viewport rectangle
   viewportRect.call(
     d3
       .drag()
@@ -48,13 +70,12 @@ export function setup(mainSize, updateMainView) {
         const newX = event.x - minimapDragInitialX;
         const newY = event.y - minimapDragInitialY;
         viewportRect.attr("x", newX).attr("y", newY);
-        updateMainView({ x: newX, y: newY });
+        updateMainView({ x: newX, y: newY }, dashboard);
       })
   );
 
-  return { svg:minimapSvg, scale:minimapScale, width:minimapWidth, height:minimapHeight, viewport:viewportRect };
+  return viewportRect;
 }
-
 
 export function updateMinimapViewport(dashboard, transform) {
     // compute the vertical border next to and above the canvas

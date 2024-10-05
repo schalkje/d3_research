@@ -7,7 +7,7 @@ export function initializeZoom(dashboard, dag, updateViewport) {
       updateViewport(dashboard, event.transform);
     });
 
-  dashboard.main.zoom = zoom;
+  dashboard.zoom = zoom;
 
   dashboard.main.canvas.svg.call(zoom);
 
@@ -25,11 +25,11 @@ export function initializeZoom(dashboard, dag, updateViewport) {
   });
 
   d3.select("#zoom-random").on("click", function () {
-    zoomRandom(mainCanvas, layout, zoom, dag);
+    zoomRandom(dashboard, dag);
   });
 
   d3.select("#zoom-node").on("click", function () {
-    zoomToNodeByName("EM_Stater", mainCanvas, layout, zoom, dag);
+    zoomToNodeByName("EM_Stater", dashboard, dag);
   });
 
   return zoom;
@@ -47,7 +47,7 @@ function zoomOut(svg, zoom) {
 }
 
 function zoomReset(canvas, zoom) {
-  svg
+  canvas.svg
     .transition()
     .duration(750)
     .call(zoom.transform, d3.zoomIdentity, d3.zoomTransform(canvas.svg.node()).invert([canvas.width / 2, canvas.height / 2]));
@@ -68,23 +68,23 @@ function zoomClicked(event, [x, y]) {
     );
 }
 
-export function zoomToNodeByName(name, canvas, layout, zoom, dag) {
+export function zoomToNodeByName(name, dashboard, dag) {
   console.log("zoomToNodeByName", name);
   for (const node of dag.nodes()) {
     if (node.data.label === name) {
-      return zoomToNode(node, canvas, layout, zoom, dag);
+      return zoomToNode(node, dashboard, dag);
     }
   }
 }
 
-export function zoomRandom(canvas, layout, zoom, dag){
+export function zoomRandom(dashboard, dag){
   const data = [];
   for (const node of dag.nodes()) {
     data.push(node);
   }
   const node = data[Math.floor(Math.random() * data.length)];
   console.log("random node=", node.data.label, node);
-  return zoomToNode(node, canvas, layout, zoom, dag);
+  return zoomToNode(node, dashboard, dag);
 }
 
 // export function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
@@ -117,7 +117,7 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
 
   // 4. Apply the zoom transform
   // JS: main.view or main.canvas?
-  dashboard.main.view.svg.transition().duration(750).call(dashboard.main.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+  dashboard.main.view.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 
   return boundingBox;
 }

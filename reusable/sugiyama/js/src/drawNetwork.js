@@ -51,18 +51,19 @@ export function drawMinimap(dashboard, dag) {
 }
 
 // Function to update the main SVG based on the viewport rectangle position
-function updateMainView(drag) {
-  console.log("updateMainView", drag, minimap.scale);
-  const x = -drag.x / minimap.scale;
-  const y = -drag.y / minimap.scale;
+export function updateMainView(drag, dashboard) {
+  console.log("updateMainView", drag, dashboard.minimap.view.scale);
+  const x = -drag.x / dashboard.minimap.view.scale;
+  const y = -drag.y / dashboard.minimap.view.scale;
 
   // Maintain the current scale
-  const currentTransform = d3.zoomTransform(svg_canvas.node());
-  const k = currentTransform.k;
+  const currentTransform = d3.zoomTransform(dashboard.minimap.canvas.svg.node());
+  // const k = currentTransform.k;
+  const k = dashboard.minimap.view.scale;
   console.log("              ", x, y, k, currentTransform);
 
   const transformOut = d3.zoomIdentity.translate(x, y).scale(k);
-  mainView.svg.call(zoom.transform, transformOut);
+  dashboard.minimap.view.svg.call(dashboard.zoom.transform, transformOut);
 }
 
 function drawBoundary(canvas) {
@@ -142,7 +143,6 @@ function computeConnectionPoints(width, height) {
 }
 
 function generateEdgePath(edge, layout) {
-  //   console.log("d", d);
   const sourceNode = edge.source;
   const targetNode = edge.target;
 
@@ -229,8 +229,8 @@ function drawEdges(canvas, dashboard, dag) {
     .enter()
     .append("path")
     .attr("class", "edge")
-    .attr("d", (d) => {
-      const points = generateEdgePath(d, dashboard.layout.horizontal);
+    .attr("d", (edge) => {
+      const points = generateEdgePath(edge, dashboard.layout);
       return dashboard.layout.lineGenerator(points);
     });
 }
