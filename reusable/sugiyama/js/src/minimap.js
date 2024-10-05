@@ -53,10 +53,10 @@ export function createViewPort(dashboard){
   const viewportRect = dashboard.minimap.view.svg
       .append("rect")
       .attr("class", "viewport")
-      .attr("x", dashboard.minimap.canvas.width - dashboard.minimap.view.width)
-      .attr("y", 0)
-      .attr("width", dashboard.main.canvas.width)
-      .attr("height", dashboard.main.canvas.height);
+      .attr("x", -dashboard.minimap.canvas.whiteSpaceX)
+      .attr("y", -dashboard.minimap.canvas.whiteSpaceY)
+      .attr("width", dashboard.main.canvas.width + 2 * dashboard.minimap.canvas.whiteSpaceX)
+      .attr("height", dashboard.main.canvas.height + 2 * dashboard.minimap.canvas.whiteSpaceY);
 
   dashboard.minimap.view.viewport = viewportRect;
 
@@ -80,31 +80,20 @@ export function createViewPort(dashboard){
 }
 
 export function updateMinimapViewport(dashboard, transform) {
-    // compute the vertical border next to and above the canvas
-    const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
-    const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
-
-    const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
-
-    const widthScale = dashboard.main.view.width / dashboard.main.canvas.width;
-    const heightScale = dashboard.main.view.height / dashboard.main.canvas.height;
-
     let rectX, rectY, rectWidth, rectHeight;
     rectX = -transform.x / transform.k
     rectY = -transform.y / transform.k;
-    rectWidth = dashboard.main.view.width / transform.k / widthScale;
-    rectHeight = dashboard.main.view.height / transform.k / heightScale;
+    rectWidth = dashboard.main.view.width / transform.k / dashboard.minimap.canvas.widthScale;
+    rectHeight = dashboard.main.view.height / transform.k / dashboard.minimap.canvas.heightScale;
 
-    if (isHorizontalCanvas) {
-        rectY -= whiteSpaceY / transform.k;
-        rectHeight += whiteSpaceY / transform.k * 2;
-    }
-    else {
-        rectX -= whiteSpaceX / transform.k;
-        rectWidth += whiteSpaceX / transform.k * 2;
-    }
+    // compensate for the whitespace around the canvas
+    rectY -= dashboard.minimap.canvas.whiteSpaceY / transform.k;
+    rectHeight += dashboard.minimap.canvas.whiteSpaceY / transform.k * 2;
+    rectX -= dashboard.minimap.canvas.whiteSpaceX / transform.k;
+    rectWidth += dashboard.minimap.canvas.whiteSpaceX / transform.k * 2;
 
-    dashboard.minimap.view.viewport.attr("x", rectX)
+    dashboard.minimap.view.viewport
+        .attr("x", rectX)
         .attr("y", rectY)
         .attr("width", rectWidth)
         .attr("height", rectHeight);

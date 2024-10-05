@@ -39,10 +39,19 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
 function createMinimap(minimap, dashboard) {
     minimap.svg.selectAll("g").remove();
 
-    const whiteSpaceY = (dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width) - dashboard.main.canvas.height) * 0.5;
-    const whiteSpaceX = (dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height) - dashboard.main.canvas.width) * 0.5;
+    const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.minimap.view.width / dashboard.minimap.view.height;
 
-    const isHorizontalCanvas = dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height;
+    // compute the vertical border next to or above the canvas
+    const whiteSpaceY = isHorizontalCanvas // horizontal canvas has a whitespace above and below the canvas
+      ? (dashboard.main.canvas.width * (dashboard.minimap.view.height / dashboard.minimap.view.width) -
+          dashboard.main.canvas.height) *
+        0.5
+      : 0;
+    const whiteSpaceX = !isHorizontalCanvas // vertical canvas has a whitespace above and below the canvas
+      ? (dashboard.main.canvas.height * (dashboard.minimap.view.width / dashboard.minimap.view.height) -
+          dashboard.main.canvas.width) *
+        0.5
+      : 0;
 
     const widthScale = dashboard.main.view.width / dashboard.main.canvas.width;
     const heightScale = dashboard.main.view.height / dashboard.main.canvas.height;
@@ -51,8 +60,8 @@ function createMinimap(minimap, dashboard) {
         svg: minimap.svg.insert("g", ":first-child"),
         width: dashboard.main.canvas.width,
         height: dashboard.main.canvas.height,
-        whiteSpaceY: whiteSpaceY,
         whiteSpaceX: whiteSpaceX,
+        whiteSpaceY: whiteSpaceY,
         isHorizontalCanvas: isHorizontalCanvas,
         widthScale: widthScale,
         heightScale: heightScale
