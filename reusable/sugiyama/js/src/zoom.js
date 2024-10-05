@@ -39,14 +39,17 @@ export function initializeZoom(dashboard, dag, updateViewport) {
 
 // Define zoom functions
 function zoomIn(svg, zoom) {
+  svg.selectAll(".boundingBox").remove();
   svg.transition().duration(750).call(zoom.scaleBy, 1.2);
 }
 
 function zoomOut(svg, zoom) {
+  svg.selectAll(".boundingBox").remove();
   svg.transition().duration(750).call(zoom.scaleBy, 0.8);
 }
 
 function zoomReset(canvas, zoom) {
+  canvas.svg.selectAll(".boundingBox").remove();
   canvas.svg
     .transition()
     .duration(750)
@@ -117,7 +120,7 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
 
   // 4. Apply the zoom transform
   // JS: main.view or main.canvas?
-  dashboard.main.view.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+  dashboard.main.canvas.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 
   return boundingBox;
 }

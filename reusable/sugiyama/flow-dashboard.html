@@ -134,7 +134,10 @@
         const checkbox = document.getElementById('horizontalCheckbox');
         checkbox.addEventListener('change', function () {
             horizontal = this.checked;
-            computeAndDraw(mainView.svg, lineGenerator);
+
+            const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+            // Initial layout computation and drawing
+            dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
         });
 
         let horizontal = checkbox.checked; // Default to horizontal layout
@@ -146,7 +149,10 @@
             isEdgeCurved = this.checked;
             lineGenerator = getLineGenerator();
             console.log("isEdgeCurved", isEdgeCurved);
-            computeAndDraw(mainView.svg, lineGenerator);
+
+            const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+            // Initial layout computation and drawing
+            dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
         });
 
         let selectedFile = jsonFiles[1]; // Default to the first JSON file
@@ -157,31 +163,28 @@
             selectedFile = this.value;
             console.log("Selected file:", selectedFile);
             // computeLayout(); // Redraw the layout when a new file is selected
-            fetchFileToDag(selectedFile).then(result => {
+            FD.GraphData.fetchFileToDag(selectedFile).then(result => {
                 if (result) {
-                    ({ dag, maxNodeHeight, maxNodeWidth } = result);
-                    console.log("DAG:", dag);
-                    console.log("Max Node Height:", maxNodeHeight);
-                    console.log("Max Node Width:", maxNodeWidth);
+                    dag = result.dag;
 
-                    // Initial layout computation and drawing
-                    computeAndDraw(mainView.svg, lineGenerator);
+                    const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+                    dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
                 }
             });
         });
 
 
-    </script>
 
 
 
 
 
-    <script>
+        let dag, dashboard;
+
         // Setup the main view and minimap
         const mainView = FD.DrawNetwork.setup("#graph"); 
         const minimap = FD.Minimap.setup({width:mainView.width, height:mainView.height}, mainView.onDragUpdate);
-        let dag;
+
 
         // Main execution
         let lineGenerator = getLineGenerator();
@@ -189,14 +192,16 @@
             const curve = d3.curveBasis; // d3.curveCatmullRom; // d3.curveMonotoneY; //
             return isEdgeCurved ? d3.line().curve(curve) : d3.line();
         }
+        
 
         // initial layout computation and drawing
-        fetchFileToDag(selectedFile).then(result => {
+        FD.GraphData.fetchFileToDag(selectedFile).then(result => {
             if (result) {
-                ({ dag, maxNodeHeight, maxNodeWidth } = result);
+                dag = result.dag;
 
+                const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
                 // Initial layout computation and drawing
-                dashboard = computeAndDraw(mainView.svg, lineGenerator);
+                dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
             }
         });
     </script>
