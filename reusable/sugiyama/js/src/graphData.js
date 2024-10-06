@@ -60,7 +60,6 @@ export function stratefyData(graphData)
 export async function fetchFileToDag(selectedFile) {
     const graphData = await d3.json(`data/${selectedFile}`);
     initializeGraphData(graphData);
-    console.log(graphData);
 
     return stratefyData(graphData);
 }

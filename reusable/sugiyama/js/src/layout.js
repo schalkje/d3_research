@@ -1,10 +1,48 @@
 import {changeDirection} from "./util.js";
 import {initializeZoom} from "./zoom.js";
-import {createViewPort, updateMinimapViewport} from "./minimap.js";
-import {draw, drawMinimap} from "./drawNetwork.js";
+import {setup as minimapSetup, createViewPort, updateMinimapViewport} from "./minimap.js";
+import {setup as mainSetup, draw, drawMinimap} from "./drawNetwork.js";
+
+export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimapDivSelector = "#minimap") {
+    const mainView = mainSetup(mainDivSelector);
+    const minimapView = minimapSetup(mainView, minimapDivSelector);
+
+    // Set default values for missing values in layout
+    layout = setDefaultLayoutValues(layout);
+
+    // Create the dashboard object (see readme.md for details)
+    let dashboard = {
+        main:{
+            view:mainView,
+            boundingbox:{
+                scale:1
+            }
+        },
+        minimap:{
+            view:minimapView,
+            viewport: {}
+        },
+        layout:layout
+    };
+
+    computeLayoutAndCanvas(dashboard, dag);
+  
+    initializeZoom(dashboard, dag, updateMinimapViewport);
+  
+    draw(dashboard, dag);
+
+    // Create minimap content group
+    createMinimap(minimapView, dashboard);    
+    drawMinimap(dashboard, dag);
+
+    createViewPort(dashboard);
+  
+    return dashboard;
+  }
 
 
 export function computeAndDraw(dag, mainView, minimap, layout = {}) {
+    console.log("computeAndDraw - DEPRECATED");
     // Set default values for missing values in layout
     layout = setDefaultLayoutValues(layout);
 
@@ -126,15 +164,19 @@ export function getComputedDimensions(element) {
 }
 
 
-function getDefaultLineGenerator(idEdgeCurved = true) {
-    return isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
+function getDefaultLineGenerator(layout) {
+    return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
 }
 
 // Function to set default values for layout attributes
 function setDefaultLayoutValues(layout) {
+    const horizontal= layout.horizontal !== undefined ? layout.horizontal : true;
+    const isEdgeCurved= layout.isEdgeCurved !== undefined ? layout.isEdgeCurved : false;
+    const lineGenerator= layout.lineGenerator !== undefined ? layout.lineGenerator : getDefaultLineGenerator(layout);
+
     return {
-        horizontal: layout.horizontal !== undefined ? layout.horizontal : true,
-        lineGenerator: layout.lineGenerator !== undefined ? layout.lineGenerator : getDefaultLineGenerator(layout.isEdgeCurved),
-        isEdgeCurved: layout.isEdgeCurved !== undefined ? layout.isEdgeCurved : false
+        horizontal: horizontal,
+        isEdgeCurved: isEdgeCurved,
+        lineGenerator: lineGenerator
     };
 }

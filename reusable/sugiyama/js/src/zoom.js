@@ -102,7 +102,6 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
   const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
 
   if (showboundingBox) {
-    console.log("boundingBox", boundingBox, scale);
     dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
     dashboard.main.canvas.svg
       .append("rect")
@@ -123,12 +122,7 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
     scale: scale,
   }
 
-
-  console.log("scale", scale);
-  console.log("translate", translate);
-
   // 4. Apply the zoom transform
-  // JS: main.view or main.canvas?
   dashboard.main.canvas.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
 
   return dashboard.main.boundingbox;
@@ -198,8 +192,6 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
   } else {
     scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   }
-  console.log("scale", scale);
-
   const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
 
   // compute the visual height and width of the bounding box
