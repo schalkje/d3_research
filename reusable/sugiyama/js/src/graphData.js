@@ -47,6 +47,14 @@ export function convertToStratifyData(graphData) {
   return Array.from(nodesMap.values());
 }
 
+export function stratefyData(graphData)
+{
+  const stratifyData = convertToStratifyData(graphData);
+  const stratify = d3.graphStratify();
+  const dag = stratify(stratifyData);
+
+  return dag;
+}
 
 
 export async function fetchFileToDag(selectedFile) {
@@ -54,13 +62,5 @@ export async function fetchFileToDag(selectedFile) {
     initializeGraphData(graphData);
     console.log(graphData);
 
-    // const maxNodeHeight = Math.max(...graphData.nodes.map(node => node.height));
-    // const maxNodeWidth = Math.max(...graphData.nodes.map(node => node.width));
-    // console.log("maxHeight", maxNodeHeight, maxNodeWidth);
-
-    const stratifyData = convertToStratifyData(graphData);
-    const stratify = d3.graphStratify();
-    const dag = stratify(stratifyData);
-
-    return { dag };
+    return stratefyData(graphData);
 }

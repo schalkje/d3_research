@@ -142,7 +142,7 @@
         checkbox.addEventListener('change', function () {
             horizontal = this.checked;
 
-            const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+            const layout = { horizontal: horizontal, lineGenerator: lineGenerator, isEdgeCurved: isEdgeCurved };
             // Initial layout computation and drawing
             dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
         });
@@ -157,7 +157,7 @@
             lineGenerator = getLineGenerator();
             console.log("isEdgeCurved", isEdgeCurved);
 
-            const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+            const layout = { horizontal: horizontal, lineGenerator: lineGenerator, isEdgeCurved: isEdgeCurved };
             // Initial layout computation and drawing
             dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
         });
@@ -170,11 +170,10 @@
             selectedFile = this.value;
             console.log("Selected file:", selectedFile);
             // computeLayout(); // Redraw the layout when a new file is selected
-            FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-                if (result) {
-                    dag = result.dag;
-
-                    const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+            FD.GraphData.fetchFileToDag(selectedFile).then(dag => {
+                if (dag) {
+                    const layout = { horizontal: horizontal, lineGenerator: lineGenerator, isEdgeCurved: isEdgeCurved };
+                    // Initial layout computation and drawing
                     dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
                 }
             });
@@ -192,8 +191,8 @@
         import './js/src/index.js';
 
         // Setup the main view and minimap
-        const mainView = FD.DrawNetwork.setup("#graph"); 
-        const minimap = FD.Minimap.setup({width:mainView.width, height:mainView.height}, mainView.onDragUpdate);
+        const mainView = FD.DrawNetwork.setup("#graph");
+        const minimap = FD.Minimap.setup({ width: mainView.width, height: mainView.height }, mainView.onDragUpdate);
 
 
         // Main execution
@@ -202,14 +201,12 @@
             const curve = d3.curveBasis; // d3.curveCatmullRom; // d3.curveMonotoneY; //
             return isEdgeCurved ? d3.line().curve(curve) : d3.line();
         }
-        
+
 
         // initial layout computation and drawing
-        FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-            if (result) {
-                dag = result.dag;
-
-                const layout = {horizontal:horizontal, lineGenerator:lineGenerator, isEdgeCurved:isEdgeCurved};
+        FD.GraphData.fetchFileToDag(selectedFile).then(dag => {
+            if (dag) {
+                const layout = { horizontal: horizontal, lineGenerator: lineGenerator, isEdgeCurved: isEdgeCurved };
                 // Initial layout computation and drawing
                 dashboard = FD.Layout.computeAndDraw(dag, mainView, minimap, layout);
             }
