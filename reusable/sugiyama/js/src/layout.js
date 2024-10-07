@@ -2,7 +2,7 @@ import { changeDirection } from "./util.js";
 import { initializeZoom } from "./zoom.js";
 import { setup as minimapSetup, createViewPort, updateMinimapViewport } from "./minimap.js";
 import { setup as mainSetup, draw, drawMinimap } from "./drawNetwork.js";
-import { stratefyData } from "./graphData.js"
+import { stratefyData } from "./graphData.js";
 
 export function initializeFromData(
   graphData,
@@ -10,16 +10,22 @@ export function initializeFromData(
   mainDivSelector = "#graph",
   minimapDivSelector = "#minimap"
 ) {
+  console.log("initializeFromData",graphData, layout, mainDivSelector, minimapDivSelector);
   const dag = stratefyData(graphData);
   return initialize(dag, layout, mainDivSelector, minimapDivSelector);
 }
 
 export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimapDivSelector = "#minimap") {
+  console.log("initialize", layout, mainDivSelector, minimapDivSelector);
+  console.log("          - dag", dag);
+
+
   const mainView = mainSetup(mainDivSelector);
   const minimapView = minimapSetup(mainView, minimapDivSelector);
 
   // Set default values for missing values in layout
   layout = setDefaultLayoutValues(layout);
+  console.log("          - layout",layout);
 
   // Create the dashboard object (see readme.md for details)
   let dashboard = {
@@ -35,8 +41,10 @@ export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimap
     },
     layout: layout,
   };
+  console.log("          - dashboard",dashboard);
 
   computeLayoutAndCanvas(dashboard, dag);
+  console.log("          - computeLayoutAndCanvas",dashboard);
 
   initializeZoom(dashboard, dag, updateMinimapViewport);
 
@@ -129,6 +137,7 @@ export function computeLayoutAndCanvas(dashboard, dag) {
   const marginY = changeDirection(50, 8, dashboard.layout.horizontal).x;
 
   function getNodeSize({ data }) {
+    // console.log("getNodeSize", data, dashboard.layout.horizontal);
     return [
       changeDirection(data.width + marginX, data.height + marginY, dashboard.layout.horizontal).x,
       changeDirection(data.width + marginX, data.height + marginY, dashboard.layout.horizontal).y,
@@ -148,6 +157,8 @@ export function computeLayoutAndCanvas(dashboard, dag) {
   const { width: layoutWidth, height: layoutHeight } = layout(dag);
   const width = changeDirection(layoutWidth, layoutHeight, dashboard.layout.horizontal).x;
   const height = changeDirection(layoutWidth, layoutHeight, dashboard.layout.horizontal).y;
+
+  console.log("computeLayoutAndCanvas - width, heigth", width, height, dashboard.main.view, dashboard.minimap.view);
 
   dashboard.main.view.svg.attr("viewBox", [0, 0, width, height]);
 
@@ -170,9 +181,9 @@ function getDefaultLineGenerator(layout) {
 
 // Function to set default values for layout attributes
 function setDefaultLayoutValues(layout) {
-  const horizontal = layout.horizontal !== undefined ? layout.horizontal : true;
-  const isEdgeCurved = layout.isEdgeCurved !== undefined ? layout.isEdgeCurved : false;
-  const lineGenerator = layout.lineGenerator !== undefined ? layout.lineGenerator : getDefaultLineGenerator(layout);
+  const horizontal = layout.horizontal !== undefined && layout.horizontal !== null ? layout.horizontal : true;
+  const isEdgeCurved = layout.isEdgeCurved !== undefined && layout.isEdgeCurved !== null ? layout.isEdgeCurved : false;
+  const lineGenerator = layout.lineGenerator !== undefined && layout.lineGenerator !== null ? layout.lineGenerator : getDefaultLineGenerator(layout);
 
   return {
     horizontal: horizontal,

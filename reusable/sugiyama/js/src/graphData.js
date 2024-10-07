@@ -49,7 +49,11 @@ export function convertToStratifyData(graphData) {
 
 export function stratefyData(graphData)
 {
+  console.log("stratefyData - graphData",graphData)
+  initializeGraphData(graphData);
+  console.log("stratefyData - after initializeGraphData",graphData)
   const stratifyData = convertToStratifyData(graphData);
+  console.log("             - stratefyData",stratifyData)
   const stratify = d3.graphStratify();
   const dag = stratify(stratifyData);
 
@@ -59,7 +63,6 @@ export function stratefyData(graphData)
 
 export async function fetchFileToDag(selectedFile) {
     const graphData = await d3.json(`data/${selectedFile}`);
-    initializeGraphData(graphData);
 
     return stratefyData(graphData);
 }

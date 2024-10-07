@@ -75,11 +75,12 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
   // Draw nodes
   const node = canvas.svg
     .append("g")
-    .selectAll(".nodecontainer")
+    .selectAll(".node")
     .data(dag.nodes())
     .enter()
     .append("g")
-    .attr("class", (d) => `nodecontainer`)
+    // .attr("id", d => `${d.data.id}`)
+    .attr("class", (d) => `node  s${d.data.state}`)
     .attr(
       "transform",
       (d) =>
@@ -90,7 +91,7 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
 
   const nodes = node
     .append("rect")
-    .attr("class", d => `node s${d.data.state}`)
+    .attr("class", d => `node`)
     .attr("width", (d) => d.data.width)
     .attr("height", (d) => d.data.height)
     .attr("rx", 5)
@@ -227,4 +228,15 @@ function drawEdges(canvas, dashboard, dag) {
       const points = generateEdgePath(edge, dashboard.layout);
       return dashboard.layout.lineGenerator(points);
     });
+}
+
+
+export function updateNodeStatus(stateUpdate) {
+  //console.log(`id=${stateUpdate.id} --> state=${stateUpdate.state}`); // Log the node data to the console
+  const node = d3.selectAll(".node")
+      .filter(d => d.data.id === `${stateUpdate.id}`)
+      .attr("class", d => {
+          //console.log(d); // Log the node data to the console
+          return `node s${stateUpdate.state}`;
+      })
 }
