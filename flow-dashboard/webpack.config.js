@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/index.js', // Your main JavaScript file
+    entry: './js/index.js', // Your main JavaScript file
     output: {
         filename: 'flow-dashboard.min.js', // The bundled file name
         path: path.resolve(__dirname, 'dist') // The output directory
