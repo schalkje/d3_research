@@ -8,77 +8,7 @@
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
-    <!-- <script src="js/src/index.js" type="module" defer></script> -->
-    <style>
-        #graph {
-            border: 1px solid black;
-            width: 100%;
-            height: 800px;
-        }
-
-        .boundingBox {
-            fill: none;
-            stroke: rgba(255, 0, 0, 0.616);
-            stroke-width: 1;
-        }
-
-        #minimap-container {
-            border: 1px solid black;
-        }
-
-        #minimap {
-            border: 1px solid darkblue;
-            background-color: rgb(210, 255, 212);
-        }
-
-        .viewport {
-            fill: none;
-            stroke: rgba(255, 0, 0, 0.616);
-            /* stroke-width: 8; */
-            cursor: move;
-        }
-
-        .drawing_boundary {
-            stroke: gray;
-            stroke-width: 0.05;
-            /* fill: rgba(255, 255, 224, 0.26); */
-            fill: rgba(255, 255, 224, 0.86);
-        }
-
-        .node {
-            stroke: rgba(70, 131, 180, 0.9);
-            stroke-width: 0.05;
-            /* fill: steelblue;             */
-            fill: rgba(70, 131, 180, 0.9);
-            cursor: zoom-in;
-        }
-
-        .edge {
-            stroke: #ccc;
-            stroke-width: 2px;
-            fill: none;
-            marker-end: url(#arrowhead);
-        }
-
-        .marker {
-            stroke: #ccc;
-            stroke-width: 4px;
-            fill: none;
-            /* marker-end: url(#arrowhead); */
-        }
-
-        .label {
-            font-size: 12px;
-            text-anchor: middle;
-            fill: white;
-        }
-
-        .connection-point {
-            fill: rgb(70, 130, 180, 0.8);
-            stroke: rgb(154, 169, 182);
-            /* stroke: rgba(70, 131, 180, 0.5); */
-        }
-    </style>
+    <link rel="stylesheet" href="flow-dashboard.css">
 </head>
 
 <body>
@@ -101,7 +31,7 @@
     </script>
 
     <label for="horizontalCheckbox">Horizontal</label>
-    <input type="checkbox" id="horizontalCheckbox">
+    <input type="checkbox" id="horizontalCheckbox" checked>
     <!-- Dropdown to select JSON file -->
     <label for="fileSelect">Select JSON file:</label>
     <select id="fileSelect"></select>
@@ -159,7 +89,7 @@
             dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
         });
 
-        let selectedFile = jsonFiles[1]; // Default to the first JSON file
+        let selectedFile = jsonFiles[8]; // Default to the first JSON file
 
         // Event listener to update selected filename from the dropdown
         fileSelect.addEventListener("change", function () {
