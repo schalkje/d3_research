@@ -3,6 +3,7 @@ import { initializeZoom } from "./zoom.js";
 import { setup as minimapSetup, createViewPort, updateMinimapViewport } from "./minimap.js";
 import { setup as mainSetup, draw, drawMinimap } from "./drawNetwork.js";
 import { stratefyData } from "./graphData.js";
+import { computeLayers } from "./layout-layers.js";
 
 export function initializeFromData(
   graphData,
@@ -10,7 +11,7 @@ export function initializeFromData(
   mainDivSelector = "#graph",
   minimapDivSelector = "#minimap"
 ) {
-  console.log("initializeFromData",graphData, layout, mainDivSelector, minimapDivSelector);
+  console.log("initializeFromData", graphData, layout, mainDivSelector, minimapDivSelector);
   const dag = stratefyData(graphData);
   return initialize(dag, layout, mainDivSelector, minimapDivSelector);
 }
@@ -19,13 +20,12 @@ export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimap
   console.log("initialize", layout, mainDivSelector, minimapDivSelector);
   console.log("          - dag", dag);
 
-
   const mainView = mainSetup(mainDivSelector);
   const minimapView = minimapSetup(mainView, minimapDivSelector);
 
   // Set default values for missing values in layout
   layout = setDefaultLayoutValues(layout);
-  console.log("          - layout",layout);
+  console.log("          - layout", layout);
 
   // Create the dashboard object (see readme.md for details)
   let dashboard = {
@@ -41,10 +41,12 @@ export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimap
     },
     layout: layout,
   };
-  console.log("          - dashboard",dashboard);
+  console.log("          - dashboard", dashboard);
 
   computeLayoutAndCanvas(dashboard, dag);
-  console.log("          - computeLayoutAndCanvas",dashboard);
+  console.log("          - computeLayoutAndCanvas", dashboard);
+
+  computeLayers(dashboard, dag);
 
   initializeZoom(dashboard, dag, updateMinimapViewport);
 
@@ -58,6 +60,8 @@ export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimap
 
   return dashboard;
 }
+
+
 
 export function computeAndDraw(dag, mainView, minimap, layout = {}) {
   console.log("computeAndDraw - DEPRECATED");
@@ -183,7 +187,10 @@ function getDefaultLineGenerator(layout) {
 function setDefaultLayoutValues(layout) {
   const horizontal = layout.horizontal !== undefined && layout.horizontal !== null ? layout.horizontal : true;
   const isEdgeCurved = layout.isEdgeCurved !== undefined && layout.isEdgeCurved !== null ? layout.isEdgeCurved : false;
-  const lineGenerator = layout.lineGenerator !== undefined && layout.lineGenerator !== null ? layout.lineGenerator : getDefaultLineGenerator(layout);
+  const lineGenerator =
+    layout.lineGenerator !== undefined && layout.lineGenerator !== null
+      ? layout.lineGenerator
+      : getDefaultLineGenerator(layout);
 
   return {
     horizontal: horizontal,

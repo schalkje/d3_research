@@ -52,6 +52,29 @@ A dashboard is the dataset used internally and returned with the first compute a
 
             }
         },
-        zoom:zoom // Layout.computeAndDraw --> Zoom.initializeZoom
+        zoom:zoom, // Layout.computeAndDraw --> Zoom.initializeZoom
+        layers: {
+            label:layerLabel
+            minX:minX,
+            minY:minY
+        }
     };
 ```
+
+## Layers
+A layer is a way of grouping the nodes in columns.
+
+This is a function to split nodes.
+
+Two possible algorigthms:
+- cut half way and put next to each other
+- keep the order somewhat: take first, mode to split, take 2, put in split 2, take 3, put in split 1 etc
+
+A split layer can be split again, going 1 to 2, 2 to 3, 3 to 4,
+So we need to rearrange.
+
+For storage that would mean, we have a hierarchical layout of layers.
+
+Layer parameter can be supplied from the dashboard definition / node definition. Or is created based on the Y position.
+
+
