@@ -222,6 +222,7 @@ function applySplit(layers, viewWidth, viewHeight) {
                 id: splitDecision.longestLayer.layer.id, // Reuse the original layer ID
                 label: splitDecision.longestLayer.layer.label, // Reuse the original label
                 width: splitDecision.longestLayer.layer.width, // Reuse the original width
+                nodes: splitDecision.longestLayer.layer.nodes,
                 x: currentX + marginX,
                 y: 0, // JS: todo: recompute the Y position to center vertically
                 height: splitDecision.longestLayer.totalHeight / newSplitCount, // Recompute the height
@@ -246,13 +247,20 @@ function applySplit(layers, viewWidth, viewHeight) {
                     skip = false;
                 }
                 continue; // Skip already split layers
-            }
-            if(!skip) {
+            } else if(!skip) {
                 layer.x = currentX + marginX; // Update the X position
                 newLayers.push(layer); // Copy the remaining layers
                 currentX += layer.width + marginX; 
+                // move all the nodes in the layer
+                console.log(`                           - move nodes in layer ${layer.id}`, layer.nodes);
+                // layer.nodes.forEach(node => {
+                //     console.log(`                           - ${node.y} --> ${layer.x}` );
+                //     node.y = layer.x;
+                // });
             }
-        }
+        }        
+
+        
 
 
         console.log(`Resplit column ${splitDecision.id} into ${newSplitCount} parts`,newLayers);
@@ -262,6 +270,40 @@ function applySplit(layers, viewWidth, viewHeight) {
     return layers;
 }
 
+// Function to reposition the nodes within the split layers
+function repositionNodes(layers) {
+    console.log(`Repositioning nodes in split layers`, layers);
+    layers.forEach(layer => {
+        const splitNumber = layer.splitNumber || 1; // Determine the split number for the layer
+        const moveUp = (splitNumber - 1) * layer.height; // Calculate how much to move up nodes in split layers
+        const filterTop = (splitNumber) * layer.height + layer.x; // Calculate how much to move up nodes in split layers
+        console.log(`                                   - Layer ${layer.id}, Split number: ${splitNumber}, Move up: ${moveUp}, Filter top: ${filterTop}`);
+
+        // Filter and reposition the nodes based on their y coordinates and the layer's split
+        layer.nodes = layer.nodes.filter(node => {
+            const nodeBottom = node.x + node.data.height;
+            // console.log(`                                   - Check Node`, node);
+            // Remove nodes from the layer where the nodes' bottom y + height is less than the start of this split section
+            if (nodeBottom < moveUp) {
+                console.log(`                                        - Remove bottom Node Y: ${node.x}, Bottom: ${nodeBottom}`, node);
+                return false; // Node doesn't belong to this split, remove it
+            }
+
+            // Remove nodes where nodes' top y is greater than the end of this split section
+            if (node.x > filterTop) {
+                console.log(`                                        - Remove top    Node Y: ${node.x}, Bottom: ${nodeBottom}, Filter top: ${filterTop}`, node);
+                return false; // Node doesn't belong to this split, remove it
+            }
+
+            // For nodes that remain in this split, reposition them within the split section
+            // console.log(`                                   - Reposition    Node ${node.id}, Y: ${node.y}-> ${node.y - moveUp}, X: ${node.x} -> ${layer.y}`);
+            // node.y = node.y - moveUp; // Adjust the y position by moving up
+            // node.x = layer.y; // Set the node's position relative to the new layer's y coordinate
+            return true;
+        });
+    });
+}
+
 // Main function to optimize layers based on the viewport ratio
 function OptimizeLayers(dashboard) {
     let layers = dashboard.layers;
@@ -269,7 +311,7 @@ function OptimizeLayers(dashboard) {
 
     // Apply the optimization and splitting logic iteratively until the layout fits the target ratio
     let iterations = 0;
-    let maxIterations = 10; // Limit iterations to prevent infinite loops
+    let maxIterations = 1; // Limit iterations to prevent infinite loops
     let layoutAdjusted = true;
 
     while (layoutAdjusted && iterations < maxIterations) {
@@ -285,6 +327,8 @@ function OptimizeLayers(dashboard) {
 
         iterations++;
     }
+
+    repositionNodes(layers);
 
     // Assign the optimized layers back to the dashboard
     dashboard.layers = layers;
