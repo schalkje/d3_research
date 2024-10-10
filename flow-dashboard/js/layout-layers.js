@@ -121,19 +121,21 @@ function getLongestLayer(layers) {
     // Filter the layers by the longest layer's id
     const longestLayers = layers.filter(layer => layer.id === longestLayer.id);
 
-    const { splitCount, maxHeight: maxSplitHeight, totalHeight } = longestLayers.reduce((acc, layer) => {
+    const { splitCount, maxHeight: maxSplitHeight, totalHeight, totalY } = longestLayers.reduce((acc, layer) => {
         acc.splitCount = Math.max(acc.splitCount, layer.splitNumber || 1);
         acc.maxSplitHeight = Math.max(acc.maxHeight, layer.height);
         acc.totalHeight += layer.height;
+        acc.totalY += layer.y;
         return acc;
-    }, { splitCount: 1, maxHeight: 0, totalHeight: 0 });
+    }, { splitCount: 1, maxHeight: 0, totalHeight: 0, totalY: 0 });
 
     const result = {
         layer: longestLayer,
         splitLayers: longestLayers,
         splitCount: splitCount,
         maxSplitHeight: maxSplitHeight,
-        totalHeight: totalHeight
+        totalHeight: totalHeight,
+        totalY: totalY
     };
     console.log("getLongestColumn", result, layers);
     return result;
@@ -151,18 +153,23 @@ function computeSplitImpact(layers, targetRatio) {
     const longestLayer = getLongestLayer(layers);
     console.log(`Longest layer: ${longestLayer.layer.id}, Split count: ${longestLayer.splitCount}, Max height: ${longestLayer.maxSplitHeight}` ,longestLayer);
 
-    // Simulate splitting the longest column
-    // const columns = longestLayerInfo.layers;
-
     // JS: todo: do something with a margin between layers
     const layerMargin = 40;
     console.log(`newTotalWidthAfterSplit = `, totalWidth,longestLayer.layer.width,layerMargin);
-    const newTotalWidthAfterSplit = totalWidth + longestLayer.layer.width + layerMargin; // Assuming columns side by side
+    const newCanvasWidthAfterSplit = totalWidth + longestLayer.layer.width + layerMargin; // Assuming columns side by side
     // recompute height: sum the height of the columns, divide by the number of columns + 1
-    const newTotalHeightAfterSplit = longestLayer.totalHeight / longestLayer.splitCount + 1;
+    const newCanvasHeightAfterSplit = layers.reduce((height, layer) => {
+        if (layer.id === longestLayer.layer.id) {
+            return Math.max(height,longestLayer.totalHeight / longestLayer.splitCount + 1);
+        } else {
+            return Math.max(height, layer.height);
+        };
+    },0);
 
-    const newActualRatio = newTotalWidthAfterSplit / newTotalHeightAfterSplit;
-    console.log(`New total width: ${newTotalWidthAfterSplit}, New total height: ${newTotalHeightAfterSplit}`);
+
+    const newActualRatio = newCanvasWidthAfterSplit / newCanvasHeightAfterSplit;
+    console.log(`New total width: ${newCanvasWidthAfterSplit}, New total height: ${newCanvasHeightAfterSplit}`);
+
 
     console.log(`Current ratio: ${actualRatio}, New ratio: ${newActualRatio}, Target ratio: ${targetRatio}`);
     // Decide whether to split based on the new ratio
@@ -170,9 +177,9 @@ function computeSplitImpact(layers, targetRatio) {
         return {
             shouldSplit: true,
             longestLayer: longestLayer,
-            newWidth: newTotalWidthAfterSplit,
-            newHeight: newTotalHeightAfterSplit,
-            newRatio: newActualRatio
+            canvasWidth: newCanvasWidthAfterSplit,
+            canvasHeight: newCanvasHeightAfterSplit,
+            canvasRatio: newActualRatio
         };
     } else {
         return { shouldSplit: false };
@@ -186,16 +193,14 @@ function applySplit(layers, viewWidth, viewHeight) {
 
     // Compute the impact of splitting the longest column
     const splitDecision = computeSplitImpact(layers, targetRatio);
+
     console.log(`Should split: ${splitDecision.shouldSplit}`, splitDecision);
     // If splitting improves the ratio, apply the split
     if (splitDecision.shouldSplit) {
         console.log(`              --> ${splitDecision.longestLayer.layer.label} (${splitDecision.longestLayer.layer.id})`);
 
-        const splitCount = splitDecision.longestLayer.splitCount;
-        console.log(`              --> Split count: ${splitCount}`);
-
         // We are now re-splitting this column into (splitCount + 1) parts
-        const newSplitCount = splitCount + 1;
+        const newSplitCount = splitDecision.longestLayer.splitCount + 1;
 
         const marginX = 40; // JS: todo: do something with a margin between layers
         let currentX = 0;
@@ -203,6 +208,7 @@ function applySplit(layers, viewWidth, viewHeight) {
         // build a new layers array
         console.log(`Building new layers array:`, layers);
         const newLayers = [];
+
         // 1. copy the layers, until you reach the first split layer
         console.log(`                           - copy first layers`);
         for (let layer of layers) {
@@ -224,7 +230,7 @@ function applySplit(layers, viewWidth, viewHeight) {
                 width: splitDecision.longestLayer.layer.width, // Reuse the original width
                 nodes: splitDecision.longestLayer.layer.nodes,
                 x: currentX + marginX,
-                y: 0, // JS: todo: recompute the Y position to center vertically
+                y: splitDecision.longestLayer.totalY / newSplitCount,
                 height: splitDecision.longestLayer.totalHeight / newSplitCount, // Recompute the height
                 splitNumber: i + 1 // Update the split number
             };
@@ -253,10 +259,6 @@ function applySplit(layers, viewWidth, viewHeight) {
                 currentX += layer.width + marginX; 
                 // move all the nodes in the layer
                 console.log(`                           - move nodes in layer ${layer.id}`, layer.nodes);
-                // layer.nodes.forEach(node => {
-                //     console.log(`                           - ${node.y} --> ${layer.x}` );
-                //     node.y = layer.x;
-                // });
             }
         }        
 
@@ -271,35 +273,60 @@ function applySplit(layers, viewWidth, viewHeight) {
 }
 
 // Function to reposition the nodes within the split layers
-function repositionNodes(layers) {
+function reshuffelNodes(layers) {
     console.log(`Repositioning nodes in split layers`, layers);
     layers.forEach(layer => {
         const splitNumber = layer.splitNumber || 1; // Determine the split number for the layer
         const moveUp = (splitNumber - 1) * layer.height; // Calculate how much to move up nodes in split layers
-        const filterTop = (splitNumber) * layer.height + layer.x; // Calculate how much to move up nodes in split layers
-        console.log(`                                   - Layer ${layer.id}, Split number: ${splitNumber}, Move up: ${moveUp}, Filter top: ${filterTop}`);
+        const filterTop = (splitNumber) * layer.height + layer.y; // Calculate the top boundary for filtering nodes
+        console.log(`                                   - Layer ${layer.id}, Split number: ${splitNumber}, Move up: ${moveUp}, Filter top: ${filterTop}`,layer.height,layer.y);
 
         // Filter and reposition the nodes based on their y coordinates and the layer's split
         layer.nodes = layer.nodes.filter(node => {
-            const nodeBottom = node.x + node.data.height;
             // console.log(`                                   - Check Node`, node);
             // Remove nodes from the layer where the nodes' bottom y + height is less than the start of this split section
-            if (nodeBottom < moveUp) {
-                console.log(`                                        - Remove bottom Node Y: ${node.x}, Bottom: ${nodeBottom}`, node);
+            if (node.x < moveUp) {
+                // console.log(`                                        - Remove bottom Node Y: ${node.x}`, node);
                 return false; // Node doesn't belong to this split, remove it
             }
 
             // Remove nodes where nodes' top y is greater than the end of this split section
-            if (node.x > filterTop) {
-                console.log(`                                        - Remove top    Node Y: ${node.x}, Bottom: ${nodeBottom}, Filter top: ${filterTop}`, node);
+            // if (node.x > filterTop) {
+                if (node.x > filterTop) {
+                    // console.log(`                                        - Remove top    Node Y: ${node.x}, Filter top: ${filterTop}`, node);
                 return false; // Node doesn't belong to this split, remove it
             }
 
+            // console.log(`                                        - Keep        Node Y: ${node.x}, Filter top: ${filterTop}`, node);
             // For nodes that remain in this split, reposition them within the split section
             // console.log(`                                   - Reposition    Node ${node.id}, Y: ${node.y}-> ${node.y - moveUp}, X: ${node.x} -> ${layer.y}`);
-            // node.y = node.y - moveUp; // Adjust the y position by moving up
-            // node.x = layer.y; // Set the node's position relative to the new layer's y coordinate
+            // node.x = node.x - moveUp; // Adjust the y position by moving up
+            node.y = layer.x; // Set the node's position relative to the new layer's y coordinate
             return true;
+        });
+    });
+}
+
+function repositionLayers(layers) {
+    // Reposition the layers based on the highest layer
+    let maxHeight = layers.reduce((max, layer) => Math.max(max, layer.height), 0);
+
+    layers.forEach(layer => {
+        console.log(`Repositioning layer ${layer.id}, Height: ${layer.height}, Max Height: ${maxHeight}`);
+        layer.x = (maxHeight - layer.height) / 2; 
+    });
+}
+
+function repositionNodes(layers) {
+    const marginX = 40; // JS: todo: do something with a margin between layers
+
+    // Reposition the nodes within the layers
+    layers.forEach(layer => {
+        let currentY = layer.y; // Initialize the current Y position for the nodes
+        layer.nodes.forEach(node => {
+
+            node.x = currentY; // Set the node's position relative to the new layer's y coordinate
+            currentY += node.data.height + marginX;
         });
     });
 }
@@ -311,7 +338,7 @@ function OptimizeLayers(dashboard) {
 
     // Apply the optimization and splitting logic iteratively until the layout fits the target ratio
     let iterations = 0;
-    let maxIterations = 1; // Limit iterations to prevent infinite loops
+    let maxIterations = 24; // Limit iterations to prevent infinite loops
     let layoutAdjusted = true;
 
     while (layoutAdjusted && iterations < maxIterations) {
@@ -328,6 +355,8 @@ function OptimizeLayers(dashboard) {
         iterations++;
     }
 
+    reshuffelNodes(layers);
+    repositionLayers(layers);
     repositionNodes(layers);
 
     // Assign the optimized layers back to the dashboard
