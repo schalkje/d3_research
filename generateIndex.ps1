@@ -39,7 +39,7 @@ foreach ($group in $groups) {
         $folderName = $fileParts[1]
         $fileName = [System.IO.Path]::GetFileName($file)
         $displayName = if ($folderName) { "$folderName/$fileName" } else { $fileName }
-        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a></li>`n"
+        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a> <a href='$relativePath' target='_blank' class='link-icon'>🔗</a></li>`n"
     }
     $htmlContent += "</ul>`n"
 }

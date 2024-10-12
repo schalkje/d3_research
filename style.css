@@ -36,13 +36,28 @@ ul {
     text-align: right;
     padding: 2px;
     margin-right: 10px;
+    font-size: 0.8em;
 }
 a{
     font-size: larger;
     text-decoration: none;
     color: blue;
-    cursor: pointer;
+    cursor: zoom-in;
 }
 a:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    font-weight: bold;
+}
+.link-icon {
+    font-size: 0.6em;
+    vertical-align: top;
+    margin-left: 5px;
+    text-decoration: none;
+    cursor: pointer;
+}
+a.link-icon:hover {
+    text-decoration: none;
+    border-top: 2px solid #ccc;
+    border-right: 2px solid #ccc;
+
 }
