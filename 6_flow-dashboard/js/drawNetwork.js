@@ -26,11 +26,18 @@ export function draw(dashboard, dag) {
   drawNodes(dashboard.main.canvas, dashboard, dag, onNodeClickFunction);
 }
 
-function onNodeClickFunction(event, t, node, dashboard, dag) {
-  console.log("onClickFunction", node);
-  selectNode(t, node, dashboard, dag);
-  // zoomToNode(node, dashboard, dag);
+function onNodeClickFunction(event, node) {
+  event.stopPropagation();
+  // console.log("onClickFunction", node);
+  selectNode(event, node);
 }
+
+function onDblClickFunction(event, t, node, dashboard, dag) {
+  event.stopPropagation();
+  // console.log("onDblClickFunction", node);
+  zoomToNode(node, dashboard, dag);
+}
+
 
 export function drawMinimap(dashboard, dag) {
   const canvas = dashboard.minimap.canvas;
@@ -101,9 +108,22 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
   // Add the click event
   node.on("click", function (event, node) {
     // console.log("Node clicked:", d);
-    onClickFunction(event, this, node, dashboard, dag);
+    onClickFunction(event, this);
+    // function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
+  })
+  .on("dblclick", function (event, node) {
+    // console.log("Node clicked:", d);
+    onDblClickFunction(event, this, node, dashboard, dag);
     // function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
   });
+
+  
+
+  // node.call(d3.drag()
+  //   .on('start', drag_started)
+  //   .on('drag', dragged)
+  //   .on('end', drag_ended)
+  // );
 
   if (!minimap) {
     node
@@ -287,4 +307,31 @@ export function updateNodeStatus(stateUpdate) {
       //console.log(d); // Log the node data to the console
       return `node s${stateUpdate.state}`;
     });
+}
+
+
+// drag
+function drag_started (d) {
+  console.log("drag_started", d);
+  if (!d3.event.active) {
+    // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
+    simulation.alphaTarget(0.8).restart() 
+  }
+  d.fx = d.x;
+  d.fy = d.y;
+  d3.select(this).attr("class", "node_grabbing");
+}
+
+function dragged (d) {
+  d.fx = d3.event.x
+  d.fy = d3.event.y
+}
+
+function drag_ended (d) {
+  if (!d3.event.active) {
+    simulation.alphaTarget(0)
+  }
+  d.fx = null
+  d.fy = null
+  d3.select(this).attr("class", "node");
 }
