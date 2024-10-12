@@ -91,7 +91,7 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
 
   const nodes = node
     .append("rect")
-    .attr("class", d => `nodeRect`)
+    .attr("class", (d) => `nodeRect`)
     .attr("width", (d) => d.data.width)
     .attr("height", (d) => d.data.height)
     .attr("rx", 5)
@@ -142,20 +142,14 @@ function generateDirectEdge(edge, layout) {
   const targetNode = edge.target;
 
   let sourcePoint, targetPoint;
-  sourcePoint = [
-    sourceNode.x + sourceNode.data.width / 2,
-    sourceNode.y + sourceNode.data.height / 2,
-  ];
+  sourcePoint = [sourceNode.x, sourceNode.y];
 
-  targetPoint = [
-    targetNode.x + targetNode.data.width / 2,
-    targetNode.y + targetNode.data.height / 2,
-  ];
+  targetPoint = [targetNode.x, targetNode.y];
 
   return [sourcePoint, targetPoint];
 }
 
-function generateEdgePath(edge, layout) {
+export function generateEdgePath(edge, layout) {
   const sourceNode = edge.source;
   const targetNode = edge.target;
 
@@ -234,30 +228,62 @@ function drawEdges(canvas, dashboard, dag) {
     .append("svg:path")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
-  // Draw edges
   canvas.svg
-    .append("g")
-    .selectAll(".edge")
-    .data(dag.links())
-    .enter()
-    .append("path")
-    .attr("class", "edge")
-    .attr("d", (edge) => {
-      console.log("edge", edge, dashboard.layout);
-      // const points = generateEdgePath(edge, dashboard.layout);
-      const points = generateDirectEdge(edge, dashboard.layout);
-      // console.log("    ", points);
-      return dashboard.layout.lineGenerator(points);
-    });
-}
+    .append("defs")
+    .append("marker")
+    .attr("id", "circle-marker")
+    .attr("class", "circlemarker")
+    .attr("viewBox", "-5 -5 10 10")
+    .attr("refX", 0)
+    .attr("refY", 0)
+    .attr("orient", "auto")
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("xoverflow", "visible")
+    .append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", 5);
 
+  // Draw ghostlines
+  if (dashboard.layout.showGhostlines) {
+    canvas.svg
+      .append("g")
+      .selectAll(".ghostline")
+      .data(dag.links())
+      .enter()
+      .append("path")
+      .attr("class", "ghostline")
+      .attr("d", (edge) => {
+        const points = generateDirectEdge(edge, dashboard.layout);
+        return dashboard.layout.lineGenerator(points);
+      });
+  }
+
+  // Draw edges
+  if (dashboard.layout.showEdges) {
+    canvas.svg
+      .append("g")
+      .selectAll(".edge")
+      .data(dag.links())
+      .enter()
+      .append("path")
+      .attr("class", "edge")
+      .attr("d", (edge) => {
+        const points = generateEdgePath(edge, dashboard.layout);
+        // console.log("    ", points);
+        return dashboard.layout.lineGenerator(points);
+      });
+  }
+}
 
 export function updateNodeStatus(stateUpdate) {
   //console.log(`id=${stateUpdate.id} --> state=${stateUpdate.state}`); // Log the node data to the console
-  const node = d3.selectAll(".node")
-      .filter(d => d.data.id === `${stateUpdate.id}`)
-      .attr("class", d => {
-          //console.log(d); // Log the node data to the console
-          return `node s${stateUpdate.state}`;
-      })
+  const node = d3
+    .selectAll(".node")
+    .filter((d) => d.data.id === `${stateUpdate.id}`)
+    .attr("class", (d) => {
+      //console.log(d); // Log the node data to the console
+      return `node s${stateUpdate.state}`;
+    });
 }

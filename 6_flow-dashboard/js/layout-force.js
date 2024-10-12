@@ -1,4 +1,5 @@
 import { changeDirection } from "./util.js";
+import { generateEdgePath } from "./drawNetwork.js";
 
 export function forceLayoutAndCanvas(dashboard, dag) {
     dashboard.main.view.svg.selectAll("*").remove();
@@ -74,15 +75,31 @@ export function forceLayoutAndCanvas(dashboard, dag) {
       console.log("ticked");
       // Update node positions based on the current state of the simulation
       d3.selectAll(".node")
-        .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+        // .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+        .attr(
+            "transform",
+            (d) =>
+              `translate(${changeDirection(d.x, d.y, dashboard.layout.horizontal).x - d.data.width / 2},${
+                changeDirection(d.x, d.y, dashboard.layout.horizontal).y - d.data.height / 2
+              })`
+          );
   
-      // Update link positions based on the current state of the simulation
-      d3.selectAll(".link")
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+        // Update link positions based on the current state of the simulation
+      d3.selectAll(".edge")
+        .attr("d", (edge) => {
+            const points = generateEdgePath(edge, dashboard.layout);
+            console.log("    ", edge, points);
+            return dashboard.layout.lineGenerator(points);
+        });
     }
+    //     .attr("x1", (d) => {
+    //         console.log("link source", d.source);
+    //         return d.source.x;
+    // })
+    //     .attr("y1", (d) => d.source.y)
+    //     .attr("x2", (d) => d.target.x)
+    //     .attr("y2", (d) => d.target.y);
+    // }
   
     function getLinkDistance(link) {
       console.log("getLinkDistance", link);

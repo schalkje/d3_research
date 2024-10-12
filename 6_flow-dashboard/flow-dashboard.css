@@ -42,16 +42,32 @@
 }
 
 .edge {
-    stroke: #ccc;
+    stroke: rgb(204, 214, 221, 0.8);
     stroke-width: 2px;
     fill: none;
     marker-end: url(#arrowhead);
 }
 
-.marker {
-    stroke: #ccc;
-    stroke-width: 4px;
+.ghostline {
+    /* stroke: rgba(81, 77, 131, 0.548); */
+    stroke: red;
+    stroke-width: 1px;
     fill: none;
+    marker-start: url(#circle-marker);
+    marker-end: url(#circle-marker);
+}
+
+.marker {
+    stroke: rgb(204, 214, 221, 0.8);
+    stroke-width: 1px;
+    fill: rgb(204, 214, 221, 0.8);
+    /* marker-end: url(#arrowhead); */
+}
+
+.circlemarker {
+    stroke: none;
+    /* stroke-width: 4px; */
+    fill: red;
     /* marker-end: url(#arrowhead); */
 }
 

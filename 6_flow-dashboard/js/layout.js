@@ -94,6 +94,8 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
     layout: layout,
   };
 
+  draw(dashboard, dag);
+  
   // JS: TODO: make this a parameter based choice
   let layoutAlgotithm = "force";
   if (layoutAlgotithm == "sugiyama") {
@@ -105,7 +107,7 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
 
   initializeZoom(dashboard, dag, updateMinimapViewport);
 
-  draw(dashboard, dag);
+  // draw(dashboard, dag);
 
   // Create minimap content group
   createMinimap(minimap, dashboard);
@@ -143,7 +145,9 @@ function setDefaultLayoutValues(layout) {
     margin: {
       x: layout.marginX || (horizontal ? 100 : 8),
       y: layout.marginY || (horizontal ? 8 : 50),
-    }
+    },
     // JS: idea: make the margin dependable on the widht and height of the nodes, an maybe the orientation
+    showEdges: layout.showEdges || true,
+    showGhostlines: layout.showGhostlines || true,
   };
 }
