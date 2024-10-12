@@ -4,25 +4,26 @@ export function initializeGraphData(graphData) {
     node.id = node.id || index; // Assign an ID if not present
     node.width = node.width || 150; // Default width if not present
     node.height = node.height || 40; // Default height if not present
-    node.childrenIds = []; // Use only IDs to track children to avoid circular references
+    node.children = []; // Initialize children array
+    node.childrenIds = []; // Initialize children array
+    node.parents = []; // Initialize parents array
     node.parentsIds = []; // Use only IDs to track parents to avoid circular references
   });
 
   // Build the children and parents relationships
   graphData.edges.forEach((edge) => {
     // link up edges
-    const sourceNode = graphData.nodes.find((n) => n.id === edge.source);
-    const targetNode = graphData.nodes.find((n) => n.id === edge.target);
+    edge.sourceNode = edge.source || 0;
+    edge.targetNode = edge.target || 0;
+
+    const sourceNode = graphData.nodes.find((n) => n.id === edge.sourceNode);
+    const targetNode = graphData.nodes.find((n) => n.id === edge.targetNode);
 
     if (sourceNode && targetNode) {
-      // Add the target node ID to the source node's children IDs
+      sourceNode.children.push(targetNode);
       sourceNode.childrenIds.push(targetNode.id);
-      // Add the source node ID to the target node's parents IDs
+      targetNode.parents.push(sourceNode);
       targetNode.parentsIds.push(sourceNode.id);
-
-      // Ensure edges have valid node references for source and target
-      edge.source = sourceNode;
-      edge.target = targetNode;
     } else {
       console.warn("Edge refers to non-existent node:", edge);
     }
@@ -38,9 +39,10 @@ export function convertToStratifyData(graphData) {
   );
 
   graphData.edges.forEach((edge) => {
-    const targetNode = nodesMap.get(edge.targetNode);
+    console.log("convertToStratifyData - edge",edge)
+    const targetNode = nodesMap.get(edge.target);
     if (targetNode) {
-      targetNode.parentIds.push(edge.sourceNode);
+      targetNode.parentIds.push(edge.source);
     }
   });
 
