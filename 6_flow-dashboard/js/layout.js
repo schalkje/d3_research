@@ -45,9 +45,13 @@ export function initialize(dag, layout = {}, mainDivSelector = "#graph", minimap
   console.log("          - dashboard", dashboard);
 
   // JS: TODO: make this a parameter based choice
-  // computeLayoutAndCanvas(dashboard, dag);
-  forceLayoutAndCanvas(dashboard, dag);
-  console.log("          - xxxxxLayoutAndCanvas", dashboard);
+  if (layout.layoutMechanism == "sugiyama") {
+    sugiyamaLayoutAndCanvas(dashboard, dag);
+    console.log("          - sugiyamaLayoutAndCanvas", dashboard);
+  } else { //layoutAlgotithm = "force";
+    forceLayoutAndCanvas(dashboard, dag);
+    console.log("          - forceLayoutAndCanvas", dashboard);
+  }
 
   // computeLayers(dashboard, dag);
 
@@ -90,7 +94,7 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
   // JS: TODO: make this a parameter based choice
   let layoutAlgotithm = "force";
   if (layoutAlgotithm == "sugiyama") {
-    computeLayoutAndCanvas(dashboard, dag);
+    sugiyamaLayoutAndCanvas(dashboard, dag);
   } else { //layoutAlgotithm = "force";
     forceLayoutAndCanvas(dashboard, dag);
   }
@@ -253,7 +257,7 @@ export function forceLayoutAndCanvas(dashboard, dag) {
 }
 
 
-export function computeLayoutAndCanvas(dashboard, dag) {
+export function sugiyamaLayoutAndCanvas(dashboard, dag) {
   dashboard.main.view.svg.selectAll("*").remove();
   const svg = dashboard.main.view.svg.append("g");
 
@@ -319,5 +323,6 @@ function setDefaultLayoutValues(layout) {
     horizontal: horizontal,
     isEdgeCurved: isEdgeCurved,
     lineGenerator: lineGenerator,
+    layoutMechanism: layout.layoutMechanism || "force",
   };
 }

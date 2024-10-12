@@ -13,47 +13,28 @@
 
 <body>
     <h1 id="pageTitle">Title to be replaced with filename</h1>
-    <script>
-        // Separate block for handling the h1 content (page title and filename)
-        (function () {
-            // Function to get the filename from the URL
-            function getFilename() {
-                const path = window.location.pathname;
-                const filename = path.substring(path.lastIndexOf('/') + 1);
-                return filename || 'index.html'; // Default to 'index.html' if no filename
-            }
-
-            // Set the content of the h1 tag to the page title and filename
-            const pageTitle = document.title;
-            const filename = getFilename();
-            document.getElementById('pageTitle').textContent = `${pageTitle} - ${filename}`;
-        })();
-    </script>
-
+    
     <label for="horizontalCheckbox">Horizontal</label>
     <input type="checkbox" id="horizontalCheckbox">
-    <!-- Dropdown to select JSON file -->
+    
     <label for="fileSelect">Select JSON file:</label>
     <select id="fileSelect"></select>
-    <script>
-        // Simulating an array of JSON filenames from the data folder
-        const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7a.json", "dwh-7b.json", "dwh-7.json", "dwh-8.json"];
-
-        // Populate the dropdown menu with the JSON filenames
-        const fileSelect = document.getElementById("fileSelect");
-        jsonFiles.forEach(filename => {
-            const option = document.createElement("option");
-            option.value = filename;
-            option.text = filename;
-            fileSelect.appendChild(option);
-        });
-    </script>
+    
     <label for="curveCheckbox">Curve</label>
     <input type="checkbox" id="curveCheckbox" checked>
+
+    <label for="layoutMechanismSelect">Layout Mechanism:</label>
+    <select id="layoutMechanismSelect">
+        <option value="force">Force</option>
+        <option value="sugiyama">Sugiyama</option>
+    </select>
 
     <div>
         <svg id="graph"></svg>
     </div>
+    
+    
+
     <div id="zoom-controls">
         <button id="zoom-in">Zoom In</button>
         <button id="zoom-out">Zoom Out</button>
@@ -67,62 +48,88 @@
     </div>
 
     <script type="module">
-        // Add an event listener to update the horizontal variable when the checkbox changes
-        const checkbox = document.getElementById('horizontalCheckbox');
-        checkbox.addEventListener('change', function () {
-            horizontal = this.checked;
-
-            const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-            dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
-        });
-
-        let horizontal = checkbox.checked; // Default to horizontal layout
-
-        const curveCheckbox = document.getElementById('curveCheckbox');
-        let isEdgeCurved = curveCheckbox.checked; // Default to horizontal layout
-
-        curveCheckbox.addEventListener('change', function () {
-            isEdgeCurved = this.checked;
-            console.log("isEdgeCurved", isEdgeCurved);
-
-            const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-            dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
-        });
-
-        let selectedFile = jsonFiles[0]; // Default to the first JSON file
-
-        // Event listener to update selected filename from the dropdown
-        fileSelect.addEventListener("change", function () {
-            console.log("Old Selected file:", selectedFile);
-            selectedFile = this.value;
-            console.log("Selected file:", selectedFile);
-
-            FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-            if (result) {
-                dag = result;
-                    const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-                    dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
-                }
-            })
-        });
-
-
-        let dag, dashboard;
-
-        // make sure to import, and not use script in header, otherwse FD will not be initialized
         import './js/index.js';
 
-        // initial layout computation and drawing
-        FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-            if (result) {
-                dag = result;
-
-                const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-                // Initial layout computation and drawing
-                dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            setPageTitle();
+            populateFileDropdown();
+            initializeEventListeners();
+            initializeDashboard();
         });
-    </script>
+
+        // Function to set the page title dynamically
+        function setPageTitle() {
+            const getFilename = () => {
+                const path = window.location.pathname;
+                return path.substring(path.lastIndexOf('/') + 1) || 'index.html';
+            };
+            document.getElementById('pageTitle').textContent = `${document.title} - ${getFilename()}`;
+        }
+
+        // Function to populate the file dropdown
+        function populateFileDropdown() {
+            const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7a.json", "dwh-7b.json", "dwh-7.json", "dwh-8.json"];
+            const fileSelect = document.getElementById('fileSelect');
+            jsonFiles.forEach(filename => {
+                const option = document.createElement('option');
+                option.value = filename;
+                option.text = filename;
+                fileSelect.appendChild(option);
+            });
+        }
+
+        // Function to initialize event listeners
+        function initializeEventListeners() {
+            document.getElementById('horizontalCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('curveCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('fileSelect').addEventListener('change', updateGraphData);
+            document.getElementById('layoutMechanismSelect').addEventListener('change', updateLayout);
+
+                    }
+
+        let dag, dashboard;
+        let horizontal = document.getElementById('horizontalCheckbox').checked;
+        let isEdgeCurved = document.getElementById('curveCheckbox').checked;
+        let layoutMechanism = document.getElementById('layoutMechanismSelect').value;
+        let selectedFile = document.getElementById('fileSelect').value;
+
+        // Function to initialize the dashboard with default settings
+        function initializeDashboard() {
+            selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
+            FD.GraphData.fetchFileToDag(selectedFile).then(result => {
+                if (result) {
+                    dag = result;
+                    renderDashboard();
+                }
+            });
+        }
+
+        // Function to update the graph layout
+        function updateLayout() {
+            horizontal = document.getElementById('horizontalCheckbox').checked;
+            isEdgeCurved = document.getElementById('curveCheckbox').checked;
+            layoutMechanism = document.getElementById('layoutMechanismSelect').value;
+            renderDashboard();
+        }
+
+        // Function to update graph data when a new file is selected
+        function updateGraphData() {
+            selectedFile = document.getElementById('fileSelect').value;
+            FD.GraphData.fetchFileToDag(selectedFile).then(result => {
+                if (result) {
+                    dag = result;
+                    renderDashboard();
+                }
+            });
+        }
+
+        // Function to render or re-render the dashboard
+        function renderDashboard() {
+            const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved, layoutMechanism: layoutMechanism };
+            dashboard = FD.Layout.initialize(dag, layout, '#graph', '#minimap');
+        }
+
+            </script>
 </body>
 
 </html>
