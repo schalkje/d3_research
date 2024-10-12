@@ -1,6 +1,8 @@
 # ds3_research
 Research the capability of ds3 for visualizations of lineage graphs
 
+Use index.html to easily navigate the examples.
+
 ## d3.js
 https://github.com/schalkje/ds3_research.git
 
