@@ -17,11 +17,17 @@ $htmlContent = @"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index of d3 experiments</title>
-    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+    <title>Index of HTML Files</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+        function loadPage(path) {
+            document.getElementById('viewer').src = path;
+        }
+    </script>
 </head>
 <body>
-    <h1>Index of d3 experiments</h1>
+    <div id="index">
+        <h1>Index of HTML Files</h1>
 "@
 
 foreach ($group in $groups) {
@@ -33,12 +39,14 @@ foreach ($group in $groups) {
         $folderName = $fileParts[1]
         $fileName = [System.IO.Path]::GetFileName($file)
         $displayName = if ($folderName) { "$folderName/$fileName" } else { $fileName }
-        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='$relativePath'>$fileName</a></li>`n"
+        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a></li>`n"
     }
     $htmlContent += "</ul>`n"
 }
 
 $htmlContent += @"
+    </div>
+    <iframe id="viewer"></iframe>
 </body>
 </html>
 "@
