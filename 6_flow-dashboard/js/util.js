@@ -2,7 +2,6 @@ export function roundToTwoDecimals(num) {
     return Math.round(num * 100) / 100;
 }
 
-
 export function changeDirection(x, y, horizontal = true) {
     if (horizontal) {
       return { x: y, y: x };

@@ -38,6 +38,41 @@ export function setup(mainView, minimapDivSelector = "#minimap") {
   return minimapView;
 }
 
+export function createMinimap(minimap, dashboard) {
+  minimap.svg.selectAll("g").remove();
+
+  const isHorizontalCanvas =
+    dashboard.main.canvas.width / dashboard.main.canvas.height >
+    dashboard.minimap.view.width / dashboard.minimap.view.height;
+
+  // compute the vertical border next to or above the canvas
+  const whiteSpaceY = isHorizontalCanvas // horizontal canvas has a whitespace above and below the canvas
+    ? (dashboard.main.canvas.width * (dashboard.minimap.view.height / dashboard.minimap.view.width) -
+        dashboard.main.canvas.height) *
+      0.5
+    : 0;
+  const whiteSpaceX = !isHorizontalCanvas // vertical canvas has a whitespace above and below the canvas
+    ? (dashboard.main.canvas.height * (dashboard.minimap.view.width / dashboard.minimap.view.height) -
+        dashboard.main.canvas.width) *
+      0.5
+    : 0;
+
+  const widthScale = dashboard.main.view.width / dashboard.main.canvas.width;
+  const heightScale = dashboard.main.view.height / dashboard.main.canvas.height;
+
+  dashboard.minimap.canvas = {
+    svg: minimap.svg.insert("g", ":first-child"),
+    width: dashboard.main.canvas.width,
+    height: dashboard.main.canvas.height,
+    whiteSpaceX: whiteSpaceX,
+    whiteSpaceY: whiteSpaceY,
+    isHorizontalCanvas: isHorizontalCanvas,
+    widthScale: widthScale,
+    heightScale: heightScale,
+  };
+}
+
+
 export function createViewPort(dashboard){
   console.log("createViewPort", dashboard);
   // console.log("               - minimap canvas", dashboard.minimap.canvas);
