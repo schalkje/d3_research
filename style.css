@@ -1,0 +1,25 @@
+h2 {
+    border-top: 4px solid rgba(105, 126, 143, 0.479);
+    border-left: 4px solid rgba(105, 126, 143, 0.479);
+    color: rgba(105, 126, 143, 1);
+    padding: 4px;
+    margin:0px;
+}
+ul {
+    margin:0px 0px 20px 0px;
+    list-style-type: none;
+    padding: 0px 0px 20px 0px;
+    border-left: 4px solid rgba(105, 126, 143, 0.479);
+}
+
+.folder {
+    color: grey;
+    width: 200px;
+    display: inline-block;
+    text-align: right;
+    padding: 2px;
+    margin-right: 10px;
+}
+a{
+    font-size: larger;
+}

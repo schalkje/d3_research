@@ -1,7 +1,7 @@
 $scriptLocation = $PSScriptRoot
 Write-Output "Executing script from location: $scriptLocation"
 
-$files = Get-ChildItem -Path . -Recurse -Filter *.html | ForEach-Object { $_.FullName }
+$files = Get-ChildItem -Path . -Recurse -Filter *.html | Where-Object { $_.FullName -notlike '*\node_modules\*' } | ForEach-Object { $_.FullName }
 
 $outputPath = 'index.html'
 
@@ -17,10 +17,11 @@ $htmlContent = @"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index of HTML Files</title>
+    <title>Index of d3 experiments</title>
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 </head>
 <body>
-    <h1>Index of HTML Files</h1>
+    <h1>Index of d3 experiments</h1>
 "@
 
 foreach ($group in $groups) {
@@ -32,7 +33,7 @@ foreach ($group in $groups) {
         $folderName = $fileParts[1]
         $fileName = [System.IO.Path]::GetFileName($file)
         $displayName = if ($folderName) { "$folderName/$fileName" } else { $fileName }
-        $htmlContent += "    <li>$folderName/<a href='$relativePath'>$fileName</a></li>`n"
+        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='$relativePath'>$fileName</a></li>`n"
     }
     $htmlContent += "</ul>`n"
 }
