@@ -59,11 +59,11 @@ export function forceLayoutAndCanvas(dashboard, dag) {
     
     const simulation = d3.forceSimulation(nodes)
     .alpha(1)
-    // .force("collide", collideForce)
+    .force("collide", collideForce)
     .force("link", linkForce)
       .force("charge", d3.forceManyBody().strength(-300))
-      // .force("center", d3.forceCenter(dashboard.main.view.width / 2, dashboard.main.view.height / 2))
-      // .force("collide", rectCollide().size((d) => getNodeSize(d)).strength(0.7))
+      .force("center", d3.forceCenter(dashboard.main.view.width / 2, dashboard.main.view.height / 2))
+    //   .force("collide", rectCollide().size((d) => getNodeSize(d)).strength(0.7))
       // .force("collide", rectCollide().size((d) => getNodeSize(d)).strength(1.5).iterations(10))
       // .force("collide", d3.forceCollide((d) => Math.max(getNodeSize(d)[0], getNodeSize(d)[1]) / 2 + 10))
       .on("tick", ticked)
@@ -72,7 +72,7 @@ export function forceLayoutAndCanvas(dashboard, dag) {
     // collideForce.initialize(nodes);
   
     function ticked() {
-      console.log("ticked");
+    //   console.log("ticked");
       // Update node positions based on the current state of the simulation
       d3.selectAll(".node")
         // .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
@@ -88,7 +88,7 @@ export function forceLayoutAndCanvas(dashboard, dag) {
       d3.selectAll(".edge")
         .attr("d", (edge) => {
             const points = generateEdgePath(edge, dashboard.layout);
-            console.log("    ", edge, points);
+            // console.log("    ", edge, points);
             return dashboard.layout.lineGenerator(points);
         });
     }

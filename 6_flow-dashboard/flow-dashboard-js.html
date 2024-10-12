@@ -23,7 +23,16 @@
     <label for="curveCheckbox">Curve</label>
     <input type="checkbox" id="curveCheckbox" checked>
 
-    <label for="layoutMechanismSelect">Layout Mechanism:</label>
+    <label for="showEdgesCheckbox">Show Edges</label>
+    <input type="checkbox" id="showEdgesCheckbox" checked>
+    
+    <label for="showGhostlinesCheckbox">Show Ghostlines</label>
+    <input type="checkbox" id="showGhostlinesCheckbox" checked>
+    
+    <label for="showBoundingBoxCheckbox">Show Bounding Box</label>
+    <input type="checkbox" id="showBoundingBoxCheckbox" checked>
+
+      <label for="layoutMechanismSelect">Layout Mechanism:</label>
     <select id="layoutMechanismSelect" value="force">
         <option value="force" selected>Force</option>
         <option value="sugiyama">Sugiyama</option>
@@ -84,12 +93,18 @@
             document.getElementById('curveCheckbox').addEventListener('change', updateLayout);
             document.getElementById('fileSelect').addEventListener('change', updateGraphData);
             document.getElementById('layoutMechanismSelect').addEventListener('change', updateLayout);
+            document.getElementById('showEdgesCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('showGhostlinesCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('showBoundingBoxCheckbox').addEventListener('change', updateLayout);
 
                     }
 
         let dag, dashboard;
         let horizontal = document.getElementById('horizontalCheckbox').checked;
         let isEdgeCurved = document.getElementById('curveCheckbox').checked;
+        let showEdges = document.getElementById('showEdgesCheckbox').checked;
+        let showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
+        let showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
         let layoutMechanism = document.getElementById('layoutMechanismSelect').value;
         let selectedFile = document.getElementById('fileSelect').value;
 
@@ -104,14 +119,17 @@
             });
         }
 
-        // Function to update the graph layout
-        function updateLayout() {
-            horizontal = document.getElementById('horizontalCheckbox').checked;
-            isEdgeCurved = document.getElementById('curveCheckbox').checked;
-            layoutMechanism = document.getElementById('layoutMechanismSelect').value;
-            renderDashboard();
-        }
+    // Function to update the graph layout
+    function updateLayout() {
+        horizontal = document.getElementById('horizontalCheckbox').checked;
+         isEdgeCurved = document.getElementById('curveCheckbox').checked;
+         layoutMechanism = document.getElementById('layoutMechanismSelect').value;
+         showEdges = document.getElementById('showEdgesCheckbox').checked;
+         showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
+         showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
 
+        renderDashboard();
+    }
         // Function to update graph data when a new file is selected
         function updateGraphData() {
             selectedFile = document.getElementById('fileSelect').value;
@@ -125,7 +143,7 @@
 
         // Function to render or re-render the dashboard
         function renderDashboard() {
-            const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved, layoutMechanism: layoutMechanism };
+            const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved, layoutMechanism: layoutMechanism, showEdges: showEdges, showGhostlines: showGhostlines, showBoundingBox: showBoundingBox };
             dashboard = FD.Layout.initialize(dag, layout, '#graph', '#minimap');
         }
 

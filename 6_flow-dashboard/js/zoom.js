@@ -91,7 +91,7 @@ export function zoomRandom(dashboard, dag){
 }
 
 // export function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
-export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
+export function zoomToNode(node, dashboard, dag) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, dag);
 
@@ -101,7 +101,7 @@ export function zoomToNode(node, dashboard, dag, showboundingBox = true) {
   // 3. Calculate the zoom scale and translation
   const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
 
-  if (showboundingBox) {
+  if (dashboard.layout.showBoundingBox) {
     dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
     dashboard.main.canvas.svg
       .append("rect")

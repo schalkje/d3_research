@@ -95,7 +95,7 @@ export function computeAndDraw(dag, mainView, minimap, layout = {}) {
   };
 
   draw(dashboard, dag);
-  
+
   // JS: TODO: make this a parameter based choice
   let layoutAlgotithm = "force";
   if (layoutAlgotithm == "sugiyama") {
@@ -132,6 +132,9 @@ function getDefaultLineGenerator(layout) {
 function setDefaultLayoutValues(layout) {
   const horizontal = layout.horizontal !== undefined && layout.horizontal !== null ? layout.horizontal : true;
   const isEdgeCurved = layout.isEdgeCurved !== undefined && layout.isEdgeCurved !== null ? layout.isEdgeCurved : false;
+  const showGhostlines = layout.showGhostlines !== undefined && layout.showGhostlines !== null ? layout.showGhostlines : true;
+  const showEdges = layout.showEdges !== undefined && layout.showEdges !== null ? layout.showEdges : true;
+  const showBoundingBox = layout.showBoundingBox !== undefined && layout.showBoundingBox !== null ? layout.showBoundingBox : true;
   const lineGenerator =
     layout.lineGenerator !== undefined && layout.lineGenerator !== null
       ? layout.lineGenerator
@@ -147,7 +150,8 @@ function setDefaultLayoutValues(layout) {
       y: layout.marginY || (horizontal ? 8 : 50),
     },
     // JS: idea: make the margin dependable on the widht and height of the nodes, an maybe the orientation
-    showEdges: layout.showEdges || true,
-    showGhostlines: layout.showGhostlines || true,
+    showEdges: showEdges,
+    showGhostlines: showGhostlines,
+    showBoundingBox: showBoundingBox,
   };
 }

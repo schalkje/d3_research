@@ -6,8 +6,9 @@
 
 .boundingBox {
     fill: none;
-    stroke: rgba(255, 0, 0, 0.616);
+    stroke: rgba(62, 131, 187, 0.616);
     stroke-width: 1;
+    stroke-dasharray: 5, 2
 }
 
 #minimap-container {
@@ -19,6 +20,11 @@
     background-color: rgb(210, 255, 212);
 }
 
+label {
+    font-size: 12px;
+    fill: red;
+
+}
 .viewport {
     fill: none;
     stroke: rgba(255, 0, 0, 0.616);
