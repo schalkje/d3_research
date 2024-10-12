@@ -31,7 +31,7 @@
     </script>
 
     <label for="horizontalCheckbox">Horizontal</label>
-    <input type="checkbox" id="horizontalCheckbox" checked>
+    <input type="checkbox" id="horizontalCheckbox">
     <!-- Dropdown to select JSON file -->
     <label for="fileSelect">Select JSON file:</label>
     <select id="fileSelect"></select>
@@ -89,7 +89,7 @@
             dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
         });
 
-        let selectedFile = jsonFiles[8]; // Default to the first JSON file
+        let selectedFile = jsonFiles[0]; // Default to the first JSON file
 
         // Event listener to update selected filename from the dropdown
         fileSelect.addEventListener("change", function () {

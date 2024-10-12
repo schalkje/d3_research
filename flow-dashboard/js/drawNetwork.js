@@ -91,7 +91,7 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
 
   const nodes = node
     .append("rect")
-    .attr("class", d => `node`)
+    .attr("class", d => `nodeRect`)
     .attr("width", (d) => d.data.width)
     .attr("height", (d) => d.data.height)
     .attr("rx", 5)
@@ -135,6 +135,24 @@ function computeConnectionPoints(width, height) {
     left: { x: 0, y: height / 2 },
     right: { x: width, y: height / 2 },
   };
+}
+
+function generateDirectEdge(edge, layout) {
+  const sourceNode = edge.source;
+  const targetNode = edge.target;
+
+  let sourcePoint, targetPoint;
+  sourcePoint = [
+    sourceNode.x + sourceNode.data.width / 2,
+    sourceNode.y + sourceNode.data.height / 2,
+  ];
+
+  targetPoint = [
+    targetNode.x + targetNode.data.width / 2,
+    targetNode.y + targetNode.data.height / 2,
+  ];
+
+  return [sourcePoint, targetPoint];
 }
 
 function generateEdgePath(edge, layout) {
@@ -225,7 +243,10 @@ function drawEdges(canvas, dashboard, dag) {
     .append("path")
     .attr("class", "edge")
     .attr("d", (edge) => {
-      const points = generateEdgePath(edge, dashboard.layout);
+      console.log("edge", edge, dashboard.layout);
+      // const points = generateEdgePath(edge, dashboard.layout);
+      const points = generateDirectEdge(edge, dashboard.layout);
+      // console.log("    ", points);
       return dashboard.layout.lineGenerator(points);
     });
 }

@@ -1,34 +1,34 @@
-export function initializeGraphData(graphData) {
+export function initializeGraphData(graphData) { 
   // Ensure each node has an id
   graphData.nodes.forEach((node, index) => {
     node.id = node.id || index; // Assign an ID if not present
     node.width = node.width || 150; // Default width if not present
     node.height = node.height || 40; // Default height if not present
-    node.children = []; // Initialize children array
-    node.childrenIds = []; // Initialize children array
-    node.parents = []; // Initialize parents array
+    node.childrenIds = []; // Use only IDs to track children to avoid circular references
+    node.parentsIds = []; // Use only IDs to track parents to avoid circular references
   });
 
   // Build the children and parents relationships
   graphData.edges.forEach((edge) => {
     // link up edges
-    edge.sourceNode = edge.source || 0;
-    edge.targetNode = edge.target || 0;
+    const sourceNode = graphData.nodes.find((n) => n.id === edge.source);
+    const targetNode = graphData.nodes.find((n) => n.id === edge.target);
 
-    const sourceNode = graphData.nodes.find((n) => n.id === edge.sourceNode);
-    const targetNode = graphData.nodes.find((n) => n.id === edge.targetNode);
-
-    // link up nodes
     if (sourceNode && targetNode) {
-      // Add the target node to the source node's children
-      sourceNode.children.push(targetNode);
+      // Add the target node ID to the source node's children IDs
       sourceNode.childrenIds.push(targetNode.id);
-      // Add the source node to the target node's parents
-      targetNode.parents.push(sourceNode);
+      // Add the source node ID to the target node's parents IDs
+      targetNode.parentsIds.push(sourceNode.id);
+
+      // Ensure edges have valid node references for source and target
+      edge.source = sourceNode;
+      edge.target = targetNode;
     } else {
       console.warn("Edge refers to non-existent node:", edge);
     }
   });
+
+  return graphData; // Return updated graphData to keep the function's behavior clear
 }
 
 // Convert graphData to the structure required by d3.dagStratify
