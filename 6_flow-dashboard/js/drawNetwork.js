@@ -1,7 +1,7 @@
 import { getComputedDimensions } from "./layout.js";
 import { changeDirection } from "./util.js";
 import { updateMinimapViewport } from "./minimap.js";
-import { zoomToNode } from "./zoom.js";
+import { selectNode, zoomToNode } from "./zoom.js";
 
 export function setup(divSelector) {
   // Set up the main view
@@ -26,9 +26,10 @@ export function draw(dashboard, dag) {
   drawNodes(dashboard.main.canvas, dashboard, dag, onNodeClickFunction);
 }
 
-function onNodeClickFunction(event, node, dashboard, dag) {
-  console.log("onClickFunction", node.data.label, node);
-  zoomToNode(node, dashboard, dag);
+function onNodeClickFunction(event, t, node, dashboard, dag) {
+  console.log("onClickFunction", node);
+  selectNode(t, node, dashboard, dag);
+  // zoomToNode(node, dashboard, dag);
 }
 
 export function drawMinimap(dashboard, dag) {
@@ -98,9 +99,9 @@ function drawNodes(canvas, dashboard, dag, onClickFunction, showConnectionPoints
     .attr("ry", 5);
 
   // Add the click event
-  nodes.on("click", function (event, node) {
+  node.on("click", function (event, node) {
     // console.log("Node clicked:", d);
-    onClickFunction(event, node, dashboard, dag);
+    onClickFunction(event, this, node, dashboard, dag);
     // function onNodeClickFunction(event, node, canvas, layout, zoom, dag) {
   });
 

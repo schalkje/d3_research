@@ -78,3 +78,42 @@ For storage that would mean, we have a hierarchical layout of layers.
 Layer parameter can be supplied from the dashboard definition / node definition. Or is created based on the Y position.
 
 
+# Nodes
+
+Node behavior
+- When not selected:
+  - On hoover: cursor: pointer
+  - Click --> Select, unselect others
+  - CTRL-Click --> Select
+  - Double-Click --> Zoom to node
+- When selected:
+  - On hoover: cursor: grab
+  - Click and hold --> drag
+  - Double-Click --> Zoom to node
+- When clicked outside the node --> unselect
+
+```Mermaid
+graph TD
+    subgraph "Node Behavior"
+        A{Not Selected} --> |Hover| B[Cursor: Pointer]
+        B --> |Click| C[Select, Unselect Others]
+        B --> |CTRL-Click| D[Select]
+        B --> |Double-Click| E[Zoom to Node]
+        
+        F{Selected} --> |Hover| G[Cursor: Grab]
+        G --> |Click and Hold| H[Drag]
+        H --> |Dragging| I[Dragging...]
+        I --> |Release Button| F{Selected}
+        G --> |Double-Click| E
+
+        C --> F
+        D --> F
+    end
+
+    subgraph "Click Outside Node"
+        J[Click Outside Node] --> K[Unselect all nodes]
+    end
+```
+
+
+

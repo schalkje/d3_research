@@ -90,7 +90,26 @@ export function zoomRandom(dashboard, dag){
   return zoomToNode(node, dashboard, dag);
 }
 
-// export function zoomToNode(svg, node, graphData, zoom, width, height, horizontal, showboundingBox = true) {
+export function selectNode(t, node, dashboard, dag) {
+  
+  console.log("selectNode", node.data.label, node, t);
+  // d3.selectAll(".node").classed("selected", false);
+  // change class of the selected node using the id as selector
+  // d3.select(`#${node.id}`).classed("selected", true);
+  const foundNode = d3.select(t);
+  console.log("foundNode", foundNode);
+
+  // Toggle the 'selected' class on the clicked node
+  const isSelected = foundNode.classed("selected");
+  foundNode.classed("selected", !isSelected);
+
+  // Optionally, if you want to unselect other nodes
+  d3.selectAll("g.node").filter(function() {
+      return this !== foundNode.node();  // Filter out the clicked node
+  }).classed("selected", false);  // Unselect all other nodes
+  // d3.select(`#${node.data.id}`).attr("class", "node selected");
+}
+
 export function zoomToNode(node, dashboard, dag) {
   // 1. Identify the node's immediate neighbors
   const neighbors = getImmediateNeighbors(node, dag);
