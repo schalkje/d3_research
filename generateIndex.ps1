@@ -31,7 +31,13 @@ $htmlContent = @"
 "@
 
 foreach ($group in $groups) {
-    $htmlContent += "<h2>$($group.Name)</h2>`n"
+    # Replace underscores and hyphens with spaces in the group name
+    $groupName = $group.Name -replace "[_-]", " "
+    # Check if the first part is a number and surround it with a span
+    if ($groupName -match "^(\d+)(.*)") {
+        $groupName = "<span class='number'>$($matches[1])</span>$($matches[2])"
+    }
+    $htmlContent += "<h2>$groupName</h2>`n"
     $htmlContent += "<ul>`n"
     foreach ($file in $group.Group) {
         $relativePath = $file -replace '\\', '/'
