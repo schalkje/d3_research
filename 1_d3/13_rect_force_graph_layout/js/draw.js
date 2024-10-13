@@ -17,6 +17,11 @@ var nodes_objects = nodes_container
     .on('end', drag_ended)
   )
 
+//////////////////////////////////////////////////////////////
+//
+// Label the nodes
+//
+
 var nodeLabels_objects = nodes_container
         .selectAll('.node_label')
         .data(nodes)
@@ -29,6 +34,11 @@ var nodeLabels_objects = nodes_container
         .text(d => d.name)
         .attr("class", 'node_label');
     
+//////////////////////////////////////////////////////////////
+//
+// Create edges between nodes
+//
+
 var links_objects = links_container
     .selectAll('.link')
     .data(links)
@@ -61,6 +71,12 @@ var links_objects = links_container
     })
     .attr('marker-end','url(#suit)')
     .attr("class", 'link');
+
+//////////////////////////////////////////////////////////////
+//
+// Create ghostlings, direct lines between node centers
+//
+
 
 var ghostlinks_objects = ghostlinks_container
     .selectAll('.ghostlink')

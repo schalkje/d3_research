@@ -6,6 +6,7 @@
    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
    <script type="text/javascript" src="./js/app.js" defer></script>
    <script type="text/javascript" src="./js/data.js" defer></script>
+   <!-- Simulation should happen before draw, as it will create the necessary attributes -->
    <script type="text/javascript" src="./js/simulation.js" defer></script>
    <script type="text/javascript" src="./js/draw.js" defer></script>
 </head>
@@ -15,7 +16,7 @@
    <p>Inspired by <a
          href="https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1">https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1</a>
    </p>
-   <h2>Graph</h2>
+   <h2>Graph with circles</h2>
 
    <div class="container">
       <svg id="svg_container" class="container">
