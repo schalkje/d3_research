@@ -19,9 +19,11 @@
   function tick() 
   {
     tick_counter++;
-    console.log('tick')
+    // console.log('tick')
   
     update();
+
+    
   };
   
   function endSimulation() 
