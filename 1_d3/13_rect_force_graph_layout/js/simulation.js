@@ -21,7 +21,8 @@
     tick_counter++;
     // console.log('tick')
   
-    update();
+    // if (tick_counter==1)
+      update();
 
     
   };

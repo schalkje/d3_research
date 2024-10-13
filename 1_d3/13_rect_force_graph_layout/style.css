@@ -61,7 +61,8 @@ svg.container {
 {
   font-size: 14px;
   font-weight: bold;
-  fill: rgb(216, 216, 241);
+  /* fill: rgb(216, 216, 241); */
+  fill: black;
   fill-opacity: 0.8;
   text-anchor: middle;
   cursor: grab;

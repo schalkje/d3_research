@@ -128,13 +128,6 @@ function update()
     return `translate(${d.x - d.width / 2},${d.y - d.height / 2})`;
   });
 
-  // nodes_objects
-  //   .attr("cx", d => d.x)
-  //   .attr("cy", d => d.y);
-
-  // nodeLabels_objects
-  //   .attr("x", d => d.x)
-  //   .attr('y', d => d.y + 4);
 
   ghostlinks_objects
     .attr('x1', function (d) { return d.source.x })
@@ -142,26 +135,87 @@ function update()
     .attr('x2', function (d) { return d.target.x })
     .attr('y2', function (d) { return d.target.y })
 
-  links_objects
+
+    function getRectAngles(rect)
+    {
+      // compute the angles of the corners of the rectangle
+      let angle1 = Math.atan2(-rect.height,-rect.width);
+      if (angle1 < 0) angle1 += 2*Math.PI;
+
+      let angle2 = Math.atan2(-rect.height,rect.width);
+      if (angle2 < 0) angle2 += 2*Math.PI;
+
+      let angle3 = Math.atan2(rect.height,rect.width);
+      if (angle3 < 0) angle3 += 2*Math.PI;
+
+      let angle4 = Math.atan2(rect.height,-rect.width);
+      if (angle4 < 0) angle4 += 2*Math.PI;
+
+      return [angle1, angle2, angle3, angle4];
+  }
+
+  function getConnectionPoint(source, target) {
+    let cornerAngles = getRectAngles(source);
+
+    let dy = target.y - source.y;
+    let dx = target.x - source.x;
+
+    let angle = Math.atan2(dy,dx);
+    if (angle < 0) angle += 2*Math.PI;
+  
+    // based on the quadrant the angle is in, compute the intersection point
+    let connectionPoint = {
+      x: 0,
+      y: 0,
+    };
+    if (angle > cornerAngles[0] && angle <= cornerAngles[1]) {
+      // top, quadrant I
+      y = source.y - source.height / 2;
+      x = source.x + (y - source.y) / Math.tan(angle);
+      // console.log("       top",angle, cornerAngles[0], cornerAngles[1], x,y);
+    } else if (angle > cornerAngles[1] || angle <= cornerAngles[2]) {
+      // right, quadrant II
+      x = source.x + source.width / 2;
+      y = source.y + (x - source.x) * Math.tan(angle);
+      // console.log("       right",angle, cornerAngles[1], cornerAngles[2], x,y);
+    } else if (angle > cornerAngles[2] && angle <= cornerAngles[3]) {
+      // bottom, quadrant III
+      y = source.y + source.height / 2;
+      x = source.x + (y - source.y) / Math.tan(angle);
+      // console.log("       bottom",angle, cornerAngles[2], cornerAngles[3], x,y);
+    } else {
+      // left, quadrant IV
+      x = source.x - source.width / 2;
+      y = source.y + (x - source.x) * Math.tan(angle);
+      // console.log("       left",angle, cornerAngles[3], cornerAngles[0], x,y);
+    }
+    return {
+      x: x,
+      y: y,
+    };
+  }
+
+
+links_objects
     .attr("x1", function(d) {
-      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-      var dx = Math.cos(alfa) * (radius + link_separator);
-      return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
+      // console.log("x1 d",d, d.source.name, d.target.name);
+      let connectionPoint = getConnectionPoint(d.source, d.target);
+      return connectionPoint.x;
     } )
     .attr("y1", function(d) {
-      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-      var dy = Math.sin(alfa) * (radius + link_separator);
-      return d.source.y < d.target.y ? d.source.y + dy : d.source.y - dy;
+      // console.log("y1 d",d, d.source.name, d.target.name);
+      let connectionPoint = getConnectionPoint(d.source, d.target);
+      return connectionPoint.y;
     } )
     .attr("x2", function(d) {
-      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-      var dx = Math.cos(alfa) * (radius + link_separator);
-      return d.source.x < d.target.x ? d.target.x - dx : d.target.x + dx;
+      // console.log("x2 d",d, d.source.name, d.target.name);
+      let connectionPoint = getConnectionPoint(d.target, d.source);
+      return connectionPoint.x;
     } )
     .attr('y2', function(d) {
-      var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-      var dy = Math.sin(alfa) * (radius + link_separator);
-      return d.source.y < d.target.y ? d.target.y - dy : d.target.y + dy;
+      // console.log("y2 d",d, d.source.name, d.target.name);
+      let connectionPoint = getConnectionPoint(d.target, d.source);
+      return connectionPoint.y;
     })
 }
 

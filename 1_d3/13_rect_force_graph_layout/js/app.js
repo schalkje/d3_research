@@ -1,6 +1,6 @@
 const radius = 40;
 const link_separator = 4;
-var width = 400;
+var width = 800;
 var height = 800;
 
 //////////////////////////////////////////////////////////////

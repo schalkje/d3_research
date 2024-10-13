@@ -30,16 +30,7 @@ var nodes=[
   
     console.log('  ' + node.id + ' depends on ' + node.dependsOn);
     node.dependsOn.forEach(index => {
-        // links.push({ source: index, target: node.id, x1: 0, y1: 0, x2: 0, y2: 0 });
-        // links.push({ source: index, target: node.id, x1: undefined, y1: undefined, x2: undefined, y2: undefined });
-        // links.push({ source: nodes[index], target: nodes[node.id], x1: undefined, y1: undefined, x2: undefined, y2: undefined });
-        // links.push({ source: index, target: node.id, 
-        //     x1: function(d) { return d.source.x },
-        //     y1: function(d) { return d.source.y },
-        //     x2: function(d) { return d.target.x },
-        //     y2: function(d) { return d.target.y }
-    // })
-    links.push({ source: index, target: node.id });
+      links.push({ source: index, target: node.id });
     });
   });
   
