@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+   <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+   <script type="text/javascript" src="./app.js" defer></script>
+</head>
+
+<body>
+   <h1>Graph layout (d3.js)</h1>
+   <p>Inspired by <a
+         href="https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1">https://codesandbox.io/embed/7zj0x6xmo6?codemirror=1</a>
+   </p>
+   <h2>Graph</h2>
+
+   <div class="container">
+      <svg id="svg_container" class="container">
+         <defs>
+            <marker id="arrow" viewbox="0 -5 10 10" refX="10" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+               <path d="M0,-5L10,0L0,5Z">
+            </marker>
+            <marker id="triangle" viewBox="0 0 10 10" refX="1" refY="5" markerUnits="strokeWidth" markerWidth="10"
+               markerHeight="10" orient="auto">
+               <path d="M 0 0 L 10 5 L 0 10 z" fill="#f00" />
+            </marker>
+            <marker id="suit" viewBox="0 -5 10 10" refX=10 refY=0 markerWidth=6 markerHeight=6 orient="auto">
+               <path d="M0,-5L10,0L0,5 L10,0 L0, -5" stroke="#4679BD" opacity=0.6 />
+            </marker>
+            <marker id="suit_big" viewBox="0 -5 10 10" refX=10 refY=0 markerWidth=12 markerHeight=12 orient="auto">
+               <path d="M0,-5L10,0L0,5 L10,0 L0, -5" stroke="#4679BD" opacity=0.6 />
+            </marker>
+         </defs>
+         <!-- using multiple g-object to support layers in the drawing -->
+         <g id="links">
+         </g>
+         <g id="nodes">
+         </g>
+         <g id="ghostlinks">
+         </g>
+      </svg>
+   </div>
+   <button>update</button>
+</body>
+
+</html>
