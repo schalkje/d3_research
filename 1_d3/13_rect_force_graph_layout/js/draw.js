@@ -11,7 +11,7 @@ var nodes_objects = nodes_container
       .append("g")
       .attr("class", (d) => `node`)
       .attr("transform", (d) => {
-        console.log("node_objects d",d, d.width, d.height);
+        // console.log("node_objects d",d, d.width, d.height);
         return `translate(${d.x - d.width / 2},${d.y - d.height / 2})`;
       })
       .call(d3.drag()
@@ -65,11 +65,11 @@ var links_objects = links_container
     .data(links)
     .join("line")
     .attr("x1", function(d) {
-        console.log("x1 d",d, d.source, radius, link_separator);
-        console.log("    - alfa",d.target.y,d.source.y,d.target.x,d.source.x);
+        // console.log("x1 d",d, d.source, radius, link_separator);
+        // console.log("    - alfa",d.target.y,d.source.y,d.target.x,d.source.x);
         // var alfa = Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
         var alfa = d.target.x==d.source.x?0.1:Math.atan(Math.abs(d.target.y-d.source.y)/Math.abs(d.target.x-d.source.x));
-        console.log("    - alfa",alfa);
+        // console.log("    - alfa",alfa);
         var dx = Math.cos(alfa) * (radius + link_separator);
         // console.log("    - dx",dx);
         return d.source.x < d.target.x ? d.source.x + dx : d.source.x - dx;
