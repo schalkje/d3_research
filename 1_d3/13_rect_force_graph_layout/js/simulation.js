@@ -22,6 +22,9 @@ var simulation = d3.forceSimulation(nodes)
       .distance(200)
     )
     .force('collision', rectCollide()) // Use the custom collision force
+    .force('boundary', forceBoundary(0, 0, width, height)
+
+    )
     .on("tick", tick)
     .on("end", endSimulation);    
   
