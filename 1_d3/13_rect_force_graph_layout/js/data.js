@@ -3,6 +3,12 @@
 // Setup data
 //
 
+var nodes0=[
+  { id: 1, name: "node 1", width: 150, height: 40, dependsOn: [] },
+  { id: 2, name: "node 2", width: 150, height: 40, dependsOn: [1] },
+  { id: 3, name: "node 3", width: 150, height: 40, dependsOn: [2] },
+]
+
 var nodes1=[
     { id: 1, name: "node 1", width: 150, height: 40, dependsOn: [] },
     { id: 7, name: "node 7", width: 150, height: 40, dependsOn: [] },
@@ -36,7 +42,7 @@ var nodes1=[
     { id: 20, name: "node 20", width: 150, height: 40, dependsOn: [18] }
 ];
 
-  var nodes=nodes2;
+  var nodes=nodes0;
 
   console.log('Create links')
      

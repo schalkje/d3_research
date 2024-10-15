@@ -22,9 +22,9 @@ var simulation = d3.forceSimulation(nodes)
       .distance(200)
     )
     .force('collision', rectCollide()) // Use the custom collision force
-    .force('boundary', forceBoundary(0, 0, width, height)
-
-    )
+    .force('boundary', forceBoundary(0, 0, width, height))
+    // .force('avoidCrossings', avoidLinkCrossings().links(links)) 
+    .force('avoidNodeLink', avoidNodeLinkCollisions().links(links)) // Add the custom force  
     .on("tick", tick)
     .on("end", endSimulation);    
   
@@ -34,9 +34,11 @@ var simulation = d3.forceSimulation(nodes)
   {
     tick_counter++;
     // console.log('tick')
+    if (tick_counter>1)
+      simulation.stop();
   
-    // if (tick_counter==1)
-      update();
+    update();
+
 
     
   };
