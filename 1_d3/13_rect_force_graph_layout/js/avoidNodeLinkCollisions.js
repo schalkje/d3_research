@@ -1,6 +1,6 @@
 function avoidNodeLinkCollisions() {
     let nodes, links;
-  
+    const log = false;
     // Create a quadtree for efficient spatial queries
     const quadtree = d3.quadtree()
       .x(d => d.x)
@@ -28,30 +28,39 @@ function avoidNodeLinkCollisions() {
             if (node === source || node === target) continue;
   
             // Calculate the closest point on the link to the node rectangle
-            const point = closestPointOnSegment(node.x, node.y, source.x, source.y, target.x, target.y, node.width, node.height);
-            console.log("point",point)
+            const { linePoint, rectPoint } = closestPointOnSegment(node.x, node.y, node.width, node.height, source.x, source.y, target.x, target.y);
+            if (log) console.log(`avoidLink Collision ${node.name} and ${source.name} --> ${target.name}`,linePoint, rectPoint, alpha);
   
-            // Check if the node's bounding box intersects with the link
-            const rectHalfWidth = node.width / 2;
-            const rectHalfHeight = node.height / 2;
-            const nodeMinX = node.x - rectHalfWidth;
-            const nodeMaxX = node.x + rectHalfWidth;
-            const nodeMinY = node.y - rectHalfHeight;
-            const nodeMaxY = node.y + rectHalfHeight;
-  
-            const dx = Math.max(nodeMinX - point.x, 0, point.x - nodeMaxX);
-            const dy = Math.max(nodeMinY - point.y, 0, point.y - nodeMaxY);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-  
+            let dx = linePoint.x - rectPoint.x;
+            let dy = linePoint.y - rectPoint.y;
+            if (dy === 0 && dx===0) {
+                dx = 0.01; 
+                dy = 0.01; 
+            }
+
+            // console.log("dx",nodeMinX - point.x, 0, point.x - nodeMaxX);
+            // const dy = Math.max(nodeMinY - point.y, 0, point.y - nodeMaxY);
+            if (log) console.log("dx",dx,"dy",dy);
+            let distance = Math.sqrt(dx * dx + dy * dy);
+ 
             const minDistance = 10; // Minimum distance between link and node rectangle
   
             if (distance < minDistance) {
-              const strength = 0.1 * alpha; // Adjust the strength as needed and apply alpha for smooth adjustment
-              const forceX = (dx / distance) * (minDistance - distance) * strength;
-              const forceY = (dy / distance) * (minDistance - distance) * strength;
+                if (log) console.log("   --- OVERLAP ===", minDistance, distance);
+                const strength = 0.1 * alpha; // Adjust the strength as needed and apply alpha for smooth adjustment
+
+                const effectiveDistance = Math.max(minDistance - distance, 0.0001);
+
+                const forceX = (dx / distance) * (minDistance - distance) * strength;
+                if (log) console.log("      forceX",forceX, dx ,distance, minDistance , strength);
+                const forceY = (dy / distance) * (minDistance - distance) * strength;
+                if (log) console.log("      forceY",forceY, dy ,distance, minDistance , strength);
   
-              node.vx += forceX;
-              node.vy += forceY;
+            //   node.vx += forceX;
+            //   node.vy += forceY;
+            if (log) console.log("      forces",forceX,"forceY",forceY, "node.vx",node.x,"node.y",node.y);
+              node.x += forceX;
+              node.y += forceY;
             }
           }
         });
@@ -59,11 +68,14 @@ function avoidNodeLinkCollisions() {
     }
   
     force.initialize = function(_) {
-      nodes = _;
-      // Initialize quadtree with nodes
-      console.log("force.initialize nodes",nodes);
-      quadtree.addAll(nodes);
-    };
+        nodes = _;
+        nodes.forEach(node => {
+          if (isNaN(node.x) || isNaN(node.y) || isNaN(node.width) || isNaN(node.height)) {
+            console.warn("Node properties are not correctly initialized", node);
+          }
+        });
+        quadtree.addAll(nodes);
+      };
   
     force.links = function(_) {
       return arguments.length ? (links = _, force) : links;
@@ -72,21 +84,34 @@ function avoidNodeLinkCollisions() {
     return force;
   }
   
-  function closestPointOnSegment(px, py, x1, y1, x2, y2) {
-    console.log("px",px,"py",py,"x1",x1,"y1",y1,"x2",x2,"y2",y2);
+  function closestPointOnSegment(x, y, width, height, x1, y1, x2, y2) {
+    const rectHalfWidth = width / 2;
+    const rectHalfHeight = height / 2;
+  
+    // Rectangle bounds
+    const nodeMinX = x - rectHalfWidth;
+    const nodeMaxX = x + rectHalfWidth;
+    const nodeMinY = y - rectHalfHeight;
+    const nodeMaxY = y + rectHalfHeight;
+  
+    // Calculate closest point on the line segment to the center of the rectangle
     const dx = x2 - x1;
     const dy = y2 - y1;
     const lengthSquared = dx * dx + dy * dy;
   
-    if (lengthSquared === 0) {
-      return { x: x1, y: y1 }; // The segment is a point
-    }
-  
-    let t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+    let t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
     t = Math.max(0, Math.min(1, t)); // Clamp t to the segment
   
-    return {
+    const linePoint = {
       x: x1 + t * dx,
       y: y1 + t * dy
     };
+  
+    // Calculate the closest point on the rectangle to the line point
+    const rectPoint = {
+      x: Math.max(nodeMinX, Math.min(linePoint.x, nodeMaxX)),
+      y: Math.max(nodeMinY, Math.min(linePoint.y, nodeMaxY))
+    };
+  
+    return { linePoint, rectPoint };
   }

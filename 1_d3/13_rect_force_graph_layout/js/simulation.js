@@ -33,9 +33,9 @@ var simulation = d3.forceSimulation(nodes)
   function tick() 
   {
     tick_counter++;
-    // console.log('tick')
-    if (tick_counter>1)
-      simulation.stop();
+    console.log('tick')
+    // if (tick_counter>15)
+    //   simulation.stop();
   
     update();
 

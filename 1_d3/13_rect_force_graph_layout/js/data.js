@@ -42,7 +42,7 @@ var nodes1=[
     { id: 20, name: "node 20", width: 150, height: 40, dependsOn: [18] }
 ];
 
-  var nodes=nodes0;
+  var nodes=nodes1;
 
   console.log('Create links')
      
