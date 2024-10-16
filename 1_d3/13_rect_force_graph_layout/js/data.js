@@ -42,7 +42,50 @@ var nodes1=[
     { id: 20, name: "node 20", width: 150, height: 40, dependsOn: [18] }
 ];
 
-  var nodes=nodes1;
+var nodes3 = [
+  { id: 1, name: "stg-1", width: 150, height: 40, dependsOn: [] },
+  { id: 2, name: "arc-1", width: 150, height: 40, dependsOn: [1] },
+  { id: 3, name: "trn-1", width: 150, height: 40, dependsOn: [1] },
+
+  { id: 4, name: "stg-2", width: 150, height: 40, dependsOn: [] },
+  { id: 5, name: "arc-2", width: 150, height: 40, dependsOn: [4] },
+  { id: 6, name: "trn-2", width: 150, height: 40, dependsOn: [4] },
+
+  { id: 7, name: "stg-3", width: 150, height: 40, dependsOn: [] },
+  { id: 8, name: "arc-3", width: 150, height: 40, dependsOn: [7] },
+  { id: 9, name: "trn-3", width: 150, height: 40, dependsOn: [7] },
+  
+  { id: 10, name: "stg-4", width: 150, height: 40, dependsOn: [] },
+  { id: 11, name: "arc-4", width: 150, height: 40, dependsOn: [10] },
+  { id: 12, name: "trn-4", width: 150, height: 40, dependsOn: [10] },
+  
+  { id: 13, name: "stg-5", width: 150, height: 40, dependsOn: [] },
+  { id: 14, name: "arc-5", width: 150, height: 40, dependsOn: [13] },
+  { id: 15, name: "trn-5", width: 150, height: 40, dependsOn: [13] },
+  
+  { id: 16, name: "stg-6", width: 150, height: 40, dependsOn: [] },
+  { id: 17, name: "arc-6", width: 150, height: 40, dependsOn: [16] },
+  { id: 18, name: "trn-6", width: 150, height: 40, dependsOn: [16] },
+  
+  { id: 19, name: "stg-7", width: 150, height: 40, dependsOn: [] },
+  { id: 20, name: "arc-7", width: 150, height: 40, dependsOn: [19] },
+  { id: 21, name: "trn-7", width: 150, height: 40, dependsOn: [19] },
+  
+
+  { id: 40, name: "ods", width: 150, height: 150, dependsOn: [3,6,9,12,15,18,21] },
+  { id: 50, name: "dwh", width: 150, height: 150, dependsOn: [40] },
+
+  { id: 60, name: "node 10", width: 150, height: 40, dependsOn: [50] },
+  { id: 61, name: "node 11", width: 150, height: 40, dependsOn: [50] },
+  { id: 62, name: "node 12", width: 150, height: 40, dependsOn: [50] },
+  { id: 63, name: "node 13", width: 150, height: 40, dependsOn: [50] },
+  { id: 64, name: "node 14", width: 150, height: 40, dependsOn: [50] },
+  { id: 65, name: "node 15", width: 150, height: 40, dependsOn: [50] },
+  { id: 66, name: "node 16", width: 150, height: 40, dependsOn: [50] },
+  { id: 67, name: "node 17", width: 150, height: 40, dependsOn: [50] },
+];
+
+  var nodes=nodes3;
 
   console.log('Create links')
      
