@@ -106,13 +106,14 @@ marker#arrow {
   fill-opacity: 0.1;
 }
 
-.database {
-  text-align: center;
-  fill:lightgray;
-  fill-opacity: 0.4;
-  stroke: gray;
-  stroke-opacity: 0.4;
-  stroke-width: 1;
+
+
+.parent-node text {
+  user-select: none;
 }
-
-
+.collapsed {
+  opacity: 0.7;
+}
+.expanded {
+  font-weight: bold;
+}
