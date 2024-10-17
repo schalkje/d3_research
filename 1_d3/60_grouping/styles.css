@@ -38,7 +38,7 @@ svg.container {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
-.node {
+.node_shape {
   fill: #9b9bfa;
   fill-opacity: 0.95;
   stroke: rgb(65, 65, 151);
@@ -107,7 +107,9 @@ marker#arrow {
 }
 
 
-
+.parent-node {
+  fill: #9b9bfa;
+}
 .parent-node text {
   user-select: none;
 }
