@@ -1,6 +1,39 @@
 // Data model for Network Graph Node Nesting
 
-export const testDataModel = [
+
+export const testDataModel1 = [
+    {
+      id: 'root',
+      label: 'Root Node',
+      type: 'group',
+      groupType: 'dynamic',
+      children: [
+        {
+          id: 'node_1',
+          label: 'Node 1',
+          type: 'node',
+          parentId: 'root',
+          children: []
+        },
+        {
+          id: 'node_2',
+          label: 'Node 2',
+          type: 'node',
+          parentId: 'root',
+          children: []
+        },
+        {
+          id: 'node_3',
+          label: 'Node 3',
+          type: 'node',
+          parentId: 'root',
+          children: []
+        }
+      ]
+    }
+  ];
+
+const testDataModel2 = [
     {
       id: 'root',
       label: 'Root Node',
@@ -66,6 +99,8 @@ export const testDataModel = [
     }
   ];
   
+  export const testDataModel = testDataModel1;
+
   export const testDataModelMetadata = {
     nodes: {
       root: { interactionState: { expanded: true }, groupType: 'dynamic' },

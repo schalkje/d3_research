@@ -81,13 +81,22 @@ export default class ParentNode  extends BaseNode {
       data: childData
     }));
 
-    var links = [];
-    if (nodes.length > 0) {
-      links = nodes.map((node) => ({
-        source: this.id,
-        target: node.id,
-      }));
+    // for this stage, only add links between children
+    var links = [];    
+    for (let i = 0; i < nodes.length; i++) {
+      if (i < nodes.length - 1) {
+        links.push({
+          source: nodes[i].id,
+          target: nodes[i + 1].id
+        });
+      }
     }
+    // if (nodes.length > 0) {
+    //   links = nodes.map((node) => ({
+    //     source: this.id,
+    //     target: node.id,
+    //   }));
+    // }
 
     console.log('        Nodes:', nodes);
     console.log('        Links:', links);
@@ -104,8 +113,8 @@ export default class ParentNode  extends BaseNode {
     });
 
     // Initialize force-directed simulation for children
-    // this.simulation = new Simulation(nodes, links);
-    // this.simulation.init();
+    this.simulation = new Simulation(nodes, links);
+    this.simulation.init();
   }
 
   // Method to remove child nodes from the SVG
