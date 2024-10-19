@@ -11,14 +11,14 @@ export default class ParentNode  extends BaseNode {
 
 
   // Method to render the parent node and its children
-  render() {
+  render(renderChildren = true){
     console.log('Rendering Parent Node:', this.id);
-    const container = super.renderContainer();
+    super.renderContainer();
 
     // Draw the node shape
-    container
+    this.element
       .append("rect")
-      .attr("class", (d) => `parent-node`)
+      .attr("class", (d) => `node shape parent`)
       .attr("width", this.width)
       .attr("height", this.height)
       .attr('x', -this.width / 2)
@@ -28,20 +28,40 @@ export default class ParentNode  extends BaseNode {
 
     // Append text to the top left corner of the
     // parent node
-    container
+    this.element
       .append("text")
-      .attr("x", (d) => 4)
-      .attr("y", (d) => 4)
+      .attr("x", (d) => -this.width / 2 + 4)
+      .attr("y", (d) => -this.height / 2 + 4)
       .text(this.label)
-      .attr("class", "node_label");
+      .attr("class", "node label parent");    
 
     // Set expanded or collapsed state
     if (this.interactionState.expanded) {
-      container.classed('expanded', true);
-      this.renderChildren(container);
+      this.element.classed('expanded', true);
+      if (renderChildren)
+        this.renderChildren(this.element);
     } else {
-      container.classed('collapsed', true);
+      this.element.classed('collapsed', true);
     }
+  }
+
+  resize(boundingBox) {
+    console.log('Resizing parent node', this.id, boundingBox);
+    // add room for the label text on the top (left corner)
+    boundingBox.y -= 10;
+
+
+    super.resize(boundingBox);
+
+    this.element.select('rect')
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .attr('x', this.x)
+      .attr('y', this.y);
+
+    this.element.select('text')
+      .attr("x", (d) => this.x + 4)
+      .attr("y", (d) => this.y + 4)
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -78,8 +98,9 @@ export default class ParentNode  extends BaseNode {
   renderChildren(parentContainer) {
     const nodes = this.children.map(childData => ({
       id: childData.id,
-      data: childData
+      data: childData,
     }));
+    console.log('    Rendering Children for Parent:', this.id, nodes);
 
     // for this stage, only add links between children
     var links = [];    
@@ -109,12 +130,13 @@ export default class ParentNode  extends BaseNode {
         ? new ParentNode(childData, this.metadata, parentContainer)
         : new CircleNode(childData, this.metadata, parentContainer);
       this.childComponents.push(childComponent);
+      console.log('        Rendering Child:', childComponent);
       childComponent.render();
     });
 
     // Initialize force-directed simulation for children
-    this.simulation = new Simulation(nodes, links);
-    this.simulation.init();
+    const simulation = new Simulation(nodes, links, this);
+    simulation.init();
   }
 
   // Method to remove child nodes from the SVG

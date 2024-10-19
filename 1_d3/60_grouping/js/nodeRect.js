@@ -13,7 +13,7 @@ export default class RectangularNode extends BaseNode {
     // Draw the node shape
     container
       .append("rect")
-      .attr("class", (d) => `node_shape`)
+      .attr("class", (d) => `node shape`)
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.height)
       .attr("rx", 5)
@@ -25,7 +25,7 @@ export default class RectangularNode extends BaseNode {
       .attr("x", (d) => d.width / 2)
       .attr("y", (d) => d.height / 2 + 4)
       .text((d) => d.label)
-      .attr("class", "node_label");
+      .attr("class", "node label");
   }
 
   // // override the base class method to get the connection point of a rectangular node
