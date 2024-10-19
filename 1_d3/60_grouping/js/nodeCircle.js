@@ -8,6 +8,7 @@ export default class CircleNode extends BaseNode {
   // Method to render the node using D3
   render() {
     const container = super.renderContainer();
+    console.log('Rendering Circle Node:', this.id);
 
     // Draw the node shape
     container

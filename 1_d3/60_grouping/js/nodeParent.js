@@ -1,19 +1,18 @@
 import BaseNode from "./nodeBase.js";
-
-// ParentNodeComponent.js
-// Component responsible for rendering parent nodes that contain child nodes using D3.js
-
 import CircleNode from './nodeCircle.js';
+import Simulation from './simulation.js';
 
 export default class ParentNode  extends BaseNode {
   constructor(nodeData, metadata, svg) {
     super(nodeData, metadata, svg);
     this.childComponents = []; // Initialize childComponents array
+    this.simulation = null;
   }
 
 
   // Method to render the parent node and its children
   render() {
+    console.log('Rendering Parent Node:', this.id);
     const container = super.renderContainer();
 
     // Draw the node shape
@@ -63,17 +62,50 @@ export default class ParentNode  extends BaseNode {
   }
 
   // Method to render child nodes
+  // renderChildren(parentContainer) {
+  //   this.children.forEach(childData => {
+  //     const childComponent = childData.type === 'group'
+  //       ? new ParentNode(childData, this.metadata, this.svg)
+  //       : new CircleNode(childData, this.metadata, this.svg);
+  //     this.childComponents.push(childComponent);
+  //     childComponent.render();
+
+  //     // Position children relative to the parent node
+  //     d3.select(`[data-id='${childData.id}']`).attr('transform', `translate(${Math.random() * 100 - 50}, ${Math.random() * 100 - 50})`);
+  //   });
+  // }
+
   renderChildren(parentContainer) {
-    this.children.forEach(childData => {
+    const nodes = this.children.map(childData => ({
+      id: childData.id,
+      data: childData
+    }));
+
+    var links = [];
+    if (nodes.length > 0) {
+      links = nodes.map((node) => ({
+        source: this.id,
+        target: node.id,
+      }));
+    }
+
+    console.log('        Nodes:', nodes);
+    console.log('        Links:', links);
+
+
+    // Create child components
+    nodes.forEach(node => {
+      const childData = node.data;
       const childComponent = childData.type === 'group'
-        ? new ParentNode(childData, this.metadata, this.svg)
-        : new CircleNode(childData, this.metadata, this.svg);
+        ? new ParentNode(childData, this.metadata, parentContainer)
+        : new CircleNode(childData, this.metadata, parentContainer);
       this.childComponents.push(childComponent);
       childComponent.render();
-
-      // Position children relative to the parent node
-      d3.select(`[data-id='${childData.id}']`).attr('transform', `translate(${Math.random() * 100 - 50}, ${Math.random() * 100 - 50})`);
     });
+
+    // Initialize force-directed simulation for children
+    // this.simulation = new Simulation(nodes, links);
+    // this.simulation.init();
   }
 
   // Method to remove child nodes from the SVG
