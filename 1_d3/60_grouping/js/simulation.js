@@ -1,3 +1,4 @@
+
 // simulation.js
 // Responsible for setting up and managing force-directed simulations using D3.js
 
@@ -13,6 +14,11 @@ export default class Simulation {
     this.simulation = null;
     this.tickCounter = 0; // Counter to control resizing frequency
     this.resizeFrequency = 10; // Resize every 10 ticks
+    console.log('---------------------------------------------------------------');
+    console.log('-- Simulation created');
+    console.log('--    nodes', this.nodes);
+    console.log('--    links', this.links);
+    console.log('--    container', this.containerNode);
   }
 
   // Method to initialize the force simulation
@@ -26,7 +32,7 @@ export default class Simulation {
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(0, 0));
 
-    this.resizeBoundingContainer();
+    // this.resizeBoundingContainer();
 
     this.simulation
       .on('tick', () => this.tick())
@@ -36,12 +42,18 @@ export default class Simulation {
   
   // Method to handle updating node positions on each tick of the simulation
   tick() {
+    if ( this.containerNode.id == 'root') {
+      console.log('Skip simulation',this.containerNode.id, this.tickCounter, this.nodes);
+      this.stop(); return;
+    }
+
     // Stop the simulation after a certain number of ticks for debugging purposes
     if (this.tickCounter >= 1) {
       console.log('Stopping simulation',this.containerNode.id, this.tickCounter, this.nodes);
       this.stop();
       return;
     }
+    console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
 
     this.nodes.forEach(node => {
       d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
@@ -73,7 +85,7 @@ export default class Simulation {
 
   // Method to stop the simulation
   stop() {
-    console.log('Stop simulation');
+    console.log('>>>>     Stop simulation     <<<<');
     if (this.simulation) {
       this.simulation.stop();
     }

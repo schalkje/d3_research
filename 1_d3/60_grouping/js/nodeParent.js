@@ -56,8 +56,9 @@ export default class ParentNode  extends BaseNode {
     super.resize(boundingBox);
 
     // JS: why is g right, but rect not?
-    console.log('Resizing base.node', this.id, boundingBox);
-    console.log('                   computed dimension ',getComputedDimensions(this.element));
+    console.log(`Resizing parent.node ${this.id}, (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)}, ${Math.round(boundingBox.height)}`);
+    const computedDimension = getComputedDimensions(this.element);
+    console.log(`                comparison (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
 
 
     this.element.select('rect')
@@ -130,7 +131,7 @@ export default class ParentNode  extends BaseNode {
 
     // Initialize force-directed simulation for children
     const simulation = new Simulation(this.data.children, links, this);
-    simulation.init();
+    simulation.init();    
   }
 
   // Method to remove child nodes from the SVG

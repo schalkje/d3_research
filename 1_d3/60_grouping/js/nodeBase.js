@@ -44,9 +44,10 @@ export default class BaseNode {
 
   resize(boundingBox) {
     console.log('Resizing base.node', this.id, boundingBox);
+    console.log(`        before node: ${this.data.id} = (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}:      (${Math.round(this.data.x - this.data.width / 2)},${Math.round(this.data.y - this.data.height / 2)}),(${Math.round(this.data.x + this.data.width / 2)},${Math.round(this.data.y + this.data.height / 2)})`, this.data);
     const computedDimension = getComputedDimensions(this.element);
     // console.log('                   computed dimension ',computedDimension);
-    console.log(`                   comparison  ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
+    console.log(`                   comparison (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
     this.data.x = boundingBox.x;
     this.data.y = boundingBox.y;
     // this.data.width = computedDimension.width; //boundingBox.width;
@@ -55,10 +56,14 @@ export default class BaseNode {
     this.data.height = boundingBox.height;
 
     this.element
+      // .attr('transform', `translate(${this.data.x}, ${this.data.y})`)
       .attr('x', this.data.x)
       .attr('y', this.data.y)
       .attr('width', this.data.width)
       .attr('height', this.data.height);
+
+      console.log(`         after node: ${this.data.id} = (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}:      (${Math.round(this.data.x - this.data.width / 2)},${Math.round(this.data.y - this.data.height / 2)}),(${Math.round(this.data.x + this.data.width / 2)},${Math.round(this.data.y + this.data.height / 2)})`, this.data);
+
     }
 
 
