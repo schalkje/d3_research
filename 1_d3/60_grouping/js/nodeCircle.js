@@ -3,6 +3,15 @@ import BaseNode from "./nodeBase.js";
 export default class CircleNode extends BaseNode {
   constructor(nodeData, metadata, svg) {
     super(nodeData, metadata, svg);
+
+    // add radius property, that is the half of the max of width and height
+    if (!this.data.radius)
+      this.data.radius = Math.max(this.data.width, this.data.height) / 2;
+
+    // for a circle node, width and height are the same and twice the radius to make a bounding rectangle
+    // set width and height to the same value
+    this.data.width = this.data.radius*2;
+    this.data.height = this.data.width;
   }
 
   // Method to render the node using D3
@@ -13,7 +22,7 @@ export default class CircleNode extends BaseNode {
     // Draw the node shape
     container
       .append("circle")
-      .attr("r", 20)
+      .attr("r", this.data.radius)
       .attr("class", "node shape" )
       .attr("stroke", "#000")
       .attr("stroke-width", 1.5);
@@ -24,7 +33,7 @@ export default class CircleNode extends BaseNode {
       .attr("x", 0)
       .attr("y", 0)
       .attr("class", "node label")
-      .text(this.label);
+      .text(this.data.label);
 
     // Set expanded or collapsed state
     if (this.interactionState.expanded) {

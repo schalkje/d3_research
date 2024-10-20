@@ -1,6 +1,7 @@
 import BaseNode from "./nodeBase.js";
 import CircleNode from './nodeCircle.js';
 import Simulation from './simulation.js';
+import { getComputedDimensions } from "./utils.js";
 
 export default class ParentNode  extends BaseNode {
   constructor(nodeData, metadata, svg) {
@@ -19,10 +20,10 @@ export default class ParentNode  extends BaseNode {
     this.element
       .append("rect")
       .attr("class", (d) => `node shape parent`)
-      .attr("width", this.width)
-      .attr("height", this.height)
-      .attr('x', -this.width / 2)
-      .attr('y', -this.height / 2)
+      .attr("width", this.data.width)
+      .attr("height", this.data.height)
+      .attr('x', -this.data.width / 2)
+      .attr('y', -this.data.height / 2)
       .attr("rx", 5)
       .attr("ry", 5);
 
@@ -30,9 +31,9 @@ export default class ParentNode  extends BaseNode {
     // parent node
     this.element
       .append("text")
-      .attr("x", (d) => -this.width / 2 + 4)
-      .attr("y", (d) => -this.height / 2 + 4)
-      .text(this.label)
+      .attr("x", (d) => -this.data.width / 2 + 4)
+      .attr("y", (d) => -this.data.height / 2 + 4)
+      .text(this.data.label)
       .attr("class", "node label parent");    
 
     // Set expanded or collapsed state
@@ -46,22 +47,27 @@ export default class ParentNode  extends BaseNode {
   }
 
   resize(boundingBox) {
-    console.log('Resizing parent node', this.id, boundingBox);
+    // console.log('Resizing parent node', this.id, boundingBox);
     // add room for the label text on the top (left corner)
     boundingBox.y -= 10;
 
 
     super.resize(boundingBox);
 
+    // JS: why is g right, but rect not?
+    console.log('Resizing base.node', this.id, boundingBox);
+    console.log('                   computed dimension ',getComputedDimensions(this.element));
+
+
     this.element.select('rect')
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .attr('x', this.x)
-      .attr('y', this.y);
+      .attr('width', this.data.width)
+      .attr('height', this.data.height)
+      .attr('x', this.data.x)
+      .attr('y', this.data.y);
 
     this.element.select('text')
-      .attr("x", (d) => this.x + 4)
-      .attr("y", (d) => this.y + 4)
+      .attr("x", this.data.x)
+      .attr("y", this.data.y)
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -96,7 +102,7 @@ export default class ParentNode  extends BaseNode {
   // }
 
   renderChildren(parentContainer) {
-    const nodes = this.children.map(childData => ({
+    const nodes = this.data.children.map(childData => ({
       id: childData.id,
       data: childData,
     }));

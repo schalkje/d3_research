@@ -19,13 +19,16 @@ export default class Simulation {
   init() {
     // make everything ready to run the simulation
     this.tickCounter = 0;
-    this.resizeBoundingContainer();
 
     // initialize the simulation
     this.simulation = d3.forceSimulation(this.nodes)
       .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(0, 0))
+      .force('center', d3.forceCenter(0, 0));
+
+    this.resizeBoundingContainer();
+
+    this.simulation
       .on('tick', () => this.tick())
       .on('end', () => this.end()); // Perform final resize when simulation ends
   }
@@ -34,11 +37,11 @@ export default class Simulation {
   // Method to handle updating node positions on each tick of the simulation
   tick() {
     // Stop the simulation after a certain number of ticks for debugging purposes
-    // if (this.tickCounter > 40) {
-    //   console.log('Stopping simulation',this.tickCounter);
-    //   this.stop();
-    //   return;
-    // }
+    if (this.tickCounter >= 1) {
+      console.log('Stopping simulation',this.containerNode.id, this.tickCounter, this.nodes);
+      this.stop();
+      return;
+    }
 
     this.nodes.forEach(node => {
       d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
@@ -60,9 +63,6 @@ export default class Simulation {
     const boundingBox = computeBoundingBox(this.nodes);
     console.log('Resizing bounding container', boundingBox, this.containerNode);
     this.containerNode.resize(boundingBox);
-    // this.boundingContainer.attr('width', boundingBox.width);
-    // this.boundingContainer.attr('height', boundingBox.height);
-    // this.boundingContainer.attr('viewBox', `${boundingBox.x} ${boundingBox.y} ${boundingBox.width} ${boundingBox.height}`);
   }
 
   // Method to perform the final resize when the simulation ends

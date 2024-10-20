@@ -1,33 +1,29 @@
+import { getComputedDimensions } from "./utils.js";
 export default class BaseNode {
   constructor(nodeData, metadata, parentElement) {
     this.id = nodeData.id;
-    this.label = nodeData.label;    
-    this.type = nodeData.type;
-    this.groupType = nodeData.groupType || null;
-    this.children = nodeData.children;
     this.parentElement = parentElement;
     this.element = null;
     this.metadata = metadata;
+    this.data = nodeData;
 
     this.interactionState = metadata.nodes[this.id]?.interactionState || { expanded: false };
     nodeData.interactionState = this.interactionState;
 
-    this.width = nodeData.width || 60; // Default width if not specified
-    nodeData.width = this.width;
-    console.log('BaseNode nodeData.width', nodeData.width);
-
-    this.height = nodeData.height || 60; // Default height if not specified
-    nodeData.height = this.height;
-
+    // Set default values for x, y, width, and height
+    if ( !this.data.x) this.data.x = 100;
+    if ( !this.data.y) this.data.y = 100;
+    if ( !this.data.width) this.data.width = 60;
+    if ( !this.data.height) this.data.height = 60;
   }
 
   renderContainer() {
     this.element = this.parentElement
       .append("g")
-      .attr("x", 100)
-      .attr("y", 100)
-      .attr("width", this.width)
-      .attr("height", this.height)
+      .attr("x", this.data.x)
+      .attr("y", this.data.y)
+      .attr("width", this.data.width)
+      .attr("height", this.data.height)
       .attr("class", "node")
       .attr("data-id", this.id)
       .on("click", () => this.toggleExpandCollapse(this.element));
@@ -43,32 +39,25 @@ export default class BaseNode {
   }
 
   render(renderChildren = true){
-    const container = renderContainer();
-
+    renderContainer();
   }
 
   resize(boundingBox) {
     console.log('Resizing base.node', this.id, boundingBox);
-    // d3.select(`[data-id='${this.id}']`).attr('viewBox', `${boundingBox.x} ${boundingBox.y} ${boundingBox.width} ${boundingBox.height}`);
-    this.x = boundingBox.x;
-    this.y = boundingBox.y;
-    this.width = boundingBox.width;
-    this.height = boundingBox.height;
+    const computedDimension = getComputedDimensions(this.element);
+    // console.log('                   computed dimension ',computedDimension);
+    console.log(`                   comparison  ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
+    this.data.x = boundingBox.x;
+    this.data.y = boundingBox.y;
+    this.data.width = computedDimension.width; //boundingBox.width;
+    this.data.height = computedDimension.height; //boundingBox.height;
 
     this.element
-      .attr('x', this.x)
-      .attr('y', this.y)
-      .attr('width', this.width)
-      .attr('height', this.height);
-
-
-    // .attr('transform', `translate(${boundingBox.x}, ${boundingBox.y})`);
-    // this.x = boundingBox.x;
-    // this.y = boundingBox.y;
-    // this.
-
-    // this.render(false);
-  }
+      .attr('x', this.data.x)
+      .attr('y', this.data.y)
+      .attr('width', this.data.width)
+      .attr('height', this.data.height);
+    }
 
 
   // Method to toggle expansion/collapse of the node

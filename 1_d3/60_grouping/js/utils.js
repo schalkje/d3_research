@@ -1,11 +1,11 @@
 
 export function computeBoundingBox(nodes, horizontal = false) {
     const padding = 2; // Add some padding
-    // console.log('computeBoundingBox nodes', nodes);
+    console.log('computeBoundingBox nodes', nodes);
   
     let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
   
-    const updateBounds = (x, y, dimension1, dimension2) => {
+    const updateBounds = (x, y, dimension1, dimension2) => {      
       minX = Math.min(minX, x - dimension1 / 2);
       minY = Math.min(minY, y - dimension2 / 2);
       maxX = Math.max(maxX, x + dimension1 / 2);
@@ -20,13 +20,16 @@ export function computeBoundingBox(nodes, horizontal = false) {
       } = node;
 
   
-    //   console.log('        node', node, x, y, width, height );
+      console.log('        node', node, x, y, width, height, x - width / 2, y - height / 2, x + width / 2, y + height / 2);
       if (horizontal) {
         updateBounds(y, x, width, height);
+        console.log('        UNEXPECTED, shouldn\'t hit this line' );
       } else {
         updateBounds(x, y, width, height);
       }
     });
+
+    console.log('        computeBoundingBox', minX, minY, maxX, maxY);
   
     return {
       x: minX - padding,
