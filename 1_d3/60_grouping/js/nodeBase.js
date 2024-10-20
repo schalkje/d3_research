@@ -49,8 +49,10 @@ export default class BaseNode {
     console.log(`                   comparison  ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
     this.data.x = boundingBox.x;
     this.data.y = boundingBox.y;
-    this.data.width = computedDimension.width; //boundingBox.width;
-    this.data.height = computedDimension.height; //boundingBox.height;
+    // this.data.width = computedDimension.width; //boundingBox.width;
+    // this.data.height = computedDimension.height; //boundingBox.height;
+    this.data.width = boundingBox.width;
+    this.data.height = boundingBox.height;
 
     this.element
       .attr('x', this.data.x)

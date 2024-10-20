@@ -6,7 +6,6 @@ import { getComputedDimensions } from "./utils.js";
 export default class ParentNode  extends BaseNode {
   constructor(nodeData, metadata, svg) {
     super(nodeData, metadata, svg);
-    this.childComponents = []; // Initialize childComponents array
     this.simulation = null;
   }
 
@@ -49,7 +48,9 @@ export default class ParentNode  extends BaseNode {
   resize(boundingBox) {
     // console.log('Resizing parent node', this.id, boundingBox);
     // add room for the label text on the top (left corner)
-    boundingBox.y -= 10;
+    const labelMargin = 12;
+    boundingBox.y -= labelMargin;
+    boundingBox.height += labelMargin;
 
 
     super.resize(boundingBox);
@@ -102,46 +103,33 @@ export default class ParentNode  extends BaseNode {
   // }
 
   renderChildren(parentContainer) {
-    const nodes = this.data.children.map(childData => ({
-      id: childData.id,
-      data: childData,
-    }));
-    console.log('    Rendering Children for Parent:', this.id, nodes);
+    console.log('    Rendering Children for Parent:', this.id, this.data.children);
 
     // for this stage, only add links between children
     var links = [];    
-    for (let i = 0; i < nodes.length; i++) {
-      if (i < nodes.length - 1) {
+    for (let i = 0; i < this.data.children.length; i++) {
+      if (i < this.data.children.length - 1) {
         links.push({
-          source: nodes[i].id,
-          target: nodes[i + 1].id
+          source: this.data.children[i].id,
+          target: this.data.children[i + 1].id
         });
       }
     }
-    // if (nodes.length > 0) {
-    //   links = nodes.map((node) => ({
-    //     source: this.id,
-    //     target: node.id,
-    //   }));
-    // }
 
-    console.log('        Nodes:', nodes);
     console.log('        Links:', links);
 
 
     // Create child components
-    nodes.forEach(node => {
-      const childData = node.data;
-      const childComponent = childData.type === 'group'
-        ? new ParentNode(childData, this.metadata, parentContainer)
-        : new CircleNode(childData, this.metadata, parentContainer);
-      this.childComponents.push(childComponent);
+    this.data.children.forEach(node => {
+      const childComponent = node.type === 'group'
+        ? new ParentNode(node, this.metadata, parentContainer)
+        : new CircleNode(node, this.metadata, parentContainer);
       console.log('        Rendering Child:', childComponent);
       childComponent.render();
     });
 
     // Initialize force-directed simulation for children
-    const simulation = new Simulation(nodes, links, this);
+    const simulation = new Simulation(this.data.children, links, this);
     simulation.init();
   }
 

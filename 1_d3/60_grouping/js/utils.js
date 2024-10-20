@@ -16,11 +16,12 @@ export function computeBoundingBox(nodes, horizontal = false) {
       const {
         x = 0,
         y = 0,
-        data: { width, height },
+        width = 0, 
+        height = 0,
       } = node;
 
   
-      console.log(`        node: ${node.id} = (${Math.round(x)},${Math.round(y)}) --> ${Math.round(width)}, ${Math.round(height)}:      (${Math.round(x - width / 2)},${Math.round(y - height / 2)}),(${Math.round(x + width / 2)},${Math.round(y + height / 2)})`, node.data.element);
+      console.log(`        node: ${node.id} = (${Math.round(x)},${Math.round(y)}) --> ${Math.round(width)}, ${Math.round(height)}:      (${Math.round(x - width / 2)},${Math.round(y - height / 2)}),(${Math.round(x + width / 2)},${Math.round(y + height / 2)})`, node);
       if (horizontal) {
         updateBounds(y, x, width, height);
         console.log('        UNEXPECTED, shouldn\'t hit this line' );
