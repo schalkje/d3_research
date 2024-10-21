@@ -131,7 +131,7 @@ export default class ParentNode extends BaseNode {
   updateRender(container) {
     if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
-      // this.renderChildren(container);
+      this.renderExpanded();
     } else {
       container.classed("expanded", false).classed("collapsed", true);
       this.removeChildren();
