@@ -108,7 +108,10 @@ export default class ParentNode extends BaseNode {
   }
 
   async renderCollapsed() {
-    this.element.select("rect").attr("width", this.data.width).attr("height", 20); //this.data.height);
+    this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    this.data.height = this.minimumSize.height;
+    this.data.width = this.minimumSize.width;
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     // this.element
     //   .select("text")
@@ -129,7 +132,7 @@ export default class ParentNode extends BaseNode {
             });
           }
         }
-        
+
     const simulation = new Simulation(this.data.children, links, this);
     await simulation.init();    
   }

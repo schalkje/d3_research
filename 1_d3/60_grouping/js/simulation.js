@@ -32,10 +32,12 @@ export default class Simulation {
     // initialize the simulation
     this.simulation = d3.forceSimulation(this.nodes)
       .force('center', d3.forceCenter(0, 0))
-      .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-300))
+      .force('link', d3.forceLink(this.links).id(d => d.id).distance(d => {
+        console.log('distance',d);
+        return Math.min(d.source.width/2 + d.target.width/2,d.source.height/2 + d.target.height/2);
+    }))
+      // .force('charge', d3.forceManyBody()) //.strength(-1300))
       .force('collision', rectCollide()); // Use the custom collision force
-      // .force('center', d3.forceCenter(0, 0));
 
     this.resizeBoundingContainer();
 
@@ -89,11 +91,11 @@ export default class Simulation {
 
   // Method to perform the final resize when the simulation ends
   end(resolve) {
-    console.log('Simulation ended');
-    console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    console.log(`Simulation ended for ${this.containerNode.data.id}`);
+    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
     // getComputedDimensions(this.containerNode.container);
     this.resizeBoundingContainer();
-    console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
     resolve();
   }
 
