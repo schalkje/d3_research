@@ -207,13 +207,14 @@ const testDataModel4 = [
         label: "Root 2 Node",
         type: "group",
         groupType: "dynamic",
+        parentId: "root",
         children: [
           {
             id: "node_1",
             label: "Group Node 1",
             type: "group",
             groupType: "fixed",
-            parentId: "root",
+            parentId: "root2",
             children: [
               {
                 id: "node_1_1",
@@ -224,8 +225,8 @@ const testDataModel4 = [
               },
               {
                 id: "node_1_2",
-                label: "Group Node 1.2",
-                type: "group",
+                label: "Node 1.2",
+                type: "Node",
                 groupType: "dynamic",
                 parentId: "node_1",
                 children: [],
@@ -237,7 +238,7 @@ const testDataModel4 = [
             label: "Group Node 2",
             type: "group",
             groupType: "pinned",
-            parentId: "root",
+            parentId: "root2",
             children: [
               {
                 id: "node_2_1",
@@ -252,7 +253,7 @@ const testDataModel4 = [
             id: "node_3",
             label: "Node 3",
             type: "node",
-            parentId: "root",
+            parentId: "root2",
             children: [],
           },
         ],
@@ -261,11 +262,12 @@ const testDataModel4 = [
   },
 ];
 
-export const testDataModel = testDataModel3;
+export const testDataModel = testDataModel4;
 
 export const testDataModelMetadata = {
   nodes: {
     root: { interactionState: { expanded: true }, groupType: "dynamic" },
+    root2: { interactionState: { expanded: true }, groupType: "dynamic" },
     node_1: { interactionState: { expanded: true }, groupType: "fixed" },
     node_1_1: { interactionState: { expanded: false } },
     node_1_2: { interactionState: { expanded: true }, groupType: "dynamic" },

@@ -1,10 +1,8 @@
-
-// simulation.js
 // Responsible for setting up and managing force-directed simulations using D3.js
-
-// import * as d3 from '../libs/d3.min.js';
 import '../libs/d3.min.js';
 import { getComputedDimensions,computeBoundingBox } from './utils.js';
+// import { forceBoundary } from './forceBoundary.js';
+import { rectCollide } from './forceRectCollide.js';
 
 export default class Simulation {
   constructor(nodes, links, containerNode) {
@@ -35,6 +33,7 @@ export default class Simulation {
     this.simulation = d3.forceSimulation(this.nodes)
       .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
+      .force('collision', rectCollide()) // Use the custom collision force
       .force('center', d3.forceCenter(0, 0));
 
     this.resizeBoundingContainer();

@@ -1,4 +1,4 @@
-function rectCollide() {
+export function rectCollide() {
   let nodes;
 
   const marginX = 4;
