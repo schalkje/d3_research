@@ -61,7 +61,7 @@ export default class ParentNode  extends BaseNode {
   }
 
   resize(boundingBox) {
-    console.log('Resizing parent node', this.id, boundingBox);
+    // console.log('Resizing parent node', this.id, boundingBox);
     // add room for the label text on the top (left corner)
     // const labelMargin = 10;
     // console.log('         ', boundingBox.y);
@@ -73,9 +73,9 @@ export default class ParentNode  extends BaseNode {
     boundingBox.width += this.containerMargin.left + this.containerMargin.right;
     boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
 
-    for (let i = 0; i < this.data.children.length; i++) {
-      console.log('  children:', this.data.children[i].x, this.data.children[i].y);
-    }
+    // for (let i = 0; i < this.data.children.length; i++) {
+    //   console.log('  children:', this.data.children[i].x, this.data.children[i].y);
+    // }
 
 
     super.resize(boundingBox);
@@ -99,7 +99,7 @@ export default class ParentNode  extends BaseNode {
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-    console.log('  container:', containerWidth, containerHeight, -containerHeight / 2 + this.containerMargin.top);
+    // console.log('  container:', containerWidth, containerHeight, -containerHeight / 2 + this.containerMargin.top);
     this.container
         .attr("width", containerWidth)
         .attr("height", containerHeight)
@@ -111,9 +111,9 @@ export default class ParentNode  extends BaseNode {
 
     // console.log(`               ${this.data.id}, (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}`);        
   
-      for (let i = 0; i < this.data.children.length; i++) {
-        console.log('  children:', this.data.children[i].x, this.data.children[i].y);
-      }
+      // for (let i = 0; i < this.data.children.length; i++) {
+      //   console.log('  children:', this.data.children[i].x, this.data.children[i].y);
+      // }
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -148,53 +148,59 @@ export default class ParentNode  extends BaseNode {
   // }
 
   async renderChildren(parentContainer) {
-    console.log('    Rendering Children for Parent:', this.id, this.data.children);
+    console.log("    Rendering Children for Parent:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
 
     // for this stage, only add links between children
-    var links = [];    
+    var links = [];
     for (let i = 0; i < this.data.children.length; i++) {
       if (i < this.data.children.length - 1) {
         links.push({
           source: this.data.children[i].id,
-          target: this.data.children[i + 1].id
+          target: this.data.children[i + 1].id,
         });
       }
     }
 
-    console.log('        Links:', links);
-
+    console.log("        Links:", links);
 
     // Create child components
-  //   this.data.children.forEach(async node => {
-  //     const childComponent = node.type === 'group'
-  //       ? new ParentNode(node, this.metadata, parentContainer)
-  //       : new CircleNode(node, this.metadata, parentContainer);
-  //     console.log('        Rendering Child:', childComponent);
-  //     await childComponent.render();
-  //     console.log('        Rendering Child:', childComponent, ' <-- done');
-  //   });
+    //   this.data.children.forEach(async node => {
+    //     const childComponent = node.type === 'group'
+    //       ? new ParentNode(node, this.metadata, parentContainer)
+    //       : new CircleNode(node, this.metadata, parentContainer);
+    //     console.log('        Rendering Child:', childComponent);
+    //     await childComponent.render();
+    //     console.log('        Rendering Child:', childComponent, ' <-- done');
+    //   });
+
+    // Create an array to hold all the render promises
+    const renderPromises = [];
 
     for (const node of this.data.children) {
-      var childComponent = node.type === 'group'
-        ? new ParentNode(node, this.metadata, parentContainer)
-        : new CircleNode(node, this.metadata, parentContainer);
-    
-      console.log('Rendering Child:', childComponent);
-      await childComponent.render(); // Wait for each child to complete rendering
-      console.log('Rendering Child:', childComponent, '<-- done');
-      console.log(`               : ${childComponent.data.id} = (${Math.round(childComponent.data.x)},${Math.round(childComponent.data.y)}) --> ${Math.round(childComponent.data.width)}, ${Math.round(childComponent.data.height)}:      (${Math.round(childComponent.data.x - childComponent.data.width / 2)},${Math.round(childComponent.data.y - childComponent.data.height / 2)}),(${Math.round(childComponent.data.x + childComponent.data.width / 2)},${Math.round(childComponent.data.y + childComponent.data.height / 2)})`);	
-      console.log(`               : ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+      // Create the childComponent instance based on node type
+      const childComponent =
+        node.type === "group"
+          ? new ParentNode(node, this.metadata, parentContainer)
+          : new CircleNode(node, this.metadata, parentContainer);
+
+      console.log("Rendering Child:", childComponent);
+
+      // Push the render promise into the array
+      renderPromises.push(childComponent.render());
     }
 
-    for (const node of this.data.children) {
-      console.log(`               /\ ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
-    }
+    // Wait for all renders to complete in parallel
+    await Promise.all(renderPromises);
+
+    // for (const node of this.data.children) {
+    //   console.log(`               /\ ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);
+    // }
     // Initialize force-directed simulation for children
     const simulation = new Simulation(this.data.children, links, this);
-    await simulation.init();    
+    await simulation.init();
   }
 
 
