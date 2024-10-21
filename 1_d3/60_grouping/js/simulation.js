@@ -8,6 +8,10 @@ import { computeBoundingBox } from './utils.js';
 
 export default class Simulation {
   constructor(nodes, links, containerNode) {
+    for (const node of nodes) {
+      console.log(`               >  sim node > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+    }
+
     this.nodes = nodes;
     this.links = links;
     this.containerNode = containerNode;
@@ -15,7 +19,7 @@ export default class Simulation {
     this.tickCounter = 0; // Counter to control resizing frequency
     this.resizeFrequency = 10; // Resize every 10 ticks
     console.log('---------------------------------------------------------------');
-    console.log('-- Simulation created');
+    console.log(`-- Simulation created "${this.containerNode.id}"`);
     console.log('--    nodes', this.nodes);
     console.log('--    links', this.links);
     console.log('--    container', this.containerNode);
@@ -23,6 +27,7 @@ export default class Simulation {
 
   // Method to initialize the force simulation
   init() {
+    return new Promise((resolve) => {
     // make everything ready to run the simulation
     this.tickCounter = 0;
 
@@ -32,30 +37,32 @@ export default class Simulation {
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(0, 0));
 
-    // this.resizeBoundingContainer();
+    this.resizeBoundingContainer();
 
     this.simulation
-      .on('tick', () => this.tick())
-      .on('end', () => this.end()); // Perform final resize when simulation ends
+      .on('tick', () => this.tick(resolve))
+      .on('end', () => this.end(resolve)); // Perform final resize when simulation ends
+    });
   }
 
   
   // Method to handle updating node positions on each tick of the simulation
-  tick() {
-    if ( this.containerNode.id == 'root') {
-      console.log('Skip simulation',this.containerNode.id, this.tickCounter, this.nodes);
-      this.stop(); return;
-    }
+  tick(resolve) {
+    // if ( this.containerNode.id == 'root') {
+    //   console.log('Skip simulation',this.containerNode.id, this.tickCounter, this.nodes);
+    //   this.stop(resolve); return;
+    // }
 
     // Stop the simulation after a certain number of ticks for debugging purposes
-    if (this.tickCounter >= 1) {
-      console.log('Stopping simulation',this.containerNode.id, this.tickCounter, this.nodes);
-      this.stop();
-      return;
-    }
-    console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
+    // if (this.tickCounter >= 100) {
+    //   console.log('Stopping simulation',this.containerNode.id, this.tickCounter, this.nodes);
+    //   this.stop(resolve);
+    //   return;
+    // }
+    // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
 
     this.nodes.forEach(node => {
+      // console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
       d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
     });
 
@@ -65,7 +72,7 @@ export default class Simulation {
     // Resize bounding container every N ticks
     // if (this.tickCounter % this.resizeFrequency === 0) 
       {
-      this.resizeBoundingContainer();
+      // this.resizeBoundingContainer();
     }
   }
 
@@ -73,21 +80,26 @@ export default class Simulation {
   // Method to resize the bounding container to fit all nodes
   resizeBoundingContainer() {    
     const boundingBox = computeBoundingBox(this.nodes);
-    console.log('Resizing bounding container', boundingBox, this.containerNode);
+    // console.log('Resizing bounding container', boundingBox, this.containerNode);
     this.containerNode.resize(boundingBox);
   }
 
   // Method to perform the final resize when the simulation ends
-  end() {
+  end(resolve) {
     console.log('Simulation ended');
+    console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
     this.resizeBoundingContainer();
+    console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    resolve();
   }
 
   // Method to stop the simulation
-  stop() {
+  stop(resolve) {
     console.log('>>>>     Stop simulation     <<<<');
     if (this.simulation) {
       this.simulation.stop();
+      this.resizeBoundingContainer();
+      resolve();
     }
   }
 }

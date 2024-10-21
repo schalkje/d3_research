@@ -1,7 +1,7 @@
 
 export function computeBoundingBox(nodes, horizontal = false) {
     const padding = 0; // Add some padding
-    console.log('computeBoundingBox nodes', nodes);
+    // console.log('computeBoundingBox nodes', nodes);
   
     let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
   
@@ -21,7 +21,7 @@ export function computeBoundingBox(nodes, horizontal = false) {
       } = node;
 
   
-      console.log(`        node: ${node.id} = (${Math.round(x)},${Math.round(y)}) --> ${Math.round(width)}, ${Math.round(height)}:      (${Math.round(x - width / 2)},${Math.round(y - height / 2)}),(${Math.round(x + width / 2)},${Math.round(y + height / 2)})`, node);
+      // console.log(`        node: ${node.id} = (${Math.round(x)},${Math.round(y)}) --> ${Math.round(width)}, ${Math.round(height)}:      (${Math.round(x - width / 2)},${Math.round(y - height / 2)}),(${Math.round(x + width / 2)},${Math.round(y + height / 2)})`, node);
       if (horizontal) {
         updateBounds(y, x, width, height);
         console.log('        UNEXPECTED, shouldn\'t hit this line' );
@@ -30,7 +30,7 @@ export function computeBoundingBox(nodes, horizontal = false) {
       }
     });
 
-    console.log(`        computeBoundingBox (${Math.round(minX)},${Math.round(minY)}),(${Math.round(maxX)},${Math.round(maxY)}) --> ${Math.round(maxX-minX)} x ${Math.round(maxY - minY)}`);
+    // console.log(`        computeBoundingBox (${Math.round(minX)},${Math.round(minY)}),(${Math.round(maxX)},${Math.round(maxY)}) --> ${Math.round(maxX-minX)} x ${Math.round(maxY - minY)}`);
   
     return {
       x: minX - padding,

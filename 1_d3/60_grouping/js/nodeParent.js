@@ -11,7 +11,7 @@ export default class ParentNode  extends BaseNode {
 
 
   // Method to render the parent node and its children
-  render(renderChildren = true){
+  async render(renderChildren = true){
     console.log('Rendering Parent Node:', this.id);
     super.renderContainer();
 
@@ -39,26 +39,33 @@ export default class ParentNode  extends BaseNode {
     if (this.interactionState.expanded) {
       this.element.classed('expanded', true);
       if (renderChildren)
-        this.renderChildren(this.element);
+        await this.renderChildren(this.element);
     } else {
       this.element.classed('collapsed', true);
     }
   }
 
   resize(boundingBox) {
-    // console.log('Resizing parent node', this.id, boundingBox);
+    console.log('Resizing parent node', this.id, boundingBox);
     // add room for the label text on the top (left corner)
-    const labelMargin = 12;
+    const labelMargin = 10;
+    console.log('         ', boundingBox.y);
     boundingBox.y -= labelMargin;
+    console.log('         ', boundingBox.y);
     boundingBox.height += labelMargin;
+
+    for (let i = 0; i < this.data.children.length; i++) {
+      console.log('  children:', this.data.children[i].x, this.data.children[i].y);
+    }
 
 
     super.resize(boundingBox);
 
     // JS: why is g right, but rect not?
-    console.log(`Resizing parent.node ${this.id}, (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)}, ${Math.round(boundingBox.height)}`);
-    const computedDimension = getComputedDimensions(this.element);
-    console.log(`                comparison (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
+    // console.log(`Resizing parent.node ${this.id}, (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)}, ${Math.round(boundingBox.height)}`);
+    // const computedDimension = getComputedDimensions(this.element);
+    // console.log(`                comparison (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
+    // console.log(`                parent (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)} =?= ${Math.round(this.data.width)},  ${Math.round(this.data.height)} =?= ${Math.round(this.data.height)}`);
 
 
     this.element.select('rect')
@@ -70,6 +77,10 @@ export default class ParentNode  extends BaseNode {
     this.element.select('text')
       .attr("x", this.data.x)
       .attr("y", this.data.y)
+
+      for (let i = 0; i < this.data.children.length; i++) {
+        console.log('  children:', this.data.children[i].x, this.data.children[i].y);
+      }
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -103,8 +114,11 @@ export default class ParentNode  extends BaseNode {
   //   });
   // }
 
-  renderChildren(parentContainer) {
+  async renderChildren(parentContainer) {
     console.log('    Rendering Children for Parent:', this.id, this.data.children);
+    if (!this.data.children || this.data.children.length === 0) {
+      return;
+    }
 
     // for this stage, only add links between children
     var links = [];    
@@ -121,18 +135,36 @@ export default class ParentNode  extends BaseNode {
 
 
     // Create child components
-    this.data.children.forEach(node => {
-      const childComponent = node.type === 'group'
+  //   this.data.children.forEach(async node => {
+  //     const childComponent = node.type === 'group'
+  //       ? new ParentNode(node, this.metadata, parentContainer)
+  //       : new CircleNode(node, this.metadata, parentContainer);
+  //     console.log('        Rendering Child:', childComponent);
+  //     await childComponent.render();
+  //     console.log('        Rendering Child:', childComponent, ' <-- done');
+  //   });
+
+    for (const node of this.data.children) {
+      var childComponent = node.type === 'group'
         ? new ParentNode(node, this.metadata, parentContainer)
         : new CircleNode(node, this.metadata, parentContainer);
-      console.log('        Rendering Child:', childComponent);
-      childComponent.render();
-    });
+    
+      console.log('Rendering Child:', childComponent);
+      await childComponent.render(); // Wait for each child to complete rendering
+      console.log('Rendering Child:', childComponent, '<-- done');
+      console.log(`               : ${childComponent.data.id} = (${Math.round(childComponent.data.x)},${Math.round(childComponent.data.y)}) --> ${Math.round(childComponent.data.width)}, ${Math.round(childComponent.data.height)}:      (${Math.round(childComponent.data.x - childComponent.data.width / 2)},${Math.round(childComponent.data.y - childComponent.data.height / 2)}),(${Math.round(childComponent.data.x + childComponent.data.width / 2)},${Math.round(childComponent.data.y + childComponent.data.height / 2)})`);	
+      console.log(`               : ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+    }
 
+    for (const node of this.data.children) {
+      console.log(`               /\ ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+    }
     // Initialize force-directed simulation for children
     const simulation = new Simulation(this.data.children, links, this);
-    simulation.init();    
+    await simulation.init();    
   }
+
+
 
   // Method to remove child nodes from the SVG
   removeChildren() {
