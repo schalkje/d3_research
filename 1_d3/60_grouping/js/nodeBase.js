@@ -1,8 +1,9 @@
 import { getComputedDimensions } from "./utils.js";
 export default class BaseNode {
-  constructor(nodeData, parentElement) {
+  constructor(nodeData, parentElement, parentNode = null) {
     this.id = nodeData.id;
     this.parentElement = parentElement;
+    this.parentNode = parentNode;
     this.element = null;
     this.data = nodeData;
 

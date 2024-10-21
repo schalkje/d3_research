@@ -31,10 +31,11 @@ export default class Simulation {
 
     // initialize the simulation
     this.simulation = d3.forceSimulation(this.nodes)
+      .force('center', d3.forceCenter(0, 0))
       .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
-      .force('collision', rectCollide()) // Use the custom collision force
-      .force('center', d3.forceCenter(0, 0));
+      .force('collision', rectCollide()); // Use the custom collision force
+      // .force('center', d3.forceCenter(0, 0));
 
     this.resizeBoundingContainer();
 
@@ -69,7 +70,7 @@ export default class Simulation {
     this.tickCounter++;
 
     // Resize bounding container every N ticks
-    if (this.tickCounter % this.resizeFrequency === 0) 
+    // if (this.tickCounter % this.resizeFrequency === 0) 
       {
       this.resizeBoundingContainer();
     }
@@ -79,9 +80,11 @@ export default class Simulation {
   // Method to resize the bounding container to fit all nodes
   resizeBoundingContainer() {    
     // const boundingBox = computeBoundingBox(this.nodes);
-    const boundingBox = getComputedDimensions(this.containerNode.container);
-    // console.log('Resizing bounding container', boundingBox, this.containerNode);
-    this.containerNode.resize(boundingBox);
+    if (this.containerNode.container) {
+      const boundingBox = getComputedDimensions(this.containerNode.container);
+      // console.log('Resizing bounding container', boundingBox, this.containerNode);
+      this.containerNode.resize(boundingBox);
+    }
   }
 
   // Method to perform the final resize when the simulation ends

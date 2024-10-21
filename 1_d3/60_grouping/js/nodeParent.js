@@ -5,8 +5,8 @@ import Simulation from "./simulation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class ParentNode extends BaseNode {
-  constructor(nodeData, svg) {
-    super(nodeData, svg);
+  constructor(nodeData, parentElement, parentNode = null) {
+    super(nodeData, parentElement, parentNode);
     this.simulation = null;
     this.container = null;
     this.containerMargin = { top: 14, right: 0, bottom: 0, left: 0 };
@@ -115,10 +115,31 @@ export default class ParentNode extends BaseNode {
     //   .attr("x", this.data.x)
     //   .attr("y", this.data.y + this.containerMargin.top);
 
+    this.runSimulation();
+  }
 
-    var links = [];
+  async runSimulation() {
+        // for this stage, only add links between children
+        var links = [];
+        for (let i = 0; i < this.data.children.length; i++) {
+          if (i < this.data.children.length - 1) {
+            links.push({
+              source: this.data.children[i].id,
+              target: this.data.children[i + 1].id,
+            });
+          }
+        }
+        
     const simulation = new Simulation(this.data.children, links, this);
-    await simulation.init();
+    await simulation.init();    
+  }
+
+  cascadeSimulation() {
+    if (this.parentNode)
+    {
+      this.parentNode.runSimulation();
+      this.parentNode.cascadeSimulation();
+    }
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -137,6 +158,10 @@ export default class ParentNode extends BaseNode {
       this.removeChildren();
       this.renderCollapsed();
     }
+
+    // update simulation of parent node
+    // this.parentContainer.simulation.restart();
+    this.cascadeSimulation();
   }
 
   async renderChildren(parentContainer) {
@@ -162,7 +187,7 @@ export default class ParentNode extends BaseNode {
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
       const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, parentContainer);
+      const childComponent = new ComponentClass(node, parentContainer, this);
 
       console.log("Rendering Child:", childComponent);
 
