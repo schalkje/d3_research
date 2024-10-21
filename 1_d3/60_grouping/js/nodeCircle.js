@@ -1,8 +1,8 @@
 import BaseNode from "./nodeBase.js";
 
 export default class CircleNode extends BaseNode {
-  constructor(nodeData, metadata, svg) {
-    super(nodeData, metadata, svg);
+  constructor(nodeData, svg) {
+    super(nodeData, svg);
 
     // add radius property, that is the half of the max of width and height
     if (!this.data.radius)
@@ -36,7 +36,7 @@ export default class CircleNode extends BaseNode {
       .text(this.data.label);
 
     // Set expanded or collapsed state
-    if (this.interactionState.expanded) {
+    if (this.data.interactionState.expanded) {
       container.classed("expanded", true);
     } else {
       container.classed("collapsed", true);

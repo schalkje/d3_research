@@ -1,14 +1,12 @@
 import { getComputedDimensions } from "./utils.js";
 export default class BaseNode {
-  constructor(nodeData, metadata, parentElement) {
+  constructor(nodeData, parentElement) {
     this.id = nodeData.id;
     this.parentElement = parentElement;
     this.element = null;
-    this.metadata = metadata;
     this.data = nodeData;
 
-    this.interactionState = metadata.nodes[this.id]?.interactionState || { expanded: false };
-    nodeData.interactionState = this.interactionState;
+    if ( !this.data.interactionState) this.data.interactionState = { expanded: true };
 
     // Set default values for x, y, width, and height
     if ( !this.data.x) this.data.x = 100;
@@ -29,7 +27,7 @@ export default class BaseNode {
       .on("click", () => this.toggleExpandCollapse(this.element));
 
     // Set expanded or collapsed state
-    if (this.interactionState.expanded) {
+    if (this.data.interactionState.expanded) {
       this.element.classed("expanded", true);
     } else {
       this.element.classed("collapsed", true);
@@ -69,13 +67,13 @@ export default class BaseNode {
 
   // Method to toggle expansion/collapse of the node
   toggleExpandCollapse(container) {
-    this.interactionState.expanded = !this.interactionState.expanded;
+    this.data.interactionState.expanded = !this.data.interactionState.expanded;
     this.updateRender(container);
   }
 
   // Method to update the node rendering based on interaction state
   updateRender(container) {
-    if (this.interactionState.expanded) {
+    if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
     } else {
       container.classed("expanded", false).classed("collapsed", true);

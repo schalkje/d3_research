@@ -43,7 +43,7 @@
         // import { NodeComponent } from './js/NodeComponent.js';
         // import './js/index.js';
         import ParentNode from './js/nodeParent.js';
-        import {testDataModel, testDataModelMetadata} from './js/graphData.js';
+        import {testDataModel} from './js/graphData.js';
 
         const svgWidth = 800;
         const svgHeight = 600;
@@ -57,7 +57,7 @@
         // rootNode.render();
         // Render the root node, which recursively renders all children
         // const rootNode = new Node.ParentNode(testDataModel[0], testDataModelMetadata, svg);
-        const rootNode = new ParentNode(testDataModel[0], testDataModelMetadata, svg);
+        const rootNode = new ParentNode(testDataModel[0], svg);
         rootNode.render();
 
         // Center coordinates for the root node

@@ -5,8 +5,8 @@ import Simulation from "./simulation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class ParentNode extends BaseNode {
-  constructor(nodeData, metadata, svg) {
-    super(nodeData, metadata, svg);
+  constructor(nodeData, svg) {
+    super(nodeData, svg);
     this.simulation = null;
     this.container = null;
     this.containerMargin = { top: 14, right: 0, bottom: 0, left: 0 };
@@ -51,7 +51,7 @@ export default class ParentNode extends BaseNode {
       .attr("y", -containerHeight / 2); // + this.containerMargin.top);
 
     // Set expanded or collapsed state
-    if (this.interactionState.expanded) {
+    if (this.data.interactionState.expanded) {
       this.element.classed("expanded", true);
       if (renderChildren) await this.renderChildren(this.container);
     } else {
@@ -89,13 +89,13 @@ export default class ParentNode extends BaseNode {
 
   // Method to toggle expansion/collapse of the parent node
   toggleExpandCollapse(container) {
-    this.interactionState.expanded = !this.interactionState.expanded;
+    this.data.interactionState.expanded = !this.data.interactionState.expanded;
     this.updateRender(container);
   }
 
   // Method to update the parent node rendering based on interaction state
   updateRender(container) {
-    if (this.interactionState.expanded) {
+    if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
       this.renderChildren(container);
     } else {
@@ -127,7 +127,7 @@ export default class ParentNode extends BaseNode {
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
       const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, this.metadata, parentContainer);
+      const childComponent = new ComponentClass(node, parentContainer);
 
       console.log("Rendering Child:", childComponent);
 

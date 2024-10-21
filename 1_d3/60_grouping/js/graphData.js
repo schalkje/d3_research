@@ -263,17 +263,3 @@ const testDataModel4 = [
 ];
 
 export const testDataModel = testDataModel4;
-
-export const testDataModelMetadata = {
-  nodes: {
-    root: { interactionState: { expanded: true }, groupType: "dynamic" },
-    root2: { interactionState: { expanded: true }, groupType: "dynamic" },
-    node_1: { interactionState: { expanded: true }, groupType: "fixed" },
-    node_1_1: { interactionState: { expanded: false } },
-    node_1_2: { interactionState: { expanded: true }, groupType: "dynamic" },
-    node_1_2_1: { interactionState: { expanded: false } },
-    node_2: { interactionState: { expanded: true }, groupType: "pinned" },
-    node_2_1: { interactionState: { expanded: false } },
-    node_3: { interactionState: { expanded: false } },
-  },
-};
