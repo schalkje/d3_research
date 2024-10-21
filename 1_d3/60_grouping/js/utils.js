@@ -42,7 +42,10 @@ export function computeBoundingBox(nodes, horizontal = false) {
   
   // Function to get the computed width and height of an element
   export function getComputedDimensions(element) {
-    const rect = element.node().getBoundingClientRect();
-    return { width: rect.width, height: rect.height };
+    // const rect = element.node().getBoundingClientRect();
+    // console.log('getComputedDimensions', rect);
+    // console.log('    bbox', element.node().getBBox());
+    // console.log('    ctm', element.node().getCTM());
+    return element.node().getBBox();
   }
   

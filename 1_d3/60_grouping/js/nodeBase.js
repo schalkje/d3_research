@@ -55,12 +55,12 @@ export default class BaseNode {
     this.data.width = boundingBox.width;
     this.data.height = boundingBox.height;
 
-    this.element
-      // .attr('transform', `translate(${this.data.x}, ${this.data.y})`)
-      .attr('x', this.data.x)
-      .attr('y', this.data.y)
-      .attr('width', this.data.width)
-      .attr('height', this.data.height);
+    // this.element
+    //   // .attr('transform', `translate(${this.data.x}, ${this.data.y})`)
+    //   // .attr('x', this.data.x)
+    //   // .attr('y', this.data.y)
+    //   .attr('width', this.data.width)
+    //   .attr('height', this.data.height);
 
       // console.log(`         after node: ${this.data.id} = (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}:      (${Math.round(this.data.x - this.data.width / 2)},${Math.round(this.data.y - this.data.height / 2)}),(${Math.round(this.data.x + this.data.width / 2)},${Math.round(this.data.y + this.data.height / 2)})`, this.data);
 

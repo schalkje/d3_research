@@ -4,7 +4,7 @@
 
 // import * as d3 from '../libs/d3.min.js';
 import '../libs/d3.min.js';
-import { computeBoundingBox } from './utils.js';
+import { getComputedDimensions,computeBoundingBox } from './utils.js';
 
 export default class Simulation {
   constructor(nodes, links, containerNode) {
@@ -70,16 +70,17 @@ export default class Simulation {
     this.tickCounter++;
 
     // Resize bounding container every N ticks
-    // if (this.tickCounter % this.resizeFrequency === 0) 
+    if (this.tickCounter % this.resizeFrequency === 0) 
       {
-      // this.resizeBoundingContainer();
+      this.resizeBoundingContainer();
     }
   }
 
 
   // Method to resize the bounding container to fit all nodes
   resizeBoundingContainer() {    
-    const boundingBox = computeBoundingBox(this.nodes);
+    // const boundingBox = computeBoundingBox(this.nodes);
+    const boundingBox = getComputedDimensions(this.containerNode.container);
     // console.log('Resizing bounding container', boundingBox, this.containerNode);
     this.containerNode.resize(boundingBox);
   }
@@ -88,6 +89,7 @@ export default class Simulation {
   end(resolve) {
     console.log('Simulation ended');
     console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    // getComputedDimensions(this.containerNode.container);
     this.resizeBoundingContainer();
     console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
     resolve();

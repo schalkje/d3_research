@@ -81,6 +81,62 @@ const testDataModel2 = [
   },
 ];
 
+const testDataModel21 = [
+  {
+    id: "root",
+    label: "Root Node",
+    type: "group",
+    groupType: "dynamic",
+    children: [
+      {
+        id: "node_1",
+        label: "Group Node 1",
+        type: "group",
+        groupType: "fixed",
+        parentId: "root",
+        children: [
+          {
+            id: "node_1_1",
+            label: "Node 1.1",
+            type: "node",
+            parentId: "node_1",
+            children: [],
+          },
+          {
+            id: "node_1_2",
+            label: "Node 1.2",
+            type: "node",
+            parentId: "node_1",
+            children: [],
+          },
+        ],
+      },
+      {
+        id: 'node_2',
+        label: 'Group Node 2',
+        type: 'group',
+        groupType: 'pinned',
+        parentId: 'root',
+        children: [
+          {
+            id: 'node_2_1',
+            label: 'Node 2.1',
+            type: 'node',
+            parentId: 'node_2',
+            children: []
+          },
+          {
+            id: 'node_2_2',
+            label: 'Node 2.2',
+            type: 'node',
+            parentId: 'node_2',
+            children: []
+          }
+        ]
+      }
+    ],
+  },
+];
 const testDataModel3 = [
   {
     id: "root",
@@ -205,7 +261,7 @@ const testDataModel4 = [
   },
 ];
 
-export const testDataModel = testDataModel2;
+export const testDataModel = testDataModel21;
 
 export const testDataModelMetadata = {
   nodes: {

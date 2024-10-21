@@ -7,6 +7,8 @@ export default class ParentNode  extends BaseNode {
   constructor(nodeData, metadata, svg) {
     super(nodeData, metadata, svg);
     this.simulation = null;
+    this.container = null;
+    this.containerMargin = {top:14,right:0,bottom:0,left:0};
   }
 
 
@@ -15,8 +17,11 @@ export default class ParentNode  extends BaseNode {
     console.log('Rendering Parent Node:', this.id);
     super.renderContainer();
 
+    // A group/parent node consists of it's own display, a border, background and a label
+    // and a container where the node is rendered
+
     // Draw the node shape
-    this.element
+  this.element
       .append("rect")
       .attr("class", (d) => `node shape parent`)
       .attr("width", this.data.width)
@@ -35,11 +40,21 @@ export default class ParentNode  extends BaseNode {
       .text(this.data.label)
       .attr("class", "node label parent");    
 
+    const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
+    const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+    this.container = this.element
+      .append("g")
+      .attr("class", (d) => `node container parent`)
+      .attr("width", containerWidth)
+      .attr("height", containerHeight)
+      .attr('x', -containerWidth / 2 + this.containerMargin.left)
+      .attr('y', -containerHeight / 2);// + this.containerMargin.top);
+
     // Set expanded or collapsed state
     if (this.interactionState.expanded) {
       this.element.classed('expanded', true);
       if (renderChildren)
-        await this.renderChildren(this.element);
+        await this.renderChildren(this.container);
     } else {
       this.element.classed('collapsed', true);
     }
@@ -48,11 +63,15 @@ export default class ParentNode  extends BaseNode {
   resize(boundingBox) {
     console.log('Resizing parent node', this.id, boundingBox);
     // add room for the label text on the top (left corner)
-    const labelMargin = 10;
-    console.log('         ', boundingBox.y);
-    boundingBox.y -= labelMargin;
-    console.log('         ', boundingBox.y);
-    boundingBox.height += labelMargin;
+    // const labelMargin = 10;
+    // console.log('         ', boundingBox.y);
+    // boundingBox.y -= labelMargin;
+    // console.log('         ', boundingBox.y);
+    // boundingBox.height += labelMargin;
+    boundingBox.x -= this.containerMargin.left;
+    boundingBox.y -= this.containerMargin.top;
+    boundingBox.width += this.containerMargin.left + this.containerMargin.right;
+    boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
 
     for (let i = 0; i < this.data.children.length; i++) {
       console.log('  children:', this.data.children[i].x, this.data.children[i].y);
@@ -72,12 +91,26 @@ export default class ParentNode  extends BaseNode {
       .attr('width', this.data.width)
       .attr('height', this.data.height)
       .attr('x', this.data.x)
-      .attr('y', this.data.y);
+      .attr('y', this.data.y + this.containerMargin.top);
 
     this.element.select('text')
       .attr("x", this.data.x)
-      .attr("y", this.data.y)
+      .attr("y", this.data.y + this.containerMargin.top)
 
+    const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
+    const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+    console.log('  container:', containerWidth, containerHeight, -containerHeight / 2 + this.containerMargin.top);
+    this.container
+        .attr("width", containerWidth)
+        .attr("height", containerHeight)
+        .attr('transform', `translate(0, ${this.containerMargin.top})`);
+        // .attr('x', 0)
+        // .attr('y', -40);
+        // // .attr('x', -containerWidth / 2 + this.containerMargin.left)
+        // .attr('y', -containerHeight / 2 + this.containerMargin.top);
+
+    // console.log(`               ${this.data.id}, (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}`);        
+  
       for (let i = 0; i < this.data.children.length; i++) {
         console.log('  children:', this.data.children[i].x, this.data.children[i].y);
       }
