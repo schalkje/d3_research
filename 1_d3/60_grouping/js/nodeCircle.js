@@ -22,17 +22,17 @@ export default class CircleNode extends BaseNode {
     // Draw the node shape
     container
       .append("circle")
-      .attr("r", this.data.radius)
       .attr("class", "node shape" )
+      .attr("r", this.data.radius)
       .attr("stroke", "#000")
       .attr("stroke-width", 1.5);
 
     // Add node label
     container
       .append("text")
-      .attr("x", 0)
-      .attr("y", 0)
       .attr("class", "node label")
+      .attr("x", 0)
+      .attr("y", 0)      
       .text(this.data.label);
 
     // Set expanded or collapsed state

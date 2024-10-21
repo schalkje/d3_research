@@ -1,7 +1,9 @@
 import BaseNode from "./nodeBase.js";
 import CircleNode from './nodeCircle.js';
+import RectangularNode from './nodeRect.js';
 import Simulation from './simulation.js';
 import { getComputedDimensions } from "./utils.js";
+
 
 export default class ParentNode  extends BaseNode {
   constructor(nodeData, metadata, svg) {
@@ -10,6 +12,7 @@ export default class ParentNode  extends BaseNode {
     this.container = null;
     this.containerMargin = {top:14,right:0,bottom:0,left:0};
   }
+  
 
 
   // Method to render the parent node and its children
@@ -61,31 +64,12 @@ export default class ParentNode  extends BaseNode {
   }
 
   resize(boundingBox) {
-    // console.log('Resizing parent node', this.id, boundingBox);
-    // add room for the label text on the top (left corner)
-    // const labelMargin = 10;
-    // console.log('         ', boundingBox.y);
-    // boundingBox.y -= labelMargin;
-    // console.log('         ', boundingBox.y);
-    // boundingBox.height += labelMargin;
     boundingBox.x -= this.containerMargin.left;
     boundingBox.y -= this.containerMargin.top;
     boundingBox.width += this.containerMargin.left + this.containerMargin.right;
     boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
 
-    // for (let i = 0; i < this.data.children.length; i++) {
-    //   console.log('  children:', this.data.children[i].x, this.data.children[i].y);
-    // }
-
-
     super.resize(boundingBox);
-
-    // JS: why is g right, but rect not?
-    // console.log(`Resizing parent.node ${this.id}, (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)}, ${Math.round(boundingBox.height)}`);
-    // const computedDimension = getComputedDimensions(this.element);
-    // console.log(`                comparison (${Math.round(boundingBox.x)},${Math.round(boundingBox.y)}) --> ${Math.round(boundingBox.width)} =?= ${Math.round(computedDimension.width)},  ${Math.round(boundingBox.height)} =?= ${Math.round(computedDimension.height)}`);
-    // console.log(`                parent (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)} =?= ${Math.round(this.data.width)},  ${Math.round(this.data.height)} =?= ${Math.round(this.data.height)}`);
-
 
     this.element.select('rect')
       .attr('width', this.data.width)
@@ -99,21 +83,10 @@ export default class ParentNode  extends BaseNode {
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-    // console.log('  container:', containerWidth, containerHeight, -containerHeight / 2 + this.containerMargin.top);
     this.container
         .attr("width", containerWidth)
         .attr("height", containerHeight)
         .attr('transform', `translate(0, ${this.containerMargin.top})`);
-        // .attr('x', 0)
-        // .attr('y', -40);
-        // // .attr('x', -containerWidth / 2 + this.containerMargin.left)
-        // .attr('y', -containerHeight / 2 + this.containerMargin.top);
-
-    // console.log(`               ${this.data.id}, (${Math.round(this.data.x)},${Math.round(this.data.y)}) --> ${Math.round(this.data.width)}, ${Math.round(this.data.height)}`);        
-  
-      // for (let i = 0; i < this.data.children.length; i++) {
-      //   console.log('  children:', this.data.children[i].x, this.data.children[i].y);
-      // }
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -133,20 +106,6 @@ export default class ParentNode  extends BaseNode {
     }
   }
 
-  // Method to render child nodes
-  // renderChildren(parentContainer) {
-  //   this.children.forEach(childData => {
-  //     const childComponent = childData.type === 'group'
-  //       ? new ParentNode(childData, this.metadata, this.svg)
-  //       : new CircleNode(childData, this.metadata, this.svg);
-  //     this.childComponents.push(childComponent);
-  //     childComponent.render();
-
-  //     // Position children relative to the parent node
-  //     d3.select(`[data-id='${childData.id}']`).attr('transform', `translate(${Math.random() * 100 - 50}, ${Math.random() * 100 - 50})`);
-  //   });
-  // }
-
   async renderChildren(parentContainer) {
     console.log("    Rendering Children for Parent:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
@@ -164,27 +123,13 @@ export default class ParentNode  extends BaseNode {
       }
     }
 
-    console.log("        Links:", links);
-
-    // Create child components
-    //   this.data.children.forEach(async node => {
-    //     const childComponent = node.type === 'group'
-    //       ? new ParentNode(node, this.metadata, parentContainer)
-    //       : new CircleNode(node, this.metadata, parentContainer);
-    //     console.log('        Rendering Child:', childComponent);
-    //     await childComponent.render();
-    //     console.log('        Rendering Child:', childComponent, ' <-- done');
-    //   });
-
     // Create an array to hold all the render promises
     const renderPromises = [];
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const childComponent =
-        node.type === "group"
-          ? new ParentNode(node, this.metadata, parentContainer)
-          : new CircleNode(node, this.metadata, parentContainer);
+      const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
+      const childComponent = new ComponentClass(node, this.metadata, parentContainer);
 
       console.log("Rendering Child:", childComponent);
 
@@ -195,9 +140,6 @@ export default class ParentNode  extends BaseNode {
     // Wait for all renders to complete in parallel
     await Promise.all(renderPromises);
 
-    // for (const node of this.data.children) {
-    //   console.log(`               /\ ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);
-    // }
     // Initialize force-directed simulation for children
     const simulation = new Simulation(this.data.children, links, this);
     await simulation.init();
@@ -213,3 +155,10 @@ export default class ParentNode  extends BaseNode {
     this.childComponents = [];
   }
 }
+
+const typeToComponent = {
+  group: ParentNode,
+  node: RectangularNode,
+  default: CircleNode,
+};
+

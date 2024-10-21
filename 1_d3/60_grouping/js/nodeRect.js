@@ -2,6 +2,9 @@ import BaseNode from "./nodeBase.js";
 
 export default class RectangularNode extends BaseNode {
   constructor(nodeData, metadata, svg) {
+    if ( !nodeData.height) nodeData.height = 20;
+    if ( !nodeData.width) nodeData.width = 150;
+
     super(nodeData, metadata, svg);
   }
 
@@ -13,19 +16,21 @@ export default class RectangularNode extends BaseNode {
     // Draw the node shape
     container
       .append("rect")
-      .attr("class", (d) => `node shape`)
-      .attr("width", (d) => d.width)
-      .attr("height", (d) => d.height)
+      .attr("class", `node shape`)
+      .attr("width", this.data.width)
+      .attr("height", this.data.height)
+      .attr('x', -this.data.width / 2)
+      .attr('y', -this.data.height / 2)
       .attr("rx", 5)
       .attr("ry", 5);
 
     // Append text for default type
     container
       .append("text")
-      .attr("x", (d) => d.width / 2)
-      .attr("y", (d) => d.height / 2 + 4)
-      .text((d) => d.label)
-      .attr("class", "node label");
+      .attr("class", "node label")
+      .attr("x", 0)
+      .attr("y", 0)
+      .text(this.data.label);
   }
 
   // // override the base class method to get the connection point of a rectangular node

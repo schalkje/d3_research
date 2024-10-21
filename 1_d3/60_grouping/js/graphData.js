@@ -261,7 +261,7 @@ const testDataModel4 = [
   },
 ];
 
-export const testDataModel = testDataModel21;
+export const testDataModel = testDataModel3;
 
 export const testDataModelMetadata = {
   nodes: {
