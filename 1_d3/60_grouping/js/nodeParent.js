@@ -13,7 +13,7 @@ export default class ParentNode extends BaseNode {
   }
 
   // Method to render the parent node and its children
-  async render(renderChildren = true) {
+  async render() {
     console.log("Rendering Parent Node:", this.id);
     super.renderContainer();
 
@@ -32,30 +32,24 @@ export default class ParentNode extends BaseNode {
       .attr("ry", 5);
 
     // Append text to the top left corner of the
-    // parent node
-    this.element
+    // parent node    
+    const labelElement = this.element
       .append("text")
       .attr("x", (d) => -this.data.width / 2 + 4)
       .attr("y", (d) => -this.data.height / 2 + 4)
       .text(this.data.label)
       .attr("class", "node label parent");
 
-    const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
-    const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-    this.container = this.element
-      .append("g")
-      .attr("class", (d) => `node container parent`)
-      .attr("width", containerWidth)
-      .attr("height", containerHeight)
-      .attr("x", -containerWidth / 2 + this.containerMargin.left)
-      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
+    this.minimumSize = getComputedDimensions(labelElement);
+    this.minimumSize.width += 8;
+    this.minimumSize.height += 4;
 
-    // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
       this.element.classed("expanded", true);
-      if (renderChildren) await this.renderChildren(this.container);
+      this.renderExpanded();
     } else {
       this.element.classed("collapsed", true);
+      this.renderCollapsed();
     }
   }
 
@@ -64,6 +58,10 @@ export default class ParentNode extends BaseNode {
     boundingBox.y -= this.containerMargin.top;
     boundingBox.width += this.containerMargin.left + this.containerMargin.right;
     boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
+
+    // make sure it doesn't go below minimum size
+    boundingBox.width = Math.max(boundingBox.width, this.minimumSize.width);
+    boundingBox.height = Math.max(boundingBox.height, this.minimumSize.height);
 
     super.resize(boundingBox);
 
@@ -76,8 +74,8 @@ export default class ParentNode extends BaseNode {
 
     this.element
       .select("text")
-      .attr("x", this.data.x)
-      .attr("y", this.data.y + this.containerMargin.top);
+      .attr("x", this.data.x+4)
+      .attr("y", this.data.y + this.containerMargin.top+4);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -85,6 +83,42 @@ export default class ParentNode extends BaseNode {
       .attr("width", containerWidth)
       .attr("height", containerHeight)
       .attr("transform", `translate(0, ${this.containerMargin.top})`);
+  }
+
+  async renderExpanded() {
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
+
+    this.element
+      .select("text")
+      .attr("x", this.data.x)
+      .attr("y", this.data.y + this.containerMargin.top);
+
+    const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
+    const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+    this.container = this.element
+      .append("g")
+      .attr("class", (d) => `node container parent`)
+      .attr("width", containerWidth)
+      .attr("height", containerHeight)
+      .attr("x", -containerWidth / 2 + this.containerMargin.left)
+      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
+
+    // Set expanded or collapsed state
+    await this.renderChildren(this.container);
+  }
+
+  async renderCollapsed() {
+    this.element.select("rect").attr("width", this.data.width).attr("height", 20); //this.data.height);
+
+    // this.element
+    //   .select("text")
+    //   .attr("x", this.data.x)
+    //   .attr("y", this.data.y + this.containerMargin.top);
+
+
+    var links = [];
+    const simulation = new Simulation(this.data.children, links, this);
+    await simulation.init();
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -97,10 +131,11 @@ export default class ParentNode extends BaseNode {
   updateRender(container) {
     if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
-      this.renderChildren(container);
+      // this.renderChildren(container);
     } else {
       container.classed("expanded", false).classed("collapsed", true);
       this.removeChildren();
+      this.renderCollapsed();
     }
   }
 
@@ -145,10 +180,9 @@ export default class ParentNode extends BaseNode {
 
   // Method to remove child nodes from the SVG
   removeChildren() {
-    this.childComponents.forEach((childComponent) => {
-      d3.select(`[data-id='${childComponent.id}']`).remove();
-    });
-    this.childComponents = [];
+    console.log("    Removing Children for Parent:", this.id);
+    this.container.selectAll("*").remove();
+    this.container.remove();
   }
 }
 
