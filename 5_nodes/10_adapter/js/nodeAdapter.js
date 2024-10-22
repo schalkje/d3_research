@@ -195,6 +195,7 @@ export default class AdapterNode extends BaseNode {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
       const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+
       this.stagingNode.x = x;
       this.stagingNode.y = y;
     }
@@ -203,14 +204,21 @@ export default class AdapterNode extends BaseNode {
       const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
       const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
       this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
+
+      this.archiveNode.x = x;
+      this.archiveNode.y = y;
     }
 
     if (this.transformNode) {
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 ;
+      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 + 2*this.nodeSpacing.horizontal;
       const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
-      const width = this.stagingNode.data.width + this.archiveNode.data.width - this.stagingNode.data.width/2 + this.nodeSpacing.horizontal;
-      this.transformNode.resize({width: width, height: this.transformNode.data.height});
+      const width = this.stagingNode.data.width + this.archiveNode.data.width - this.stagingNode.data.width/2 + this.nodeSpacing.horizontal - + 2*this.nodeSpacing.horizontal;
+      const height = this.transformNode.data.height;
+      this.transformNode.resize({width: width, height: height});
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
+
+      this.transformNode.x = x;
+      this.transformNode.y = y;
     }
   }
 
@@ -219,18 +227,27 @@ export default class AdapterNode extends BaseNode {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
       const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+
+      this.stagingNode.x = x;
+      this.stagingNode.y = y;
     }
 
     if (this.archiveNode) {
       const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.archiveNode.data.width/2 + this.nodeSpacing.horizontal;
       const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
       this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
+
+      this.archiveNode.x = x;
+      this.archiveNode.y = y;
     }
 
     if (this.transformNode) {
       const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
       const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
+
+      this.transformNode.x = x;
+      this.transformNode.y = y;
     }
   }
 
