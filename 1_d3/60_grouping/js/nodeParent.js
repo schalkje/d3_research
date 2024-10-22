@@ -90,7 +90,6 @@ export default class ParentNode extends BaseNode {
   }
 
   async renderExpanded() {
-    this.data.expandedSize = {height: this.data.height, width: this.data.width};
     if (this.data.expandedSize) {
       this.data.height = this.data.expandedSize.height;
       this.data.width = this.data.expandedSize.width;
@@ -118,16 +117,18 @@ export default class ParentNode extends BaseNode {
   }
 
   async renderCollapsed() {
+    // store the expanded size before collapsing
     if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
       this.data.expandedSize = {height: this.data.height, width: this.data.width};
+
+    // set the collapsed size
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
-    // this.element
-    //   .select("text")
-    //   .attr("x", this.data.x)
-    //   .attr("y", this.data.y + this.containerMargin.top);
+    // apply the collapsed size to the rectangle
+    this.element.select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height);
 
     this.runSimulation();
   }

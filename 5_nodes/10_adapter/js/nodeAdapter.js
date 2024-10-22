@@ -114,8 +114,8 @@ export default class AdapterNode extends BaseNode {
       .attr("class", (d) => `node container adapter`)
       .attr("width", containerWidth)
       .attr("height", containerHeight)
-      .attr("x", this.data.x + this.containerMargin.left)
-      .attr("y", this.data.y + this.containerMargin.top);
+      .attr("x", -containerWidth / 2 + this.containerMargin.left)
+      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
       console.log("    Container:", this.data.x, this.data.y, containerWidth, containerHeight);
       // .attr("x", -containerWidth / 2 + this.containerMargin.left)
       // .attr("y", -containerHeight / 2); // + this.containerMargin.top);
@@ -125,20 +125,18 @@ export default class AdapterNode extends BaseNode {
   }
 
   async renderCollapsed() {
-    if (!this.data.expandedSize)
-      this.data.expandedSize = {height: this.data.height, width: this.data.width};
-
+    // store the expanded size before collapsing
     if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
       this.data.expandedSize = {height: this.data.height, width: this.data.width};
+
+    // set the collapsed size
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
-    // this.element
-    //   .select("text")
-    //   .attr("x", this.data.x)
-    //   .attr("y", this.data.y + this.containerMargin.top);
-
+    // apply the collapsed size to the rectangle
+    this.element.select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height);
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -214,7 +212,7 @@ export default class AdapterNode extends BaseNode {
 
     if (this.stagingNode) {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
+      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;      
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.stagingNode.x = x;

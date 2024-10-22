@@ -112,23 +112,25 @@ export default class ParentNode extends BaseNode {
       .attr("width", containerWidth)
       .attr("height", containerHeight)
       .attr("x", -containerWidth / 2 + this.containerMargin.left)
-      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
+      .attr("y", -containerHeight / 2 + this.containerMargin.top);
 
     // Set expanded or collapsed state
-    await this.renderChildren(this.container);
+    await this.renderChildren();
   }
 
   async renderCollapsed() {
+    // store the expanded size before collapsing
     if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
       this.data.expandedSize = {height: this.data.height, width: this.data.width};
+
+    // set the collapsed size
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
-    // this.element
-    //   .select("text")
-    //   .attr("x", this.data.x)
-    //   .attr("y", this.data.y + this.containerMargin.top);
+    // apply the collapsed size to the rectangle
+    this.element.select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height);
 
     this.runSimulation();
   }
@@ -136,18 +138,17 @@ export default class ParentNode extends BaseNode {
   async runSimulation() {
         // for this stage, only add links between children
         var links = [];
-        for (let i = 0; i < this.data.children.length; i++) {
-          if (i < this.data.children.length - 1) {
-            links.push({
-              source: this.data.children[i].id,
-              target: this.data.children[i + 1].id,
-            });
-          }
-        }
+        // for (let i = 0; i < this.data.children.length; i++) {
+        //   if (i < this.data.children.length - 1) {
+        //     links.push({
+        //       source: this.data.children[i].id,
+        //       target: this.data.children[i + 1].id,
+        //     });
+        //   }
+        // }
 
         this.simulation = new Simulation(this.data.children, links, this);
         await this.simulation.init();   
-
   }
 
   // drag_started (event, node) {
@@ -179,18 +180,18 @@ export default class ParentNode extends BaseNode {
   // }
 
   // Method to toggle expansion/collapse of the parent node
-  toggleExpandCollapse(container) {
+  toggleExpandCollapse() {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;
-    this.updateRender(container);
+    this.updateRender();
   }
 
   // Method to update the parent node rendering based on interaction state
-  updateRender(container) {
+  updateRender() {
     if (this.data.interactionState.expanded) {
-      container.classed("collapsed", false).classed("expanded", true);
+      this.container.classed("collapsed", false).classed("expanded", true);
       this.renderExpanded();
     } else {
-      container.classed("expanded", false).classed("collapsed", true);
+      this.container.classed("expanded", false).classed("collapsed", true);
       this.removeChildren();
       this.renderCollapsed();
     }
@@ -200,7 +201,7 @@ export default class ParentNode extends BaseNode {
     this.cascadeSimulation();
   }
 
-  async renderChildren(parentContainer) {
+  async renderChildren() {
     console.log("    Rendering Children for Parent:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
@@ -212,9 +213,10 @@ export default class ParentNode extends BaseNode {
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
       const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, parentContainer, this);
+      const childComponent = new ComponentClass(node, this.container, this);
 
       console.log("Rendering Child:", childComponent);
+      console.log("               :", this.data.x, this.data.y);
 
       // Push the render promise into the array
       renderPromises.push(childComponent.render());
