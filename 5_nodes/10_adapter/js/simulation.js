@@ -1,91 +1,112 @@
-  //////////////////////////////////////////////////////////////
-  //
-  // Simulation
-  //
+// Responsible for setting up and managing force-directed simulations using D3.js
+import '../libs/d3.min.js';
+import { getComputedDimensions,computeBoundingBox } from './utils.js';
+// import { forceBoundary } from './forceBoundary.js';
+import { rectCollide } from './forceRectCollide.js';
 
-  // var simulation = d3.forceSimulation(nodes)
-  // .force('charge', d3.forceManyBody())
-  // .force('collision', d3.forceCollide(radius + 4))
-  // .force('center', d3.forceCenter(width / 2, height / 2))
-  //   .force('link', d3.forceLink(links)
-  //     .id(d => d.id)
-  //     .distance( 200 )
-  //   )
-  //   .on("tick", tick)
-  //   .on("end", endSimulation); 
+export default class Simulation {
+  constructor(nodes, links, containerNode) {
+    for (const node of nodes) {
+      console.log(`               >  sim node > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+    }
 
-  // Initialize the nodes and links for dynamic link force
-  const sourceWeight = 1;
-  const targetWeight = 1;
-
-// Initialize degrees
-nodes.forEach(node => {
-  node.inDegree = 0;
-  node.outDegree = 0;
-});
-
-// Compute in-degree and out-degree
-links.forEach(link => {
-    link.source.outDegree += 1;
-    link.target.inDegree += 1;
-});
-
-
-var simulation = d3.forceSimulation(nodes)
-    .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('link', d3.forceLink(links)
-      .id(d => d.id)
-      // .strength(1.5)
-    )
-    .force('collision', rectCollide()) // Use the custom collision force
-    .force('boundary', forceBoundary(0, 0, width, height))
-    .on("tick", tick)
-    .on("end", endSimulation);    
-  
-  
-  var tick_counter = 0;
-  function tick() 
-  {
-    tick_counter++;
-    console.log('tick')
-    // if (tick_counter>150)
-    //   simulation.stop();
-  
-    update();
-
-
-    
-  };
-  
-  function calculateLinkDistance(link) {
-    const baseDistance = 52; // Minimum distance
-    const scalingFactor = 10; // Adjust to your preference
-  
-    // const sourceDegree = link.source.outDegree-1;
-    // const targetDegree = link.target.inDegree-1;
-    const sourceDegree = link.source.inDegree+link.source.outDegree-1;
-    const targetDegree = link.target.outDegree+link.target.inDegree-1;
-  
-    // Calculate distance
-    // You can design the function to emphasize either in-degree, out-degree, or both
-    const distance = baseDistance + scalingFactor * (
-      (sourceDegree * sourceWeight) + (targetDegree * targetWeight)
-    );
-  
-    return Math.max(distance,200);
+    this.nodes = nodes;
+    this.links = links;
+    this.containerNode = containerNode;
+    this.simulation = null;
+    this.tickCounter = 0; // Counter to control resizing frequency
+    this.resizeFrequency = 10; // Resize every 10 ticks
+    console.log('---------------------------------------------------------------');
+    console.log(`-- Simulation created "${this.containerNode.id}"`);
+    console.log('--    nodes', this.nodes);
+    console.log('--    links', this.links);
+    console.log('--    container', this.containerNode);
   }
+
+  // Method to initialize the force simulation
+  init() {
+    return new Promise((resolve) => {
+    // make everything ready to run the simulation
+    this.tickCounter = 0;
+
+    // initialize the simulation
+    this.simulation = d3.forceSimulation(this.nodes)
+      .force('center', d3.forceCenter(0, 0))
+      .force('link', d3.forceLink(this.links).id(d => d.id).distance(d => {
+        console.log('distance',d);
+        // return Math.min(d.source.width/2 + d.target.width/2,d.source.height/2 + d.target.height/2);
+        return 100;
+    }))
+      // .force('charge', d3.forceManyBody()) //.strength(-1300))
+      .force('collision', rectCollide()); // Use the custom collision force
+
+    this.resizeBoundingContainer();
+
+    this.simulation
+      .on('tick', () => this.tick(resolve))
+      .on('end', () => this.end(resolve)); // Perform final resize when simulation ends
+    });
+  }
+
   
-  
-  
-  function endSimulation() 
-  {
-    console.log("Simulation ended after " +  tick_counter + ' ticks')
-  
-    console.log("Nodes:");
-    console.log(nodes);
-  
-    console.log("Links:");
-    console.log(links);
-  };
-  
+  // Method to handle updating node positions on each tick of the simulation
+  tick(resolve) {
+    // if ( this.containerNode.id == 'root') {
+    //   console.log('Skip simulation',this.containerNode.id, this.tickCounter, this.nodes);
+    //   this.stop(resolve); return;
+    // }
+
+    // Stop the simulation after a certain number of ticks for debugging purposes
+    // if (this.tickCounter >= 100) {
+    //   console.log('Stopping simulation',this.containerNode.id, this.tickCounter, this.nodes);
+    //   this.stop(resolve);
+    //   return;
+    // }
+    // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
+
+    this.nodes.forEach(node => {
+      // console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+      d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
+    });
+
+    // Increment tick counter
+    this.tickCounter++;
+
+    // Resize bounding container every N ticks
+    // if (this.tickCounter % this.resizeFrequency === 0) 
+      {
+      this.resizeBoundingContainer();
+    }
+  }
+
+
+  // Method to resize the bounding container to fit all nodes
+  resizeBoundingContainer() {    
+    // const boundingBox = computeBoundingBox(this.nodes);
+    if (this.containerNode.container) {
+      const boundingBox = getComputedDimensions(this.containerNode.container);
+      // console.log('Resizing bounding container', boundingBox, this.containerNode);
+      this.containerNode.resize(boundingBox);
+    }
+  }
+
+  // Method to perform the final resize when the simulation ends
+  end(resolve) {
+    console.log(`Simulation ended for ${this.containerNode.data.id}`);
+    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    // getComputedDimensions(this.containerNode.container);
+    this.resizeBoundingContainer();
+    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
+    resolve();
+  }
+
+  // Method to stop the simulation
+  stop(resolve) {
+    console.log('>>>>     Stop simulation     <<<<');
+    if (this.simulation) {
+      this.simulation.stop();
+      this.resizeBoundingContainer();
+      resolve();
+    }
+  }
+}

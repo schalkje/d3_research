@@ -1,4 +1,4 @@
-function rectCollide() {
+export function rectCollide() {
   let nodes;
 
   const marginX = 4;
@@ -28,7 +28,7 @@ function rectCollide() {
 
         const xSpacing = (node.width + data.width) / 2 + marginX,
               ySpacing = (node.height + data.height) / 2 + marginY,
-              absDx = Math.abs(dx); // || (Math.random() );
+              absDx = Math.abs(dx), // || (Math.random() );
               absDy = Math.abs(dy); // || (Math.random() );
 
         if (absDx < xSpacing && absDy < ySpacing) {

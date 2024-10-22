@@ -23,6 +23,7 @@
       import './js/index.js';
       import {dataModel} from './js/graphData.js';
       import AdapterNode from './js/nodeAdapter.js';
+      import { createNode } from './js/node.js';
 
       const svgWidth = 800;
       const svgHeight = 600;
@@ -36,14 +37,15 @@
       // rootNode.render();
       // Render the root node, which recursively renders all children
       // const rootNode = new Node.ParentNode(testDataModel[0], testDataModelMetadata, svg);
-      const rootNode = new AdapterNode(dataModel[0], svg, 3);
-      rootNode.render();
+      createNode(dataModel[0], svg);
+      // const rootNode = new AdapterNode(dataModel[0], svg, 3);
+      // rootNode.render();
 
-      // // Center coordinates for the root node
-      const centerX = svgWidth / 2;
-      const centerY = svgHeight / 2;
-      // Set initial position of the root node to the center of the canvas
-      d3.select(`[data-id='bankview']`).attr('transform', `translate(${centerX}, ${centerY})`);
+      // // // Center coordinates for the root node
+      // const centerX = svgWidth / 2;
+      // const centerY = svgHeight / 2;
+      // // Set initial position of the root node to the center of the canvas
+      // d3.select(`[data-id='bankview']`).attr('transform', `translate(${centerX}, ${centerY})`);
   </script>
 
    <button onclick="update()">Update</button>
