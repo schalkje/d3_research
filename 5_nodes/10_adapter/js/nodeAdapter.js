@@ -7,6 +7,7 @@ export default class AdapterNode extends BaseNode {
   constructor(nodeData, parentElement, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
+    if (!nodeData.layout) nodeData.layout = 1;
 
     super(nodeData, parentElement, parentNode);
     this.container = null;
@@ -186,7 +187,7 @@ export default class AdapterNode extends BaseNode {
       this.transformNode.render();
     }
 
-    this.position3();
+    this.layout();
 
     const links = [];
     links.push({source: this.stagingNode, target: this.transformNode});
@@ -194,7 +195,22 @@ export default class AdapterNode extends BaseNode {
     renderLinks(links, this.container);
   }
 
-  async position1() {
+  layout() {
+    console.log("    Layout for Adapter:", this.id, this.data.layout);
+    switch (this.data.layout) {
+      case 1:
+        this.layout1();
+        break;
+      case 2:
+        this.layout2();
+        break;
+      case 3:
+        this.layout3();
+        break;
+    }
+  }
+
+  async layout1() {
 
     if (this.stagingNode) {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
@@ -227,7 +243,7 @@ export default class AdapterNode extends BaseNode {
     }
   }
 
-  async position2() {
+  async layout2() {
     if (this.stagingNode) {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
       const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
@@ -256,7 +272,7 @@ export default class AdapterNode extends BaseNode {
     }
   }
 
-  async position3() {
+  async layout3() {
     if (this.stagingNode) {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
       const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
