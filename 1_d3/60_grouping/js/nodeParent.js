@@ -9,7 +9,7 @@ export default class ParentNode extends BaseNode {
     super(nodeData, parentElement, parentNode);
     this.simulation = null;
     this.container = null;
-    this.containerMargin = { top: 14, right: 0, bottom: 0, left: 0 };
+    this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
   }
 
   // Method to render the parent node and its children
@@ -38,7 +38,11 @@ export default class ParentNode extends BaseNode {
       .attr("x", (d) => -this.data.width / 2 + 4)
       .attr("y", (d) => -this.data.height / 2 + 4)
       .text(this.data.label)
-      .attr("class", "node label parent");
+      .attr("class", "node label parent")
+      .on("click", (event) => {
+        event.stopPropagation();
+        this.toggleExpandCollapse(this.element);
+      })
 
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 8;
@@ -86,6 +90,12 @@ export default class ParentNode extends BaseNode {
   }
 
   async renderExpanded() {
+    this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    if (this.data.expandedSize) {
+      this.data.height = this.data.expandedSize.height;
+      this.data.width = this.data.expandedSize.width;
+    }
+
     this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     this.element
@@ -108,7 +118,8 @@ export default class ParentNode extends BaseNode {
   }
 
   async renderCollapsed() {
-    this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
+      this.data.expandedSize = {height: this.data.height, width: this.data.width};
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
     this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
@@ -133,17 +144,38 @@ export default class ParentNode extends BaseNode {
           }
         }
 
-    const simulation = new Simulation(this.data.children, links, this);
-    await simulation.init();    
+        this.simulation = new Simulation(this.data.children, links, this);
+        await this.simulation.init();   
+
   }
 
-  cascadeSimulation() {
-    if (this.parentNode)
-    {
-      this.parentNode.runSimulation();
-      this.parentNode.cascadeSimulation();
-    }
-  }
+  // drag_started (event, node) {
+  //   console.log("drag_started 22222 event",event, node);
+  //   // if (!d3.event.active) {
+  //     // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
+  //     // this.simulation.alphaTarget(0.8).restart() 
+  //     if (this.simulation) {
+  //       console.log("drag_started simulation",this.simulation);
+  //     this.simulation.restart() 
+  //     }
+  //   // }
+  //   event.fx = event.x;
+  //   event.fy = event.y;
+  //   d3.select(this).attr("class", "node_grabbing");
+  // }
+  
+  
+
+  // cascadeRestartSimulation() {
+  //   if  (this.simulation)
+  //     this.simulation.simulation.alphaTarget(0.8).restart();
+  // if (this.parentNode)
+  //   {
+  //     // if  (this.parentNode.simulation)
+  //     //   this.parentNode.simulation.simulation.alphaTarget(1).restart();
+  //       this.parentNode.cascadeRestartSimulation();
+  //   }
+  // }
 
   // Method to toggle expansion/collapse of the parent node
   toggleExpandCollapse(container) {
@@ -173,17 +205,6 @@ export default class ParentNode extends BaseNode {
       return;
     }
 
-    // for this stage, only add links between children
-    var links = [];
-    for (let i = 0; i < this.data.children.length; i++) {
-      if (i < this.data.children.length - 1) {
-        links.push({
-          source: this.data.children[i].id,
-          target: this.data.children[i + 1].id,
-        });
-      }
-    }
-
     // Create an array to hold all the render promises
     const renderPromises = [];
 
@@ -201,9 +222,7 @@ export default class ParentNode extends BaseNode {
     // Wait for all renders to complete in parallel
     await Promise.all(renderPromises);
 
-    // Initialize force-directed simulation for children
-    const simulation = new Simulation(this.data.children, links, this);
-    await simulation.init();
+    await this.runSimulation();
   }
 
   // Method to remove child nodes from the SVG
