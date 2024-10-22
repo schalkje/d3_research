@@ -27,7 +27,9 @@ export default class BaseNode {
       .attr("class", "node")
       .attr("data-id", this.id)
       .on("click", (event) => {
-        event.stopPropagation();
+        console.log("Clicked on Adapter Node [BASE]:", this.id, event);
+        if (event)
+          event.stopPropagation();
         this.toggleExpandCollapse(this.element);
       });
       // .call(d3.drag()
@@ -62,6 +64,8 @@ export default class BaseNode {
 
   // Method to update the node rendering based on interaction state
   updateRender(container) {
+    console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
+
     if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
     } else {

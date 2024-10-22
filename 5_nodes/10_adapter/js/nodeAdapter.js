@@ -5,7 +5,7 @@ import { renderLinks } from "./links.js";
 
 export default class AdapterNode extends BaseNode {
   constructor(nodeData, parentElement, parentNode = null) {
-    if (!nodeData.width) nodeData.width = 350;
+    if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
 
     super(nodeData, parentElement, parentNode);
@@ -45,8 +45,9 @@ export default class AdapterNode extends BaseNode {
       .text(this.data.label)
       .attr("class", "node label adapter")
       .on("click", (event) => {
-        event.stopPropagation();
-        this.toggleExpandCollapse(this.element);
+        console.log("Clicked on Adapter Node:", this.id, event);
+        // event.stopPropagation();
+        // this.toggleExpandCollapse(this.element);
       });
 
     this.minimumSize = getComputedDimensions(labelElement);
@@ -95,34 +96,37 @@ export default class AdapterNode extends BaseNode {
   }
 
   async renderExpanded() {
-    this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    // this.data.expandedSize = {height: this.data.height, width: this.data.width};
     if (this.data.expandedSize) {
       this.data.height = this.data.expandedSize.height;
       this.data.width = this.data.expandedSize.width;
+      console.log(`    Rendering Children for Parent: expanded=${this.data.expandedSize.width}x${this.data.expandedSize.height}, size=expanded=${this.data.width}x${this.data.height}`);
     }
 
     this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
-    // this.element
-    //   .select("text")
-    //   .attr("x", this.data.x)
-    //   .attr("y", this.data.y + this.containerMargin.top);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
     this.container = this.element
       .append("g")
-      .attr("class", (d) => `node container parent`)
+      .attr("class", (d) => `node container adapter`)
       .attr("width", containerWidth)
       .attr("height", containerHeight)
-      .attr("x", -containerWidth / 2 + this.containerMargin.left)
-      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
+      .attr("x", this.data.x + this.containerMargin.left)
+      .attr("y", this.data.y + this.containerMargin.top);
+      console.log("    Container:", this.data.x, this.data.y, containerWidth, containerHeight);
+      // .attr("x", -containerWidth / 2 + this.containerMargin.left)
+      // .attr("y", -containerHeight / 2); // + this.containerMargin.top);
 
     // Set expanded or collapsed state
     await this.renderChildren(this.container);
   }
 
   async renderCollapsed() {
+    if (!this.data.expandedSize)
+      this.data.expandedSize = {height: this.data.height, width: this.data.width};
+
     if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
       this.data.expandedSize = {height: this.data.height, width: this.data.width};
     this.data.height = this.minimumSize.height;
@@ -144,6 +148,7 @@ export default class AdapterNode extends BaseNode {
 
   // Method to update the parent node rendering based on interaction state
   updateRender(container) {
+    console.log("    Updating Render for Parent:", this.id, this.data.interactionState.expanded);
     if (this.data.interactionState.expanded) {
       container.classed("collapsed", false).classed("expanded", true);
       this.renderExpanded();
@@ -254,10 +259,10 @@ export default class AdapterNode extends BaseNode {
   async position3() {
     if (this.stagingNode) {
       const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
       const width = this.stagingNode.data.width;
-      const height = this.archiveNode.data.height + this.stagingNode.data.height + this.nodeSpacing.vertical;
+      const height = this.archiveNode.data.height + this.transformNode.data.height + this.nodeSpacing.vertical;
       this.stagingNode.resize({width: width, height: height});
 
       this.stagingNode.x = x;
