@@ -13,6 +13,7 @@ export default class AdapterNode extends BaseNode {
     this.stagingNode = null;
     this.transformNode = null;
     this.archiveNode = null;
+    this.nodeSpacing = {horizontal: 20, vertical: 10};
   }
 
   // Method to render the parent node and its children
@@ -163,9 +164,6 @@ export default class AdapterNode extends BaseNode {
     if (archiveChild) {
       this.archiveNode = new RectangularNode(archiveChild, parentContainer, this);
       this.archiveNode.render();
-      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.archiveNode.data.width/2 + 30;
-      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
-      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
     }
 
     // render "staging" node
@@ -173,9 +171,6 @@ export default class AdapterNode extends BaseNode {
     if (stagingChild) {
       this.stagingNode = new RectangularNode(stagingChild, parentContainer, this);
       this.stagingNode.render();
-      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + 10;
-      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
     }
 
     // render "transform" node
@@ -183,12 +178,77 @@ export default class AdapterNode extends BaseNode {
     if (transformChild) {
       this.transformNode = new RectangularNode(transformChild, parentContainer, this);
       this.transformNode.render();
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + 30;
-      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + 10;
-      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
     }
 
+    this.position3();
   }
+
+  async position1() {
+
+    if (this.stagingNode) {
+      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
+      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
+      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+
+    if (this.archiveNode) {
+      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+
+    if (this.transformNode) {
+      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 ;
+      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      const width = this.stagingNode.data.width + this.archiveNode.data.width - this.stagingNode.data.width/2 + this.nodeSpacing.horizontal;
+      this.transformNode.resize({width: width, height: this.transformNode.data.height});
+      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+  }
+
+  async position2() {
+    if (this.stagingNode) {
+      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
+      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+
+    if (this.archiveNode) {
+      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.archiveNode.data.width/2 + this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+
+    if (this.transformNode) {
+      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+  }
+
+  async position3() {
+    if (this.stagingNode) {
+      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
+      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+      const width = this.stagingNode.data.width;
+      const height = this.archiveNode.data.height + this.stagingNode.data.height + this.nodeSpacing.vertical;
+      this.stagingNode.resize({width: width, height: height});
+    }
+
+    if (this.archiveNode) {
+      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+
+    if (this.transformNode) {
+      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
+    }
+  }
+
 
   // Method to remove child nodes from the SVG
   removeChildren() {

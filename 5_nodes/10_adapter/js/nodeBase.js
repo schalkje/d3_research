@@ -50,8 +50,6 @@ export default class BaseNode {
   }
 
   resize(boundingBox) {
-    this.data.x = boundingBox.x;
-    this.data.y = boundingBox.y;
     this.data.width = boundingBox.width;
     this.data.height = boundingBox.height;
   }

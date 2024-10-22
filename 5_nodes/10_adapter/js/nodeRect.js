@@ -33,6 +33,23 @@ export default class RectangularNode extends BaseNode {
       .text(this.data.label);
   }
 
+  resize(boundingBox) {
+    const oldSize = {width: this.data.width, height: this.data.height};
+
+    super.resize(boundingBox);
+
+    this.element
+      .select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height);
+
+    // reposition the label based on the new size
+    this.element
+      .select("text")
+      .attr("x", this.data.width / 2 - oldSize.width / 2)
+      .attr("y", this.data.height / 2 - oldSize.height / 2);
+  }
+
   // // override the base class method to get the connection point of a rectangular node
   // getConnectionPoint(source, target) {
   //   let cornerAngles = getRectAngles(source);
