@@ -65,7 +65,42 @@ export default class BaseContainerNode extends BaseNode {
     this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
   }
 
-  resize(boundingBox) {
+  resize(size) {
+    // make sure it doesn't go below minimum size
+    // console.log("ParentNode resize", boundingBox.width, this.minimumSize.width, boundingBox.height, this.minimumSize.height);
+    // boundingBox.width = Math.max(boundingBox.width, this.minimumSize.width);
+    // boundingBox.height = Math.max(boundingBox.height, this.minimumSize.height);
+
+    super.resize(size);
+
+    this.element
+      .select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height)
+      .attr("x", -this.data.width / 2)
+      .attr("y", -this.data.height / 2);
+
+    this.element
+      .select("text")
+      .attr("x", -this.data.width / 2 + 4)
+      .attr("y", -this.data.height / 2 + 4);
+
+    if (this.container) {
+      const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
+      const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+      this.container
+        .attr("width", containerWidth)
+        .attr("height", containerHeight)
+        .attr(
+          "transform",
+          `translate(${-this.data.width / 2 + containerWidth / 2 + this.containerMargin.left}, ${
+            -this.data.height / 2 + containerHeight / 2 + this.containerMargin.top
+          })`
+        );
+    }
+  }
+
+  resizeContainer(boundingBox) {
     boundingBox.x -= this.containerMargin.left;
     boundingBox.y -= this.containerMargin.top;
     boundingBox.width += this.containerMargin.left + this.containerMargin.right;
@@ -111,7 +146,8 @@ export default class BaseContainerNode extends BaseNode {
       this.data.width = this.data.expandedSize.width;
     }
 
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
+    // this.resize({ width: this.data.width, height: this.data.height });
+    // this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -119,8 +155,11 @@ export default class BaseContainerNode extends BaseNode {
       .append("g")
       .attr("class", (d) => `node container parent`);
 
+
     // Set expanded or collapsed state
     await this.renderChildren();
+
+    this.resize({ width: this.data.width, height: this.data.height });
   }
 
   async renderCollapsed() {
@@ -134,6 +173,8 @@ export default class BaseContainerNode extends BaseNode {
 
     // apply the collapsed size to the rectangle
     this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
+
+    this.resize({ width: this.data.width, height: this.data.height });
 
     this.cascadeLayoutUpdate(); // JS: todo: ugly: why do we need to call this here (and not in the rederExpanded method)?
   }

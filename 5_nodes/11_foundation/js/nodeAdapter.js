@@ -107,7 +107,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.nodeSpacing.horizontal -
         +2 * this.nodeSpacing.horizontal;
       const height = this.transformNode.data.height;
-      this.transformNode.resize({ width: width, height: height });
+      this.transformNode.resizeContainer({ width: width, height: height });
 
       // then position the transform node based on the new size
       const x =

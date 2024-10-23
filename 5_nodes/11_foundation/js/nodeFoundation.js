@@ -6,11 +6,12 @@ import { renderLinks } from "./links.js";
 
 const DisplayMode = Object.freeze({
   FULL: 'full',
-  CODE: 'code'
+  CODE: 'code'  
 });
 
 const Orientation = Object.freeze({
   HORIZONTAL: 'horizontal',
+  HORIZONTAL_LINE: 'horizontal_line',
   VERTICAL: 'vertical',
   ROTATE_90: 'rotate90',
   ROTATE_270: 'rotate270'  
@@ -19,7 +20,7 @@ const Orientation = Object.freeze({
 export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
-    if (!nodeData.height) nodeData.height = 44;
+    if (!nodeData.height) nodeData.height = 48;
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.FULL;
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;

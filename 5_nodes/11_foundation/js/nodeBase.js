@@ -9,7 +9,7 @@ export default class BaseNode {
 
     this.element = null;
     this.simulation = null;
-    this.layoutDebug = false;
+    this.layoutDebug = true;
 
     if (!this.data.interactionState) this.data.interactionState = { expanded: true };
 
@@ -56,9 +56,9 @@ export default class BaseNode {
     renderContainer();
   }
 
-  resize(boundingBox) {
-    this.data.width = boundingBox.width;
-    this.data.height = boundingBox.height;
+  resize(size) {
+    this.data.width = size.width;
+    this.data.height = size.height;
   }
 
   // Method to toggle expansion/collapse of the node
