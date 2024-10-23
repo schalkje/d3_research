@@ -63,12 +63,13 @@ export default class Simulation {
     //   this.stop(resolve);
     //   return;
     // }
-    // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
+    // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<', this.containerNode);
 
     this.containerNode.childNodes.forEach(node => {
       // console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
       // console.log(`                       > `,node);	
       node.element.attr('transform', `translate(${node.x}, ${node.y})`);
+      // node.element.attr('transform', `translate(${ this.containerNode.containerMargin.left +node.x}, ${this.containerNode.containerMargin.top + node.y})`);
     });
 
     // Increment tick counter
@@ -84,12 +85,9 @@ export default class Simulation {
 
   // Method to resize the bounding container to fit all nodes
   resizeBoundingContainer() {    
-    // const boundingBox = computeBoundingBox(this.nodes);
     if (this.containerNode.container) {
       const boundingBox = getComputedDimensions(this.containerNode.container);
-      // const boundingBox = getComputedDimensions(this.containerNode.element);
-      // console.log('Resizing bounding container', boundingBox, this.containerNode);
-      this.containerNode.resize(boundingBox);
+      this.containerNode.resizeContainer(boundingBox);
     }
     else
     {
@@ -100,10 +98,7 @@ export default class Simulation {
   // Method to perform the final resize when the simulation ends
   end(resolve) {
     console.log(`Simulation ended for ${this.containerNode.data.id}`);
-    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
-    // getComputedDimensions(this.containerNode.container);
     this.resizeBoundingContainer();
-    // console.log(`               ${this.containerNode.data.id}, (${Math.round(this.containerNode.data.x)},${Math.round(this.containerNode.data.y)}) --> ${Math.round(this.containerNode.data.width)}, ${Math.round(this.containerNode.data.height)}`);
     resolve();
   }
 

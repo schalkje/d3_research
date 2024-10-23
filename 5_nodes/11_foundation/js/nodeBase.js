@@ -78,10 +78,12 @@ export default class BaseNode {
     }
   }
 
-  cascadeLayoutUpdate() {
+  cascadeArrange() {
+    console.log("cascadeLayoutUpdate ", this.id);
     if (this.parentNode) {
-      this.parentNode.runSimulation();
-      this.parentNode.cascadeLayout();
+      // this.parentNode.runSimulation();
+      this.parentNode.arrange();
+      this.parentNode.cascadeArrange();
     }
   }
 

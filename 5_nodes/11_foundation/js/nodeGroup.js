@@ -53,7 +53,14 @@ export default class GroupNode extends BaseContainerNode {
 
     await this.runSimulation();
   }
+
+  async arrange() {
+    console.log("Arranging GroupNode:", this.id);
+    await this.runSimulation();
+  }
 }
+
+
 
 const typeToComponent = {
   group: GroupNode,
