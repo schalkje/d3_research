@@ -15,7 +15,7 @@ export default class AdapterNode extends BaseNode {
     this.stagingNode = null;
     this.transformNode = null;
     this.archiveNode = null;
-    this.nodeSpacing = {horizontal: 20, vertical: 10};
+    this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
   // Method to render the parent node and its children
@@ -26,8 +26,8 @@ export default class AdapterNode extends BaseNode {
     // A group/parent node consists of it's own display, a border, background and a label
     // and a container where the node is rendered
 
-      // Append text to the top left corner of the element    
-      const labelElement = this.element
+    // Append text to the top left corner of the element
+    const labelElement = this.element
       .append("text")
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4)
@@ -36,21 +36,18 @@ export default class AdapterNode extends BaseNode {
       .on("click", (event) => {
         event.stopPropagation();
         this.toggleExpandCollapse(this.element);
-      })
+      });
 
+    // Compute, store the minimum size of the node and adjust the size and positioning if needed
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 8;
     this.minimumSize.height += 4;
-    if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) 
-    {
-      this.data.width = Math.max(this.minimumSize.width,this.data.width);
-      this.data.height = Math.max(this.minimumSize.height,this.data.height);
+    if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
+      this.data.width = Math.max(this.minimumSize.width, this.data.width);
+      this.data.height = Math.max(this.minimumSize.height, this.data.height);
       // reposition the label based on the new size
-      labelElement
-        .attr("x", -this.data.width / 2 + 4)
-        .attr("y", -this.data.height / 2 + 4);
+      labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
-  
 
     // Draw the node shape
     this.element
@@ -78,23 +75,18 @@ export default class AdapterNode extends BaseNode {
     boundingBox.width += this.containerMargin.left + this.containerMargin.right;
     boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
 
-    // make sure it doesn't go below minimum size
+    // make sure the size doesn't go below minimum size
     boundingBox.width = Math.max(boundingBox.width, this.minimumSize.width);
     boundingBox.height = Math.max(boundingBox.height, this.minimumSize.height);
 
     super.resize(boundingBox);
 
-    this.element
-      .select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height);
-      // .attr("x", this.data.x)
-      // .attr("y", this.data.y + this.containerMargin.top);
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     this.element
       .select("text")
-      .attr("x", this.data.x+4)
-      .attr("y", this.data.y + this.containerMargin.top+4);
+      .attr("x", this.data.x + 4)
+      .attr("y", this.data.y + this.containerMargin.top + 4);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -109,13 +101,12 @@ export default class AdapterNode extends BaseNode {
     if (this.data.expandedSize) {
       this.data.height = this.data.expandedSize.height;
       this.data.width = this.data.expandedSize.width;
-      console.log(`    Rendering Children for Parent: expanded=${this.data.expandedSize.width}x${this.data.expandedSize.height}, size=expanded=${this.data.width}x${this.data.height}`);
+      console.log(
+        `    Rendering Children for Parent: expanded=${this.data.expandedSize.width}x${this.data.expandedSize.height}, size=expanded=${this.data.width}x${this.data.height}`
+      );
     }
 
-    this.element.select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height);
-
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -125,10 +116,7 @@ export default class AdapterNode extends BaseNode {
       .attr("width", containerWidth)
       .attr("height", containerHeight)
       .attr("x", -containerWidth / 2 + this.containerMargin.left)
-      .attr("y", -containerHeight / 2); // + this.containerMargin.top);
-      console.log("    Container:", this.data.x, this.data.y, containerWidth, containerHeight);
-      // .attr("x", -containerWidth / 2 + this.containerMargin.left)
-      // .attr("y", -containerHeight / 2); // + this.containerMargin.top);
+      .attr("y", -containerHeight / 2); 
 
     // Set expanded or collapsed state
     await this.renderChildren(this.container);
@@ -136,17 +124,15 @@ export default class AdapterNode extends BaseNode {
 
   async renderCollapsed() {
     // store the expanded size before collapsing
-    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
-      this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width)
+      this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
     // set the collapsed size
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
 
     // apply the collapsed size to the rectangle
-    this.element.select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height);
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
   }
 
   // Method to toggle expansion/collapse of the parent node
@@ -198,8 +184,8 @@ export default class AdapterNode extends BaseNode {
     this.layout();
 
     const links = [];
-    links.push({source: this.stagingNode, target: this.transformNode});
-    links.push({source: this.stagingNode, target: this.archiveNode});
+    links.push({ source: this.stagingNode, target: this.transformNode });
+    links.push({ source: this.stagingNode, target: this.archiveNode });
     renderLinks(links, this.container);
   }
 
@@ -219,10 +205,9 @@ export default class AdapterNode extends BaseNode {
   }
 
   async layout1() {
-
     if (this.stagingNode) {
-      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;      
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.stagingNode.x = x;
@@ -230,8 +215,13 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.archiveNode) {
-      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      const x =
+        -this.data.width / 2 +
+        this.archiveNode.data.width / 2 +
+        this.containerMargin.left +
+        this.stagingNode.data.width +
+        this.nodeSpacing.horizontal;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
       this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.archiveNode.x = x;
@@ -240,13 +230,28 @@ export default class AdapterNode extends BaseNode {
 
     if (this.transformNode) {
       // first resize the transform node to fit the width of the other two nodes
-      const width = this.stagingNode.data.width + this.archiveNode.data.width - this.stagingNode.data.width/2 + this.nodeSpacing.horizontal - + 2*this.nodeSpacing.horizontal;
+      const width =
+        this.stagingNode.data.width +
+        this.archiveNode.data.width -
+        this.stagingNode.data.width / 2 +
+        this.nodeSpacing.horizontal -
+        +2 * this.nodeSpacing.horizontal;
       const height = this.transformNode.data.height;
-      this.transformNode.resize({width: width, height: height});
+      this.transformNode.resize({ width: width, height: height });
 
       // then position the transform node based on the new size
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 + 2*this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      const x =
+        -this.data.width / 2 +
+        this.transformNode.data.width / 2 +
+        this.containerMargin.left +
+        this.stagingNode.data.width / 2 +
+        2 * this.nodeSpacing.horizontal;
+      const y =
+        -this.data.height / 2 +
+        this.transformNode.data.height / 2 +
+        this.containerMargin.top +
+        this.archiveNode.data.height +
+        this.nodeSpacing.vertical;
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.transformNode.x = x;
@@ -256,8 +261,13 @@ export default class AdapterNode extends BaseNode {
 
   async layout2() {
     if (this.stagingNode) {
-      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
+      const y =
+        -this.data.height / 2 +
+        this.stagingNode.data.height / 2 +
+        this.containerMargin.top +
+        this.archiveNode.data.height +
+        this.nodeSpacing.vertical;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.stagingNode.x = x;
@@ -265,8 +275,13 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.archiveNode) {
-      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.archiveNode.data.width/2 + this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      const x =
+        -this.data.width / 2 +
+        this.archiveNode.data.width / 2 +
+        this.containerMargin.left +
+        this.archiveNode.data.width / 2 +
+        this.nodeSpacing.horizontal;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
       this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.archiveNode.x = x;
@@ -274,8 +289,18 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.transformNode) {
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      const x =
+        -this.data.width / 2 +
+        this.transformNode.data.width / 2 +
+        this.containerMargin.left +
+        this.stagingNode.data.width +
+        this.nodeSpacing.horizontal;
+      const y =
+        -this.data.height / 2 +
+        this.transformNode.data.height / 2 +
+        this.containerMargin.top +
+        this.archiveNode.data.height +
+        this.nodeSpacing.vertical;
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.transformNode.x = x;
@@ -288,11 +313,11 @@ export default class AdapterNode extends BaseNode {
       // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
       const height = this.archiveNode.data.height + this.transformNode.data.height + this.nodeSpacing.vertical;
-      this.stagingNode.resize({width: width, height: height});
+      this.stagingNode.resize({ width: width, height: height });
 
       // then position the staging node based on the new size
-      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
       this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.stagingNode.x = x;
@@ -300,8 +325,13 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.archiveNode) {
-      const x = -this.data.width/2 + (this.archiveNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.archiveNode.data.height/2) + this.containerMargin.top;
+      const x =
+        -this.data.width / 2 +
+        this.archiveNode.data.width / 2 +
+        this.containerMargin.left +
+        this.stagingNode.data.width +
+        this.nodeSpacing.horizontal;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
       this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.archiveNode.x = x;
@@ -309,15 +339,24 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.transformNode) {
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width + this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      const x =
+        -this.data.width / 2 +
+        this.transformNode.data.width / 2 +
+        this.containerMargin.left +
+        this.stagingNode.data.width +
+        this.nodeSpacing.horizontal;
+      const y =
+        -this.data.height / 2 +
+        this.transformNode.data.height / 2 +
+        this.containerMargin.top +
+        this.archiveNode.data.height +
+        this.nodeSpacing.vertical;
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.transformNode.x = x;
       this.transformNode.y = y;
     }
   }
-
 
   // Method to remove child nodes from the SVG
   removeChildren() {
