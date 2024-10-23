@@ -27,21 +27,16 @@ export default class BaseNode {
       .attr("data-id", this.id)
       .on("click", (event) => {
         console.log("Clicked on Adapter Node [BASE]:", this.id, event);
-        if (event)
-          event.stopPropagation();
+        if (event) event.stopPropagation();
         this.toggleExpandCollapse(this.element);
       });
-      // .call(d3.drag()
-      //   .on("start", (event) => this.drag_started(event, this))
-      //   .on("drag", (event) => this.dragged(event, this))
-      //   .on("end", (event) => this.drag_ended(event, this)));
+    // .call(d3.drag()
+    //   .on("start", (event) => this.drag_started(event, this))
+    //   .on("drag", (event) => this.dragged(event, this))
+    //   .on("end", (event) => this.drag_ended(event, this)));
 
-      // show the center stip
-      this.element.append("circle")
-      .attr("r", 5)
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("fill", "red");
+    // show the center stip
+    this.element.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
@@ -80,77 +75,71 @@ export default class BaseNode {
   }
 
   cascadeSimulation() {
-    if (this.parentNode)
-    {
+    if (this.parentNode) {
       this.parentNode.runSimulation();
       this.parentNode.cascadeSimulation();
     }
   }
 
   cascadeRestartSimulation() {
-    console.log("cascadeRestartSimulation ",this.id);
-    if  (this.simulation){
-      console.log("                    simulaiton restart",this.id);
+    console.log("cascadeRestartSimulation ", this.id);
+    if (this.simulation) {
+      console.log("                    simulaiton restart", this.id);
       this.simulation.simulation.alphaTarget(0.8).restart();
     }
-  if (this.parentNode)
-    {
+    if (this.parentNode) {
       // if  (this.parentNode.simulation)
       //   this.parentNode.simulation.simulation.alphaTarget(1).restart();
-        this.parentNode.cascadeRestartSimulation();
+      this.parentNode.cascadeRestartSimulation();
     }
   }
 
   cascadeStopSimulation() {
-    console.log("cascadeStopSimulation ",this.id);
-    if  (this.simulation){
-      console.log("                    simulation stop",this.id);
+    console.log("cascadeStopSimulation ", this.id);
+    if (this.simulation) {
+      console.log("                    simulation stop", this.id);
       this.simulation.simulation.alphaTarget(0);
     }
-    if (this.parentNode)
-      {
-          this.parentNode.cascadeStopSimulation();
-      }
+    if (this.parentNode) {
+      this.parentNode.cascadeStopSimulation();
+    }
   }
 
   getConnectionPoint() {}
 
   // drag
-drag_started (event, node) {
-  console.log("drag_started event",event, node);
-  // if (!d3.event.active) {
+  drag_started(event, node) {
+    console.log("drag_started event", event, node);
+    // if (!d3.event.active) {
     // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
-    // this.simulation.alphaTarget(0.8).restart() 
+    // this.simulation.alphaTarget(0.8).restart()
     // if (node.simulation) {
     //   console.log("drag_started simulation",node.simulation);
-    //   // node.simulation.simulation.restart(); 
+    //   // node.simulation.simulation.restart();
     //   // node.runSimulation();
     //   node.parentNode.cascadeRestartSimulation();
     // }
-  // }
-  node.cascadeRestartSimulation();
-  event.fx = event.x;
-  event.fy = event.y;
-  node.element.classed("grabbing", true);
+    // }
+    node.cascadeRestartSimulation();
+    event.fx = event.x;
+    event.fy = event.y;
+    node.element.classed("grabbing", true);
+  }
+
+  dragged(event, node) {
+    // console.log("dragged event",event);
+
+    event.fx = event.x;
+    event.fy = event.y;
+    // move the simulation
+    node.element.attr("transform", "translate(" + event.fx + "," + event.fy + ")");
+  }
+
+  drag_ended(event, node) {
+    // console.log("drag_ended event",event);
+
+    node.element.classed("grabbing", false);
+
+    node.cascadeStopSimulation();
+  }
 }
-
-dragged (event, node) {
-  // console.log("dragged event",event);
-
-  event.fx = event.x;
-  event.fy = event.y;
-  // move the simulation
-  node.element
-    .attr("transform", "translate(" + event.fx + "," + event.fy + ")");
-
-}
-
-drag_ended (event, node) {
-  // console.log("drag_ended event",event);
-
-  node.element.classed("grabbing", false);
-
-  node.cascadeStopSimulation();
-}
-}
-

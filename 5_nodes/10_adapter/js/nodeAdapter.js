@@ -174,33 +174,33 @@ export default class AdapterNode extends BaseNode {
       return;
     }
 
-    // // render "archive" node
-    // let archiveChild = this.data.children.find((child) => child.category === "archive");
-    // if (archiveChild) {
-    //   this.archiveNode = new RectangularNode(archiveChild, parentContainer, this);
-    //   this.archiveNode.render();
-    // }
+    // render "archive" node
+    let archiveChild = this.data.children.find((child) => child.category === "archive");
+    if (archiveChild) {
+      this.archiveNode = new RectangularNode(archiveChild, parentContainer, this);
+      this.archiveNode.render();
+    }
 
-    // // render "staging" node
-    // let stagingChild = this.data.children.find((child) => child.category === "staging");
-    // if (stagingChild) {
-    //   this.stagingNode = new RectangularNode(stagingChild, parentContainer, this);
-    //   this.stagingNode.render();
-    // }
+    // render "staging" node
+    let stagingChild = this.data.children.find((child) => child.category === "staging");
+    if (stagingChild) {
+      this.stagingNode = new RectangularNode(stagingChild, parentContainer, this);
+      this.stagingNode.render();
+    }
 
-    // // render "transform" node
-    // let transformChild = this.data.children.find((child) => child.category === "transform");
-    // if (transformChild) {
-    //   this.transformNode = new RectangularNode(transformChild, parentContainer, this);
-    //   this.transformNode.render();
-    // }
+    // render "transform" node
+    let transformChild = this.data.children.find((child) => child.category === "transform");
+    if (transformChild) {
+      this.transformNode = new RectangularNode(transformChild, parentContainer, this);
+      this.transformNode.render();
+    }
 
-    // this.layout();
+    this.layout();
 
-    // const links = [];
-    // links.push({source: this.stagingNode, target: this.transformNode});
-    // links.push({source: this.stagingNode, target: this.archiveNode});
-    // renderLinks(links, this.container);
+    const links = [];
+    links.push({source: this.stagingNode, target: this.transformNode});
+    links.push({source: this.stagingNode, target: this.archiveNode});
+    renderLinks(links, this.container);
   }
 
   layout() {
@@ -239,11 +239,14 @@ export default class AdapterNode extends BaseNode {
     }
 
     if (this.transformNode) {
-      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 + 2*this.nodeSpacing.horizontal;
-      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
+      // first resize the transform node to fit the width of the other two nodes
       const width = this.stagingNode.data.width + this.archiveNode.data.width - this.stagingNode.data.width/2 + this.nodeSpacing.horizontal - + 2*this.nodeSpacing.horizontal;
       const height = this.transformNode.data.height;
       this.transformNode.resize({width: width, height: height});
+
+      // then position the transform node based on the new size
+      const x = -this.data.width/2 + (this.transformNode.data.width/2) + this.containerMargin.left + this.stagingNode.data.width/2 + 2*this.nodeSpacing.horizontal;
+      const y = -this.data.height/2 + (this.transformNode.data.height/2) + this.containerMargin.top + this.archiveNode.data.height + this.nodeSpacing.vertical;
       this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
 
       this.transformNode.x = x;
@@ -282,15 +285,18 @@ export default class AdapterNode extends BaseNode {
 
   async layout3() {
     if (this.stagingNode) {
-      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
-      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
-      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+      // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
       const height = this.archiveNode.data.height + this.transformNode.data.height + this.nodeSpacing.vertical;
       this.stagingNode.resize({width: width, height: height});
 
+      // then position the staging node based on the new size
+      const x = -this.data.width/2 + (this.stagingNode.data.width/2) + this.containerMargin.left;
+      const y = -this.data.height/2 + (this.stagingNode.data.height/2) + this.containerMargin.top;
+      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
+
       this.stagingNode.x = x;
-      this.stagingNode.y = this.stagingNode.data.height/2 - this.containerMargin.top;
+      this.stagingNode.y = y;
     }
 
     if (this.archiveNode) {

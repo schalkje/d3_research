@@ -10,7 +10,7 @@ export default class ParentNode extends BaseNode {
     super(nodeData, parentElement, parentNode);
     this.simulation = null;
     this.container = null;
-    this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8};
+    this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.childNodes = [];
   }
 
@@ -22,7 +22,7 @@ export default class ParentNode extends BaseNode {
     // A group/parent node consists of it's own display, a border, background and a label
     // and a container where the node is rendered
 
-    // Append text to the top left corner of the element    
+    // Append text to the top left corner of the element
     const labelElement = this.element
       .append("text")
       .attr("x", -this.data.width / 2 + 4)
@@ -32,19 +32,16 @@ export default class ParentNode extends BaseNode {
       .on("click", (event) => {
         event.stopPropagation();
         this.toggleExpandCollapse(this.element);
-      })
+      });
 
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 8;
     this.minimumSize.height += 4;
-    if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) 
-    {
-      this.data.width = Math.max(this.minimumSize.width,this.data.width);
-      this.data.height = Math.max(this.minimumSize.height,this.data.height);
+    if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
+      this.data.width = Math.max(this.minimumSize.width, this.data.width);
+      this.data.height = Math.max(this.minimumSize.height, this.data.height);
       // reposition the label based on the new size
-      labelElement
-        .attr("x", -this.data.width / 2 + 4)
-        .attr("y", -this.data.height / 2 + 4);
+      labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
 
     // Draw the node shape
@@ -57,7 +54,6 @@ export default class ParentNode extends BaseNode {
       .attr("y", -this.data.height / 2)
       .attr("rx", 5)
       .attr("ry", 5);
-
 
     if (this.data.interactionState.expanded) {
       this.element.classed("expanded", true);
@@ -90,9 +86,8 @@ export default class ParentNode extends BaseNode {
       .attr("height", this.data.height)
       .attr("x", -this.data.width / 2)
       .attr("y", -this.data.height / 2);
-      // .attr("x", this.data.x)
-      // .attr("y", this.data.y + this.containerMargin.top);
-
+    // .attr("x", this.data.x)
+    // .attr("y", this.data.y + this.containerMargin.top);
 
     this.element
       .select("text")
@@ -105,10 +100,15 @@ export default class ParentNode extends BaseNode {
       .attr("width", containerWidth)
       .attr("height", containerHeight)
       // .attr("transform", `translate(${-boundingBox.width / 2}, ${-this.data.height / 2 + containerHeight/2 + this.containerMargin.top})`);
-      .attr("transform", `translate(${-this.data.width / 2 + containerWidth/2 + this.containerMargin.left}, ${-this.data.height / 2 + containerHeight/2 + this.containerMargin.top})`);
-      // .attr("transform", `translate(${-this.data.width / 2}, ${-this.data.height / 2})`);
-      // .attr("transform", `translate(${-this.data.width / 2 + containerWidth/2 + this.containerMargin.left}, ${-this.data.height / 2 + containerHeight/2 + this.containerMargin.top})`);
-      // .attr("transform", `translate(${-this.data.width / 2 + this.containerMargin.left}, ${-this.data.height / 2 + this.containerMargin.top})`);
+      .attr(
+        "transform",
+        `translate(${-this.data.width / 2 + containerWidth / 2 + this.containerMargin.left}, ${
+          -this.data.height / 2 + containerHeight / 2 + this.containerMargin.top
+        })`
+      );
+    // .attr("transform", `translate(${-this.data.width / 2}, ${-this.data.height / 2})`);
+    // .attr("transform", `translate(${-this.data.width / 2 + containerWidth/2 + this.containerMargin.left}, ${-this.data.height / 2 + containerHeight/2 + this.containerMargin.top})`);
+    // .attr("transform", `translate(${-this.data.width / 2 + this.containerMargin.left}, ${-this.data.height / 2 + this.containerMargin.top})`);
   }
 
   async renderExpanded() {
@@ -118,9 +118,7 @@ export default class ParentNode extends BaseNode {
       this.data.width = this.data.expandedSize.width;
     }
 
-    this.element.select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height);
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -138,53 +136,49 @@ export default class ParentNode extends BaseNode {
 
   async renderCollapsed() {
     // store the expanded size before collapsing
-    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width )
-      this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width)
+      this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
     // set the collapsed size
     this.data.height = this.minimumSize.height;
     this.data.width = this.minimumSize.width;
 
     // apply the collapsed size to the rectangle
-    this.element.select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height);
+    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
 
     this.runSimulation();
   }
 
   async runSimulation() {
-        // for this stage, only add links between children
-        var links = [];
-        // for (let i = 0; i < this.data.children.length; i++) {
-        //   if (i < this.data.children.length - 1) {
-        //     links.push({
-        //       source: this.data.children[i].id,
-        //       target: this.data.children[i + 1].id,
-        //     });
-        //   }
-        // }
+    // for this stage, only add links between children
+    var links = [];
+    // for (let i = 0; i < this.data.children.length; i++) {
+    //   if (i < this.data.children.length - 1) {
+    //     links.push({
+    //       source: this.data.children[i].id,
+    //       target: this.data.children[i + 1].id,
+    //     });
+    //   }
+    // }
 
-        this.simulation = new Simulation(this);
-        await this.simulation.init();   
+    this.simulation = new Simulation(this);
+    await this.simulation.init();
   }
 
   // drag_started (event, node) {
   //   console.log("drag_started 22222 event",event, node);
   //   // if (!d3.event.active) {
   //     // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
-  //     // this.simulation.alphaTarget(0.8).restart() 
+  //     // this.simulation.alphaTarget(0.8).restart()
   //     if (this.simulation) {
   //       console.log("drag_started simulation",this.simulation);
-  //     this.simulation.restart() 
+  //     this.simulation.restart()
   //     }
   //   // }
   //   event.fx = event.x;
   //   event.fy = event.y;
   //   d3.select(this).attr("class", "node_grabbing");
   // }
-  
-  
 
   // cascadeRestartSimulation() {
   //   if  (this.simulation)
