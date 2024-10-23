@@ -5,22 +5,16 @@ import { getComputedDimensions,computeBoundingBox } from './utils.js';
 import { rectCollide } from './forceRectCollide.js';
 
 export default class Simulation {
-  constructor(nodes, links, containerNode) {
-    for (const node of nodes) {
-      console.log(`               >  sim node > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
-    }
+  constructor(containerNode) {
 
-    this.nodes = nodes;
-    this.links = links;
     this.containerNode = containerNode;
     this.simulation = null;
     this.tickCounter = 0; // Counter to control resizing frequency
     this.resizeFrequency = 10; // Resize every 10 ticks
     console.log('---------------------------------------------------------------');
     console.log(`-- Simulation created "${this.containerNode.id}"`);
-    console.log('--    nodes', this.nodes);
-    console.log('--    links', this.links);
     console.log('--    container', this.containerNode);
+    this.links=[];
   }
 
   // Method to initialize the force simulation
@@ -28,9 +22,16 @@ export default class Simulation {
     return new Promise((resolve) => {
     // make everything ready to run the simulation
     this.tickCounter = 0;
+    this.containerNode.childNodes.forEach(node => {
+      // console.log('Simulation init',node);
+      node.x = node.data.x;
+      node.y = node.data.y;
+      node.width = node.data.width;
+      node.height = node.data.height;      
+    });
 
     // initialize the simulation
-    this.simulation = d3.forceSimulation(this.nodes)
+    this.simulation = d3.forceSimulation(this.containerNode.childNodes)
       .force('center', d3.forceCenter(0, 0))
       .force('link', d3.forceLink(this.links).id(d => d.id).distance(d => {
         console.log('distance',d);
@@ -64,22 +65,32 @@ export default class Simulation {
     // }
     // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
 
-    this.nodes.forEach(node => {
+    // this.containerNode.ch
+
+    // this.nodes.forEach(node => {
+    //   console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+    //   console.log(`               <  tick > `,node);	
+    //   // console.log(`               <  ${this.containerNode.data.x},${this.containerNode.data.y}`);
+    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
+    //   // d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
+
+    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
+
+    //   // works for group
+    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
+
+    //   // works for adapter      
+    //   this.containerNode.container.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x + this.containerNode.data.width/2}, ${this.containerNode.data.y + node.y + this.containerNode.data.height/2})`);
+
+    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
+    // });
+
+    this.containerNode.childNodes.forEach(node => {
       console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
-      console.log(`               <  tick > `,node);	
-      // console.log(`               <  ${this.containerNode.data.x},${this.containerNode.data.y}`);
-      // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-      // d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-
-      // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-
-      // works for group
-      // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
-
-      // works for adapter      
-      this.containerNode.container.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x + this.containerNode.data.width/2}, ${this.containerNode.data.y + node.y + this.containerNode.data.height/2})`);
-
-      // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
+      console.log(`                       > `,node);	
+      // node.element.attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
+      // node.element.attr('transform', `translate(${this.containerNode.data.x + node.x - this.containerNode.data.width/2}, ${this.containerNode.data.y + node.y - this.containerNode.data.height/2})`);
+      node.element.attr('transform', `translate(${node.x}, ${node.y})`);
     });
 
     // Increment tick counter
@@ -98,6 +109,7 @@ export default class Simulation {
     // const boundingBox = computeBoundingBox(this.nodes);
     if (this.containerNode.container) {
       const boundingBox = getComputedDimensions(this.containerNode.container);
+      // const boundingBox = getComputedDimensions(this.containerNode.element);
       // console.log('Resizing bounding container', boundingBox, this.containerNode);
       this.containerNode.resize(boundingBox);
     }

@@ -26,6 +26,32 @@ export default class AdapterNode extends BaseNode {
     // A group/parent node consists of it's own display, a border, background and a label
     // and a container where the node is rendered
 
+      // Append text to the top left corner of the element    
+      const labelElement = this.element
+      .append("text")
+      .attr("x", -this.data.width / 2 + 4)
+      .attr("y", -this.data.height / 2 + 4)
+      .text(this.data.label)
+      .attr("class", "node label parent")
+      .on("click", (event) => {
+        event.stopPropagation();
+        this.toggleExpandCollapse(this.element);
+      })
+
+    this.minimumSize = getComputedDimensions(labelElement);
+    this.minimumSize.width += 8;
+    this.minimumSize.height += 4;
+    if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) 
+    {
+      this.data.width = Math.max(this.minimumSize.width,this.data.width);
+      this.data.height = Math.max(this.minimumSize.height,this.data.height);
+      // reposition the label based on the new size
+      labelElement
+        .attr("x", -this.data.width / 2 + 4)
+        .attr("y", -this.data.height / 2 + 4);
+    }
+  
+
     // Draw the node shape
     this.element
       .append("rect")
@@ -36,24 +62,6 @@ export default class AdapterNode extends BaseNode {
       .attr("y", -this.data.height / 2)
       .attr("rx", 5)
       .attr("ry", 5);
-
-    // Append text to the top left corner of the
-    // parent node    
-    const labelElement = this.element
-      .append("text")
-      .attr("x", (d) => -this.data.width / 2 + 4)
-      .attr("y", (d) => -this.data.height / 2 + 4)
-      .text(this.data.label)
-      .attr("class", "node label adapter")
-      .on("click", (event) => {
-        console.log("Clicked on Adapter Node:", this.id, event);
-        // event.stopPropagation();
-        // this.toggleExpandCollapse(this.element);
-      });
-
-    this.minimumSize = getComputedDimensions(labelElement);
-    this.minimumSize.width += 8;
-    this.minimumSize.height += 4;
 
     if (this.data.interactionState.expanded) {
       this.element.classed("expanded", true);
@@ -79,9 +87,9 @@ export default class AdapterNode extends BaseNode {
     this.element
       .select("rect")
       .attr("width", this.data.width)
-      .attr("height", this.data.height)
-      .attr("x", this.data.x)
-      .attr("y", this.data.y + this.containerMargin.top);
+      .attr("height", this.data.height);
+      // .attr("x", this.data.x)
+      // .attr("y", this.data.y + this.containerMargin.top);
 
     this.element
       .select("text")
@@ -97,14 +105,16 @@ export default class AdapterNode extends BaseNode {
   }
 
   async renderExpanded() {
-    // this.data.expandedSize = {height: this.data.height, width: this.data.width};
+    // restore the expanded size if it was stored
     if (this.data.expandedSize) {
       this.data.height = this.data.expandedSize.height;
       this.data.width = this.data.expandedSize.width;
       console.log(`    Rendering Children for Parent: expanded=${this.data.expandedSize.width}x${this.data.expandedSize.height}, size=expanded=${this.data.width}x${this.data.height}`);
     }
 
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
+    this.element.select("rect")
+      .attr("width", this.data.width)
+      .attr("height", this.data.height);
 
 
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
@@ -164,33 +174,33 @@ export default class AdapterNode extends BaseNode {
       return;
     }
 
-    // render "archive" node
-    let archiveChild = this.data.children.find((child) => child.category === "archive");
-    if (archiveChild) {
-      this.archiveNode = new RectangularNode(archiveChild, parentContainer, this);
-      this.archiveNode.render();
-    }
+    // // render "archive" node
+    // let archiveChild = this.data.children.find((child) => child.category === "archive");
+    // if (archiveChild) {
+    //   this.archiveNode = new RectangularNode(archiveChild, parentContainer, this);
+    //   this.archiveNode.render();
+    // }
 
-    // render "staging" node
-    let stagingChild = this.data.children.find((child) => child.category === "staging");
-    if (stagingChild) {
-      this.stagingNode = new RectangularNode(stagingChild, parentContainer, this);
-      this.stagingNode.render();
-    }
+    // // render "staging" node
+    // let stagingChild = this.data.children.find((child) => child.category === "staging");
+    // if (stagingChild) {
+    //   this.stagingNode = new RectangularNode(stagingChild, parentContainer, this);
+    //   this.stagingNode.render();
+    // }
 
-    // render "transform" node
-    let transformChild = this.data.children.find((child) => child.category === "transform");
-    if (transformChild) {
-      this.transformNode = new RectangularNode(transformChild, parentContainer, this);
-      this.transformNode.render();
-    }
+    // // render "transform" node
+    // let transformChild = this.data.children.find((child) => child.category === "transform");
+    // if (transformChild) {
+    //   this.transformNode = new RectangularNode(transformChild, parentContainer, this);
+    //   this.transformNode.render();
+    // }
 
-    this.layout();
+    // this.layout();
 
-    const links = [];
-    links.push({source: this.stagingNode, target: this.transformNode});
-    links.push({source: this.stagingNode, target: this.archiveNode});
-    renderLinks(links, this.container);
+    // const links = [];
+    // links.push({source: this.stagingNode, target: this.transformNode});
+    // links.push({source: this.stagingNode, target: this.archiveNode});
+    // renderLinks(links, this.container);
   }
 
   layout() {

@@ -30,6 +30,7 @@
       const svg = d3.select('svg')
           .attr('width', svgWidth)
           .attr('height', svgHeight)
+         .attr("viewBox", [-svgWidth/2, -svgHeight/2, svgWidth, svgHeight])
           .attr("class", "canvas");
 
       // // Instantiate and render the root node

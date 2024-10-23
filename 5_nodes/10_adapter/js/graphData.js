@@ -137,6 +137,50 @@ export const testDataModel2 = [
   },
 ];
 
+export const testDataModel31 = [
+  {
+    id: "root-base",
+    label: "Base Root Node",
+    type: "group",
+    groupType: "dynamic",
+    children: [
+      {
+        id: "root",
+        label: "Root Node",
+        type: "group",
+        groupType: "dynamic",
+        children: [
+        ],
+      },
+    ],
+  },
+];
+export const testDataModel32 = [
+  {
+    id: "root-base",
+    label: "Base Root Node",
+    type: "group",
+    groupType: "dynamic",
+    children: [
+      {
+        id: "root",
+        label: "Root Node",
+        type: "group",
+        groupType: "dynamic",
+        children: [
+        ],
+      },
+      {
+        id: "root2",
+        label: "Root  2 Node",
+        type: "group",
+        groupType: "dynamic",
+        children: [
+        ],
+      },
+    ],
+  },
+];
 export const dataModel = testDataModel2;
 
 // console.log('Create links')

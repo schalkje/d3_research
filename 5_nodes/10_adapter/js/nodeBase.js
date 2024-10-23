@@ -11,17 +11,16 @@ export default class BaseNode {
     if (!this.data.interactionState) this.data.interactionState = { expanded: true };
 
     // Set default values for x, y, width, and height
-    if (!this.data.x) this.data.x = 100;
-    if (!this.data.y) this.data.y = 100;
+    if (!this.data.x) this.data.x = 0;
+    if (!this.data.y) this.data.y = 0;
     if (!this.data.width) this.data.width = 60;
     if (!this.data.height) this.data.height = 60;
   }
 
   renderContainer() {
+    console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y);
     this.element = this.parentElement
       .append("g")
-      .attr("x", this.data.x)
-      .attr("y", this.data.y)
       .attr("width", this.data.width)
       .attr("height", this.data.height)
       .attr("class", "node")
@@ -36,6 +35,13 @@ export default class BaseNode {
       //   .on("start", (event) => this.drag_started(event, this))
       //   .on("drag", (event) => this.dragged(event, this))
       //   .on("end", (event) => this.drag_ended(event, this)));
+
+      // show the center stip
+      this.element.append("circle")
+      .attr("r", 5)
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("fill", "red");
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
