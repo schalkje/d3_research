@@ -3,7 +3,6 @@ import CircleNode from "./nodeCircle.js";
 import RectangularNode from "./nodeRect.js";
 import Simulation from "./simulation.js";
 import AdapterNode from "./nodeAdapter.js";
-import { getComputedDimensions } from "./utils.js";
 
 export default class GroupNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {

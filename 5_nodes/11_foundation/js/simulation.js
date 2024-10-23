@@ -98,8 +98,8 @@ export default class Simulation {
   // Method to perform the final resize when the simulation ends
   end(resolve) {
     console.log(`Simulation ended for ${this.containerNode.data.id}`);
-    this.resizeBoundingContainer();
     resolve();
+    this.resizeBoundingContainer();
   }
 
   // Method to stop the simulation

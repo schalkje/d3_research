@@ -1,4 +1,3 @@
-import { getComputedDimensions } from "./utils.js";
 export default class BaseNode {
   constructor(nodeData, parentElement, parentNode = null) {
     this.data = nodeData;
@@ -57,8 +56,14 @@ export default class BaseNode {
   }
 
   resize(size) {
+    const oldSize = {width: this.data.width, height: this.data.height};
     this.data.width = size.width;
     this.data.height = size.height;
+
+    this.data.x -= this.data.width / 2 - oldSize.width / 2;
+    this.data.y -= this.data.height / 2 - oldSize.height / 2;
+
+    this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
   }
 
   // Method to toggle expansion/collapse of the node
@@ -72,9 +77,9 @@ export default class BaseNode {
     console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
 
     if (this.data.interactionState.expanded) {
-      container.classed("collapsed", false).classed("expanded", true);
+      this.element.classed("collapsed", false).classed("expanded", true);
     } else {
-      container.classed("expanded", false).classed("collapsed", true);
+      this.element.classed("expanded", false).classed("collapsed", true);
     }
   }
 

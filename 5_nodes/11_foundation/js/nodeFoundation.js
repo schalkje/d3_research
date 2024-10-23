@@ -1,7 +1,5 @@
-// import BaseNode from "./nodeBase.js";
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
-import { getComputedDimensions } from "./utils.js";
 import { renderLinks } from "./links.js";
 
 const DisplayMode = Object.freeze({
