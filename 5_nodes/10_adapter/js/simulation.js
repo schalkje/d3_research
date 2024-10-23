@@ -65,31 +65,9 @@ export default class Simulation {
     // }
     // console.log('>>>>     Simulation tick', this.tickCounter,'     <<<<');
 
-    // this.containerNode.ch
-
-    // this.nodes.forEach(node => {
-    //   console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
-    //   console.log(`               <  tick > `,node);	
-    //   // console.log(`               <  ${this.containerNode.data.x},${this.containerNode.data.y}`);
-    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-    //   // d3.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-
-    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${node.x}, ${node.y})`);
-
-    //   // works for group
-    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
-
-    //   // works for adapter      
-    //   this.containerNode.container.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x + this.containerNode.data.width/2}, ${this.containerNode.data.y + node.y + this.containerNode.data.height/2})`);
-
-    //   // this.containerNode.element.select(`[data-id='${node.id}']`).attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
-    // });
-
     this.containerNode.childNodes.forEach(node => {
-      console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
-      console.log(`                       > `,node);	
-      // node.element.attr('transform', `translate(${this.containerNode.data.x + node.x}, ${this.containerNode.data.y + node.y})`);
-      // node.element.attr('transform', `translate(${this.containerNode.data.x + node.x - this.containerNode.data.width/2}, ${this.containerNode.data.y + node.y - this.containerNode.data.height/2})`);
+      // console.log(`               <  tick > ${node.id} = (${Math.round(node.x)},${Math.round(node.y)}) --> ${Math.round(node.width)}, ${Math.round(node.height)}:      (${Math.round(node.x - node.width / 2)},${Math.round(node.y - node.height / 2)}),(${Math.round(node.x + node.width / 2)},${Math.round(node.y + node.height / 2)})`);	
+      // console.log(`                       > `,node);	
       node.element.attr('transform', `translate(${node.x}, ${node.y})`);
     });
 
@@ -98,7 +76,7 @@ export default class Simulation {
 
     // Resize bounding container every N ticks
     // if (this.tickCounter % this.resizeFrequency === 0) 
-      {
+    {
       this.resizeBoundingContainer();
     }
   }

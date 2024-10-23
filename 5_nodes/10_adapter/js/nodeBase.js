@@ -1,12 +1,15 @@
 import { getComputedDimensions } from "./utils.js";
 export default class BaseNode {
   constructor(nodeData, parentElement, parentNode = null) {
-    this.id = nodeData.id;
+    this.data = nodeData;
     this.parentElement = parentElement;
     this.parentNode = parentNode;
+
+    this.id = nodeData.id;
+
     this.element = null;
-    this.data = nodeData;
     this.simulation = null;
+    this.layoutDebug = false;
 
     if (!this.data.interactionState) this.data.interactionState = { expanded: true };
 
@@ -18,7 +21,7 @@ export default class BaseNode {
   }
 
   renderContainer() {
-    console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y);
+    console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y, this.parentElement);
     this.element = this.parentElement
       .append("g")
       .attr("width", this.data.width)
@@ -36,7 +39,8 @@ export default class BaseNode {
     //   .on("end", (event) => this.drag_ended(event, this)));
 
     // show the center stip
-    this.element.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
+    if ( this.layoutDebug )
+      this.element.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
@@ -48,7 +52,7 @@ export default class BaseNode {
     return this.element;
   }
 
-  render(renderChildren = true) {
+  render() {
     renderContainer();
   }
 
@@ -60,11 +64,11 @@ export default class BaseNode {
   // Method to toggle expansion/collapse of the node
   toggleExpandCollapse(container) {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;
-    this.updateRender(container);
+    this.updateLayout(container);
   }
 
   // Method to update the node rendering based on interaction state
-  updateRender(container) {
+  updateLayout() {
     console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
 
     if (this.data.interactionState.expanded) {
@@ -74,10 +78,10 @@ export default class BaseNode {
     }
   }
 
-  cascadeSimulation() {
+  cascadeLayoutUpdate() {
     if (this.parentNode) {
       this.parentNode.runSimulation();
-      this.parentNode.cascadeSimulation();
+      this.parentNode.cascadeLayout();
     }
   }
 
@@ -88,8 +92,6 @@ export default class BaseNode {
       this.simulation.simulation.alphaTarget(0.8).restart();
     }
     if (this.parentNode) {
-      // if  (this.parentNode.simulation)
-      //   this.parentNode.simulation.simulation.alphaTarget(1).restart();
       this.parentNode.cascadeRestartSimulation();
     }
   }

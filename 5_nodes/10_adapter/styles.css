@@ -17,7 +17,7 @@ svg.canvas {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
-
+/* 
 line {
   fill: none;
   stroke: #ccc;
@@ -34,7 +34,7 @@ rect {
   fill: cadetblue;
   opacity: 0.3;
   stroke: white;
-}
+} */
 
 .lanelabel
 {
@@ -52,8 +52,14 @@ rect {
   stroke-opacity: 0.4;
   stroke-width: 2;
   cursor: grab;
+  opacity: 0.3;
 }
 
+.node.shape.container{
+  stroke: red;
+  stroke-opacity: 1;
+  stroke-width: 2;
+}
 
 .node_grabbing {
   fill: #9b9bfa;
@@ -66,6 +72,7 @@ rect {
 
 .node.label
 {
+  stroke: none;
   font-size: 14px;
   font-weight: bold;
   /* fill: rgb(216, 216, 241); */
@@ -76,7 +83,7 @@ rect {
   cursor: grab;
 }
 
-.node.label.parent
+.node.label.group
 {
   font-size: 12px;
   font-weight: normal;

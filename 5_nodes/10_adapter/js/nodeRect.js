@@ -1,11 +1,11 @@
 import BaseNode from "./nodeBase.js";
 
 export default class RectangularNode extends BaseNode {
-  constructor(nodeData, parentElement) {
+  constructor(nodeData, parentElement, parentNode = null) {
     if ( !nodeData.height) nodeData.height = 20;
     if ( !nodeData.width) nodeData.width = 150;
 
-    super(nodeData, parentElement);
+    super(nodeData, parentElement, parentNode);
   }
 
   // Method to render the node using D3
