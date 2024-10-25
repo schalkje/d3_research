@@ -57,14 +57,13 @@ export default class LaneNode extends BaseContainerNode {
       node.element.attr("transform", `translate(${x}, ${y})`);
 
       const dimensions = getComputedDimensions(node.element);
-      y += dimensions.height + this.nodeSpacing;
-
+      y += dimensions.height + this.nodeSpacing.vertical;
     });
   }
 
   async arrange() {
-    console.log("Arranging GroupNode:", this.id);
-    await this.runSimulation();
+    console.log("Arranging LaneNode:", this.id);
+    // await this.runSimulation();
   }
 }
 

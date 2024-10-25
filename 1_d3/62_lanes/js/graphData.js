@@ -5,13 +5,13 @@
 
 export const testDataModel1 = [
   {
-    id: "lane1",
-    label: "Lane 1",
-    type: "lane",
+    id: "lanes",
+    label: "Source Lane",
+    type: "lanes",
     groupType: "dynamic",
     layout: {
       displayMode: "code",
-      numberOfLanes: 1,
+      numberOfLanes: 2,
     },
     children: [
       {
@@ -30,13 +30,13 @@ export const testDataModel1 = [
 
 export const testDataModel21 = [
   {
-    id: "lane1",
-    label: "Lane 1",
-    type: "lane",
+    id: "lanes",
+    label: "Source Lane",
+    type: "lanes",
     groupType: "dynamic",
     layout: {
       displayMode: "code",
-      numberOfLanes: 1,
+      numberOfLanes: 2,
     },
     children: [
       {

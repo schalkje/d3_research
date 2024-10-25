@@ -90,10 +90,14 @@ export default class BaseContainerNode extends BaseNode {
     if (this.container) {
       const containerRect = getComputedDimensions(this.container);
       const elementRect = getComputedDimensions(this.element);
+
+
       const containerX = elementRect.x - containerRect.x + this.containerMargin.left;
       const containerY = elementRect.y - containerRect.y + this.containerMargin.top;
-      // console.log(`                                        width: ${elementRect.x}-${containerRect.x}+${this.containerMargin.left}=${containerX}`);
-      // console.log(`                                       height: ${elementRect.y}-${containerRect.y}+${this.containerMargin.top}=${containerY}`);
+      // const containerX = -containerRect.width/2 + this.containerMargin.left;
+      // const containerY = -containerRect.height/2 + this.containerMargin.top;
+      console.log(`                                        width: ${elementRect.x}-${containerRect.x}+${this.containerMargin.left}=${containerX}`);
+      console.log(`                                       height: ${elementRect.y}-${containerRect.y}+${this.containerMargin.top}=${containerY}`);
       this.container
           .attr(
             "transform",

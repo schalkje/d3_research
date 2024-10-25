@@ -15,11 +15,16 @@ export function createNode(node, container)
             break;
 
             case "lane":
-            const laneRootNode = new GroupNode(node, container);
-            laneRootNode.render();    
-            break;
-    
-            case "adapter":
+                const laneRootNode = new LaneNode(node, container);
+                laneRootNode.render();    
+                break;
+        
+            case "lanes":
+                const lanesRootNode = new LanesNode(node, container);
+                lanesRootNode.render();    
+                break;
+        
+                        case "adapter":
             const adapterRootNode = new AdapterNode(node, container);
             adapterRootNode.render();
             break;

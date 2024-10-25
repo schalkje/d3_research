@@ -10,6 +10,7 @@ export default class LaneNode extends BaseContainerNode {
     super(nodeData, parentElement, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
+    this.lanes = [];
   }
 
   async renderChildren() {
@@ -44,48 +45,65 @@ export default class LaneNode extends BaseContainerNode {
   layoutChildren() {
     console.log("    Layout for Lanes:", this.id, this.data.layout);
 
-    // assumption: 1 lane
-    this.layoutLane(this.childNodes,`${this.id}-1`)
-  }
-
-  layoutLane(children, lineId)
-  {
-    const x = 0;
-    var y = 0;
-    // start at the top
+    // compute the total hight of all children
+    let totalHeight = 0;
+    let maxWidth = 0;
     this.childNodes.forEach((node) => {
       const dimensions = getComputedDimensions(node.element);
-      node.element.attr("transform", `translate(${x}, ${y})`);
-
-      console.log(`LayoutLane node ${node.id}, moved to (${x}, ${y})`, dimensions)
-      y += dimensions.height + this.nodeSpacing.vertical;
+      totalHeight += dimensions.height;
+      maxWidth = Math.max(maxWidth, dimensions.width)
+      node.dimensions = dimensions;
     });
 
-    // resize the container
-    const boundingBox = getComputedDimensions(this.container);
-    // reposition the element
-    this.resizeContainer(boundingBox);
+    const targetLaneHeight = totalHeight / this.data.layout.numberOfLanes;
+    
+    var lineId = 1;
+    var x = 0;
+    var y = 0;
+    this.lanes[lineId].children = [];
+    this.childNodes.forEach(node=>
+    {
+      this.lineId[lineId].children.push(node)
 
-    // this.container
-    //   .attr("transform", `translate(
-    //     ${-boundingBox.width/2}, 
-    //     ${-boundingBox.height/2})`
-    //   );
-    // this.element
-    //   .attr("transform", `translate(${100}, ${0})`);
-    // ${-this.containerMargin.left - boundingBox.width/2}, 
-    // ${-this.containerMargin.top - boundingBox.height/2})`
-}
+      node.element.attr("transform", `translate(${x}, ${y})`);
+
+      y += node.dimension + this.containerMargin.
+
+      if ( y >= targetLaneHeight )
+      {
+        lineId++;
+        y = 0;
+        x += maxWidth + this.nodeSpacing.horizontal;
+        this.lanes[lineId].children = [];
+      }
+        
+    }
+    )
+
+    // optimistic lane division:
+    // put children in a lane, until the lane height > total height / numberOfLanes
+
+    // assumption: 1 lane
+    layoutLane(this.childNodes,`${this.id}-1`)
+  }
+
+  // layoutLane(children, lineId)
+  // {
+  //   const x = 0;
+  //   const y = 0;
+  //   // start at the top
+  //   children.foreach((node) => {
+  //     node.element.attr("transform", `translate(${x}, ${y})`);
+
+  //     const dimensions = getComputedDimensions(node.element);
+  //     y += dimensions.height + this.nodeSpacing.vertical;
+
+  //   });
+  // }
 
   async arrange() {
-    console.log("Arranging LaneNode:", this.id);
-    // this.layoutChildren();
-
-    // ugly way:
-    // remove children and recreate
-    this.container.selectAll("*").remove();
-    this.renderChildren();
-    
+    console.log("Arranging LanesNode:", this.id);
+    // await this.runSimulation();
   }
 }
 

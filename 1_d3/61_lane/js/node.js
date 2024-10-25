@@ -1,6 +1,7 @@
 import AdapterNode from "./nodeAdapter.js";
 import GroupNode from "./nodeGroup.js";
 import FoundationNode from "./nodeFoundation.js";
+import LaneNode from "./nodeLane.js";
 
 
   
@@ -15,7 +16,7 @@ export function createNode(node, container)
             break;
 
             case "lane":
-            const laneRootNode = new GroupNode(node, container);
+            const laneRootNode = new LaneNode(node, container);
             laneRootNode.render();    
             break;
     
