@@ -182,5 +182,6 @@ const typeToComponent = {
   rect: RectangularNode,
   circle: CircleNode,
   adapter: AdapterNode,
+  lane: LaneNode,
   default: CircleNode,
 };
