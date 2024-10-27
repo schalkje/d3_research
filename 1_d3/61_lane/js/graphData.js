@@ -95,34 +95,34 @@ export const testDataModel21 = [
           },
         ],
       },
-      {
-        id: "eximius",
-        label: "Eximius",
-        code: "EXI",
-        type: "adapter",
-        layout: 3,
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_eximius",
-            label: "Staging Eximius",
-            category: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_eximius",
-            label: "Archive Eximius",
-            category: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_eximius",
-            label: "Transform Eximius",
-            category: "transform",
-            type: "node",
-          },
-        ],
-      },
+      // {
+      //   id: "eximius",
+      //   label: "Eximius",
+      //   code: "EXI",
+      //   type: "adapter",
+      //   layout: 3,
+      //   groupType: "fixed",
+      //   children: [
+      //     {
+      //       id: "stg_eximius",
+      //       label: "Staging Eximius",
+      //       category: "staging",
+      //       type: "node",
+      //     },
+      //     {
+      //       id: "arc_eximius",
+      //       label: "Archive Eximius",
+      //       category: "archive",
+      //       type: "node",
+      //     },
+      //     {
+      //       id: "trn_eximius",
+      //       label: "Transform Eximius",
+      //       category: "transform",
+      //       type: "node",
+      //     },
+      //   ],
+      // },
     ],
   },
 ];

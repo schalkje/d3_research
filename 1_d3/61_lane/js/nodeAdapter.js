@@ -53,8 +53,8 @@ export default class AdapterNode extends BaseContainerNode {
     this.layoutChildren();
 
     const links = [];
-    links.push({ source: this.stagingNode, target: this.transformNode });
-    links.push({ source: this.stagingNode, target: this.archiveNode });
+    // links.push({ source: this.stagingNode, target: this.transformNode });
+    // links.push({ source: this.stagingNode, target: this.archiveNode });
     renderLinks(links, this.container);
   }
 
