@@ -3,7 +3,6 @@ import CircleNode from "./nodeCircle.js";
 import RectangularNode from "./nodeRect.js";
 import AdapterNode from "./nodeAdapter.js";
 import GroupNode from "./nodeGroup.js";
-import { getComputedDimensions } from "./utils.js";
 import LaneNode from "./nodeLane.js";
 
 export default class ColumnsNode extends BaseContainerNode {

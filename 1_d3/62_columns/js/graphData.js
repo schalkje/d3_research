@@ -10,7 +10,7 @@ export const testDataModel1 = [
     type: "columns",
     groupType: "fixed",
     layout: {
-      displayMode: "code"
+      displayMode: "code",
     },
     children: [
       {
@@ -34,7 +34,7 @@ export const testDataModel21 = [
     type: "columns",
     groupType: "fixed",
     layout: {
-      displayMode: "code"
+      displayMode: "code",
     },
     children: [
       {
@@ -42,7 +42,10 @@ export const testDataModel21 = [
         label: "Bankview",
         code: "BNV",
         type: "adapter",
-        layout: 1,
+        layout: {
+          mode: "full",
+          arrangement: 1,
+        },
         groupType: "fixed",
         children: [
           {
@@ -70,7 +73,10 @@ export const testDataModel21 = [
         label: "Matrix",
         code: "MTX",
         type: "adapter",
-        layout: 2,
+        layout: {
+          mode: "full",
+          arrangement: 2,
+        },
         groupType: "fixed",
         interactionState: {
           expanded: true,
@@ -101,7 +107,10 @@ export const testDataModel21 = [
         label: "Eximius",
         code: "EXI",
         type: "adapter",
-        layout: 3,
+        layout: {
+          mode: "full",
+          arrangement: 3,
+        },
         groupType: "fixed",
         children: [
           {
@@ -130,23 +139,21 @@ export const testDataModel21 = [
 
 export const testDataModel22 = [
   {
-    id: "lane0",
-    label: "Parent lane",
-    type: "lane",
-    groupType: "dynamic",
+    id: "columns",
+    label: "Columns Parent",
+    type: "columns",
+    groupType: "fixed",
     layout: {
       displayMode: "code",
-      numberOfLanes: 1,
     },
     children: [
       {
-        id: "lane1",
-        label: "Lane 1",
-        type: "lane",
-        groupType: "dynamic",
+        id: "columns1",
+        label: "Columns 1",
+        type: "columns",
+        groupType: "fixed",
         layout: {
           displayMode: "code",
-          numberOfLanes: 1,
         },
         children: [
           {
@@ -154,35 +161,21 @@ export const testDataModel22 = [
             label: "Bankview",
             code: "BNV",
             type: "adapter",
-            layout: 1,
+            layout: {
+              mode: "full",
+              arrangement: 1,
+            },
             groupType: "fixed",
-            children: [
-              {
-                id: "stg_bankview",
-                label: "Staging Bankview",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_bankview",
-                label: "Archive Bankview",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_bankview",
-                label: "Transform Bankview",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
           {
             id: "matrix",
             label: "Matrix",
             code: "MTX",
             type: "adapter",
-            layout: 2,
+            layout: {
+              mode: "full",
+              arrangement: 2,
+            },
             groupType: "fixed",
             children: [
               {
@@ -210,7 +203,10 @@ export const testDataModel22 = [
             label: "Eximius",
             code: "EXI",
             type: "adapter",
-            layout: 3,
+            layout: {
+              mode: "full",
+              arrangement: 3,
+            },
             groupType: "fixed",
             children: [
               {
@@ -257,7 +253,10 @@ export const testDataModel25 = [
             label: "Bankview",
             code: "BNV",
             type: "adapter",
-            layout: 1,
+            layout: {
+              mode: "full",
+              arrangement: 1,
+            },
             groupType: "fixed",
             children: [
               {
@@ -285,7 +284,10 @@ export const testDataModel25 = [
             label: "Matrix",
             code: "MTX",
             type: "adapter",
-            layout: 2,
+            layout: {
+              mode: "full",
+              arrangement: 2,
+            },
             groupType: "fixed",
             children: [
               {
@@ -313,7 +315,10 @@ export const testDataModel25 = [
             label: "Eximius",
             code: "EXI",
             type: "adapter",
-            layout: 3,
+            layout: {
+              mode: "full",
+              arrangement: 3,
+            },
             groupType: "fixed",
             children: [
               {
@@ -348,7 +353,10 @@ export const testDataModel23 = [
     label: "Bankview",
     code: "BNV",
     type: "adapter",
-    layout: 1,
+    layout: {
+      mode: "full",
+      arrangement: 1,
+    },
     groupType: "fixed",
     children: [
       {
@@ -376,7 +384,10 @@ export const testDataModel23 = [
     label: "Matrix",
     code: "MTX",
     type: "adapter",
-    layout: 2,
+    layout: {
+      mode: "full",
+      arrangement: 2,
+    },
     groupType: "fixed",
     children: [
       {
@@ -404,7 +415,10 @@ export const testDataModel23 = [
     label: "Eximius",
     code: "EXI",
     type: "adapter",
-    layout: 3,
+    layout: {
+      mode: "full",
+      arrangement: 3,
+    },
     groupType: "fixed",
     children: [
       {
@@ -441,7 +455,10 @@ export const testDataModel24 = [
         label: "Bankview",
         code: "BNV",
         type: "adapter",
-        layout: 1,
+        layout: {
+          mode: "full",
+          arrangement: 1,
+        },
         groupType: "fixed",
         children: [
           {
@@ -469,7 +486,10 @@ export const testDataModel24 = [
         label: "Matrix",
         code: "MTX",
         type: "adapter",
-        layout: 2,
+        layout: {
+          mode: "full",
+          arrangement: 2,
+        },
         groupType: "fixed",
         children: [
           {
@@ -497,7 +517,10 @@ export const testDataModel24 = [
         label: "Eximius",
         code: "EXI",
         type: "adapter",
-        layout: 3,
+        layout: {
+          mode: "full",
+          arrangement: 3,
+        },
         groupType: "fixed",
         children: [
           {
@@ -583,5 +606,4 @@ export const testDataModel32 = [
     ],
   },
 ];
-export const dataModel = testDataModel21;
-
+export const dataModel = testDataModel22;

@@ -3,11 +3,23 @@ import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
 import { renderLinks } from "./links.js";
 
+
+const AdapterMode = Object.freeze({
+  MANUAL: 'manual', 
+  FULL: 'full',
+  ARCHIVE_ONLY: 'archive-only',
+  STAGING_ARCHIVE: 'staging-archive'
+});
+
 export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
-    if (!nodeData.layout) nodeData.layout = 1;
+    if (!nodeData.layout) nodeData.layout = {};
+    if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive 
+    if (!nodeData.layout.mode) nodeData.layout.arrangement = AdapterMode.arrangement; // 1,2,3
+    
+
 
     super(nodeData, parentElement, parentNode);
 
@@ -20,19 +32,46 @@ export default class AdapterNode extends BaseContainerNode {
   async renderChildren() {
     console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
-      return;
+      this.data.children = [];
     }
 
     // render "archive" node
     let archiveChild = this.data.children.find((child) => child.category === "archive");
+    if (
+      !archiveChild &&
+      (this.data.layout.mode === AdapterMode.ARCHIVE_ONLY ||
+        this.data.layout.mode === AdapterMode.STAGING_ARCHIVE ||
+        this.data.layout.mode === AdapterMode.FULL)
+    ) {
+      archiveChild = {
+        id: `arc_${this.data.id}`,
+        label: `Archive ${this.data.label}`,
+        category: "archive",
+        type: "node",
+      };
+      this.data.children.push(archiveChild);
+    }
     if (archiveChild) {
       console.log("    Rendering Archive Node:", archiveChild, this);
       this.archiveNode = new RectangularNode(archiveChild, this.container, this);
       this.archiveNode.render();
-    }
+    } 
 
     // render "staging" node
     let stagingChild = this.data.children.find((child) => child.category === "staging");
+    if (
+      !stagingChild &&
+      (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || 
+        this.data.layout.mode == AdapterMode.FULL)
+    ) {
+      stagingChild = {
+        id: `stg_${this.data.id}`,
+        label: `Staging ${this.data.label}`,
+        category: "staging",
+        type: "node",
+      };
+      this.data.children.push(stagingChild);
+    }
     if (stagingChild) {
       this.stagingNode = new RectangularNode(stagingChild, this.container, this);
       this.stagingNode.render();
@@ -40,6 +79,16 @@ export default class AdapterNode extends BaseContainerNode {
 
     // render "transform" node
     let transformChild = this.data.children.find((child) => child.category === "transform");
+    if (!transformChild && 
+        this.data.layout.mode == AdapterMode.FULL) {
+      transformChild = {
+        id: `trn_${this.data.id}`,
+        label: `Transform ${this.data.label}`,
+        category: "transform",
+        type: "node",
+      };
+      this.data.children.push(transformChild);
+    }
     if (transformChild) {
       this.transformNode = new RectangularNode(transformChild, this.container, this);
       this.transformNode.render();
@@ -60,7 +109,7 @@ export default class AdapterNode extends BaseContainerNode {
 
   layoutChildren() {
     console.log("    Layout for Adapter:", this.id, this.data.layout);
-    switch (this.data.layout) {
+    switch (this.data.layout.arrangement) {
       case 1:
         this.layout1();
         break;
