@@ -14,7 +14,6 @@ export default class ColumnsNode extends BaseContainerNode {
     super(nodeData, parentElement, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
-    // this.columns = [];
   }
 
   async renderChildren() {
@@ -55,7 +54,6 @@ export default class ColumnsNode extends BaseContainerNode {
     var y = 0;
     var containerWidth = 0;
     var containerHeight = 0;
-    var firstColumnCenterCorrection = 0;
 
     // position the nodes
     this.childNodes.forEach((node, index) => {
@@ -63,26 +61,32 @@ export default class ColumnsNode extends BaseContainerNode {
       if (index > 0 )
         x += this.nodeSpacing.horizontal;
 
+      // // compute first column center correction
+      // if (index === 0 && node.data.width < this.data.layout.minimumColumnWidth) {
+      //   // firstColumnCenterCorrection = (this.data.layout.minimumColumnWidth - node.data.width) / 2;
+      //   console.log(`    First Column ${node.id} is smaller than minimumColumnWidth: ${node.data.width} < ${this.data.layout.minimumColumnWidth}: firstColumnCenterCorrection=${firstColumnCenterCorrection}`);
+      // }
+
       x += Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
-      console.log(`    Corrected x: ${node.id}: ${x}`);
+      // console.log(`    Corrected x: ${node.id}: ${x}`);
 
     // position the node
       // console.log(`    Column ${node.id} is NOT smaller than minimumColumnWidth: ${node.data.width} < ${this.data.layout.minimumColumnWidth}`);
       var elementCtm = node.element.node().getCTM(); console.log(`    elementCtm after resize   : a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
-      console.log(`    Column ${node.id}: node.data.width=${Math.round(node.data.width)} node.x=${Math.round(node.x)}, node.y=${node.y}, x=${x}, y=${y}, translate(${x-node.data.width/2}, ${y})`);
+      // console.log(`    Column ${node.id}: node.data.width=${Math.round(node.data.width)} node.x=${Math.round(node.x)}, node.y=${node.y}, x=${x}, y=${y}, translate(${x-node.data.width/2}, ${y})`);
       // node.element.attr("transform", `translate(${x-node.data.width/2}, ${y})`);
       // node.x = -node.data.width/2;
       node.x = x;
       node.y = y;
       const trans = `translate(${node.x}, ${node.y})`;
-      console.log(`                    --> ${trans}`);
+      // console.log(`                    --> ${trans}`);
       node.element.attr("transform", trans);
-      var elementCtm = node.element.node().getCTM(); console.log(`    elementCtm after resize   : a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
+      // var elementCtm = node.element.node().getCTM(); console.log(`    elementCtm after resize   : a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
   
 
       // console.log(`    Column ${node.id} center positioned at (${Math.round(x)},${Math.round(y)})`);
       x = x + Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
-      console.log(`                     next x=${Math.round(x)}`);
+      // console.log(`                     next x=${Math.round(x)}`);
       containerHeight = Math.max(containerHeight, node.data.height);
     });
 
@@ -96,15 +100,18 @@ export default class ColumnsNode extends BaseContainerNode {
     var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane after  - resizecontainer container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
     var elementDimensions = getComputedDimensions(this.element); console.log(`          < layoutLane after  - resizecontainer element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
     // const containerX = elementDimensions.x - containerDimensions.x + this.containerMargin.left + firstColumnCenterCorrection;
-    const containerX = elementDimensions.x - containerDimensions.x + this.containerMargin.left + firstColumnCenterCorrection;
+    // var containerX = elementDimensions.x - containerDimensions.x + this.containerMargin.left + firstColumnCenterCorrection;
+    // var containerX = elementDimensions.x - containerDimensions.x;
+    // var containerX = - this.data.width/2 + this.containerMargin.left + firstColumnCenterCorrection;
+    var containerX = - this.data.width/2 + this.containerMargin.left;
+    // var containerX = (this.data.width - elementDimensions.width) - this.containerMargin.left; // first time ok, collapse , wrong
     var containerY = this.containerMargin.top/2;
     console.log(`                                        containerX: ${elementDimensions.x}-${containerDimensions.x}+${this.containerMargin.left}=${containerX}`);
     console.log(`                                        containerY: ${elementDimensions.y}-${containerDimensions.y}+${this.containerMargin.top}=${containerY}`);
+    const containerTransate = `translate(${containerX}, ${containerY})`;
+    console.log(`                                        containerTransate: ${containerTransate}`);
     this.container
-        .attr(
-          "transform",
-          `translate(${containerX}, ${containerY})`
-        );
+        .attr("transform", containerTransate);
   }
 
 

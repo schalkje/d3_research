@@ -73,7 +73,7 @@ export const testDataModel21 = [
         layout: 2,
         groupType: "fixed",
         interactionState: {
-          expanded: false,
+          expanded: true,
         },
         children: [
           {
