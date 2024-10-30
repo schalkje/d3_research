@@ -8,10 +8,13 @@ import LaneNode from "./nodeLane.js";
 
 export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
+    if (!nodeData.layout) nodeData.layout = {};
+    if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 200;
+
     super(nodeData, parentElement, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
-    this.columns = [];
+    // this.columns = [];
   }
 
   async renderChildren() {
@@ -28,7 +31,7 @@ export default class ColumnsNode extends BaseContainerNode {
       const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
       const childComponent = new ComponentClass(node, this.container, this);
 
-      console.log("Renderichildrenng Child:", childComponent);
+      console.log("Rendering Child:", childComponent);
       console.log("               :", this.data.x, this.data.y);
 
       this.childNodes.push(childComponent);
@@ -40,64 +43,56 @@ export default class ColumnsNode extends BaseContainerNode {
     await Promise.all(renderPromises);
 
     this.layoutChildren();
-
   }
 
   layoutChildren() {
-    console.log("    Layout for Columns:", this.id, this.data.layout);
+    console.log("layoutChildren - Layout for Columns:", this.id, this.data.layout);
 
-    // compute the total hight of all children
-    let totalHeight = 0;
-    let maxWidth = 0;
-    this.childNodes.forEach((node) => {
-      const dimensions = getComputedDimensions(node.element);
-      totalHeight += dimensions.height;
-      maxWidth = Math.max(maxWidth, dimensions.width)
-      node.dimensions = dimensions;
-    });
-
-    // const targetLaneHeight = totalHeight / this.data.layout.numberOfLanes;
-    
-    var lineId = 1;
+    // each child is a column
     var x = 0;
     var y = 0;
-    this.columns[lineId].children = [];
-    this.childNodes.forEach(node=>
-    {
-      this.lineId[lineId].children.push(node)
+    var containerWidth = 0;
+    var containerHeight = 0;
+    var firstColumnCenterCorrection = 0;
 
-      node.element.attr("transform", `translate(${x}, ${y})`);
+    this.childNodes.forEach((node, index) => {
+      if ( node.data.width < this.data.layout.minimumColumnWidth) {
+        // console.log(`    Column ${node.id} is smaller than minimumColumnWidth: ${node.data.width} < ${this.data.layout.minimumColumnWidth}`);
+        const centerCorrection = (this.data.layout.minimumColumnWidth - node.data.width) / 2;
+        // console.log(`    Column ${node.id} is smaller than minimumColumnWidth: ${node.data.width} < ${this.data.layout.minimumColumnWidth}: centerCorrection=${centerCorrection}`);
+        node.element.attr("transform", `translate(${x + centerCorrection}, ${y})`);
+        if (index === 0) {
+          firstColumnCenterCorrection = centerCorrection;
+        }
+      }
+      else {
+        // console.log(`    Column ${node.id} is NOT smaller than minimumColumnWidth: ${node.data.width} < ${this.data.layout.minimumColumnWidth}`);
+        node.element.attr("transform", `translate(${x}, ${y})`);
+      }
 
-      // y += node.dimension + this.containerMargin.
+      x += Math.max(node.data.width, this.data.layout.minimumColumnWidth) + this.nodeSpacing.horizontal;
+      containerHeight = Math.max(containerHeight, node.data.height);
+    });
+    containerWidth = x - this.nodeSpacing.horizontal;
 
+    this.resizeContainer({width: containerWidth, height: containerHeight});
 
-        
-    }
-    )
-
-    // optimistic lane division:
-    // put children in a lane, until the lane height > total height / numberOfLanes
-
-    // assumption: 1 lane
-    // layoutLane(this.childNodes,`${this.id}-1`)
+    var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane after  - resizecontainer container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
+    var elementDimensions = getComputedDimensions(this.element); console.log(`          < layoutLane after  - resizecontainer element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
+    const containerX = elementDimensions.x - containerDimensions.x + this.containerMargin.left + firstColumnCenterCorrection;
+    var containerY = this.containerMargin.top/2;
+    // console.log(`                                        containerX: ${elementDimensions.x}-${containerDimensions.x}+${this.containerMargin.left}=${containerX}`);
+    // console.log(`                                        containerY: ${elementDimensions.y}-${containerDimensions.y}+${this.containerMargin.top}=${containerY}`);
+    this.container
+        .attr(
+          "transform",
+          `translate(${containerX}, ${containerY})`
+        );
   }
-
-  // layoutLane(children, lineId)
-  // {
-  //   const x = 0;
-  //   const y = 0;
-  //   // start at the top
-  //   children.foreach((node) => {
-  //     node.element.attr("transform", `translate(${x}, ${y})`);
-
-  //     const dimensions = getComputedDimensions(node.element);
-  //     y += dimensions.height + this.nodeSpacing.vertical;
-
-  //   });
-  // }
 
   async arrange() {
     console.log("Arranging ColumnsNode:", this.id);
+    this.layoutChildren();
   }
 }
 

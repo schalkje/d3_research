@@ -1,6 +1,4 @@
 # Lanes
-The lanes object shows a number of columns next to each other.
+The lanes object shows a number of lanes next to each other. 
 
-
-## Dynamic lanes
-A combination of the lanes and the
+It will build on the columnsNode and laneNodes, where the children are dynamically distributed.
