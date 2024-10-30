@@ -72,6 +72,9 @@ export const testDataModel21 = [
         type: "adapter",
         layout: 2,
         groupType: "fixed",
+        interactionState: {
+          expanded: false,
+        },
         children: [
           {
             id: "stg_matrix",
