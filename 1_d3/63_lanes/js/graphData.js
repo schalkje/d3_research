@@ -5,9 +5,9 @@
 
 export const testDataModel1 = [
   {
-    id: "lane1",
-    label: "Lane 1",
-    type: "lane",
+    id: "lanes1",
+    label: "Lanes 1",
+    type: "lanes",
     groupType: "dynamic",
     layout: {
       displayMode: "code",
