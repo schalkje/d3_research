@@ -29,13 +29,12 @@ export const testDataModel1 = [
 
 export const testDataModel21 = [
   {
-    id: "lane1",
-    label: "Lane 1",
-    type: "lane",
-    groupType: "dynamic",
+    id: "columns1",
+    label: "Columns 1",
+    type: "columns",
+    groupType: "fixed",
     layout: {
-      displayMode: "code",
-      numberOfLanes: 1,
+      displayMode: "code"
     },
     children: [
       {
@@ -581,5 +580,5 @@ export const testDataModel32 = [
     ],
   },
 ];
-export const dataModel = testDataModel1;
+export const dataModel = testDataModel21;
 

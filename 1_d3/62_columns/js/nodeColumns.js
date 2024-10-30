@@ -9,7 +9,7 @@ import LaneNode from "./nodeLane.js";
 export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
     if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 200;
+    if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 50;
 
     super(nodeData, parentElement, parentNode);
 
