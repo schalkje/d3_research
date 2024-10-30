@@ -63,7 +63,7 @@ export default class ColumnsNode extends BaseContainerNode {
       if (index > 0 )
         x += this.nodeSpacing.horizontal;
 
-      x += Math.max(node.data.width, this.data.layout.minimumColumnWidth);
+      x += Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
       console.log(`    Corrected x: ${node.id}: ${x}`);
 
     // position the node
@@ -72,7 +72,7 @@ export default class ColumnsNode extends BaseContainerNode {
       console.log(`    Column ${node.id}: node.data.width=${Math.round(node.data.width)} node.x=${Math.round(node.x)}, node.y=${node.y}, x=${x}, y=${y}, translate(${x-node.data.width/2}, ${y})`);
       // node.element.attr("transform", `translate(${x-node.data.width/2}, ${y})`);
       // node.x = -node.data.width/2;
-      node.x = x-node.data.width/2;
+      node.x = x;
       node.y = y;
       const trans = `translate(${node.x}, ${node.y})`;
       console.log(`                    --> ${trans}`);
@@ -81,7 +81,7 @@ export default class ColumnsNode extends BaseContainerNode {
   
 
       // console.log(`    Column ${node.id} center positioned at (${Math.round(x)},${Math.round(y)})`);
-      x = node.x + Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
+      x = x + Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
       console.log(`                     next x=${Math.round(x)}`);
       containerHeight = Math.max(containerHeight, node.data.height);
     });
@@ -91,7 +91,7 @@ export default class ColumnsNode extends BaseContainerNode {
     containerWidth = x;
     
 
-    // this.resizeContainer({width: containerWidth, height: containerHeight});
+    this.resizeContainer({width: containerWidth, height: containerHeight});
 
     var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane after  - resizecontainer container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
     var elementDimensions = getComputedDimensions(this.element); console.log(`          < layoutLane after  - resizecontainer element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
@@ -100,11 +100,11 @@ export default class ColumnsNode extends BaseContainerNode {
     var containerY = this.containerMargin.top/2;
     console.log(`                                        containerX: ${elementDimensions.x}-${containerDimensions.x}+${this.containerMargin.left}=${containerX}`);
     console.log(`                                        containerY: ${elementDimensions.y}-${containerDimensions.y}+${this.containerMargin.top}=${containerY}`);
-    // this.container
-    //     .attr(
-    //       "transform",
-    //       `translate(${containerX}, ${containerY})`
-    //     );
+    this.container
+        .attr(
+          "transform",
+          `translate(${containerX}, ${containerY})`
+        );
   }
 
 
