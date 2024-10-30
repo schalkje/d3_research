@@ -165,7 +165,6 @@ export const testDataModel22 = [
               mode: "full",
               arrangement: 1,
             },
-            groupType: "fixed",
           },
           {
             id: "matrix",
@@ -176,27 +175,6 @@ export const testDataModel22 = [
               mode: "full",
               arrangement: 2,
             },
-            groupType: "fixed",
-            children: [
-              {
-                id: "stg_matrix",
-                label: "Staging Matrix",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_matrix",
-                label: "Archive Matrix",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_matrix",
-                label: "Transform Matrix",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
           {
             id: "eximius",
@@ -207,27 +185,6 @@ export const testDataModel22 = [
               mode: "full",
               arrangement: 3,
             },
-            groupType: "fixed",
-            children: [
-              {
-                id: "stg_eximius",
-                label: "Staging Eximius",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_eximius",
-                label: "Archive Eximius",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_eximius",
-                label: "Transform Eximius",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
         ],
       },
@@ -235,18 +192,24 @@ export const testDataModel22 = [
   },
 ];
 
-export const testDataModel25 = [
+export const testDataModel31 = [
   {
-    id: "root-base",
-    label: "Base Group",
-    type: "group",
-    groupType: "dynamic",
+    id: "columns",
+    label: "Columns",
+    type: "columns",
+    groupType: "fixed",
+    layout: {
+      displayMode: "code",
+    },
     children: [
       {
-        id: "root",
-        label: "Group",
-        type: "group",
-        groupType: "dynamic",
+        id: "lane1",
+        label: "Lane 1",
+        type: "lane",
+        groupType: "fixed",
+        layout: {
+          displayMode: "code",
+        },
         children: [
           {
             id: "bankview",
@@ -257,27 +220,6 @@ export const testDataModel25 = [
               mode: "full",
               arrangement: 1,
             },
-            groupType: "fixed",
-            children: [
-              {
-                id: "stg_bankview",
-                label: "Staging Bankview",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_bankview",
-                label: "Archive Bankview",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_bankview",
-                label: "Transform Bankview",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
           {
             id: "matrix",
@@ -288,27 +230,6 @@ export const testDataModel25 = [
               mode: "full",
               arrangement: 2,
             },
-            groupType: "fixed",
-            children: [
-              {
-                id: "stg_matrix",
-                label: "Staging Matrix",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_matrix",
-                label: "Archive Matrix",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_matrix",
-                label: "Transform Matrix",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
           {
             id: "eximius",
@@ -319,27 +240,6 @@ export const testDataModel25 = [
               mode: "full",
               arrangement: 3,
             },
-            groupType: "fixed",
-            children: [
-              {
-                id: "stg_eximius",
-                label: "Staging Eximius",
-                category: "staging",
-                type: "node",
-              },
-              {
-                id: "arc_eximius",
-                label: "Archive Eximius",
-                category: "archive",
-                type: "node",
-              },
-              {
-                id: "trn_eximius",
-                label: "Transform Eximius",
-                category: "transform",
-                type: "node",
-              },
-            ],
           },
         ],
       },
@@ -347,263 +247,138 @@ export const testDataModel25 = [
   },
 ];
 
-export const testDataModel23 = [
-  {
-    id: "bankview",
-    label: "Bankview",
-    code: "BNV",
-    type: "adapter",
-    layout: {
-      mode: "full",
-      arrangement: 1,
-    },
-    groupType: "fixed",
-    children: [
-      {
-        id: "stg_bankview",
-        label: "Staging Bankview",
-        category: "staging",
-        type: "node",
-      },
-      {
-        id: "arc_bankview",
-        label: "Archive Bankview",
-        category: "archive",
-        type: "node",
-      },
-      {
-        id: "trn_bankview",
-        label: "Transform Bankview",
-        category: "transform",
-        type: "node",
-      },
-    ],
-  },
-  {
-    id: "matrix",
-    label: "Matrix",
-    code: "MTX",
-    type: "adapter",
-    layout: {
-      mode: "full",
-      arrangement: 2,
-    },
-    groupType: "fixed",
-    children: [
-      {
-        id: "stg_matrix",
-        label: "Staging Matrix",
-        category: "staging",
-        type: "node",
-      },
-      {
-        id: "arc_matrix",
-        label: "Archive Matrix",
-        category: "archive",
-        type: "node",
-      },
-      {
-        id: "trn_matrix",
-        label: "Transform Matrix",
-        category: "transform",
-        type: "node",
-      },
-    ],
-  },
-  {
-    id: "eximius",
-    label: "Eximius",
-    code: "EXI",
-    type: "adapter",
-    layout: {
-      mode: "full",
-      arrangement: 3,
-    },
-    groupType: "fixed",
-    children: [
-      {
-        id: "stg_eximius",
-        label: "Staging Eximius",
-        category: "staging",
-        type: "node",
-      },
-      {
-        id: "arc_eximius",
-        label: "Archive Eximius",
-        category: "archive",
-        type: "node",
-      },
-      {
-        id: "trn_eximius",
-        label: "Transform Eximius",
-        category: "transform",
-        type: "node",
-      },
-    ],
-  },
-];
-
-export const testDataModel24 = [
-  {
-    id: "root",
-    label: "Group",
-    type: "group",
-    groupType: "dynamic",
-    children: [
-      {
-        id: "bankview",
-        label: "Bankview",
-        code: "BNV",
-        type: "adapter",
-        layout: {
-          mode: "full",
-          arrangement: 1,
-        },
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_bankview",
-            label: "Staging Bankview",
-            category: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_bankview",
-            label: "Archive Bankview",
-            category: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_bankview",
-            label: "Transform Bankview",
-            category: "transform",
-            type: "node",
-          },
-        ],
-      },
-      {
-        id: "matrix",
-        label: "Matrix",
-        code: "MTX",
-        type: "adapter",
-        layout: {
-          mode: "full",
-          arrangement: 2,
-        },
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_matrix",
-            label: "Staging Matrix",
-            category: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_matrix",
-            label: "Archive Matrix",
-            category: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_matrix",
-            label: "Transform Matrix",
-            category: "transform",
-            type: "node",
-          },
-        ],
-      },
-      {
-        id: "eximius",
-        label: "Eximius",
-        code: "EXI",
-        type: "adapter",
-        layout: {
-          mode: "full",
-          arrangement: 3,
-        },
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_eximius",
-            label: "Staging Eximius",
-            category: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_eximius",
-            label: "Archive Eximius",
-            category: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_eximius",
-            label: "Transform Eximius",
-            category: "transform",
-            type: "node",
-          },
-        ],
-      },
-      {
-        id: "group",
-        label: "Empty Group",
-        code: "EG",
-        type: "group",
-        groupType: "fixed",
-        children: [],
-      },
-    ],
-  },
-];
-
-export const testDataModel30 = [
-  {
-    id: "root-base",
-    label: "Base Group",
-    type: "group",
-    groupType: "dynamic",
-    children: [],
-  },
-];
-
-export const testDataModel31 = [
-  {
-    id: "root-base",
-    label: "Base Group",
-    type: "group",
-    groupType: "dynamic",
-    children: [
-      {
-        id: "root",
-        label: "Group",
-        type: "group",
-        groupType: "dynamic",
-        children: [],
-      },
-    ],
-  },
-];
 export const testDataModel32 = [
   {
-    id: "root-base",
-    label: "Base Group",
-    type: "group",
-    groupType: "dynamic",
+    id: "columns",
+    label: "Columns",
+    type: "columns",
+    groupType: "fixed",
+    layout: {
+      displayMode: "code",
+    },
     children: [
       {
-        id: "root",
-        label: "Group",
-        type: "group",
-        groupType: "dynamic",
-        children: [],
+        id: "lane1",
+        label: "Lane 1",
+        type: "lane",
+        groupType: "fixed",
+        layout: {
+          displayMode: "code",
+        },
+        children: [
+          {
+            id: "bankview",
+            label: "Bankview",
+            code: "BNV",
+            type: "adapter",
+            layout: {
+              mode: "full",
+              arrangement: 1,
+            },
+          },
+          {
+            id: "matrix",
+            label: "Matrix",
+            code: "MTX",
+            type: "adapter",
+            layout: {
+              mode: "full",
+              arrangement: 2,
+            },
+          },
+          {
+            id: "eximius",
+            label: "Eximius",
+            code: "EXI",
+            type: "adapter",
+            layout: {
+              mode: "full",
+              arrangement: 3,
+            },
+          },
+        ],
       },
       {
-        id: "root2",
-        label: "Root  2 Node",
-        type: "group",
-        groupType: "dynamic",
-        children: [],
+        id: "lane2",
+        label: "Lane 2",
+        type: "lane",
+        groupType: "fixed",
+        layout: {
+          displayMode: "code",
+        },
+        children: [
+          {
+            id: "fidor",
+            label: "FIDOR",
+            code: "FDR",
+            type: "adapter",
+            layout: {
+              mode: "full",
+            },
+          },
+          {
+            id: "matrix",
+            label: "Matrix",
+            code: "MTX",
+            type: "adapter",
+            layout: {
+              mode: "full",
+            },
+          },
+          {
+            id: "eximius",
+            label: "Eximius",
+            code: "EXI",
+            type: "adapter",
+            layout: {
+              mode: "full",
+            },
+          },
+        ],
+      },
+      {
+        id: "lane3",
+        label: "Lane 3",
+        type: "lane",
+        groupType: "fixed",
+        layout: {
+          displayMode: "code",
+        },
+        children: [
+          {
+            id: "stater",
+            label: "Stater",
+            code: "STS",
+            type: "adapter",
+            layout: {
+              mode: "full",
+              arrangement: 3,
+            },
+          },
+          {
+            id: "matrix",
+            label: "Matrix",
+            code: "MTX",
+            type: "adapter",
+            layout: {
+              mode: "full",
+              arrangement: 3,
+            },
+          },
+          {
+            id: "eximius",
+            label: "Eximius",
+            code: "EXI",
+            type: "adapter",
+            layout: {
+              mode: "staging-archive",
+              arrangement: 3,
+            },
+          },
+        ],
       },
     ],
   },
 ];
-export const dataModel = testDataModel22;
+
+export const dataModel = testDataModel32;

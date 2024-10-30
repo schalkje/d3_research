@@ -17,7 +17,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive 
-    if (!nodeData.layout.mode) nodeData.layout.arrangement = AdapterMode.arrangement; // 1,2,3
+    if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
     
 
 
@@ -230,7 +230,10 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.stagingNode) {
       // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
-      const height = this.archiveNode.data.height + this.transformNode.data.height + this.nodeSpacing.vertical;
+      var height = this.archiveNode.data.height ;
+      if (this.transformNode) {
+        height += this.transformNode.data.height + this.nodeSpacing.vertical;
+      }
       this.stagingNode.resize({ width: width, height: height });
 
       // then position the staging node based on the new size
