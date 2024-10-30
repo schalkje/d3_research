@@ -88,6 +88,7 @@ export default class Simulation {
     if (this.containerNode.container) {
       const boundingBox = getComputedDimensions(this.containerNode.container);
       this.containerNode.resizeContainer(boundingBox);
+      this.containerNode.positionContainer();
     }
     else
     {
