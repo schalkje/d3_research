@@ -3,6 +3,7 @@ import CircleNode from "./nodeCircle.js";
 import RectangularNode from "./nodeRect.js";
 import AdapterNode from "./nodeAdapter.js";
 import GroupNode from "./nodeGroup.js";
+import FoundationNode from "./nodeFoundation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
@@ -182,6 +183,7 @@ const typeToComponent = {
   rect: RectangularNode,
   circle: CircleNode,
   adapter: AdapterNode,
+  foundation: FoundationNode,
   lane: LaneNode,
   default: CircleNode,
 };

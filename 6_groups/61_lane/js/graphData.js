@@ -44,31 +44,11 @@ export const testDataModel21 = [
         label: "Bankview",
         code: "BNV",
         type: "adapter",
-                    layout: {
+        layout: {
               mode: "full",
               arrangement: 1,
-            },
+        },
         groupType: "fixed",
-        children: [
-          {
-            id: "stg_bankview",
-            label: "Staging Bankview",
-            category: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_bankview",
-            label: "Archive Bankview",
-            category: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_bankview",
-            label: "Transform Bankview",
-            category: "transform",
-            type: "node",
-          },
-        ],
       },
       {
         id: "matrix",
@@ -627,7 +607,7 @@ export const testDataModel32 = [
     ],
   },
 ];
-export const dataModel = testDataModel25;
+export const dataModel = testDataModel22;
 
 // console.log('Create links')
 
