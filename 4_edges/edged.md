@@ -1,13 +1,23 @@
 # Edges
 
-Features:
+## Features:
 - edges are a class
 - edges connect two nodes
 - all types of edges can be connected
 - each node has a function: getConnectionPoint; that return the connectionpoiint of a node based on a straight line
 
-Data features
+## Data features
 - edges can be added to every level of the data graph?
+
+# Visualisation
+
+## Ghostlines
+Edged have the ability to turn on ghostlines.
+
+Ghostlines have two modes:
+1. straight line from edge start to end
+1. straight line from centerpoint of start node to start node connectionpoint, and straight line from end node connectionpoint to centerpoint of end node
+
 
 
 ## Questions
