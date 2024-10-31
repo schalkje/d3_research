@@ -47,5 +47,6 @@ export function computeBoundingBox(nodes, horizontal = false) {
     // console.log('    bbox', element.node().getBBox());
     // console.log('    ctm', element.node().getCTM());
     return element.node().getBBox();
+    // return element.node().getBoundingClientRect(); // getBoundingClientRect forces a reflow; getBBox doesn't
   }
   

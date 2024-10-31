@@ -15,6 +15,12 @@ const Orientation = Object.freeze({
   ROTATE_270: 'rotate270'  
 });
 
+const FoundationMode = Object.freeze({
+  MANUAL: 'manual', 
+  AUTO: 'auto',
+});
+
+
 export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
@@ -22,6 +28,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.FULL;
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
+    if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
     super(nodeData, parentElement, parentNode);
 
@@ -33,17 +40,42 @@ export default class AdapterNode extends BaseContainerNode {
   async renderChildren() {
     console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
-      return;
+      this.data.children = [];
     }
 
     // render "raw" node
     let rawChild = this.data.children.find((child) => child.category === "raw");
+    if (
+      !rawChild &&
+        this.data.layout.mode === FoundationMode.AUTO
+    ) {
+      rawChild = {
+        id: `raw_${this.data.id}`,
+        label: `raw ${this.data.label}`,
+        category: "raw",
+        type: "node",
+      };
+      this.data.children.push(rawChild);
+    }
     if (rawChild) {
       this.rawNode = new RectangularNode(rawChild, this.container, this);
       this.rawNode.render();
     }
+
     // render "base" node
     let baseChild = this.data.children.find((child) => child.category === "base");
+    if (
+      !baseChild &&
+        this.data.layout.mode === FoundationMode.AUTO
+    ) {
+      baseChild = {
+        id: `base_${this.data.id}`,
+        label: `base ${this.data.label}`,
+        category: "base",
+        type: "node",
+      };
+      this.data.children.push(baseChild);
+    }
     if (baseChild) {
       console.log("    Rendering Base Node:", baseChild, this);
       this.baseNode = new RectangularNode(baseChild, this.container, this);

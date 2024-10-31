@@ -68,12 +68,14 @@ export default class BaseContainerNode extends BaseNode {
 
   resize(size) {
     // make sure it doesn't go below minimum size
-    // console.log("BaseNodeContainer resize", size.width, this.minimumSize.width, size.height, this.minimumSize.height);
+    console.log(`BaseNodeContainer resize size=[${Math.round(size.width)}x${Math.round(size.height)}],      minimum size =[${Math.round(this.minimumSize.width)}x${Math.round(this.minimumSize.height)}]`);
     size.width = Math.max(size.width, this.minimumSize.width);
     size.height = Math.max(size.height, this.minimumSize.height);
+    // var containerDimensions = getComputedDimensions(this.container); console.log(`          < BaseContainer.resize before - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
 
     super.resize(size);
 
+    // redraw the elements based on the new size; position the elements relative to the container center point
     this.element
       .select("rect")
       .attr("width", this.data.width)
@@ -87,34 +89,44 @@ export default class BaseContainerNode extends BaseNode {
       .attr("y", -this.data.height / 2 + 4);
 
 
-    if (this.container) {
-      const containerRect = getComputedDimensions(this.container);
-      const elementRect = getComputedDimensions(this.element);
-      const containerX = elementRect.x - containerRect.x + this.containerMargin.left;
-      const containerY = elementRect.y - containerRect.y + this.containerMargin.top;
-      // console.log(`                                        width: ${elementRect.x}-${containerRect.x}+${this.containerMargin.left}=${containerX}`);
-      // console.log(`                                       height: ${elementRect.y}-${containerRect.y}+${this.containerMargin.top}=${containerY}`);
-      this.container
-          .attr(
-            "transform",
-            `translate(${containerX}, ${containerY})`
-          );
-    }
+    // position the container relative to the element top left corner
+
+    // if (this.container) {
+    //   var containerDimensions = getComputedDimensions(this.container);
+    //   console.log(`          < BaseContainer.resize containerDimensions ${this.id}, (${containerDimensions.x},${containerDimensions.y}) (${containerDimensions.width},${containerDimensions.height}) data=:( (${this.data.width},${this.data.height}))`);
+    //   const elementDimensions = getComputedDimensions(this.element);
+    //   console.log(`          < BaseContainer.resize elementDimensions ${this.id}, (${elementDimensions.x},${elementDimensions.y}) (${elementDimensions.width},${elementDimensions.height}) data=:( (${this.data.width},${this.data.height}))`);
+
+
+    //   const containerX = (elementDimensions.x + this.containerMargin.left) - containerDimensions.x;
+    //   const containerY = (elementDimensions.y + this.containerMargin.top) - containerDimensions.y;
+    //   // const containerX = -containerRect.width/2 + this.containerMargin.left;
+    //   // const containerY = -containerRect.height/2 + this.containerMargin.top;
+    //   console.log(`                                        containerX: ${elementDimensions.x}-${containerDimensions.x}+${this.containerMargin.left}=${containerX}`);
+    //   console.log(`                                        containerY: ${elementDimensions.y}-${containerDimensions.y}+${this.containerMargin.top}=${containerY}`);
+    //   this.container
+    //       .attr(
+    //         "transform",
+    //         `translate(${containerX}, ${containerY})`
+    //       );
+    // }
+    // var containerDimensions = getComputedDimensions(this.container);
+    // console.log(`          > BaseContainer.resize containerDimensions ${this.id}, (${containerDimensions.x},${containerDimensions.y}) (${containerDimensions.width},${containerDimensions.height}) data=:( (${this.data.width},${this.data.height}))`);
+    // const elementDimensions = getComputedDimensions(this.element);
+    // console.log(`          < BaseContainer.resize elementDimensions ${this.id}, (${elementDimensions.x},${elementDimensions.y}) (${elementDimensions.width},${elementDimensions.height}) data=:( (${this.data.width},${this.data.height}))`);
   }
 
   // resize the node based on a resize of the container and it's child
-  resizeContainer(boundingBox) {
-    boundingBox.x -= this.containerMargin.left;
-    boundingBox.y -= this.containerMargin.top;
-    boundingBox.width += this.containerMargin.left + this.containerMargin.right;
-    boundingBox.height += this.containerMargin.top + this.containerMargin.bottom;
+  resizeContainer(size) {
+    size.width += this.containerMargin.left + this.containerMargin.right;
+    size.height += this.containerMargin.top + this.containerMargin.bottom;
 
     // make sure it doesn't go below minimum size
     // console.log("ParentNode resize", boundingBox.width, this.minimumSize.width, boundingBox.height, this.minimumSize.height);
-    boundingBox.width = Math.max(boundingBox.width, this.minimumSize.width);
-    boundingBox.height = Math.max(boundingBox.height, this.minimumSize.height);
+    size.width = Math.max(size.width, this.minimumSize.width);
+    size.height = Math.max(size.height, this.minimumSize.height);
 
-    this.resize(boundingBox);
+    this.resize(size);
   }
 
   async renderExpanded() {
@@ -124,11 +136,10 @@ export default class BaseContainerNode extends BaseNode {
       this.data.width = this.data.expandedSize.width;
     }
 
-    // this.resize({ width: this.data.width, height: this.data.height });
-    // this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
-
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+
+    // create container for child nodes
     this.container = this.element
       .append("g")
       .attr("class", (d) => `node container parent`);
@@ -150,17 +161,37 @@ export default class BaseContainerNode extends BaseNode {
     this.data.width = this.minimumSize.width;
 
     // apply the collapsed size to the rectangle
-    this.element.select("rect").attr("width", this.data.width).attr("height", this.data.height);
-
     this.resize({ width: this.data.width, height: this.data.height });
-
-    // this.cascadeLayoutUpdate(); // JS: todo: ugly: why do we need to call this here (and not in the rederExpanded method)?
   }
 
   // Method to toggle expansion/collapse of the parent node
   toggleExpandCollapse() {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;
     this.updateLayout();
+  }
+
+  positionContainer() {
+    // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
+    var containerDimensions = getComputedDimensions(this.container); 
+    //console.log(`          < positionContainer before - container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
+    var elementDimensions = getComputedDimensions(this.element); 
+    //console.log(`          < positionContainer before - element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
+    // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm before move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
+    // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm before move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
+
+    const containerX = 0;
+    var containerY = (elementDimensions.y - containerDimensions.y) + this.containerMargin.top
+    // console.log(`   containerX=${containerX}, containerY=${containerY} = ${this.containerMargin.top} - (${elementDimensions.y} - ${containerDimensions.y})`);
+    this.container
+    .attr(
+      "transform",
+      `translate(${containerX}, ${containerY})`
+    );
+
+    // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm after move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
+    // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm after move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
+    // var containerDimensions = getComputedDimensions(this.container); console.log(`          < positionContainer after  - container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
+    // var elementDimensions = getComputedDimensions(this.element); console.log(`          < positionContainer after  - element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
   }
 
   // Method to update rendering based on interaction state
