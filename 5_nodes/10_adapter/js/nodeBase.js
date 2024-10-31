@@ -1,4 +1,5 @@
 import { getComputedDimensions } from "./utils.js";
+
 export default class BaseNode {
   constructor(nodeData, parentElement, parentNode = null) {
     this.data = nodeData;
@@ -9,7 +10,7 @@ export default class BaseNode {
 
     this.element = null;
     this.simulation = null;
-    this.layoutDebug = false;
+    this.layoutDebug = true;
 
     if (!this.data.interactionState) this.data.interactionState = { expanded: true };
 
@@ -56,9 +57,29 @@ export default class BaseNode {
     renderContainer();
   }
 
-  resize(boundingBox) {
-    this.data.width = boundingBox.width;
-    this.data.height = boundingBox.height;
+  resize(size) {
+    // node base has no elements of it's own, so just update the data
+
+    // const oldSize = {width: this.data.width, height: this.data.height};
+    // const elementDimensions = getComputedDimensions(this.element);
+    // console.log("    nodeBase.resize  > ", this.id, this.data.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
+    this.data.width = size.width;
+    this.data.height = size.height;
+
+    // // this.data.x -= this.data.width / 2 - oldSize.width / 2;
+    // // this.data.y -= this.data.height / 2 - oldSize.height / 2;
+
+    // this.data.width = elementDimensions.width;
+    // this.data.height = elementDimensions.height;
+
+    // this.data.x += oldSize.width - elementDimensions.width;
+    // this.data.y -= elementDimensions.height / 2 - oldSize.height / 2;
+
+    // var ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  > before ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
+
+    // this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
+    //  ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  >  after ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
+
   }
 
   // Method to toggle expansion/collapse of the node
@@ -72,17 +93,21 @@ export default class BaseNode {
     console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
 
     if (this.data.interactionState.expanded) {
-      container.classed("collapsed", false).classed("expanded", true);
+      this.element.classed("collapsed", false).classed("expanded", true);
     } else {
-      container.classed("expanded", false).classed("collapsed", true);
+      this.element.classed("expanded", false).classed("collapsed", true);
     }
   }
 
-  cascadeLayoutUpdate() {
+  cascadeArrange() {
     if (this.parentNode) {
-      this.parentNode.runSimulation();
-      this.parentNode.cascadeLayout();
+      console.log(`cascadeLayoutUpdate cascade from "${this.id}" --> "${this.parentNode.id}"`);
+      this.parentNode.arrange();
+      this.parentNode.cascadeArrange();
+    } else {
+      console.log(`cascadeLayoutUpdate "${this.id}" --> has no parent to cascade to`);
     }
+
   }
 
   cascadeRestartSimulation() {

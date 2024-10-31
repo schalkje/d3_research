@@ -33,10 +33,10 @@ export default class RectangularNode extends BaseNode {
       .text(this.data.label);
   }
 
-  resize(boundingBox) {
+  resize(size) {
     // const oldSize = {width: this.data.width, height: this.data.height};
 
-    super.resize(boundingBox);
+    super.resize(size);
 
     this.element
       .select("rect")
