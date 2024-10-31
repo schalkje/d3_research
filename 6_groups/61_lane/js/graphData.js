@@ -609,9 +609,4 @@ export const testDataModel32 = [
 ];
 export const dataModel = testDataModel22;
 
-// console.log('Create links')
 
-// // calculate links
-// const links = [];
-
-// console.log(links);
