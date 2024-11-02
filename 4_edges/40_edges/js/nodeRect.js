@@ -11,7 +11,7 @@ export default class RectangularNode extends BaseNode {
   // Method to render the node using D3
   render() {
     const container = super.renderContainer();
-    console.log("Rendering Rectangular Node:", this.id);
+    // console.log("Rendering Rectangular Node:", this.id);
 
     // Draw the node shape
     container

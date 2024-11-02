@@ -40,11 +40,11 @@ export const testDashboard1 = {
   ],
   "edges": [
     {
-      "isActive": true,
-      "source": "bankview",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "matrix"
+      isActive: true,
+      source: "bankview",
+      type: "SSIS",
+      state: "Ready",
+      target: "matrix"
     },
   ]
 };

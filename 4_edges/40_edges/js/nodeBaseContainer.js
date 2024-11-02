@@ -14,7 +14,7 @@ export default class BaseContainerNode extends BaseNode {
 
   // Method to render the parent node and its children
   async render() {
-    console.log(`Rendering BaseContainerNode type=${this.data.type} Node:`, this.id);
+    // console.log(`Rendering BaseContainerNode type=${this.data.type} Node:`, this.id);
     super.renderContainer();
 
     // A container node consists of it's own display, a border, background and a label
@@ -68,7 +68,7 @@ export default class BaseContainerNode extends BaseNode {
 
   resize(size) {
     // make sure it doesn't go below minimum size
-    console.log(`BaseNodeContainer resize size=[${Math.round(size.width)}x${Math.round(size.height)}],      minimum size =[${Math.round(this.minimumSize.width)}x${Math.round(this.minimumSize.height)}]`);
+    // console.log(`BaseNodeContainer resize size=[${Math.round(size.width)}x${Math.round(size.height)}],      minimum size =[${Math.round(this.minimumSize.width)}x${Math.round(this.minimumSize.height)}]`);
     size.width = Math.max(size.width, this.minimumSize.width);
     size.height = Math.max(size.height, this.minimumSize.height);
     // var containerDimensions = getComputedDimensions(this.container); console.log(`          < BaseContainer.resize before - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
@@ -209,11 +209,11 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   arrange() {
-    console.log("Arranging BaseContainerNode:", this.id);
+    // console.log("Arranging BaseContainerNode:", this.id);
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for BaseContainer:", this.id, this.data.children);
+    // console.log("    Rendering Children for BaseContainer:", this.id, this.data.children);
     // no default rendering of the children, but this renders a placeholder rect
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;

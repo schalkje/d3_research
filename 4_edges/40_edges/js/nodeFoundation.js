@@ -38,7 +38,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for Adapter:", this.id, this.data.children);
+    // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -77,7 +77,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(baseChild);
     }
     if (baseChild) {
-      console.log("    Rendering Base Node:", baseChild, this);
+      // console.log("    Rendering Base Node:", baseChild, this);
       this.baseNode = new RectangularNode(baseChild, this.container, this);
       this.baseNode.render();
     }

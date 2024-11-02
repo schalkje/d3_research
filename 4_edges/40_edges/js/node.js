@@ -6,7 +6,7 @@ import ColumnsNode from "./nodeColumns.js";
 
 // Function to create nodes with positioning and drag behavior
 export function createNode(node, container) {
-  console.log("Creating Node:", node);
+  // console.log("Creating Node:", node);
   switch (node.type) {
     case "group":
       const groupRootNode = new GroupNode(node, container);

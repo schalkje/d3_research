@@ -22,13 +22,13 @@ export default class BaseNode {
   }
 
   renderContainer() {
-    console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y, this.parentElement);
+    // console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y, this.parentElement);
     this.element = this.parentElement
       .append("g")
       .attr("width", this.data.width)
       .attr("height", this.data.height)
       .attr("class", "node")
-      .attr("data-id", this.id)
+      .attr("id", this.id)
       .on("click", (event) => {
         console.log("Clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
@@ -134,6 +134,28 @@ export default class BaseNode {
 
   getConnectionPoint() {}
 
+  // if (showConnectionPoints) {
+  //   node.each(function (d) {
+  //     const connectionPoints = computeConnectionPoints(d.data.width, d.data.height);
+  //     Object.values(connectionPoints).forEach((point) => {
+  //       d3.select(this)
+  //         .append("circle")
+  //         .attr("class", "connection-point")
+  //         .attr("cx", point.x)
+  //         .attr("cy", point.y)
+  //         .attr("r", 3);
+  //     });
+  //   });
+  // }
+  // function computeConnectionPoints(width, height) {
+  //   return {
+  //     top: { x: width / 2, y: 0 },
+  //     bottom: { x: width / 2, y: height },
+  //     left: { x: 0, y: height / 2 },
+  //     right: { x: width, y: height / 2 },
+  //   };
+  // }
+  
   // drag
   drag_started(event, node) {
     console.log("drag_started event", event, node);

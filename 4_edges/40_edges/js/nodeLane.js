@@ -14,7 +14,7 @@ export default class LaneNode extends BaseContainerNode {
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for Group:", this.id, this.data.children);
+    // console.log("    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }

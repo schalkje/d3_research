@@ -120,6 +120,14 @@ rect {
   cursor: grab;
 }
 
+.edge .path {
+  stroke-width: 2px;
+  stroke: #4679BD;
+  stroke-opacity: 0.6;
+}
+
+
+
 line.link {
   stroke-width: 2px;
   stroke: #4679BD;

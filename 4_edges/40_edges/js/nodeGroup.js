@@ -26,7 +26,7 @@ export default class GroupNode extends BaseContainerNode {
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for Group:", this.id, this.data.children);
+    // console.log("    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
@@ -39,8 +39,8 @@ export default class GroupNode extends BaseContainerNode {
       const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
       const childComponent = new ComponentClass(node, this.container, this);
 
-      console.log("Rendering Child:", childComponent);
-      console.log("               :", this.data.x, this.data.y);
+      // console.log("Rendering Child:", childComponent);
+      // console.log("               :", this.data.x, this.data.y);
 
       this.childNodes.push(childComponent);
       // Push the render promise into the array
