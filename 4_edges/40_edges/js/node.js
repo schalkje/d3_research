@@ -37,3 +37,20 @@ export function createNode(node, container) {
       console.log(`Unknown node type "${node.type}" !!!!!`);
   }
 }
+
+export function createNodes(nodes, container) {
+  // create a group node as the container for all nodes
+  const root = {
+    id: "root",
+    label: "Automatic root",
+    type: "group",
+    groupType: "dynamic",
+    layout: {
+      size: { width: 1000, height: 1000 },
+      display: "content",
+    },
+    children: nodes,
+  }
+
+  createNode(root, container);
+}

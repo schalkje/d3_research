@@ -8,6 +8,11 @@ export default class BaseNode {
 
     this.id = nodeData.id;
 
+    this.edges = {
+      incoming: [],
+      outgoing: [],
+    }
+
     this.element = null;
     this.simulation = null;
     this.layoutDebug = true;

@@ -10,6 +10,10 @@ export default class BaseContainerNode extends BaseNode {
     this.container = null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.childNodes = [];
+
+    // edges contain the edges that are between nodes where this container 
+    // is the first joined parent
+    this.childEdges = [];
   }
 
   // Method to render the parent node and its children
