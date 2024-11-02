@@ -1,6 +1,6 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
-import { renderLinks } from "./links.js";
+import { createInternalEdge } from "./edge.js";
 
 const DisplayMode = Object.freeze({
   FULL: 'full',
@@ -22,7 +22,7 @@ const FoundationMode = Object.freeze({
 
 
 export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, parentNode = null) {
+  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 48;
     if (!nodeData.layout) nodeData.layout = {};
@@ -30,7 +30,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
-    super(nodeData, parentElement, parentNode);
+    super(nodeData, parentElement, typeToComponent, parentNode);
 
     this.rawNode = null;
     this.baseNode = null;
@@ -90,9 +90,22 @@ export default class AdapterNode extends BaseContainerNode {
 
     this.layoutChildren();
 
-    const links = [];
-    links.push({ source: this.rawNode, target: this.baseNode });
-    renderLinks(links, this.container);
+    console.log("    AdapterNode children:", this.rawNode, this.baseNode);
+    createInternalEdge(
+      {
+        source: this.rawNode.data.id,
+        target: this.baseNode.data.id,
+        isActive: true,
+        type: "SSIS",
+        state: "Ready",
+      },
+      this.rawNode,
+      this.baseNode,
+      this
+    );
+
+    this.renderEdges();
+    this.layoutEdges();
   }
 
   layoutChildren() {

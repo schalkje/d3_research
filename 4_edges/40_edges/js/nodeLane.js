@@ -25,7 +25,7 @@ export default class LaneNode extends BaseContainerNode {
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
       const ComponentClass = this.typeToComponent[node.type];
-      const childComponent = new ComponentClass(node, this.container, this);
+      const childComponent = new ComponentClass(node, this.container, this.typeToComponent, this);
 
       console.log("Renderichildrenng Child:", childComponent);
       console.log("               :", this.x, this.data.y);

@@ -1,9 +1,20 @@
 import BaseEdge from "./edgeBase.js";
 
-export function createEdges(rootNode, edges, container) {
-  console.log("Creating Edges:", rootNode, edges);
-  edges.forEach((edgeData) => {
-    // find source in rootNode hierarchy
+export function createInternalEdge(edgeData, source, target, parent)
+{
+    // create edge
+    const edge = new BaseEdge(edgeData, parent, source, target);
+
+    // add edge to source and target
+    source.edges.outgoing.push(edge);
+    target.edges.incoming.push(edge);
+
+    // add edge to parent, for continued layout adjustments
+    parent.childEdges.push(edge);
+}
+
+export function createEdge(rootNode, edgeData)
+{
     const source = rootNode.findNode(edgeData.source);
     if (!source) {
       console.error(`Source node ${edgeData.source} not found`);
@@ -20,7 +31,10 @@ export function createEdges(rootNode, edges, container) {
     // Find the joint parent container node and add edge to it
     const parent = source.findJointParentContainer(target);
 
-    // console.log("Creating Edge:", edgeData, source, target);
+    console.log("Creating Edge:", edgeData, source, target);
+    console.log("Parent:", parent);
+
+        // console.log("Creating Edge:", edgeData, source, target);
     // create edge
     const edge = new BaseEdge(edgeData, parent, source, target);
 
@@ -30,6 +44,13 @@ export function createEdges(rootNode, edges, container) {
 
     // add edge to parent, for continued layout adjustments
     parent.childEdges.push(edge);
+}
+
+
+export function createEdges(rootNode, edges) {
+  console.log("Creating Edges:", rootNode, edges);
+  edges.forEach((edgeData) => {
+    createEdge(rootNode, edgeData);
   });
   console.log("Edges created");
 

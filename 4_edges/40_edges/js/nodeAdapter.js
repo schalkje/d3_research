@@ -1,7 +1,7 @@
 // import BaseNode from "./nodeBase.js";
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
-import { renderLinks } from "./links.js";
+import { createInternalEdge } from "./edge.js";
 
 
 const AdapterMode = Object.freeze({
@@ -12,7 +12,7 @@ const AdapterMode = Object.freeze({
 });
 
 export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, parentNode = null) {
+  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
@@ -21,7 +21,7 @@ export default class AdapterNode extends BaseContainerNode {
     
 
 
-    super(nodeData, parentElement, parentNode);
+    super(nodeData, parentElement, typeToComponent, parentNode);
 
     this.stagingNode = null;
     this.transformNode = null;
@@ -101,10 +101,33 @@ export default class AdapterNode extends BaseContainerNode {
 
     this.layoutChildren();
 
-    const links = [];
-    // links.push({ source: this.stagingNode, target: this.transformNode });
-    // links.push({ source: this.stagingNode, target: this.archiveNode });
-    renderLinks(links, this.container);
+    createInternalEdge(
+      {
+        source: this.stagingNode,
+        target: this.transformNode,
+        isActive: true,
+        type: "SSIS",
+        state: "Ready",
+      },
+      this.stagingNode,
+      this.transformNode,
+      this
+    );
+    createInternalEdge(
+      {
+        source: this.stagingNode,
+        target: this.archiveNode,
+        isActive: true,
+        type: "SSIS",
+        state: "Ready",
+      },
+      this.stagingNode,
+      this.archiveNode,
+      this
+    );
+
+    this.renderEdges();
+    this.layoutEdges();
   }
 
   layoutChildren() {

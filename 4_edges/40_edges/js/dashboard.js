@@ -14,5 +14,5 @@ export function createDashboard(dashboard, container) {
     }
 
     if ( dashboard.edges.length > 0 )
-        createEdges(root, dashboard.edges, container);
+        createEdges(root, dashboard.edges);
 }

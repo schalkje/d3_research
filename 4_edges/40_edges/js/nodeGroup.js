@@ -39,7 +39,7 @@ export default class GroupNode extends BaseContainerNode {
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
       const ComponentClass = this.typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, this.container, this);
+      const childComponent = new ComponentClass(node, this.container, this.typeToComponent, this);
 
       // console.log("Rendering Child:", childComponent);
       // console.log("               :", this.x, this.data.y);

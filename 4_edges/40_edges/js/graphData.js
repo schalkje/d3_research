@@ -65,7 +65,7 @@ export const testDashboard2 = {
     {
       id: "group",
       label: "Group",
-      type: "columns",
+      type: "lane",
       groupType: "fixed",
       layout: {
         displayMode: "code",
