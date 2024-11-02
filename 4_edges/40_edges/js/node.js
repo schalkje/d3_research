@@ -3,6 +3,20 @@ import GroupNode from "./nodeGroup.js";
 import FoundationNode from "./nodeFoundation.js";
 import LaneNode from "./nodeLane.js";
 import ColumnsNode from "./nodeColumns.js";
+import RectangularNode from "./nodeRect.js";
+import CircleNode from "./nodeCircle.js";
+
+
+const typeToComponent = {
+  group: GroupNode,
+  node: RectangularNode,
+  rect: RectangularNode,
+  circle: CircleNode,
+  adapter: AdapterNode,
+  foundation: FoundationNode,
+  lane: LaneNode,
+  default: CircleNode,
+};
 
 // Function to create nodes with positioning and drag behavior
 export function createNode(nodeData, container) {
@@ -10,23 +24,23 @@ export function createNode(nodeData, container) {
   var node = null;
   switch (nodeData.type) {
     case "group":
-      node = new GroupNode(nodeData, container);
+      node = new GroupNode(nodeData, container, typeToComponent);
       break;
 
     case "lane":
-      node = new LaneNode(nodeData, container);
+      node = new LaneNode(nodeData, container, typeToComponent);
       break;
 
     case "columns":
-      node = new ColumnsNode(nodeData, container);
+      node = new ColumnsNode(nodeData, container, typeToComponent);
       break;
 
     case "adapter":
-      node = new AdapterNode(nodeData, container);
+      node = new AdapterNode(nodeData, container, typeToComponent);
       break;
 
     case "foundation":
-      node = new FoundationNode(nodeData, container);
+      node = new FoundationNode(nodeData, container, typeToComponent);
       break;
 
     default:

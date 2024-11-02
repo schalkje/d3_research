@@ -7,8 +7,8 @@ import FoundationNode from "./nodeFoundation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, parentNode = null) {
-    super(nodeData, parentElement, parentNode);
+  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
+    super(nodeData, parentElement, typeToComponent, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
@@ -24,7 +24,7 @@ export default class LaneNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
+      const ComponentClass = this.typeToComponent[node.type];
       const childComponent = new ComponentClass(node, this.container, this);
 
       console.log("Renderichildrenng Child:", childComponent);
@@ -150,16 +150,3 @@ export default class LaneNode extends BaseContainerNode {
     this.layoutChildren();
   }
 }
-
-
-
-const typeToComponent = {
-  group: GroupNode,
-  node: RectangularNode,
-  rect: RectangularNode,
-  circle: CircleNode,
-  adapter: AdapterNode,
-  foundation: FoundationNode,
-  lane: LaneNode,
-  default: CircleNode,
-};
