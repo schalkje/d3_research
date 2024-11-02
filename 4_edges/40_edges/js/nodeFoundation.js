@@ -115,10 +115,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
-      this.rawNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.rawNode.x = x;
-      this.rawNode.y = y;
+      this.rawNode.move(x, y);
     }
 
     if (this.baseNode) {
@@ -129,10 +126,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.rawNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
-      this.baseNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.baseNode.x = x;
-      this.baseNode.y = y;
+      this.baseNode.move(x, y);
     }    
   }
 
@@ -142,10 +136,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
-      this.rawNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.rawNode.x = x;
-      this.rawNode.y = y;
+      this.rawNode.move(x, y);
     }
 
     if (this.baseNode) {
@@ -156,10 +147,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.rawNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
-      this.baseNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.baseNode.x = x;
-      this.baseNode.y = y;
+      this.baseNode.move(x, y);
     }
 
   }

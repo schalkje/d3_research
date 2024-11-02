@@ -72,43 +72,15 @@ export default class LaneNode extends BaseContainerNode {
 
     this.childNodes.forEach((node) => {
       console.log(`    LayoutLane node ${node.id}`)
-      // const dimensions = getComputedDimensions(node.element);
-      // console.log(`          < layoutLane before - node dimensions ${this.id}, (${Math.round(dimensions.x)},${Math.round(dimensions.y)}) [${Math.round(dimensions.width)}x${Math.round(dimensions.height)}] data=[${Math.round(node.data.width)}x${Math.round(node.data.height)}]`);
-      // var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane before - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
-      // var containerCtm = node.element.node().getCTM(); console.log(`    nodeCtm before  move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-
       
       if (containerHeight > 0) containerHeight += this.nodeSpacing.vertical + node.data.height;
       else containerHeight += node.data.height;
 
-      // y += dimensions.height / 2;
       y += node.data.height / 2;
 
-//       if (node.id === "matrix") {
-//         node.element.attr("transform", `translate(${x}, ${y-20})`);
-//         console.log(`correct ${node.id} to (${x}, ${y})`);
-//       }
-// else 
-      // console.log(`          > containerDimensions ${this.id}, (x:${containerDimensions.x},y:${containerDimensions.y}) (width:${containerDimensions.width},height:${containerDimensions.height}), containerHeightShift=${containerHeightShift}`);
-      console.log(`          > move ${this.id}, (x:${x},y:${y})`);
-      node.element.attr("transform", `translate(${x}, ${y})`);
-      node.x = x;
-      node.y = y;
+      node.move(x, y);
 
-      // var containerCtm = node.element.node().getCTM(); console.log(`    nodeCtm after  move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-      // var containerDimensions = getComputedDimensions(this.container);
-      // containerHeightShift = containerDimensions.height - previousContainerHeight;
-      // console.log(`          > containerDimensions ${this.id}, (x:${containerDimensions.x},y:${containerDimensions.y}) (width:${containerDimensions.width},height:${containerDimensions.height}), containerHeightShift=${containerHeightShift}`);
-      // console.log(`          > nodeDimensions ${this.id}, (x:${dimensions.x},y:${dimensions.y}) (width:${dimensions.width},height:${dimensions.height}) data=:( (${node.data.width},${node.data.height}))`);
-      // node.element.attr("transform", `translate(${x}, ${y- containerHeightShift/2})`);
-
-      // console.log(`          ${node.id}, moved (${dimensions.x},${dimensions.y}) -> (${x}, ${y-containerHeightShift/2})`, dimensions)
-      // const afterDimensions = getComputedDimensions(node.element);
-      // console.log(`                                     result= (${afterDimensions.x},${afterDimensions.y})` )
-      // y += dimensions.height / 2 + this.nodeSpacing.vertical;
       y += node.data.height / 2 + this.nodeSpacing.vertical;
-
-      // var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane after - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}] --> y = ${y}`);
 
       containerWidth = Math.max(containerWidth, node.data.width);
     });

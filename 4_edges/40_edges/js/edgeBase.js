@@ -58,6 +58,7 @@ export default class BaseEdge {
     // console.log(
     //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
     // );
+    // this.element = this.parent.edgesContainer
     this.element = this.parent.edgesContainer
       .append("g")
       .attr("class", `edge ${this.data.type}`);

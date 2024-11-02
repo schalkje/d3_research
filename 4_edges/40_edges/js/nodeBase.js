@@ -26,6 +26,13 @@ export default class BaseNode {
     if (!this.data.height) this.data.height = 60;
   }
 
+  move(x,y) {
+    console.log(`          > move ${this.id}, (x:${x},y:${y})`);
+    this.x = x;
+    this.y = y;
+    this.element.attr("transform", `translate(${this.x}, ${this.y})`);
+  }
+
   renderContainer() {
     // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
     this.element = this.parentElement
@@ -214,7 +221,7 @@ export default class BaseNode {
     event.fx = event.x;
     event.fy = event.y;
     // move the simulation
-    node.element.attr("transform", "translate(" + event.fx + "," + event.fy + ")");
+    node.move(event.fx,event.fy);
   }
 
   drag_ended(event, node) {

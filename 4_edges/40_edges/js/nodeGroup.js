@@ -51,6 +51,8 @@ export default class GroupNode extends BaseContainerNode {
     await Promise.all(renderPromises);
 
     await this.runSimulation();
+
+    this.layoutEdges();
   }
 
   async arrange() {

@@ -62,15 +62,15 @@ export default class ColumnsNode extends BaseContainerNode {
       x += Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
 
       // position the node
-      node.x = x;
-      node.y = y;
-      node.element.attr("transform", `translate(${node.x}, ${node.y})`);
+      node.move(x, y);
 
       x = x + Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
 
       // compute the height of the group container
       containerHeight = Math.max(containerHeight, node.data.height);
     });
+
+    this.layoutEdges();
 
 
     // reposition the container
@@ -80,6 +80,7 @@ export default class ColumnsNode extends BaseContainerNode {
     var containerY = this.containerMargin.top/2;
     this.container
         .attr("transform", `translate(${containerX}, ${containerY})`);
+    
   }
 
   async arrange() {

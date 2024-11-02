@@ -122,7 +122,8 @@ rect {
 
 .edge .path {
   stroke-width: 2px;
-  stroke: #4679BD;
+  /* stroke: #4679BD; */
+  stroke: green;
   stroke-opacity: 0.6;
 }
 

@@ -126,10 +126,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
-      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.stagingNode.x = x;
-      this.stagingNode.y = y;
+      this.stagingNode.move(x, y);
     }
 
     if (this.archiveNode) {
@@ -140,10 +137,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.stagingNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
-      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.archiveNode.x = x;
-      this.archiveNode.y = y;
+      this.archiveNode.move(x, y);
     }
 
     if (this.transformNode) {
@@ -170,10 +164,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.containerMargin.top + 
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
-      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.transformNode.x = x;
-      this.transformNode.y = y;
+      this.transformNode.move(x, y);
     }
   }
 
@@ -186,10 +177,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.containerMargin.top +
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
-      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.stagingNode.x = x;
-      this.stagingNode.y = y;
+      this.stagingNode.move(x, y);
     }
 
     if (this.archiveNode) {
@@ -200,10 +188,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode.data.width / 2 +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
-      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.archiveNode.x = x;
-      this.archiveNode.y = y;
+      this.archiveNode.move(x, y);
     }
 
     if (this.transformNode) {
@@ -219,10 +204,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.containerMargin.top +
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
-      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.transformNode.x = x;
-      this.transformNode.y = y;
+      this.transformNode.move(x, y);
     }
   }
 
@@ -239,10 +221,7 @@ export default class AdapterNode extends BaseContainerNode {
       // then position the staging node based on the new size
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
-      this.stagingNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.stagingNode.x = x;
-      this.stagingNode.y = y;
+      this.stagingNode.move(x, y);
     }
 
     if (this.archiveNode) {
@@ -253,10 +232,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.stagingNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
-      this.archiveNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.archiveNode.x = x;
-      this.archiveNode.y = y;
+      this.archiveNode.move(x, y);
     }
 
     if (this.transformNode) {
@@ -272,10 +248,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.containerMargin.top +
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
-      this.transformNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.transformNode.x = x;
-      this.transformNode.y = y;
+      this.transformNode.move(x, y);
     }
   }
 }

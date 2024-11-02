@@ -68,7 +68,7 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // you cannot move the g node,, move the child elements in stead
-    this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
+    this.element.attr("transform", `translate(${this.x}, ${this.y})`);
   }
 
   renderEdges() {
@@ -76,7 +76,7 @@ export default class BaseContainerNode extends BaseNode {
     // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
       // create container for child nodes
-      this.edgesContainer = this.element
+      this.edgesContainer = this.container
         .append("g")
         .attr("class", (d) => `node edges`);
 
