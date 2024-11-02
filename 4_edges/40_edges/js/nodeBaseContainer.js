@@ -8,6 +8,7 @@ export default class BaseContainerNode extends BaseNode {
     
     this.simulation = null;
     this.container = null;
+    this.edgesContainer = null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.childNodes = [];
 
@@ -67,7 +68,21 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // you cannot move the g node,, move the child elements in stead
-    this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
+    this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
+  }
+
+  renderEdges() {
+    console.log("Rendering Edges for BaseContainerNode:", this.id, this.childEdges);
+    // if there are any edges, create edges container
+    if (this.childEdges.length > 0) {
+      // create container for child nodes
+      this.edgesContainer = this.element
+        .append("g")
+        .attr("class", (d) => `node edges`);
+
+
+      this.childEdges.forEach((edge) => edge.render());
+    }
   }
 
   resize(size) {
@@ -168,6 +183,25 @@ export default class BaseContainerNode extends BaseNode {
     this.resize({ width: this.data.width, height: this.data.height });
   }
 
+  findNode(nodeId) {
+    // console.log("    nodeBaseContainer findNode:", this.id, nodeId, this.id == nodeId);
+    // console.log("                              :", this.childNodes.length, this.childNodes);
+    // console.log("                              :", this.data);
+    // console.log("                              :", this.childNodes[0]);
+    if (this.id === nodeId) {
+      // console.log("    nodeBaseContainer findNode found:", this.id, nodeId);
+      return this;
+    }
+    for (const childNode of this.childNodes) {
+      // console.log("    nodeBaseContainer findNode check child:", childNode.id, nodeId);
+      const foundNode = childNode.findNode(nodeId);
+      if (foundNode) {
+        return foundNode;
+      }
+    }
+    return null;
+  }
+
   // Method to toggle expansion/collapse of the parent node
   toggleExpandCollapse() {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;
@@ -210,6 +244,14 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     this.cascadeArrange();
+
+    layoutEdges();
+  }
+
+  layoutEdges() {
+    if (this.childEdges.length > 0) {
+      this.childEdges.forEach((edge) => edge.layout());
+    }
   }
 
   arrange() {

@@ -7,23 +7,18 @@ import { getComputedDimensions } from "./utils.js";
 //   });
 
 export default class BaseEdge {
-  // constructor(nodeData, parentElement, parentNode = null) {
-  constructor(edgeData, parentElement, source, target, settings) {
+  constructor(edgeData, parent, source, target, settings) {
     this.data = edgeData;
-    this.parentElement = parentElement;
-    this.sourceElement = source; // what is the datatype of source and target?
-    this.targetElement = target;
+    this.parent = parent; // this is the joined parented container node of source and target
+    this.source = source; 
+    this.target = target;
     this.settings = settings;
+
+    this.element = null;
 
     // default data settings
     if (!this.data.type) this.data.type = "unknown";
     if (!this.data.active) this.data.active = true;
-
-    // Set default values for source: (x1,y1) and target: (x2,y2)
-    if (!this.data.x1) this.data.x1 = 0;
-    if (!this.data.y1) this.data.y1 = 0;
-    if (!this.data.x2) this.data.x2 = 100;
-    if (!this.data.y2) this.data.y2 = 100;
 
     // default settings
     if (!this.settings) this.settings = {};
@@ -31,12 +26,41 @@ export default class BaseEdge {
     if (!this.settings.showEdges) this.settings.showEdges = true;
   }
 
+  get x1() {
+    console.log("    Getting x1:", this.source, this.source.x);
+    return this.source ? this.source.x : null;
+  }
+
+  get y1() {
+    return this.source ? this.source.y : null;
+  }
+
+  get x2() {
+    return this.target ? this.target.x : null;
+  }
+
+  get y2() {
+    return this.target ? this.target.y : null;
+  }
+
+  get sourcePoint() {
+    // console.log("    Getting Source Point:", this.x1, this.y1);
+    return [this.x1, this.y1];
+  }
+
+  get targetPoint() {
+    return [this.x2, this.y2];
+  }
+
   render() {
     console.log("    Rendering Base Edge:", this.data.source, this.data.target, this.data);
+    console.log("                       :", this.parent);
     // console.log(
     //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
     // );
-    this.element = this.parentElement.append("g").attr("class", `edge ${this.data.type}`);
+    this.element = this.parent.edgesContainer
+      .append("g")
+      .attr("class", `edge ${this.data.type}`);
 
     // // Draw ghostlines
     // if (this.settings.showGhostlines) {
@@ -49,22 +73,38 @@ export default class BaseEdge {
     //     });
     // }
 
-    const edge = this.generateDirectEdge(this.data);
+    // const edge = this.generateDirectEdge();
+    // console.log("    Edge:", edge);
+    // const line = this.lineGenerator();
+    // console.log("    Line:", line);
+
+    // Create edge
+    if (this.settings.showEdges) {
+      this.element
+        .append("path")
+        .attr("class", "path");
+        // .attr("d", line(edge));
+    }
+
+    return this.element;
+  }
+
+  layout() {
+    console.log("----------------------------------------------------------------------------------------------");
+    console.log("--     Updating Render for EDGE BASE:", this.id);
+
+
+    const edge = this.generateDirectEdge();
     console.log("    Edge:", edge);
     const line = this.lineGenerator();
     console.log("    Line:", line);
 
     // Draw edges
     if (this.settings.showEdges) {
-      this.element
-        .append("path")
-        .attr("class", "path")
-        // .attr("stroke", "black")
-        // .attr("stroke-width", 2)
-        .attr("d", line(edge));
+      this.element.
+        select(".path").
+        attr("d", line(edge));
     }
-
-    return this.element;
   }
 
 
@@ -77,22 +117,11 @@ export default class BaseEdge {
 //     return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
 //   }
 
+
   generateDirectEdge(edge) {
-    console.log("    Generating Direct Edge:", edge.sourceNode, edge.targetNode, this.data);
-    const sourceNode = edge.sourceNode;
-    const targetNode = edge.targetNode;
-
-    let sourcePoint, targetPoint;
-    sourcePoint = [sourceNode.x, sourceNode.y];
-
-    // targetPoint = [targetNode.x, targetNode.y];
-    targetPoint = [100, 100];
-
-    return [sourcePoint, targetPoint];
+    console.log("    Generating Direct Edge:", this.source, this.target, this.data);
+    console.log("                           :", this.sourcePoint, this.targetPoint);
+    return [this.sourcePoint, this.targetPoint];
   }
 
-  // Method to update the node rendering based on interaction state
-  layout() {
-    console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
-  }
 }

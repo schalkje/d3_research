@@ -40,7 +40,7 @@ export default class GroupNode extends BaseContainerNode {
       const childComponent = new ComponentClass(node, this.container, this);
 
       // console.log("Rendering Child:", childComponent);
-      // console.log("               :", this.data.x, this.data.y);
+      // console.log("               :", this.x, this.data.y);
 
       this.childNodes.push(childComponent);
       // Push the render promise into the array

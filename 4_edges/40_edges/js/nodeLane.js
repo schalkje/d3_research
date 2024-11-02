@@ -28,7 +28,7 @@ export default class LaneNode extends BaseContainerNode {
       const childComponent = new ComponentClass(node, this.container, this);
 
       console.log("Renderichildrenng Child:", childComponent);
-      console.log("               :", this.data.x, this.data.y);
+      console.log("               :", this.x, this.data.y);
 
       this.childNodes.push(childComponent);
       // Push the render promise into the array
@@ -44,7 +44,9 @@ export default class LaneNode extends BaseContainerNode {
 
   layoutChildren() {
     console.log("Layout for Lanes:", this.id, this.data.layout, this.childNodes.length);
-    this.layoutLane()
+    this.layoutLane();
+
+    this.layoutEdges();
   }
 
   layoutLane()
@@ -90,6 +92,8 @@ export default class LaneNode extends BaseContainerNode {
       // console.log(`          > containerDimensions ${this.id}, (x:${containerDimensions.x},y:${containerDimensions.y}) (width:${containerDimensions.width},height:${containerDimensions.height}), containerHeightShift=${containerHeightShift}`);
       console.log(`          > move ${this.id}, (x:${x},y:${y})`);
       node.element.attr("transform", `translate(${x}, ${y})`);
+      node.x = x;
+      node.y = y;
 
       // var containerCtm = node.element.node().getCTM(); console.log(`    nodeCtm after  move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
       // var containerDimensions = getComputedDimensions(this.container);

@@ -20,18 +20,18 @@ export default class BaseNode {
     if (!this.data.interactionState) this.data.interactionState = { expanded: true };
 
     // Set default values for x, y, width, and height
-    if (!this.data.x) this.data.x = 0;
-    if (!this.data.y) this.data.y = 0;
+    if (!this.x) this.x = 0;
+    if (!this.y) this.y = 0;
     if (!this.data.width) this.data.width = 60;
     if (!this.data.height) this.data.height = 60;
   }
 
   renderContainer() {
-    // console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y, this.parentElement);
+    // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
     this.element = this.parentElement
       .append("g")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height)
+      // .attr("width", this.data.width) // a g element doesn't have width/height attributes
+      // .attr("height", this.data.height)
       .attr("class", "node")
       .attr("id", this.id)
       .on("click", (event) => {
@@ -67,24 +67,52 @@ export default class BaseNode {
 
     // const oldSize = {width: this.data.width, height: this.data.height};
     // const elementDimensions = getComputedDimensions(this.element);
-    // console.log("    nodeBase.resize  > ", this.id, this.data.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
+    // console.log("    nodeBase.resize  > ", this.id, this.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
     this.data.width = size.width;
     this.data.height = size.height;
 
-    // // this.data.x -= this.data.width / 2 - oldSize.width / 2;
+    // // this.x -= this.data.width / 2 - oldSize.width / 2;
     // // this.data.y -= this.data.height / 2 - oldSize.height / 2;
 
     // this.data.width = elementDimensions.width;
     // this.data.height = elementDimensions.height;
 
-    // this.data.x += oldSize.width - elementDimensions.width;
+    // this.x += oldSize.width - elementDimensions.width;
     // this.data.y -= elementDimensions.height / 2 - oldSize.height / 2;
 
     // var ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  > before ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
 
-    // this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
+    // this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
     //  ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  >  after ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
 
+  }
+
+  findNode(nodeId) {
+    // console.log("    nodeBase findNode:", this.id, nodeId, this.id == nodeId);
+    if (this.id === nodeId) {
+      // console.log("    nodeBase findNode: return this", this);
+      return this;
+    }
+    return null;
+  }
+
+  isDescendantOf(node) {
+    let current = this.parentNode;
+    while (current) {
+      if (current === node) {
+        return true;
+      }
+      current = current.parentNode;
+    }
+    return false;
+  }
+
+  findJointParentContainer(target) {
+    let parent = this;
+    while (parent && !target.isDescendantOf(parent)) {
+      parent = parent.parentNode;
+    }
+    return parent;
   }
 
   // Method to toggle expansion/collapse of the node

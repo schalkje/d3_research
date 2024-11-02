@@ -30,7 +30,7 @@ export default class ColumnsNode extends BaseContainerNode {
       const childComponent = new ComponentClass(node, this.container, this);
 
       // console.log("Rendering Child:", childComponent);
-      // console.log("               :", this.data.x, this.data.y, this.data.width, this.data.height);
+      // console.log("               :", this.x, this.data.y, this.data.width, this.data.height);
       childComponent.x = 0;
       childComponent.y = 0;
 

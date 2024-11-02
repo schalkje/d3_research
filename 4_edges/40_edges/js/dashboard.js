@@ -1,9 +1,8 @@
 import { createNode, createNodes } from './node.js'
 import { createMarkers } from './markers.js'
-import { createEdges, initializeEdgeData } from './edge.js'
+import { createEdges } from './edge.js'
 
 export function createDashboard(dashboard, container) {
-    initializeEdgeData(dashboard.nodes, dashboard.edges);
 
     createMarkers(container);
 
