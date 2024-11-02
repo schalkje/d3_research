@@ -5,37 +5,37 @@ import LaneNode from "./nodeLane.js";
 import ColumnsNode from "./nodeColumns.js";
 
 // Function to create nodes with positioning and drag behavior
-export function createNode(node, container) {
-  // console.log("Creating Node:", node);
-  switch (node.type) {
+export function createNode(nodeData, container) {
+  // console.log("Creating Node:", nodeData);
+  var node = null;
+  switch (nodeData.type) {
     case "group":
-      const groupRootNode = new GroupNode(node, container);
-      groupRootNode.render();
+      node = new GroupNode(nodeData, container);
       break;
 
     case "lane":
-      const laneRootNode = new LaneNode(node, container);
-      laneRootNode.render();
+      node = new LaneNode(nodeData, container);
       break;
 
     case "columns":
-      const columnsRootNode = new ColumnsNode(node, container);
-      columnsRootNode.render();
+      node = new ColumnsNode(nodeData, container);
       break;
 
     case "adapter":
-      const adapterRootNode = new AdapterNode(node, container);
-      adapterRootNode.render();
+      node = new AdapterNode(nodeData, container);
       break;
 
     case "foundation":
-      const foundationRootNode = new FoundationNode(node, container);
-      foundationRootNode.render();
+      node = new FoundationNode(nodeData, container);
       break;
 
     default:
-      console.log(`Unknown node type "${node.type}" !!!!!`);
+      console.log(`Unknown node type "${nodeData.type}" !!!!!`);
+      return null;
   }
+
+  node.render();
+  return node;
 }
 
 export function createNodes(nodes, container) {
@@ -52,5 +52,5 @@ export function createNodes(nodes, container) {
     children: nodes,
   }
 
-  createNode(root, container);
+  return createNode(root, container);
 }

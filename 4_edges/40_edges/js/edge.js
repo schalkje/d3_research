@@ -1,6 +1,6 @@
 import BaseEdge from './edgeBase.js';
 
-export function createEdges(edges, container) {
+export function createEdges(rootNode, edges, container) {
     edges.forEach(edgeData => {
         // find source
         const source = container.select(`#${edgeData.source}`);
