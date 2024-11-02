@@ -4,6 +4,7 @@ import RectangularNode from "./nodeRect.js";
 import AdapterNode from "./nodeAdapter.js";
 import GroupNode from "./nodeGroup.js";
 import LaneNode from "./nodeLane.js";
+import FoundationNode from "./nodeFoundation.js";
 
 export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
@@ -26,7 +27,7 @@ export default class ColumnsNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
+      const ComponentClass = typeToComponent[node.type];
       const childComponent = new ComponentClass(node, this.container, this);
 
       // console.log("Rendering Child:", childComponent);
@@ -94,10 +95,10 @@ export default class ColumnsNode extends BaseContainerNode {
 const typeToComponent = {
   group: GroupNode,
   node: RectangularNode,
-  lane: LaneNode,
-  columns: ColumnsNode,
   rect: RectangularNode,
   circle: CircleNode,
   adapter: AdapterNode,
+  foundation: FoundationNode,
+  lane: LaneNode,
   default: CircleNode,
 };

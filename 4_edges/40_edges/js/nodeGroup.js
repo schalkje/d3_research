@@ -3,6 +3,8 @@ import CircleNode from "./nodeCircle.js";
 import RectangularNode from "./nodeRect.js";
 import Simulation from "./simulation.js";
 import AdapterNode from "./nodeAdapter.js";
+import FoundationNode from "./nodeFoundation.js";
+import LaneNode from "./nodeLane.js";
 
 export default class GroupNode extends BaseContainerNode {
   constructor(nodeData, parentElement, parentNode = null) {
@@ -62,12 +64,13 @@ export default class GroupNode extends BaseContainerNode {
 }
 
 
-
 const typeToComponent = {
   group: GroupNode,
   node: RectangularNode,
   rect: RectangularNode,
   circle: CircleNode,
   adapter: AdapterNode,
+  foundation: FoundationNode,
+  lane: LaneNode,
   default: CircleNode,
 };
