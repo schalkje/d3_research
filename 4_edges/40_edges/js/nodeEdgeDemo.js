@@ -25,7 +25,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
     this.shiftRatio = this.data.shiftRatio || 0.6;
     this.shift2Ratio = this.data.shift2Ratio || 0.8;
 
-    this.nodeSpacing = { horizontal: 30, vertical: 20 };
+    this.nodeSpacing = nodeData.nodeSpacing || { horizontal: 30, vertical: 20 };
   }
 
   async renderChildren() {

@@ -222,6 +222,7 @@ export const curvedEdgeDemo = {
           label: "Stair down",
           type: "edge-demo",
           layout: "stair-down",
+          nodeSpacing: { horizontal: 30, vertical: 50 },
         },      
       ],
     },
