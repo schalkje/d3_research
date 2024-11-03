@@ -1,5 +1,6 @@
 // import { line } from "d3";
 import { getComputedDimensions } from "./utils.js";
+import { generateDirectEdge, generateEdgePath } from "./utilPath.js";
 
 // const EdgeType = Object.freeze({
 //     FULL: 'full',
@@ -25,10 +26,11 @@ export default class BaseEdge {
     if (!this.settings) this.settings = {};
     if (!this.settings.showGhostlines) this.settings.showGhostlines = true;
     if (!this.settings.showEdges) this.settings.showEdges = true;
+    if (!this.settings.curved) this.settings.curved = false;
   }
 
   get x1() {
-    console.log("    Getting x1:", this.source, this.source.x);
+    // console.log("    Getting x1:", this.source, this.source.x);
     return this.source ? this.source.x : null;
   }
 
@@ -59,9 +61,8 @@ export default class BaseEdge {
     // console.log(
     //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
     // );
-    // this.element = this.parent.edgesContainer
 
-    // Draw ghostlines
+    // Create ghostlines
     if (this.settings.showGhostlines) {
       this.ghostElement = this.parent.ghostContainer
         .append("g")
@@ -72,11 +73,6 @@ export default class BaseEdge {
         .append("path")
         .attr("class", "path");
     }
-
-    // const edge = this.generateDirectEdge();
-    // console.log("    Edge:", edge);
-    // const line = this.lineGenerator();
-    // console.log("    Line:", line);
 
     // Create edge
     if (this.settings.showEdges) {
@@ -96,26 +92,27 @@ export default class BaseEdge {
     console.log("----------------------------------------------------------------------------------------------");
     console.log("--     Updating Render for EDGE BASE:", this.id);
 
-
-    const edge = this.generateDirectEdge();
-    console.log("    Edge:", edge);
-    const line = this.lineGenerator();
-    console.log("    Line:", line);
-
     if (this.settings.showGhostlines) {
-      console.log("    Updating Ghost Edge:", this.ghostElement, edge);
+      const ghostEdge = generateDirectEdge(this);
+      const ghostLine = this.lineGenerator();
+      
       this.ghostElement.
+        select(".path").
+        attr("d", ghostLine(ghostEdge));
+    }
+
+
+    // Draw edges
+    if (this.settings.showEdges) {
+      const edge = generateEdgePath(this);
+      // const line = d3.line().curve(d3.curveBasis);
+      const line = this.lineGenerator();
+  
+      console.log("    Updating Edge:", this.element, edge);
+      this.element.
         select(".path").
         attr("d", line(edge));
     }
-
-    // // Draw edges
-    // if (this.settings.showEdges) {
-    //   console.log("    Updating Edge:", this.element, edge);
-    //   this.element.
-    //     select(".path").
-    //     attr("d", line(edge));
-    // }
   }
 
 
@@ -129,10 +126,6 @@ export default class BaseEdge {
 //   }
 
 
-  generateDirectEdge(edge) {
-    console.log("    Generating Direct Edge:", this.source, this.target, this.data);
-    console.log("                           :", this.sourcePoint, this.targetPoint);
-    return [this.sourcePoint, this.targetPoint];
-  }
+
 
 }

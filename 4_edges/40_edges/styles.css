@@ -126,6 +126,15 @@ rect {
   cursor: grab;
 }
 
+.edge .path {
+  stroke-width: 2px;
+  /* stroke: #4679BD; */
+  stroke: green;
+  fill: none;
+  stroke-opacity: 0.6;
+}
+
+
 .edge.ghostline .path {
   stroke-width: 2px;
   /* stroke: #4679BD; */
@@ -137,13 +146,6 @@ rect {
   stroke-width: 1px;
   /* stroke: #4679BD; */
   stroke: white;
-  stroke-opacity: 0.6;
-}
-
-.edge .path {
-  stroke-width: 2px;
-  /* stroke: #4679BD; */
-  stroke: green;
   stroke-opacity: 0.6;
 }
 
