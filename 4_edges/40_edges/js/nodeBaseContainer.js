@@ -82,6 +82,12 @@ export default class BaseContainerNode extends BaseNode {
         .append("g")
         .attr("class", (d) => `node edges`);
 
+      // create container for child nodes
+      this.ghostContainer = this.container
+        .append("g")
+        .attr("class", (d) => `node ghost`)
+        .lower(); // move it to the background
+
 
       this.childEdges.forEach((edge) => edge.render());
     }

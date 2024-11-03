@@ -15,6 +15,7 @@ export default class BaseEdge {
     this.settings = settings;
 
     this.element = null;
+    this.ghostElement = null;
 
     // default data settings
     if (!this.data.type) this.data.type = "unknown";
@@ -59,20 +60,18 @@ export default class BaseEdge {
     //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
     // );
     // this.element = this.parent.edgesContainer
-    this.element = this.parent.edgesContainer
-      .append("g")
-      .attr("class", `edge ${this.data.type}`);
 
-    // // Draw ghostlines
-    // if (this.settings.showGhostlines) {
-    //   this.element
-    //     .append("path")
-    //     .attr("class", "ghostline")
-    //     .attr("d", (d) => {
-    //       const points = this.generateDirectEdge(this.data);
-    //       return this.lineGenerator(points);
-    //     });
-    // }
+    // Draw ghostlines
+    if (this.settings.showGhostlines) {
+      this.ghostElement = this.parent.ghostContainer
+        .append("g")
+        // .attr("class", `edge ${this.data.type}`);
+        .attr("class", `edge ghostline`);
+
+      this.ghostElement
+        .append("path")
+        .attr("class", "path");
+    }
 
     // const edge = this.generateDirectEdge();
     // console.log("    Edge:", edge);
@@ -81,10 +80,13 @@ export default class BaseEdge {
 
     // Create edge
     if (this.settings.showEdges) {
+      this.element = this.parent.edgesContainer
+      .append("g")
+      .attr("class", `edge ${this.data.type}`);
+
       this.element
         .append("path")
         .attr("class", "path");
-        // .attr("d", line(edge));
     }
 
     return this.element;
@@ -100,12 +102,20 @@ export default class BaseEdge {
     const line = this.lineGenerator();
     console.log("    Line:", line);
 
-    // Draw edges
-    if (this.settings.showEdges) {
-      this.element.
+    if (this.settings.showGhostlines) {
+      console.log("    Updating Ghost Edge:", this.ghostElement, edge);
+      this.ghostElement.
         select(".path").
         attr("d", line(edge));
     }
+
+    // // Draw edges
+    // if (this.settings.showEdges) {
+    //   console.log("    Updating Edge:", this.element, edge);
+    //   this.element.
+    //     select(".path").
+    //     attr("d", line(edge));
+    // }
   }
 
 

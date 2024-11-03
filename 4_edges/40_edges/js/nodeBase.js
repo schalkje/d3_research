@@ -53,7 +53,12 @@ export default class BaseNode {
 
     // show the center stip
     if ( this.layoutDebug )
-      this.element.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
+      this.element
+        .append("circle")
+        .attr("class", "centermark")
+        .attr("r", 3)
+        .attr("cx", 0)
+        .attr("cy", 0);	
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {

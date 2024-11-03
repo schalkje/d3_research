@@ -17,6 +17,12 @@ svg.canvas {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
+.centermark {
+  fill: red;
+  stroke: white;
+  stroke-width: 1;
+}
+
 /* 
 line {
   fill: none;
@@ -118,6 +124,20 @@ rect {
   text-anchor: start;
   dominant-baseline: hanging;
   cursor: grab;
+}
+
+.edge.ghostline .path {
+  stroke-width: 2px;
+  /* stroke: #4679BD; */
+  stroke: white;
+  stroke-opacity: 0.6;
+}
+
+.edge.ghostline {
+  stroke-width: 1px;
+  /* stroke: #4679BD; */
+  stroke: white;
+  stroke-opacity: 0.6;
 }
 
 .edge .path {
