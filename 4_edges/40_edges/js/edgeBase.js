@@ -19,14 +19,14 @@ export default class BaseEdge {
     this.ghostElement = null;
 
     // default data settings
-    if (!this.data.type) this.data.type = "unknown";
-    if (!this.data.active) this.data.active = true;
+    this.data.active ??= true;
+    this.data.type ??= "unknown";
 
     // default settings
     if (!this.settings) this.settings = {};
-    if (!this.settings.showGhostlines) this.settings.showGhostlines = true;
-    if (!this.settings.showEdges) this.settings.showEdges = true;
-    if (!this.settings.curved) this.settings.curved = false;
+    this.settings.showGhostlines ??= true;
+    this.settings.showEdges ??= true;
+    this.settings.curved ??= false;
   }
 
   get x1() {

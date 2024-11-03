@@ -1,8 +1,8 @@
 import BaseNode from "./nodeBase.js";
 
-export default class CircleNode extends BaseNode {
-  constructor(nodeData, svg) {
-    super(nodeData, svg);
+  export default class CircleNode extends BaseNode {
+  constructor(nodeData, parentElement, settings, parentNode = null) {
+    super(nodeData, parentElement, settings, parentNode);
 
     // add radius property, that is the half of the max of width and height
     if (!this.data.radius)

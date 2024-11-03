@@ -22,7 +22,7 @@ const FoundationMode = Object.freeze({
 
 
 export default class FoundationNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, parentNode = null) {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 48;
     if (!nodeData.layout) nodeData.layout = {};
@@ -30,7 +30,7 @@ export default class FoundationNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
-    super(nodeData, parentElement, createNode, parentNode);
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.rawNode = null;
     this.baseNode = null;
@@ -58,7 +58,7 @@ export default class FoundationNode extends BaseContainerNode {
       this.data.children.push(rawChild);
     }
     if (rawChild) {
-      this.rawNode = new RectangularNode(rawChild, this.container, this);
+      this.rawNode = new RectangularNode(rawChild, this.container, this.settings, this);
       this.rawNode.render();
     }
 
@@ -78,7 +78,7 @@ export default class FoundationNode extends BaseContainerNode {
     }
     if (baseChild) {
       // console.log("    Rendering Base Node:", baseChild, this);
-      this.baseNode = new RectangularNode(baseChild, this.container, this);
+      this.baseNode = new RectangularNode(baseChild, this.container, this.settings, this);
       this.baseNode.render();
     }
 
@@ -102,6 +102,7 @@ export default class FoundationNode extends BaseContainerNode {
       this,
       this.rawNode,
       this.baseNode,
+      this.settings,
     );
 
     this.renderEdges();

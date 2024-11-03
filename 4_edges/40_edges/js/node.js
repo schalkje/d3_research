@@ -8,40 +8,40 @@ import CircleNode from "./nodeCircle.js";
 
 
 // Function to create nodes with positioning and drag behavior
-export function createNode(nodeData, container, parentNode = null) {
-  console.log("Creating Node:", nodeData);
+export function createNode(nodeData, container, settings, parentNode = null) {
+  console.log("Creating Node:", nodeData, settings, parentNode);
   var node = null;
   switch (nodeData.type) {
     case "group":
-      node = new GroupNode(nodeData, container, createNode, parentNode);
+      node = new GroupNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     case "lane":
-      node = new LaneNode(nodeData, container, createNode, parentNode);
+      node = new LaneNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     case "columns":
-      node = new ColumnsNode(nodeData, container, createNode, parentNode);
+      node = new ColumnsNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     case "adapter":
-      node = new AdapterNode(nodeData, container, createNode, parentNode);
+      node = new AdapterNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     case "foundation":
-      node = new FoundationNode(nodeData, container, createNode, parentNode);
+      node = new FoundationNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     case "node":
-      node = new RectangularNode(nodeData, container, parentNode);
+      node = new RectangularNode(nodeData, container, settings, parentNode);
       break;
 
     case "circle":
-      node = new CircleNode(nodeData, container, parentNode);
+      node = new CircleNode(nodeData, container, settings, parentNode);
       break;
 
     case "rect":
-      node = new RectangularNode(nodeData, container, parentNode);
+      node = new RectangularNode(nodeData, container, settings, parentNode);
       break;
 
     default:
@@ -52,7 +52,7 @@ export function createNode(nodeData, container, parentNode = null) {
   return node;
 }
 
-export function createNodes(nodes, container) {
+export function createNodes(nodes, container, settings) {
   // create a group node as the container for all nodes
   const root = {
     id: "root",
@@ -66,7 +66,7 @@ export function createNodes(nodes, container) {
     children: nodes,
   }
 
-  var rootNode = createNode(root, container);
+  var rootNode = createNode(root, container, settings);
 
   return rootNode;
 }

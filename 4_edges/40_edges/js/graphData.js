@@ -5,15 +5,13 @@
 
 export const testDashboard1 = {
   settings: {
-    layout: {
-      showCenterDot: true,
-      showGhostLines: true,
+    showCenterMark: true,
+    showGhostlines: false,
 
-      // ideas
-      showGrid: true,
-      showGroupLabels: true,
-      showGroupTitles: true,
-    },
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
   },
   nodes: [
     {
@@ -51,15 +49,15 @@ export const testDashboard1 = {
 
 export const testDashboard2 = {
   settings: {
-    layout: {
-      showCenterDot: true,
-      showGhostLines: true,
+    showCenterMark: false,
 
-      // ideas
-      showGrid: true,
-      showGroupLabels: true,
-      showGroupTitles: true,
-    },
+    // edges
+    showGhostlines: false,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
   },
   nodes: [
     {

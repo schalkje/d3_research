@@ -1,14 +1,9 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
-import CircleNode from "./nodeCircle.js";
-import RectangularNode from "./nodeRect.js";
-import AdapterNode from "./nodeAdapter.js";
-import GroupNode from "./nodeGroup.js";
-import FoundationNode from "./nodeFoundation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, parentNode = null) {
-    super(nodeData, parentElement, createNode, parentNode);
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
@@ -24,7 +19,7 @@ export default class LaneNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const childComponent = this.createNode(node, this.container, this);
+      const childComponent = this.createNode(node, this.container, this.settings, this);
 
       // console.log("renderChildren Child:", childComponent);
       // console.log("               :", this.x, this.data.y);

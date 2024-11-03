@@ -3,8 +3,8 @@ import Simulation from "./simulation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class BaseContainerNode extends BaseNode {
-  constructor(nodeData, parentElement, createNode, parentNode = null) {
-    super(nodeData, parentElement, parentNode);
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    super(nodeData, parentElement, settings, parentNode);
 
     this.createNode = createNode;
     

@@ -12,7 +12,7 @@ const AdapterMode = Object.freeze({
 });
 
 export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, parentNode = null) {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
@@ -21,7 +21,7 @@ export default class AdapterNode extends BaseContainerNode {
     
 
 
-    super(nodeData, parentElement, createNode, parentNode);
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.stagingNode = null;
     this.transformNode = null;
@@ -53,7 +53,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
     if (archiveChild) {
       console.log("    Rendering Archive Node:", archiveChild, this);
-      this.archiveNode = new RectangularNode(archiveChild, this.container, this);
+      this.archiveNode = new RectangularNode(archiveChild, this.container, this.settings, this);
       this.archiveNode.render();
     } 
 
@@ -73,7 +73,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(stagingChild);
     }
     if (stagingChild) {
-      this.stagingNode = new RectangularNode(stagingChild, this.container, this);
+      this.stagingNode = new RectangularNode(stagingChild, this.container, this.settings, this);
       this.stagingNode.render();
     }
 
@@ -90,7 +90,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(transformChild);
     }
     if (transformChild) {
-      this.transformNode = new RectangularNode(transformChild, this.container, this);
+      this.transformNode = new RectangularNode(transformChild, this.container, this.settings, this);
       this.transformNode.render();
     }
 
@@ -112,6 +112,7 @@ export default class AdapterNode extends BaseContainerNode {
       this,
       this.stagingNode,
       this.transformNode,      
+      this.settings,
     );
     createInternalEdge(
       {
@@ -124,6 +125,7 @@ export default class AdapterNode extends BaseContainerNode {
       this,
       this.stagingNode,
       this.archiveNode,
+      this.settings,
     );
 
     this.renderEdges();

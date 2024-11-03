@@ -1,10 +1,11 @@
 import { getComputedDimensions } from "./utils.js";
 
 export default class BaseNode {
-  constructor(nodeData, parentElement, parentNode = null) {
+  constructor(nodeData, parentElement, settings, parentNode = null) {
     this.data = nodeData;
     this.parentElement = parentElement;
     this.parentNode = parentNode;
+    this.settings = settings;
 
     this.id = nodeData.id;
 
@@ -17,13 +18,13 @@ export default class BaseNode {
     this.simulation = null;
     this.layoutDebug = true;
 
-    if (!this.data.interactionState) this.data.interactionState = { expanded: true };
+    this.data.interactionState ??= { expanded: true };
 
     // Set default values for x, y, width, and height
-    if (!this.x) this.x = 0;
-    if (!this.y) this.y = 0;
-    if (!this.data.width) this.data.width = 60;
-    if (!this.data.height) this.data.height = 60;
+    this.x ??= 0;
+    this.y ??= 0;
+    this.data.width ??= 60;
+    this.data.height ??= 60;
   }
 
   move(x,y) {
@@ -52,7 +53,7 @@ export default class BaseNode {
     //   .on("end", (event) => this.drag_ended(event, this)));
 
     // show the center stip
-    if ( this.layoutDebug )
+    if ( this.settings.showCenterMark )
       this.element
         .append("circle")
         .attr("class", "centermark")
@@ -123,7 +124,7 @@ export default class BaseNode {
     console.log("    findJointParentContainer:", this.id, target.id);
     let parent = this;
     while (parent && !target.isDescendantOf(parent)) {
-      console.log("    findJointParentContainer: return", parent);
+      console.log("    findJointParentContainer: next", parent);
       parent = parent.parentNode;
     }
     console.log("    findJointParentContainer: return", parent);

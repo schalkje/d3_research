@@ -3,11 +3,11 @@ import RectangularNode from "./nodeRect.js";
 
 
 export default class ColumnsNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, parentNode = null) {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 0;
 
-    super(nodeData, parentElement, createNode, parentNode);
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
@@ -23,7 +23,7 @@ export default class ColumnsNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const childComponent = this.createNode(node, this.container, this);
+      const childComponent = this.createNode(node, this.container, this.settings, this);
 
       // console.log("Rendering Child:", childComponent);
       // console.log("               :", this.x, this.data.y, this.data.width, this.data.height);
