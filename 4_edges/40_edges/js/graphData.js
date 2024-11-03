@@ -117,21 +117,40 @@ export const edgeDemo = {
       children: [
         {
           id: "edge-demo",
-          label: "Grid edge demo",
+          label: "Grid",
           type: "edge-demo",
           layout: "grid",
         },
         {
           id: "edge-demo",
-          label: "Shift horizontal edge demo",
+          label: "Shift horizontal",
           type: "edge-demo",
           layout: "h-shifted",
-        },        {
+        },        
+        {
           id: "edge-demo",
-          label: "Shift vertical edge demo",
+          label: "Shift vertical",
           type: "edge-demo",
           layout: "v-shifted",
         },
+        {
+          id: "edge-demo",
+          label: "Shift 2 vertical",
+          type: "edge-demo",
+          layout: "v-shifted2",
+        },
+        {
+          id: "edge-demo",
+          label: "Stair up",
+          type: "edge-demo",
+          layout: "stair-up",
+        },      
+        {
+          id: "edge-demo",
+          label: "Stair down",
+          type: "edge-demo",
+          layout: "stair-down",
+        },      
       ],
     },
   ],

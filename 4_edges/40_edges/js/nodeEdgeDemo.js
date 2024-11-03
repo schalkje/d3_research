@@ -8,6 +8,9 @@ const DemoMode = Object.freeze({
   GRID: "grid",
   HSHIFTED: "h-shifted",
   VSHIFTED: "v-shifted",
+  VSHIFTED2: "v-shifted2",
+  STAIR_UP: "stair-up",
+  STAIR_DOWN: "stair-down",
 });
 
 export default class EdgeDemoNode extends BaseContainerNode {
@@ -20,6 +23,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
     
     this.layout = this.data.layout || DemoMode.GRID;
     this.shiftRatio = this.data.shiftRatio || 0.6;
+    this.shift2Ratio = this.data.shift2Ratio || 0.8;
 
     this.nodeSpacing = { horizontal: 30, vertical: 20 };
   }
@@ -56,7 +60,16 @@ export default class EdgeDemoNode extends BaseContainerNode {
       case DemoMode.VSHIFTED:
         this.vshiftedLayout();
         break;
-    }
+      case DemoMode.VSHIFTED2:
+        this.vshifted2Layout();
+        break;
+        case DemoMode.STAIR_UP:
+          this.stairUpLayout();
+          break;
+          case DemoMode.STAIR_DOWN:
+            this.stairDownLayout();
+            break;
+      }
 
     // resize to contain all children
     this.resizeToFitChildren();
@@ -152,6 +165,69 @@ export default class EdgeDemoNode extends BaseContainerNode {
       this.centerNode,
       "bottom-right",
       this.centerNode.data.width * this.shiftRatio,
+      this.centerNode.data.height + this.nodeSpacing.vertical
+    );
+  }
+
+
+  vshifted2Layout() 
+  {
+    this.createChild(
+      this.centerNode,
+      "top-left",
+      -this.centerNode.data.width * this.shift2Ratio,
+      -this.centerNode.data.height - this.nodeSpacing.vertical
+    );
+    this.createChild(
+      this.centerNode,
+      "top-right",
+      this.centerNode.data.width * this.shift2Ratio,
+      -this.centerNode.data.height - this.nodeSpacing.vertical
+    );
+
+    this.createChild(
+      this.centerNode,
+      "bottom-left",
+      -this.centerNode.data.width * this.shift2Ratio,
+      this.centerNode.data.height + this.nodeSpacing.vertical
+    );
+    this.createChild(
+      this.centerNode,
+      "bottom-right",
+      this.centerNode.data.width * this.shift2Ratio,
+      this.centerNode.data.height + this.nodeSpacing.vertical
+    );
+  }
+
+  
+  stairUpLayout() 
+  {
+    this.createChild(
+      this.centerNode,
+      "bottom-left",
+      -this.centerNode.data.width * (1-this.shiftRatio),
+      this.centerNode.data.height + this.nodeSpacing.vertical
+    );
+    this.createChild(
+      this.centerNode,
+      "top-right",
+      this.centerNode.data.width * (1-this.shiftRatio),
+      -this.centerNode.data.height - this.nodeSpacing.vertical
+    );
+  }
+  
+  stairDownLayout() 
+  {
+    this.createChild(
+      this.centerNode,
+      "top-left",
+      -this.centerNode.data.width * (1-this.shiftRatio),
+      -this.centerNode.data.height - this.nodeSpacing.vertical
+    );
+    this.createChild(
+      this.centerNode,
+      "bottom-right",
+      this.centerNode.data.width * (1-this.shiftRatio),
       this.centerNode.data.height + this.nodeSpacing.vertical
     );
   }
