@@ -27,6 +27,7 @@ export default class BaseEdge {
     this.settings.showGhostlines ??= true;
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
+    this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
   }
 
   get x1() {
@@ -56,8 +57,6 @@ export default class BaseEdge {
   }
 
   render() {
-    console.log("    Rendering Base Edge:", this.data.source, this.data.target, this.data);
-    console.log("                       :", this.parent);
     // console.log(
     //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
     // );
@@ -66,7 +65,6 @@ export default class BaseEdge {
     if (this.settings.showGhostlines) {
       this.ghostElement = this.parent.ghostContainer
         .append("g")
-        // .attr("class", `edge ${this.data.type}`);
         .attr("class", `edge ghostline`);
 
       this.ghostElement
@@ -94,7 +92,7 @@ export default class BaseEdge {
 
     if (this.settings.showGhostlines) {
       const ghostEdge = generateDirectEdge(this);
-      const ghostLine = this.lineGenerator();
+      const ghostLine = this.ghostlineGenerator();
       
       this.ghostElement.
         select(".path").
@@ -115,11 +113,18 @@ export default class BaseEdge {
     }
   }
 
+  ghostlineGenerator(edge) {
+    return d3.line();
+  }
 
 
   lineGenerator(edge) {
-    // return d3.line().curve(d3.curveBasis)
-    return d3.line();
+    if (this.settings.curved) {
+      return d3.line().curve(d3.curveBasis);
+    }
+    else {
+      return d3.line();
+    }
   }
 //   getDefaultLineGenerator(layout) {
 //     return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();

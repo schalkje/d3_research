@@ -87,67 +87,46 @@ export function generateEdgePath(edge) {
   let waypoints = [];
   const midX = (targetPoint.x - sourcePoint.x) / 2;
   const midY = (targetPoint.y - sourcePoint.y) / 2;
+  const curveMargin = edge.settings.curveMargin || 0;
   if (
     (sourcePoint.side == ConnectorSide.LEFT && targetPoint.side == ConnectorSide.RIGHT) ||
     (sourcePoint.side == ConnectorSide.RIGHT && targetPoint.side == ConnectorSide.LEFT)
   ) {
     // left to right or right to left
     console.log("    Generating Edge Path: Left to Right or Right to Left");
-    if (edge.settings.curved) {
       waypoints = [
         // // for a curve
-        [sourcePoint.x + midX * 0.9, sourcePoint.y + midY * 0.1], // Move horizontally to half the distance
-        [sourcePoint.x + midX * 1.1, targetPoint.y - midY * 0.1], // Stay on x and move vertically
+        [sourcePoint.x + midX * (1 - curveMargin), sourcePoint.y + midY * curveMargin], // Move horizontally to half the distance
+        [sourcePoint.x + midX * (1 + curveMargin), targetPoint.y - midY * curveMargin], // Stay on x and move vertically
       ];
-    } else {
-      waypoints = [
-        [sourcePoint.x + midX, sourcePoint.y], // Move horizontally to half the distance
-        [sourcePoint.x + midX, targetPoint.y], // Stay on x and move vertically
-      ];
-    }
   } else if (
     (sourcePoint.side == ConnectorSide.BOTTOM && targetPoint.side == ConnectorSide.TOP) ||
     (sourcePoint.side == ConnectorSide.TOP && targetPoint.side == ConnectorSide.BOTTOM)
   ) {
     // bottom to top or top to bottom
-    if (edge.settings.curved) {
       waypoints = [
         // // for a curve
-        [sourcePoint.x + midX * 0.1, sourcePoint.y + midY * 0.9], // Move vertically to half the distance
-        [targetPoint.x - midX * 0.1, targetPoint.y + midY * 1.1], // Stay on y and move horizontal
+        [sourcePoint.x + midX * curveMargin, sourcePoint.y + midY * (1 - curveMargin)], // Move vertically to half the distance
+        [targetPoint.x - midX * curveMargin, sourcePoint.y + midY * (1 + curveMargin)], // Stay on y and move horizontal
       ];
-    } else {
-      waypoints = [
-        [sourcePoint.x, sourcePoint.y + midY], // Move vertically to half the distance
-        [targetPoint.x, sourcePoint.y + midY], // Stay on y and move horizontal
-      ];
-    }
   } else if (
     (sourcePoint.side == ConnectorSide.BOTTOM || sourcePoint.side == ConnectorSide.TOP) &&
     (targetPoint.side == ConnectorSide.LEFT || targetPoint.side == ConnectorSide.RIGHT)
   ) {
     // bottom to top or top to bottom
-    if (edge.settings.curved) {
       waypoints = [
         // // for a curve
-        [sourcePoint.x + midX * 0.1, targetPoint.y - midY * 0.1], // Stay on y and move horizontal
+        [sourcePoint.x + midX * curveMargin, targetPoint.y - midY * curveMargin], // Stay on y and move horizontal
       ];
-    } else {
-      waypoints = [[sourcePoint.x, targetPoint.y]];
-    }
   } else if (
     (sourcePoint.side == ConnectorSide.LEFT || sourcePoint.side == ConnectorSide.RIGHT) &&
     (targetPoint.side == ConnectorSide.TOP || targetPoint.side == ConnectorSide.BOTTOM)
   ) {
     // bottom to top or top to bottom
-    if (edge.settings.curved) {
       waypoints = [
         // // for a curve
-        [targetPoint.x - midX * 0.1, sourcePoint.y + midY * 0.1], // Stay on y and move horizontal
+        [targetPoint.x - midX * curveMargin, sourcePoint.y + midY * curveMargin], // Stay on y and move horizontal
       ];
-    } else {
-      waypoints = [[targetPoint.x, sourcePoint.y]];
-    }
   } else {
     console.error("    ERROR: Unsupported edge connection:", sourcePoint.side, targetPoint.side);
   }
