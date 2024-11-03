@@ -86,7 +86,7 @@ export function generateEdgePath(edge) {
   // there are different scenarios to consider:
   let waypoints = [];
   const midX = (targetPoint.x - sourcePoint.x) / 2;
-  const midY = (targetPoint.y - sourcePoint.y) / 2;
+  var midY = (targetPoint.y - sourcePoint.y) / 2;
   const curveMargin = edge.settings.curveMargin || 0;
   if (
     (sourcePoint.side == ConnectorSide.LEFT && targetPoint.side == ConnectorSide.RIGHT) ||
@@ -104,11 +104,23 @@ export function generateEdgePath(edge) {
     (sourcePoint.side == ConnectorSide.TOP && targetPoint.side == ConnectorSide.BOTTOM)
   ) {
     // bottom to top or top to bottom
+    console.log("    Generating Edge Path: Bottom to Top or Top to Bottom", midX, midY);
+    if (Math.abs(midY) < 20 && edge.settings.curved)
+    {
+      waypoints = [
+        // // for a curve
+        [sourcePoint.x + midX * curveMargin, targetPoint.y ], // Move vertically to half the distance
+        [targetPoint.x , sourcePoint.y ], // Stay on y and move horizontal
+      ];
+
+    }
+    else{
       waypoints = [
         // // for a curve
         [sourcePoint.x + midX * curveMargin, sourcePoint.y + midY * (1 - curveMargin)], // Move vertically to half the distance
         [targetPoint.x - midX * curveMargin, sourcePoint.y + midY * (1 + curveMargin)], // Stay on y and move horizontal
       ];
+    }
   } else if (
     (sourcePoint.side == ConnectorSide.BOTTOM || sourcePoint.side == ConnectorSide.TOP) &&
     (targetPoint.side == ConnectorSide.LEFT || targetPoint.side == ConnectorSide.RIGHT)
