@@ -93,3 +93,37 @@ export const testDashboard2 = {
   ]
 };
 
+export const edgeDemo = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
+  },
+  nodes: [
+    {
+      id: "group",
+      label: "Group",
+      type: "lane",
+      groupType: "fixed",
+      layout: {
+        displayMode: "code",
+      },
+      children: [
+        {
+          id: "edge-demo",
+          label: "Edge Demo",
+          type: "edge-demo",
+        },
+      ],
+    },
+  ],
+  "edges": [
+  ]
+};
+

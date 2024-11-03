@@ -5,6 +5,7 @@ import LaneNode from "./nodeLane.js";
 import ColumnsNode from "./nodeColumns.js";
 import RectangularNode from "./nodeRect.js";
 import CircleNode from "./nodeCircle.js";
+import EdgeDemoNode from "./nodeEdgeDemo.js";
 
 
 // Function to create nodes with positioning and drag behavior
@@ -42,6 +43,10 @@ export function createNode(nodeData, container, settings, parentNode = null) {
 
     case "rect":
       node = new RectangularNode(nodeData, container, settings, parentNode);
+      break;
+
+    case "edge-demo":
+      node = new EdgeDemoNode(nodeData, container, createNode, settings, parentNode);
       break;
 
     default:
