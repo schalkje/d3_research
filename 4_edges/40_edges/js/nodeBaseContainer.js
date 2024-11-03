@@ -113,8 +113,7 @@ export default class BaseContainerNode extends BaseNode {
     this.element
       .select("text")
       .attr("x", -this.data.width / 2 + 4)
-      .attr("y", -this.data.height / 2 + 4);
-
+      .attr("y", -this.data.height / 2 + 4);      
 
     // position the container relative to the element top left corner
 
@@ -253,14 +252,16 @@ export default class BaseContainerNode extends BaseNode {
 
     this.cascadeArrange();
 
-    layoutEdges();
+    this.layoutEdges();    
   }
 
   layoutEdges() {
     if (this.childEdges.length > 0) {
       this.childEdges.forEach((edge) => edge.layout());
     }
+    
   }
+
 
   arrange() {
     // console.log("Arranging BaseContainerNode:", this.id);

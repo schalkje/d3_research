@@ -5,7 +5,7 @@
 
 export const testDashboard1 = {
   settings: {
-    showCenterMark: true,
+    showCenterMark: false,
     showGhostlines: false,
 
     // ideas
@@ -95,7 +95,9 @@ export const testDashboard2 = {
 
 export const edgeDemo = {
   settings: {
+    // nodes
     showCenterMark: false,
+    showConnectionPoints: true,
 
     // edges
     showGhostlines: false,

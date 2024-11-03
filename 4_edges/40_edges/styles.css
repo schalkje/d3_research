@@ -23,6 +23,11 @@ svg.canvas {
   stroke-width: 1;
 }
 
+.connection-point {
+  fill: rgb(155, 155, 226);
+  stroke: none;
+}
+
 /* 
 line {
   fill: none;
@@ -128,8 +133,8 @@ rect {
 
 .edge .path {
   stroke-width: 2px;
-  /* stroke: #4679BD; */
-  stroke: green;
+  stroke: #4679BD;
+  /* stroke: green; */
   fill: none;
   stroke-opacity: 0.6;
 }

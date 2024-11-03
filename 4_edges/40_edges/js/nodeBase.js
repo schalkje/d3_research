@@ -1,4 +1,5 @@
 import { getComputedDimensions } from "./utils.js";
+import { computeConnectionPoints } from "./utilPath.js";
 
 export default class BaseNode {
   constructor(nodeData, parentElement, settings, parentNode = null) {
@@ -6,6 +7,7 @@ export default class BaseNode {
     this.parentElement = parentElement;
     this.parentNode = parentNode;
     this.settings = settings;
+    this.computeConnectionPoints = computeConnectionPoints;
 
     this.id = nodeData.id;
 
@@ -60,6 +62,18 @@ export default class BaseNode {
         .attr("r", 3)
         .attr("cx", 0)
         .attr("cy", 0);	
+    
+    if (this.settings.showConnectionPoints) {
+      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      Object.values(connectionPoints).forEach((point) => {
+        this.element
+          .append("circle")
+          .attr("class", `connection-point side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y)
+          .attr("r", 2);
+      });
+    }
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
@@ -98,6 +112,7 @@ export default class BaseNode {
     // this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
     //  ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  >  after ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
 
+    this.layoutConnectionPoints();
   }
 
   findNode(nodeId) {
@@ -180,8 +195,18 @@ export default class BaseNode {
       this.parentNode.cascadeStopSimulation();
     }
   }
-
-  getConnectionPoint() {}
+  
+  layoutConnectionPoints() {
+    if (this.settings.showConnectionPoints) {
+      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      Object.values(connectionPoints).forEach((point) => {
+        this.element
+          .select(`.connection-point.side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y);
+      });
+    }
+  }
 
   // if (showConnectionPoints) {
   //   node.each(function (d) {
