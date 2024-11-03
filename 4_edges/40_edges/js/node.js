@@ -7,48 +7,48 @@ import RectangularNode from "./nodeRect.js";
 import CircleNode from "./nodeCircle.js";
 
 
-const typeToComponent = {
-  group: GroupNode,
-  node: RectangularNode,
-  rect: RectangularNode,
-  circle: CircleNode,
-  adapter: AdapterNode,
-  foundation: FoundationNode,
-  lane: LaneNode,
-  default: CircleNode,
-};
-
 // Function to create nodes with positioning and drag behavior
-export function createNode(nodeData, container) {
-  // console.log("Creating Node:", nodeData);
+export function createNode(nodeData, container, parentNode = null) {
+  console.log("Creating Node:", nodeData);
   var node = null;
   switch (nodeData.type) {
     case "group":
-      node = new GroupNode(nodeData, container, typeToComponent);
+      node = new GroupNode(nodeData, container, createNode, parentNode);
       break;
 
     case "lane":
-      node = new LaneNode(nodeData, container, typeToComponent);
+      node = new LaneNode(nodeData, container, createNode, parentNode);
       break;
 
     case "columns":
-      node = new ColumnsNode(nodeData, container, typeToComponent);
+      node = new ColumnsNode(nodeData, container, createNode, parentNode);
       break;
 
     case "adapter":
-      node = new AdapterNode(nodeData, container, typeToComponent);
+      node = new AdapterNode(nodeData, container, createNode, parentNode);
       break;
 
     case "foundation":
-      node = new FoundationNode(nodeData, container, typeToComponent);
+      node = new FoundationNode(nodeData, container, createNode, parentNode);
+      break;
+
+    case "node":
+      node = new RectangularNode(nodeData, container, parentNode);
+      break;
+
+    case "circle":
+      node = new CircleNode(nodeData, container, parentNode);
+      break;
+
+    case "rect":
+      node = new RectangularNode(nodeData, container, parentNode);
       break;
 
     default:
-      console.log(`Unknown node type "${nodeData.type}" !!!!!`);
+      console.error(`Unknown node type "${nodeData.type}" !!!!!`);
       return null;
   }
   
-  node.render();
   return node;
 }
 
@@ -66,5 +66,7 @@ export function createNodes(nodes, container) {
     children: nodes,
   }
 
-  return createNode(root, container);
+  var rootNode = createNode(root, container);
+
+  return rootNode;
 }

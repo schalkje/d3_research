@@ -115,10 +115,13 @@ export default class BaseNode {
   }
 
   findJointParentContainer(target) {
+    console.log("    findJointParentContainer:", this.id, target.id);
     let parent = this;
     while (parent && !target.isDescendantOf(parent)) {
+      console.log("    findJointParentContainer: return", parent);
       parent = parent.parentNode;
     }
+    console.log("    findJointParentContainer: return", parent);
     return parent;
   }
 

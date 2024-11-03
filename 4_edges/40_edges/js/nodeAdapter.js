@@ -12,7 +12,7 @@ const AdapterMode = Object.freeze({
 });
 
 export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
+  constructor(nodeData, parentElement, createNode, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
@@ -21,7 +21,7 @@ export default class AdapterNode extends BaseContainerNode {
     
 
 
-    super(nodeData, parentElement, typeToComponent, parentNode);
+    super(nodeData, parentElement, createNode, parentNode);
 
     this.stagingNode = null;
     this.transformNode = null;
@@ -109,9 +109,9 @@ export default class AdapterNode extends BaseContainerNode {
         type: "SSIS",
         state: "Ready",
       },
+      this,
       this.stagingNode,
-      this.transformNode,
-      this
+      this.transformNode,      
     );
     createInternalEdge(
       {
@@ -121,9 +121,9 @@ export default class AdapterNode extends BaseContainerNode {
         type: "SSIS",
         state: "Ready",
       },
+      this,
       this.stagingNode,
       this.archiveNode,
-      this
     );
 
     this.renderEdges();

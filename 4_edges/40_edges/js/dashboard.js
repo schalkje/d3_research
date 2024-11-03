@@ -12,6 +12,7 @@ export function createDashboard(dashboard, container) {
     else {
         root = createNodes(dashboard.nodes, container);
     }
+    root.render();
 
     if ( dashboard.edges.length > 0 )
         createEdges(root, dashboard.edges);

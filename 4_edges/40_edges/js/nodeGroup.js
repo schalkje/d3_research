@@ -7,8 +7,8 @@ import FoundationNode from "./nodeFoundation.js";
 import LaneNode from "./nodeLane.js";
 
 export default class GroupNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
-    super(nodeData, parentElement, typeToComponent, parentNode);
+  constructor(nodeData, parentElement, createNode, parentNode = null) {
+    super(nodeData, parentElement, createNode, parentNode);
   }
 
   async runSimulation() {
@@ -38,8 +38,7 @@ export default class GroupNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = this.typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, this.container, this.typeToComponent, this);
+      const childComponent = this.createNode(node, this.container, this);
 
       // console.log("Rendering Child:", childComponent);
       // console.log("               :", this.x, this.data.y);

@@ -1,6 +1,6 @@
 import BaseEdge from "./edgeBase.js";
 
-export function createInternalEdge(edgeData, source, target, parent)
+export function createInternalEdge(edgeData, parent, source, target)
 {
     // create edge
     const edge = new BaseEdge(edgeData, parent, source, target);

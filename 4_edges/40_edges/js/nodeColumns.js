@@ -1,17 +1,13 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
-import CircleNode from "./nodeCircle.js";
 import RectangularNode from "./nodeRect.js";
-import AdapterNode from "./nodeAdapter.js";
-import GroupNode from "./nodeGroup.js";
-import LaneNode from "./nodeLane.js";
-import FoundationNode from "./nodeFoundation.js";
+
 
 export default class ColumnsNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
+  constructor(nodeData, parentElement, createNode, parentNode = null) {
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 0;
 
-    super(nodeData, parentElement, typeToComponent, parentNode);
+    super(nodeData, parentElement, createNode, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
@@ -27,8 +23,7 @@ export default class ColumnsNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = this.typeToComponent[node.type];
-      const childComponent = new ComponentClass(node, this.container, this.typeToComponent, this);
+      const childComponent = this.createNode(node, this.container, this);
 
       // console.log("Rendering Child:", childComponent);
       // console.log("               :", this.x, this.data.y, this.data.width, this.data.height);

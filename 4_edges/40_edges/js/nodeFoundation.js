@@ -21,8 +21,8 @@ const FoundationMode = Object.freeze({
 });
 
 
-export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
+export default class FoundationNode extends BaseContainerNode {
+  constructor(nodeData, parentElement, createNode, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 48;
     if (!nodeData.layout) nodeData.layout = {};
@@ -30,7 +30,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
-    super(nodeData, parentElement, typeToComponent, parentNode);
+    super(nodeData, parentElement, createNode, parentNode);
 
     this.rawNode = null;
     this.baseNode = null;
@@ -99,9 +99,9 @@ export default class AdapterNode extends BaseContainerNode {
         type: "SSIS",
         state: "Ready",
       },
+      this,
       this.rawNode,
       this.baseNode,
-      this
     );
 
     this.renderEdges();

@@ -7,8 +7,8 @@ import FoundationNode from "./nodeFoundation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, typeToComponent, parentNode = null) {
-    super(nodeData, parentElement, typeToComponent, parentNode);
+  constructor(nodeData, parentElement, createNode, parentNode = null) {
+    super(nodeData, parentElement, createNode, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
@@ -24,11 +24,10 @@ export default class LaneNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = this.typeToComponent[node.type];
-      const childComponent = new ComponentClass(node, this.container, this.typeToComponent, this);
+      const childComponent = this.createNode(node, this.container, this);
 
-      console.log("Renderichildrenng Child:", childComponent);
-      console.log("               :", this.x, this.data.y);
+      // console.log("renderChildren Child:", childComponent);
+      // console.log("               :", this.x, this.data.y);
 
       this.childNodes.push(childComponent);
       // Push the render promise into the array
