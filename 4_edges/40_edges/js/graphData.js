@@ -117,8 +117,20 @@ export const edgeDemo = {
       children: [
         {
           id: "edge-demo",
-          label: "Edge Demo",
+          label: "Grid edge demo",
           type: "edge-demo",
+          layout: "grid",
+        },
+        {
+          id: "edge-demo",
+          label: "Shift horizontal edge demo",
+          type: "edge-demo",
+          layout: "h-shifted",
+        },        {
+          id: "edge-demo",
+          label: "Shift vertical edge demo",
+          type: "edge-demo",
+          layout: "v-shifted",
         },
       ],
     },
