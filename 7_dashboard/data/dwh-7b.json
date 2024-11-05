@@ -1,0 +1,173 @@
+{
+  "edges": [
+    {
+      "state": "Unknown",
+      "isActive": false,
+      "target": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "source": "d1836d64-af78-4d0c-aa0b-2b8df5fe51aa",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "3244fcef-7532-489a-8078-96dfb07fc75e",
+      "source": "1691fe78-aa21-408a-97fb-19d88d1c7d48",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "cfe03e67-b159-4743-b142-8dd28076dccf",
+      "source": "1691fe78-aa21-408a-97fb-19d88d1c7d48",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "d1836d64-af78-4d0c-aa0b-2b8df5fe51aa",
+      "source": "cfe03e67-b159-4743-b142-8dd28076dccf",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "27bc425b-ed00-44a7-817f-525adf7b5d90",
+      "source": "0740bacf-2275-4cf5-93f5-ab292a7cdb06",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "d608dbae-9481-49de-8217-7a57b6184e65",
+      "source": "0740bacf-2275-4cf5-93f5-ab292a7cdb06",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "d1836d64-af78-4d0c-aa0b-2b8df5fe51aa",
+      "source": "d608dbae-9481-49de-8217-7a57b6184e65",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "406136ec-62ca-4258-a5c7-17277c30afca",
+      "source": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "332f8965-d76c-4973-af38-5e3ae2106450",
+      "source": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "3a2b6c8e-71d0-4029-a34c-f719af8abad1",
+      "source": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "type": "SSIS"
+    },
+    {
+      "state": "Ready",
+      "isActive": true,
+      "target": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "source": "3a2b6c8e-71d0-4029-a34c-f719af8abad1",
+      "type": "SSIS"
+    }
+  ],
+  "nodes": [
+    {
+      "type": "Database",
+      "link": "https://example.com/ODS",
+      "id": "d1836d64-af78-4d0c-aa0b-2b8df5fe51aa",
+      "label": "ODS",
+      "description": "Database : ODS",
+      "state": "Ready",
+      "height": 150
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/DWH",
+      "id": "1d986f0a-29b8-4df9-88ae-9b35737b293d",
+      "label": "DWH",
+      "description": "Database : DWH",
+      "state": "Ready",
+      "height": 150
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/STAGING_Abacus",
+      "id": "1691fe78-aa21-408a-97fb-19d88d1c7d48",
+      "label": "STAGING_Abacus",
+      "description": "Database : STAGING_Abacus",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/STG_ARCHIVE_Abacus",
+      "id": "3244fcef-7532-489a-8078-96dfb07fc75e",
+      "label": "STG_ARCHIVE_Abacus",
+      "description": "Database : STG_ARCHIVE_Abacus",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/TRANSFORM_Abacus",
+      "id": "cfe03e67-b159-4743-b142-8dd28076dccf",
+      "label": "TRANSFORM_Abacus",
+      "description": "Database : TRANSFORM_Abacus",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/STAGING_AmbitTreasury",
+      "id": "0740bacf-2275-4cf5-93f5-ab292a7cdb06",
+      "label": "STAGING_AmbitTreasury",
+      "description": "Database : STAGING_AmbitTreasury",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/STG_ARCHIVE_AmbitTreasury",
+      "id": "27bc425b-ed00-44a7-817f-525adf7b5d90",
+      "label": "STG_ARCHIVE_AmbitTreasury",
+      "description": "Database : STG_ARCHIVE_AmbitTreasury",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/TRANSFORM_AmbitTreasury",
+      "id": "d608dbae-9481-49de-8217-7a57b6184e65",
+      "label": "TRANSFORM_AmbitTreasury",
+      "description": "Database : TRANSFORM_AmbitTreasury",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/EM_Matrix",
+      "id": "406136ec-62ca-4258-a5c7-17277c30afca",
+      "label": "EM_Matrix",
+      "description": "Database : EM_Matrix",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/EM_Belgie",
+      "id": "332f8965-d76c-4973-af38-5e3ae2106450",
+      "label": "EM_Belgie",
+      "description": "Database : EM_Belgie",
+      "state": "Ready"
+    },
+    {
+      "type": "Database",
+      "link": "https://example.com/CALC_DWH_Cashflow",
+      "id": "3a2b6c8e-71d0-4029-a34c-f719af8abad1",
+      "label": "CALC_DWH_Cashflow",
+      "description": "Database : CALC_DWH_Cashflow",
+      "state": "Ready"
+    }
+  ]
+}

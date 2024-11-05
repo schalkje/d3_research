@@ -1,6 +1,6 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
-import { renderLinks } from "./links.js";
+import { createInternalEdge } from "./edge.js";
 
 const DisplayMode = Object.freeze({
   FULL: 'full',
@@ -21,8 +21,8 @@ const FoundationMode = Object.freeze({
 });
 
 
-export default class AdapterNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, parentNode = null) {
+export default class FoundationNode extends BaseContainerNode {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 48;
     if (!nodeData.layout) nodeData.layout = {};
@@ -30,7 +30,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
-    super(nodeData, parentElement, parentNode);
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.rawNode = null;
     this.baseNode = null;
@@ -38,7 +38,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for Adapter:", this.id, this.data.children);
+    // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -58,7 +58,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(rawChild);
     }
     if (rawChild) {
-      this.rawNode = new RectangularNode(rawChild, this.container, this);
+      this.rawNode = new RectangularNode(rawChild, this.container, this.settings, this);
       this.rawNode.render();
     }
 
@@ -77,8 +77,8 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(baseChild);
     }
     if (baseChild) {
-      console.log("    Rendering Base Node:", baseChild, this);
-      this.baseNode = new RectangularNode(baseChild, this.container, this);
+      // console.log("    Rendering Base Node:", baseChild, this);
+      this.baseNode = new RectangularNode(baseChild, this.container, this.settings, this);
       this.baseNode.render();
     }
 
@@ -90,9 +90,23 @@ export default class AdapterNode extends BaseContainerNode {
 
     this.layoutChildren();
 
-    const links = [];
-    links.push({ source: this.rawNode, target: this.baseNode });
-    renderLinks(links, this.container);
+    console.log("    AdapterNode children:", this.rawNode, this.baseNode);
+    createInternalEdge(
+      {
+        source: this.rawNode.data.id,
+        target: this.baseNode.data.id,
+        isActive: true,
+        type: "SSIS",
+        state: "Ready",
+      },
+      this,
+      this.rawNode,
+      this.baseNode,
+      this.settings,
+    );
+
+    this.renderEdges();
+    this.layoutEdges();
   }
 
   layoutChildren() {
@@ -115,10 +129,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
-      this.rawNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.rawNode.x = x;
-      this.rawNode.y = y;
+      this.rawNode.move(x, y);
     }
 
     if (this.baseNode) {
@@ -129,10 +140,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.rawNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
-      this.baseNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.baseNode.x = x;
-      this.baseNode.y = y;
+      this.baseNode.move(x, y);
     }    
   }
 
@@ -142,10 +150,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
-      this.rawNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.rawNode.x = x;
-      this.rawNode.y = y;
+      this.rawNode.move(x, y);
     }
 
     if (this.baseNode) {
@@ -156,10 +161,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.rawNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
-      this.baseNode.element.attr("transform", `translate(${x}, ${y})`);
-
-      this.baseNode.x = x;
-      this.baseNode.y = y;
+      this.baseNode.move(x, y);
     }
 
   }

@@ -17,7 +17,6 @@ export const singleAdapter = {
   },
   nodes: [
     {
-
     id: "bankview",
     label: "Bankview",
     code: "BNV",

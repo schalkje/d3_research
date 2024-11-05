@@ -1,0 +1,236 @@
+#graph {
+  border: 1px solid black;
+  width: 100%;
+  height: 800px;
+}
+
+body {
+    background-color: white;
+    font-family: Arial;
+  }
+  
+  svg.container {
+    border: 1px solid #000;
+    background-color: red;
+  }
+  
+  svg.canvas {
+    background-color:#e6e3e3;
+    border-color: #d3d3d3;
+    border-width: 2px;
+    border-style: solid;
+    box-shadow: 4px 3px 8px 1px #969696;
+    -webkit-box-shadow: 4px 3px 8px 1px #969696;
+  }
+  
+  .centermark {
+    fill: red;
+    stroke: white;
+    stroke-width: 1;
+  }
+  
+  .connection-point {
+    fill: rgb(155, 155, 226);
+    stroke: none;
+  }
+  
+  /* 
+  line {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1px;
+  }
+  
+  text {
+    font-size: 12px;
+    text-anchor: middle;
+    stroke: none;
+  }
+  
+  rect {
+    fill: cadetblue;
+    opacity: 0.3;
+    stroke: white;
+  } */
+  
+  .lanelabel
+  {
+    font-size: 16px;
+    fill: gray;
+    text-anchor: middle;
+  }
+  
+  
+  
+  .node.shape {
+    fill: #9b9bfa;
+    fill-opacity: 0.95;
+    stroke: rgb(65, 65, 151);
+    stroke-opacity: 0.4;
+    stroke-width: 2;
+    cursor: grab;
+    opacity: 0.3;
+  }
+  
+  .node.placeholder {
+    stroke: red;
+    stroke-opacity: 1;
+    stroke-width: 2;
+  }
+  
+  .node_grabbing {
+    fill: #9b9bfa;
+    fill-opacity: 0.95;
+    stroke: rgb(65, 65, 151);
+    stroke-opacity: 0.8;
+    stroke-width: 4;
+    cursor: grabbing;
+  }
+  
+  .node.label
+  {
+    stroke: none;
+    font-size: 14px;
+    font-weight: bold;
+    /* fill: rgb(216, 216, 241); */
+    fill: black;
+    fill-opacity: 0.8;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    cursor: grab;
+  }
+  
+  .node.label.container
+  {
+    font-size: 12px;
+    font-weight: normal;
+    /* fill: rgb(216, 216, 241); */
+    fill: rgb(65, 65, 151);
+    fill-opacity: 0.8;
+    text-anchor: start;
+    dominant-baseline: hanging;
+    cursor: grab;
+  }
+  
+  
+  .node.label.group
+  {
+    font-size: 12px;
+    font-weight: normal;
+    /* fill: rgb(216, 216, 241); */
+    fill: rgb(65, 65, 151);
+    fill-opacity: 0.8;
+    text-anchor: start;
+    dominant-baseline: hanging;
+    cursor: grab;
+  }
+  
+  .node.label.adapter
+  {
+    font-size: 12px;
+    font-weight: normal;
+    /* fill: rgb(216, 216, 241); */
+    fill: rgb(65, 65, 151);
+    fill-opacity: 0.8;
+    text-anchor: start;
+    dominant-baseline: hanging;
+    cursor: grab;
+  }
+  
+  .edge .path {
+    stroke-width: 2px;
+    stroke: #7795D1;
+    /* stroke: green; */
+    fill: none;
+    marker-end: url(#arrow);
+    /* marker-mid: url(#mid-arrow);  */
+    /* marker-start: url(#arrow); */
+  }
+  
+  
+  .edge.ghostline .path {
+    stroke-width: 2px;
+    /* stroke: #4679BD; */
+    stroke: white;
+    stroke-opacity: 0.6;
+  }
+  
+  .edge.ghostline {
+    stroke-width: 1px;
+    /* stroke: #4679BD; */
+    stroke: white;
+    stroke-opacity: 0.6;
+  }
+  
+  
+  
+  line.link {
+    stroke-width: 2px;
+    stroke: #4679BD;
+    stroke-opacity: 0.6;
+  }
+  
+  line.ghostlink {
+    stroke-width: 2px;
+    stroke: #FFF;
+    stroke-opacity: 0.15;
+  }
+  
+  .marker {
+    stroke: #7795D1;
+    stroke-width: 2px;
+    fill: #7795D1;
+  }
+  
+  .marker#arrow {
+    stroke: #7795D1;
+    fill: none;
+    stroke-width: 2px;
+  }
+  
+  .marker#mid-arrow {
+    stroke: none;
+    fill: #7795D1;
+    /* stroke-width: 2px; */
+  }
+  
+  
+  .marker#arrowhead {
+    stroke: #7795D1;
+    stroke-width: 2px;
+    fill: #7795D1;
+  }
+  
+  
+  .lane {
+    stroke: rgb(211, 211, 211);
+    stroke-opacity: 1;
+    stroke-width: 1;
+  }
+  
+  .lane1 {
+    text-align: center;
+    fill:rgb(83, 142, 194);
+    fill-opacity: 0.1;
+  }
+  
+  
+  .lane2 {
+    text-align: center;
+    fill: #2fc792;
+    fill-opacity: 0.1;
+  }
+  
+  
+  .parent-node {
+    fill: #9b9bfa;
+  }
+  .parent-node text {
+    user-select: none;
+  }
+  .collapsed {
+    opacity: 0.7;
+  }
+  .expanded {
+    font-weight: bold;
+  }

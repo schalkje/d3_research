@@ -1,0 +1,32 @@
+{
+  "name": "flow-dashboard",
+  "version": "1.0.0",
+  "description": "Visualize data flow processes",
+  "homepage": "https://schalken.net",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "d3",
+    "dashboard",
+    "visualization",
+    "svg",
+    "etl",
+    "flow",
+    "lineage",
+    "canvas"
+  ],
+    "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack serve --open --mode development"
+  },
+  "author": "Jeroen Schalken",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7",
+    "@babel/preset-env": "^7",
+    "babel-loader": "^9",
+    "webpack": "^5",
+    "webpack-cli": "^5"
+  },
+  "dependencies": {}
+}
