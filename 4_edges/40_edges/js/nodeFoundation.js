@@ -44,7 +44,7 @@ export default class FoundationNode extends BaseContainerNode {
     }
 
     // render "raw" node
-    let rawChild = this.data.children.find((child) => child.category === "raw");
+    let rawChild = this.data.children.find((child) => child.role === "raw");
     if (
       !rawChild &&
         this.data.layout.mode === FoundationMode.AUTO
@@ -52,7 +52,7 @@ export default class FoundationNode extends BaseContainerNode {
       rawChild = {
         id: `raw_${this.data.id}`,
         label: `raw ${this.data.label}`,
-        category: "raw",
+        role: "raw",
         type: "node",
       };
       this.data.children.push(rawChild);
@@ -63,7 +63,7 @@ export default class FoundationNode extends BaseContainerNode {
     }
 
     // render "base" node
-    let baseChild = this.data.children.find((child) => child.category === "base");
+    let baseChild = this.data.children.find((child) => child.role === "base");
     if (
       !baseChild &&
         this.data.layout.mode === FoundationMode.AUTO
@@ -71,7 +71,7 @@ export default class FoundationNode extends BaseContainerNode {
       baseChild = {
         id: `base_${this.data.id}`,
         label: `base ${this.data.label}`,
-        category: "base",
+        role: "base",
         type: "node",
       };
       this.data.children.push(baseChild);

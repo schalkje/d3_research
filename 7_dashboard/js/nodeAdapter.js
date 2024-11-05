@@ -36,7 +36,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
 
     // render "archive" node
-    let archiveChild = this.data.children.find((child) => child.category === "archive");
+    let archiveChild = this.data.children.find((child) => child.role === "archive");
     if (
       !archiveChild &&
       (this.data.layout.mode === AdapterMode.ARCHIVE_ONLY ||
@@ -46,7 +46,7 @@ export default class AdapterNode extends BaseContainerNode {
       archiveChild = {
         id: `arc_${this.data.id}`,
         label: `Archive ${this.data.label}`,
-        category: "archive",
+        role: "archive",
         type: "node",
       };
       this.data.children.push(archiveChild);
@@ -58,7 +58,7 @@ export default class AdapterNode extends BaseContainerNode {
     } 
 
     // render "staging" node
-    let stagingChild = this.data.children.find((child) => child.category === "staging");
+    let stagingChild = this.data.children.find((child) => child.role === "staging");
     if (
       !stagingChild &&
       (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || 
@@ -67,7 +67,7 @@ export default class AdapterNode extends BaseContainerNode {
       stagingChild = {
         id: `stg_${this.data.id}`,
         label: `Staging ${this.data.label}`,
-        category: "staging",
+        role: "staging",
         type: "node",
       };
       this.data.children.push(stagingChild);
@@ -78,13 +78,13 @@ export default class AdapterNode extends BaseContainerNode {
     }
 
     // render "transform" node
-    let transformChild = this.data.children.find((child) => child.category === "transform");
+    let transformChild = this.data.children.find((child) => child.role === "transform");
     if (!transformChild && 
         this.data.layout.mode == AdapterMode.FULL) {
       transformChild = {
         id: `trn_${this.data.id}`,
         label: `Transform ${this.data.label}`,
-        category: "transform",
+        role: "transform",
         type: "node",
       };
       this.data.children.push(transformChild);
