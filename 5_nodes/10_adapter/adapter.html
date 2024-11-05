@@ -20,10 +20,8 @@
    </div>
 
    <script type="module">
-      import './js/index.js';
-      import {dataModel} from './js/graphData.js';
-      import AdapterNode from './js/nodeAdapter.js';
-      import { createNode } from './js/node.js';
+      import { singleAdapter, threeLayouts as dashboard } from './js/graphData.js';
+      import { createDashboard } from './js/dashboard.js';
 
       const svgWidth = 800;
       const svgHeight = 600;
@@ -33,20 +31,7 @@
          .attr("viewBox", [-svgWidth/2, -svgHeight/2, svgWidth, svgHeight])
           .attr("class", "canvas");
 
-      // // Instantiate and render the root node
-      // const rootNode = new NodeComponent(testDataModel[0], testDataModelMetadata, svg);
-      // rootNode.render();
-      // Render the root node, which recursively renders all children
-      // const rootNode = new Node.ParentNode(testDataModel[0], testDataModelMetadata, svg);
-      createNode(dataModel[0], svg);
-      // const rootNode = new AdapterNode(dataModel[0], svg, 3);
-      // rootNode.render();
-
-      // // // Center coordinates for the root node
-      // const centerX = svgWidth / 2;
-      // const centerY = svgHeight / 2;
-      // // Set initial position of the root node to the center of the canvas
-      // d3.select(`[data-id='bankview']`).attr('transform', `translate(${centerX}, ${centerY})`);
+      createDashboard(dashboard, svg);
   </script>
 
    <button onclick="update()">Update</button>

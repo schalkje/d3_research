@@ -1,20 +1,15 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
-import CircleNode from "./nodeCircle.js";
-import RectangularNode from "./nodeRect.js";
-import AdapterNode from "./nodeAdapter.js";
-import GroupNode from "./nodeGroup.js";
-import FoundationNode from "./nodeFoundation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, parentNode = null) {
-    super(nodeData, parentElement, parentNode);
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for Group:", this.id, this.data.children);
+    // console.log("    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
@@ -24,11 +19,10 @@ export default class LaneNode extends BaseContainerNode {
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const ComponentClass = typeToComponent[node.type] || typeToComponent.default;
-      const childComponent = new ComponentClass(node, this.container, this);
+      const childComponent = this.createNode(node, this.container, this.settings, this);
 
-      console.log("Renderichildrenng Child:", childComponent);
-      console.log("               :", this.data.x, this.data.y);
+      // console.log("renderChildren Child:", childComponent);
+      // console.log("               :", this.x, this.data.y);
 
       this.childNodes.push(childComponent);
       // Push the render promise into the array
@@ -44,7 +38,9 @@ export default class LaneNode extends BaseContainerNode {
 
   layoutChildren() {
     console.log("Layout for Lanes:", this.id, this.data.layout, this.childNodes.length);
-    this.layoutLane()
+    this.layoutLane();
+
+    this.layoutEdges();
   }
 
   layoutLane()
@@ -70,41 +66,15 @@ export default class LaneNode extends BaseContainerNode {
 
     this.childNodes.forEach((node) => {
       console.log(`    LayoutLane node ${node.id}`)
-      // const dimensions = getComputedDimensions(node.element);
-      // console.log(`          < layoutLane before - node dimensions ${this.id}, (${Math.round(dimensions.x)},${Math.round(dimensions.y)}) [${Math.round(dimensions.width)}x${Math.round(dimensions.height)}] data=[${Math.round(node.data.width)}x${Math.round(node.data.height)}]`);
-      // var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane before - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
-      // var containerCtm = node.element.node().getCTM(); console.log(`    nodeCtm before  move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-
       
       if (containerHeight > 0) containerHeight += this.nodeSpacing.vertical + node.data.height;
       else containerHeight += node.data.height;
 
-      // y += dimensions.height / 2;
       y += node.data.height / 2;
 
-//       if (node.id === "matrix") {
-//         node.element.attr("transform", `translate(${x}, ${y-20})`);
-//         console.log(`correct ${node.id} to (${x}, ${y})`);
-//       }
-// else 
-      // console.log(`          > containerDimensions ${this.id}, (x:${containerDimensions.x},y:${containerDimensions.y}) (width:${containerDimensions.width},height:${containerDimensions.height}), containerHeightShift=${containerHeightShift}`);
-      console.log(`          > move ${this.id}, (x:${x},y:${y})`);
-      node.element.attr("transform", `translate(${x}, ${y})`);
+      node.move(x, y);
 
-      // var containerCtm = node.element.node().getCTM(); console.log(`    nodeCtm after  move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-      // var containerDimensions = getComputedDimensions(this.container);
-      // containerHeightShift = containerDimensions.height - previousContainerHeight;
-      // console.log(`          > containerDimensions ${this.id}, (x:${containerDimensions.x},y:${containerDimensions.y}) (width:${containerDimensions.width},height:${containerDimensions.height}), containerHeightShift=${containerHeightShift}`);
-      // console.log(`          > nodeDimensions ${this.id}, (x:${dimensions.x},y:${dimensions.y}) (width:${dimensions.width},height:${dimensions.height}) data=:( (${node.data.width},${node.data.height}))`);
-      // node.element.attr("transform", `translate(${x}, ${y- containerHeightShift/2})`);
-
-      // console.log(`          ${node.id}, moved (${dimensions.x},${dimensions.y}) -> (${x}, ${y-containerHeightShift/2})`, dimensions)
-      // const afterDimensions = getComputedDimensions(node.element);
-      // console.log(`                                     result= (${afterDimensions.x},${afterDimensions.y})` )
-      // y += dimensions.height / 2 + this.nodeSpacing.vertical;
       y += node.data.height / 2 + this.nodeSpacing.vertical;
-
-      // var containerDimensions = getComputedDimensions(this.container); console.log(`          < layoutLane after - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}] --> y = ${y}`);
 
       containerWidth = Math.max(containerWidth, node.data.width);
     });
@@ -174,16 +144,3 @@ export default class LaneNode extends BaseContainerNode {
     this.layoutChildren();
   }
 }
-
-
-
-const typeToComponent = {
-  group: GroupNode,
-  node: RectangularNode,
-  rect: RectangularNode,
-  circle: CircleNode,
-  adapter: AdapterNode,
-  foundation: FoundationNode,
-  lane: LaneNode,
-  default: CircleNode,
-};

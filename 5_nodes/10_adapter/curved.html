@@ -20,7 +20,7 @@
    </div>
 
    <script type="module">
-      import { singleFoundation, threeFoundationNodes as dashboard } from './js/graphData.js';
+      import { singleAdapter, threeLayoutsCurved as dashboard } from './js/graphData.js';
       import { createDashboard } from './js/dashboard.js';
 
       const svgWidth = 800;
@@ -32,7 +32,7 @@
           .attr("class", "canvas");
 
       createDashboard(dashboard, svg);
- </script>
+  </script>
 
    <button onclick="update()">Update</button>
 </body>

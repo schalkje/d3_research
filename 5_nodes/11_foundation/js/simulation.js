@@ -24,7 +24,7 @@ export default class Simulation {
     this.tickCounter = 0;
     this.containerNode.childNodes.forEach(node => {
       // console.log('Simulation init',node);
-      node.x = node.data.x;
+      node.x = node.x;
       node.y = node.data.y;
       node.width = node.data.width;
       node.height = node.data.height;      

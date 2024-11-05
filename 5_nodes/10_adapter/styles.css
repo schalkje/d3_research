@@ -17,6 +17,17 @@ svg.canvas {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
+.centermark {
+  fill: red;
+  stroke: white;
+  stroke-width: 1;
+}
+
+.connection-point {
+  fill: rgb(155, 155, 226);
+  stroke: none;
+}
+
 /* 
 line {
   fill: none;
@@ -120,6 +131,33 @@ rect {
   cursor: grab;
 }
 
+.edge .path {
+  stroke-width: 2px;
+  stroke: #7795D1;
+  /* stroke: green; */
+  fill: none;
+  marker-end: url(#arrow);
+  /* marker-mid: url(#mid-arrow);  */
+  /* marker-start: url(#arrow); */
+}
+
+
+.edge.ghostline .path {
+  stroke-width: 2px;
+  /* stroke: #4679BD; */
+  stroke: white;
+  stroke-opacity: 0.6;
+}
+
+.edge.ghostline {
+  stroke-width: 1px;
+  /* stroke: #4679BD; */
+  stroke: white;
+  stroke-opacity: 0.6;
+}
+
+
+
 line.link {
   stroke-width: 2px;
   stroke: #4679BD;
@@ -132,12 +170,31 @@ line.ghostlink {
   stroke-opacity: 0.15;
 }
 
-marker#arrow {
-  stroke: #999;
-  stroke-opacity: 0.4;
-  fill: #999;
-  fill-opacity: 0.4;
+.marker {
+  stroke: #7795D1;
+  stroke-width: 2px;
+  fill: #7795D1;
 }
+
+.marker#arrow {
+  stroke: #7795D1;
+  fill: none;
+  stroke-width: 2px;
+}
+
+.marker#mid-arrow {
+  stroke: none;
+  fill: #7795D1;
+  /* stroke-width: 2px; */
+}
+
+
+.marker#arrowhead {
+  stroke: #7795D1;
+  stroke-width: 2px;
+  fill: #7795D1;
+}
+
 
 .lane {
   stroke: rgb(211, 211, 211);

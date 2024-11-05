@@ -1,34 +1,49 @@
 import { getComputedDimensions } from "./utils.js";
+import { computeConnectionPoints } from "./utilPath.js";
 
 export default class BaseNode {
-  constructor(nodeData, parentElement, parentNode = null) {
+  constructor(nodeData, parentElement, settings, parentNode = null) {
     this.data = nodeData;
     this.parentElement = parentElement;
     this.parentNode = parentNode;
+    this.settings = settings;
+    this.computeConnectionPoints = computeConnectionPoints;
 
     this.id = nodeData.id;
+
+    this.edges = {
+      incoming: [],
+      outgoing: [],
+    }
 
     this.element = null;
     this.simulation = null;
     this.layoutDebug = true;
 
-    if (!this.data.interactionState) this.data.interactionState = { expanded: true };
+    this.data.interactionState ??= { expanded: true };
 
     // Set default values for x, y, width, and height
-    if (!this.data.x) this.data.x = 0;
-    if (!this.data.y) this.data.y = 0;
-    if (!this.data.width) this.data.width = 60;
-    if (!this.data.height) this.data.height = 60;
+    this.x ??= 0;
+    this.y ??= 0;
+    this.data.width ??= 60;
+    this.data.height ??= 60;
+  }
+
+  move(x,y) {
+    console.log(`          > move ${this.id}, (x:${x},y:${y})`);
+    this.x = x;
+    this.y = y;
+    this.element.attr("transform", `translate(${this.x}, ${this.y})`);
   }
 
   renderContainer() {
-    console.log("Rendering Base Node renderContainer:", this.id, this.data.x, this.data.y, this.parentElement);
+    // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
     this.element = this.parentElement
       .append("g")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height)
+      // .attr("width", this.data.width) // a g element doesn't have width/height attributes
+      // .attr("height", this.data.height)
       .attr("class", "node")
-      .attr("data-id", this.id)
+      .attr("id", this.id)
       .on("click", (event) => {
         console.log("Clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
@@ -40,8 +55,25 @@ export default class BaseNode {
     //   .on("end", (event) => this.drag_ended(event, this)));
 
     // show the center stip
-    if ( this.layoutDebug )
-      this.element.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
+    if ( this.settings.showCenterMark )
+      this.element
+        .append("circle")
+        .attr("class", "centermark")
+        .attr("r", 3)
+        .attr("cx", 0)
+        .attr("cy", 0);	
+    
+    if (this.settings.showConnectionPoints) {
+      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      Object.values(connectionPoints).forEach((point) => {
+        this.element
+          .append("circle")
+          .attr("class", `connection-point side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y)
+          .attr("r", 2);
+      });
+    }
 
     // Set expanded or collapsed state
     if (this.data.interactionState.expanded) {
@@ -62,24 +94,56 @@ export default class BaseNode {
 
     // const oldSize = {width: this.data.width, height: this.data.height};
     // const elementDimensions = getComputedDimensions(this.element);
-    // console.log("    nodeBase.resize  > ", this.id, this.data.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
+    // console.log("    nodeBase.resize  > ", this.id, this.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
     this.data.width = size.width;
     this.data.height = size.height;
 
-    // // this.data.x -= this.data.width / 2 - oldSize.width / 2;
+    // // this.x -= this.data.width / 2 - oldSize.width / 2;
     // // this.data.y -= this.data.height / 2 - oldSize.height / 2;
 
     // this.data.width = elementDimensions.width;
     // this.data.height = elementDimensions.height;
 
-    // this.data.x += oldSize.width - elementDimensions.width;
+    // this.x += oldSize.width - elementDimensions.width;
     // this.data.y -= elementDimensions.height / 2 - oldSize.height / 2;
 
     // var ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  > before ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
 
-    // this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
+    // this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
     //  ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  >  after ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
 
+    this.layoutConnectionPoints();
+  }
+
+  findNode(nodeId) {
+    // console.log("    nodeBase findNode:", this.id, nodeId, this.id == nodeId);
+    if (this.id === nodeId) {
+      // console.log("    nodeBase findNode: return this", this);
+      return this;
+    }
+    return null;
+  }
+
+  isDescendantOf(node) {
+    let current = this.parentNode;
+    while (current) {
+      if (current === node) {
+        return true;
+      }
+      current = current.parentNode;
+    }
+    return false;
+  }
+
+  findJointParentContainer(target) {
+    console.log("    findJointParentContainer:", this.id, target.id);
+    let parent = this;
+    while (parent && !target.isDescendantOf(parent)) {
+      console.log("    findJointParentContainer: next", parent);
+      parent = parent.parentNode;
+    }
+    console.log("    findJointParentContainer: return", parent);
+    return parent;
   }
 
   // Method to toggle expansion/collapse of the node
@@ -131,9 +195,41 @@ export default class BaseNode {
       this.parentNode.cascadeStopSimulation();
     }
   }
+  
+  layoutConnectionPoints() {
+    if (this.settings.showConnectionPoints) {
+      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      Object.values(connectionPoints).forEach((point) => {
+        this.element
+          .select(`.connection-point.side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y);
+      });
+    }
+  }
 
-  getConnectionPoint() {}
-
+  // if (showConnectionPoints) {
+  //   node.each(function (d) {
+  //     const connectionPoints = computeConnectionPoints(d.data.width, d.data.height);
+  //     Object.values(connectionPoints).forEach((point) => {
+  //       d3.select(this)
+  //         .append("circle")
+  //         .attr("class", "connection-point")
+  //         .attr("cx", point.x)
+  //         .attr("cy", point.y)
+  //         .attr("r", 3);
+  //     });
+  //   });
+  // }
+  // function computeConnectionPoints(width, height) {
+  //   return {
+  //     top: { x: width / 2, y: 0 },
+  //     bottom: { x: width / 2, y: height },
+  //     left: { x: 0, y: height / 2 },
+  //     right: { x: width, y: height / 2 },
+  //   };
+  // }
+  
   // drag
   drag_started(event, node) {
     console.log("drag_started event", event, node);
@@ -159,7 +255,7 @@ export default class BaseNode {
     event.fx = event.x;
     event.fy = event.y;
     // move the simulation
-    node.element.attr("transform", "translate(" + event.fx + "," + event.fy + ")");
+    node.move(event.fx,event.fy);
   }
 
   drag_ended(event, node) {

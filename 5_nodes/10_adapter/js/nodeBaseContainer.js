@@ -3,18 +3,25 @@ import Simulation from "./simulation.js";
 import { getComputedDimensions } from "./utils.js";
 
 export default class BaseContainerNode extends BaseNode {
-  constructor(nodeData, parentElement, parentNode = null) {
-    super(nodeData, parentElement, parentNode);
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    super(nodeData, parentElement, settings, parentNode);
+
+    this.createNode = createNode;
     
     this.simulation = null;
     this.container = null;
+    this.edgesContainer = null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.childNodes = [];
+
+    // edges contain the edges that are between nodes where this container 
+    // is the first joined parent
+    this.childEdges = [];
   }
 
   // Method to render the parent node and its children
   async render() {
-    console.log(`Rendering BaseContainerNode type=${this.data.type} Node:`, this.id);
+    // console.log(`Rendering BaseContainerNode type=${this.data.type} Node:`, this.id);
     super.renderContainer();
 
     // A container node consists of it's own display, a border, background and a label
@@ -63,12 +70,32 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // you cannot move the g node,, move the child elements in stead
-    this.element.attr("transform", `translate(${this.data.x}, ${this.data.y})`);
+    this.element.attr("transform", `translate(${this.x}, ${this.y})`);
+  }
+
+  renderEdges() {
+    console.log("Rendering Edges for BaseContainerNode:", this.id, this.childEdges);
+    // if there are any edges, create edges container
+    if (this.childEdges.length > 0) {
+      // create container for child nodes
+      this.edgesContainer = this.container
+        .append("g")
+        .attr("class", (d) => `node edges`);
+
+      // create container for child nodes
+      this.ghostContainer = this.container
+        .append("g")
+        .attr("class", (d) => `node ghost`)
+        .lower(); // move it to the background
+
+
+      this.childEdges.forEach((edge) => edge.render());
+    }
   }
 
   resize(size) {
     // make sure it doesn't go below minimum size
-    console.log(`BaseNodeContainer resize size=[${Math.round(size.width)}x${Math.round(size.height)}],      minimum size =[${Math.round(this.minimumSize.width)}x${Math.round(this.minimumSize.height)}]`);
+    // console.log(`BaseNodeContainer resize size=[${Math.round(size.width)}x${Math.round(size.height)}],      minimum size =[${Math.round(this.minimumSize.width)}x${Math.round(this.minimumSize.height)}]`);
     size.width = Math.max(size.width, this.minimumSize.width);
     size.height = Math.max(size.height, this.minimumSize.height);
     // var containerDimensions = getComputedDimensions(this.container); console.log(`          < BaseContainer.resize before - containerDimensions ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
@@ -86,8 +113,7 @@ export default class BaseContainerNode extends BaseNode {
     this.element
       .select("text")
       .attr("x", -this.data.width / 2 + 4)
-      .attr("y", -this.data.height / 2 + 4);
-
+      .attr("y", -this.data.height / 2 + 4);      
 
     // position the container relative to the element top left corner
 
@@ -164,6 +190,25 @@ export default class BaseContainerNode extends BaseNode {
     this.resize({ width: this.data.width, height: this.data.height });
   }
 
+  findNode(nodeId) {
+    // console.log("    nodeBaseContainer findNode:", this.id, nodeId, this.id == nodeId);
+    // console.log("                              :", this.childNodes.length, this.childNodes);
+    // console.log("                              :", this.data);
+    // console.log("                              :", this.childNodes[0]);
+    if (this.id === nodeId) {
+      // console.log("    nodeBaseContainer findNode found:", this.id, nodeId);
+      return this;
+    }
+    for (const childNode of this.childNodes) {
+      // console.log("    nodeBaseContainer findNode check child:", childNode.id, nodeId);
+      const foundNode = childNode.findNode(nodeId);
+      if (foundNode) {
+        return foundNode;
+      }
+    }
+    return null;
+  }
+
   // Method to toggle expansion/collapse of the parent node
   toggleExpandCollapse() {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;
@@ -206,14 +251,24 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     this.cascadeArrange();
+
+    this.layoutEdges();    
   }
 
+  layoutEdges() {
+    if (this.childEdges.length > 0) {
+      this.childEdges.forEach((edge) => edge.layout());
+    }
+    
+  }
+
+
   arrange() {
-    console.log("Arranging BaseContainerNode:", this.id);
+    // console.log("Arranging BaseContainerNode:", this.id);
   }
 
   async renderChildren() {
-    console.log("    Rendering Children for BaseContainer:", this.id, this.data.children);
+    // console.log("    Rendering Children for BaseContainer:", this.id, this.data.children);
     // no default rendering of the children, but this renders a placeholder rect
     const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
