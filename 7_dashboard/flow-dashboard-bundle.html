@@ -4,81 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sugiyama Layout with D3.js</title>
+    <title>Flow Dashboard</title>
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
     <script src="dist/flow-dashboard.min.js"></script>
-    <style>
-        #graph {
-            border: 1px solid black;
-            width: 100%;
-            height: 800px;
-        }
-
-        #minimap-container {
-            border: 1px solid black;
-        }
-
-        #minimap {
-            border: 1px solid darkblue;
-            background-color: rgb(210, 255, 212);
-        }
-
-        .boundingBox {
-            fill: none;
-            stroke: rgba(255, 0, 0, 0.616);
-            stroke-width: 1;
-        }
-
-
-        .viewport {
-            fill: none;
-            stroke: rgba(255, 0, 0, 0.616);
-            /* stroke-width: 8; */ /* automatically set using zoom scale when updating */
-            cursor: move;
-        }
-
-        .drawing_boundary {
-            stroke: gray;
-            stroke-width: 0.05;
-            /* fill: rgba(255, 255, 224, 0.26); */
-            fill: rgba(255, 255, 224, 0.86);
-        }
-
-        .node {
-            stroke: rgba(70, 131, 180, 0.5);
-            stroke-width: 0.05;
-            fill: steelblue;
-            cursor: zoom-in;
-        }
-
-        .edge {
-            stroke: #ccc;
-            stroke-width: 2px;
-            fill: none;
-            marker-end: url(#arrowhead);
-        }
-
-        .marker {
-            stroke: #ccc;
-            stroke-width: 4px;
-            fill: none;
-            /* marker-end: url(#arrowhead); */
-        }
-
-        .label {
-            font-size: 12px;
-            text-anchor: middle;
-            fill: white;
-        }
-
-        .connection-point {
-            fill: rgb(70, 130, 180, 0.8);
-            stroke: rgb(154, 169, 182);
-            /* stroke: rgba(70, 131, 180, 0.5); */
-        }
-    </style>
+    <link rel="stylesheet" href="flow-dashboard.css">
 </head>
 
 <body>

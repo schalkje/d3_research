@@ -31,8 +31,13 @@ body {
   
   .connection-point {
     fill: rgb(155, 155, 226);
-    stroke: none;
+    stroke: rgb(154, 169, 182);
   }
+
+  /* .connection-point {
+    fill: rgb(70, 130, 180, 0.8);
+    stroke: rgb(154, 169, 182);
+  } */
   
   /* 
   line {

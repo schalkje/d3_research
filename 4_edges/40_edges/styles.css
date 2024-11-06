@@ -28,6 +28,11 @@ svg.canvas {
   stroke: none;
 }
 
+/* .connection-point {
+  fill: rgb(70, 130, 180, 0.8);
+  stroke: rgb(154, 169, 182);
+} */
+
 /* 
 line {
   fill: none;

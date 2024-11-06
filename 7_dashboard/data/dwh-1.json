@@ -1,6 +1,7 @@
 {
   "settings": {
     "showCenterMark": false,
+    "showConnectionPoints": true,
     "showGhostlines": false,
     "curved": true
   },
@@ -18,7 +19,7 @@
       "type": "adapter",
       "layout": {
         "mode": "full",
-        "arrangement": 3
+        "arrangement": 1
       },
       "children": [
         {
