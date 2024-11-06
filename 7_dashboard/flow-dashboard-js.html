@@ -113,8 +113,11 @@
             console.log('initializeDashboard');
             selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
-                var svg = flowDashboard.initializeCanvas('#graph')
-                flowDashboard.createDashboard(dashboardData, svg);
+                dashboard = new flowDashboard.Dashboard(dashboardData);
+                dashboard.initialize('#graph', '#minimap');
+                // dashboard = flowDashboard.createDashboard(dashboardData, '#graph', '#minimap');
+                // var svg = flowDashboard.initializeCanvas('#graph')
+                // flowDashboard.createDashboard(dashboardData, svg);
             });
 
             // FD.GraphData.fetchFileToDag(selectedFile).then(result => {
