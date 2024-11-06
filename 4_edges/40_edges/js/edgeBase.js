@@ -15,6 +15,9 @@ export default class BaseEdge {
     this.target = target;
     this.settings = settings;
 
+    this.id ??= `${this.source.id}-${this.target.id}`;
+    // this.id ??= `${this.source.id} --${this.data.type}--> ${this.target.id}`;
+
     this.element = null;
     this.ghostElement = null;
 
@@ -76,7 +79,8 @@ export default class BaseEdge {
     if (this.settings.showEdges) {
       this.element = this.parent.edgesContainer
       .append("g")
-      .attr("class", `edge ${this.data.type}`);
+      .attr("class", `edge ${this.data.type}`)
+      .attr("id", this.id);
 
       this.element
         .append("path")
