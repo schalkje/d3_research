@@ -31,7 +31,7 @@ export class Dashboard {
 
     this.dashboard.root = this.createDashboard(this.data, this.dashboard.container);
 
-    this.initializeZoom();
+    this.dashboard.zoom = this.initializeZoom();
   }
 
   // render() {
@@ -39,7 +39,7 @@ export class Dashboard {
   // }
 
   createContainer(svg, className) {
-    // JS: 2024-11-06: I don't know (yet) if this is usefull or not
+    // create a container, to enable zooming and panning
     return svg.append("g").attr("class", `${className}`);
   }
 
@@ -72,26 +72,25 @@ export class Dashboard {
 
 
   initializeZoom() {
-    console.log("intializeZoom", this.dashboard);
+    // console.log("intializeZoom", this.dashboard);
     const dag = null; // todo: remove
   
-    const svg = this.dashboard.container;
+    // const svg = this.dashboard.container;
     const dashboard = this.dashboard;
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
       .on("zoom", function (event) {
-        svg.attr("transform", event.transform);
+        dashboard.container.attr("transform", event.transform);
         updateViewport(dashboard, event.transform);
       });
 
-      this.dashboard.zoom = zoom;
-
       this.dashboard.svg.call(zoom);
 
-      console.log("intializeZoom - svg", svg, zoom);
-      // initialize default zoom buttons
-    d3.select("#zoom-in").on("click", function () {zoomIn(dashboard)});
+    // initialize default zoom buttons
+    d3.select("#zoom-in").on("click", function () {
+      zoomIn(dashboard);
+    });
 
     d3.select("#zoom-out").on("click", function () {
       zoomOut(dashboard);
@@ -102,11 +101,11 @@ export class Dashboard {
     });
 
     d3.select("#zoom-random").on("click", function () {
-      zoomRandom(dashboard, dag);
+      zoomRandom(dashboard);
     });
 
     d3.select("#zoom-node").on("click", function () {
-      zoomToNodeByName("EM_Stater", dashboard, dag);
+      zoomToNodeByName("EM_Stater", dashboard);
     });
 
     return zoom;
@@ -118,7 +117,6 @@ export class Dashboard {
 }
 
 function zoomIn(dashboard) {
-  console.log("zoomIn", dashboard)
   // svg.selectAll(".boundingBox").remove();
   dashboard.svg.transition().duration(750).call(dashboard.zoom.scaleBy, 1.2);
   dashboard.scale = dashboard.scale * (1 + dashboard.zoomSpeed);
