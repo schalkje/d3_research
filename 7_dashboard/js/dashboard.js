@@ -17,22 +17,30 @@ export class Dashboard {
     this.minimap = null;
   }
 
-  initialize(mainDivSelector, minimapDivSelector = null) {
+  async initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
     this.dashboard = this.initializeSvg(mainDivSelector);
     this.dashboard.onDragUpdate = this.onDragUpdate;
     this.dashboard.container = this.createContainer(this.dashboard, "dashboard");
-    this.dashboard.root = this.createDashboard(this.data, this.dashboard.container);
+    this.dashboard.root = await this.createDashboard(this.data, this.dashboard.container);
     this.dashboard.zoom = this.initializeZoom();
 
     // initialize minimap
     if (minimapDivSelector) {
       this.minimap = this.initializeSvg(minimapDivSelector);
       this.minimap.container = this.createContainer(this.minimap, "minimap");
-      this.minimap.root = this.createDashboard(this.data, this.minimap.container);
+      this.minimap = this.updateMinimap();
       console.log("minimap", this.minimap);
     }
 
+  }
+  updateMinimap()
+  {
+    console.log("updateMinimap")
+    // clone the dashboard container elements to the minimap
+    const clone = this.dashboard.container.node().cloneNode(true);
+    console.log("     clone=",clone)
+    this.minimap.container.node().appendChild( clone );
   }
 
   // render() {
@@ -56,18 +64,18 @@ export class Dashboard {
     return { svg, width, height, onDragUpdate };
   }
 
-  createDashboard(dashboard, container) {
+  async createDashboard(dashboard, container) {
     createMarkers(container);
 
     var root;
     if (dashboard.nodes.length == 1) {
-      root = createNode(dashboard.nodes[0], container, dashboard.settings);
+      root = await createNode(dashboard.nodes[0], container, dashboard.settings);
     } else {
-      root = createNodes(dashboard.nodes, container, dashboard.settings);
+      root = await createNodes(dashboard.nodes, container, dashboard.settings);
     }
-    root.render();
+    await root.render();
 
-    if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
+    if (dashboard.edges.length > 0) await createEdges(root, dashboard.edges, dashboard.settings);
 
     return root;
   }
