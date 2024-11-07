@@ -12,6 +12,7 @@ export class Dashboard {
       container: null,
       root: null,
       scale: 1,
+      zoomSpeed: 0.2,
     };
     this.minimap = null;
   }
@@ -93,7 +94,7 @@ export class Dashboard {
     d3.select("#zoom-in").on("click", function () {zoomIn(dashboard)});
 
     d3.select("#zoom-out").on("click", function () {
-      zoomOut(svg, zoom);
+      zoomOut(dashboard);
     });
 
     d3.select("#zoom-reset").on("click", function () {
@@ -120,12 +121,13 @@ function zoomIn(dashboard) {
   console.log("zoomIn", dashboard)
   // svg.selectAll(".boundingBox").remove();
   dashboard.svg.transition().duration(750).call(dashboard.zoom.scaleBy, 1.2);
-  // todo: update zoom scale
+  dashboard.scale = dashboard.scale * (1 + dashboard.zoomSpeed);
 }
 
 function zoomOut(dashboard) {
   // svg.selectAll(".boundingBox").remove();
   dashboard.svg.transition().duration(750).call(dashboard.zoom.scaleBy, 0.8);
+  dashboard.scale = dashboard.scale * (1 - dashboard.zoomSpeed);
 }
 
 function zoomReset(dashboard) {
@@ -139,6 +141,7 @@ function zoomReset(dashboard) {
       d3.zoomIdentity,
       d3.zoomTransform(dashboard.svg.node()).invert([dashboard.width / 2, dashboard.height / 2])
     );
+    dashboard.scale = 1;	
 }
 
 
