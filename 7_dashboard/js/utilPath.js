@@ -49,7 +49,7 @@ export function generateEdgePath(edge) {
   let minDistance = Number.MAX_VALUE;
   Object.values(sourceConnectionPoints).forEach((source) => {
     Object.values(targetConnectionPoints).forEach((target) => {
-      console.log("    Checking Connection Points:", source, target);
+      // console.log("    Checking Connection Points:", source, target);
 
       // exclude wrong connections
       // Vertical constraints (top and bottom)
@@ -93,7 +93,7 @@ export function generateEdgePath(edge) {
     (sourcePoint.side == ConnectorSide.RIGHT && targetPoint.side == ConnectorSide.LEFT)
   ) {
     // left to right or right to left
-    console.log("    Generating Edge Path: Left to Right or Right to Left");
+    // console.log("    Generating Edge Path: Left to Right or Right to Left");
       waypoints = [
         // // for a curve
         [sourcePoint.x + midX * (1 - curveMargin), sourcePoint.y + midY * curveMargin], // Move horizontally to half the distance
@@ -104,7 +104,7 @@ export function generateEdgePath(edge) {
     (sourcePoint.side == ConnectorSide.TOP && targetPoint.side == ConnectorSide.BOTTOM)
   ) {
     // bottom to top or top to bottom
-    console.log("    Generating Edge Path: Bottom to Top or Top to Bottom", midX, midY);
+    // console.log("    Generating Edge Path: Bottom to Top or Top to Bottom", midX, midY);
     if (Math.abs(midY) < 20 && edge.settings.curved)
     {
       waypoints = [
@@ -145,7 +145,7 @@ export function generateEdgePath(edge) {
 
   //   const result = [edge.sourcePoint, toPoint(sourcePoint), ...waypoints, toPoint(targetPoint)];
   const result = [toPoint(sourcePoint), ...waypoints, toPoint(targetPoint)];
-  console.log("    Generating Edge Path:", result, edge.sourcePoint);
+  // console.log("    Generating Edge Path:", result, edge.sourcePoint);
   //   return [sourcePoint, ...waypoints, targetPoint];
   return result;
 }
