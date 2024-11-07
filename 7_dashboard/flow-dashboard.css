@@ -4,6 +4,16 @@
   height: 800px;
 }
 
+#minimap-container {
+  border: 1px solid black;
+}
+
+#minimap {
+  border: 1px solid darkblue;
+  background-color: rgb(210, 255, 212);
+}
+
+
 body {
     background-color: white;
     font-family: Arial;

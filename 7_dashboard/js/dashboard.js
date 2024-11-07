@@ -21,27 +21,29 @@ export class Dashboard {
     // initialize dashboard
     this.dashboard = this.initializeSvg(mainDivSelector);
     this.dashboard.onDragUpdate = this.onDragUpdate;
-    this.dashboard.container = this.createContainer(this.dashboard.svg, "dashboard");
+    this.dashboard.container = this.createContainer(this.dashboard, "dashboard");
+    this.dashboard.root = this.createDashboard(this.data, this.dashboard.container);
+    this.dashboard.zoom = this.initializeZoom();
 
     // initialize minimap
-    if (this.minimapDivSelector) {
-      this.minimap = this.initializeSvg(this.minimapDivSelector);
-      this.minimap.container = this.createContainer(this.minimap.svg, "minimap");
+    if (minimapDivSelector) {
+      this.minimap = this.initializeSvg(minimapDivSelector);
+      this.minimap.container = this.createContainer(this.minimap, "minimap");
+      this.minimap.root = this.createDashboard(this.data, this.minimap.container);
+      console.log("minimap", this.minimap);
     }
 
-    this.dashboard.root = this.createDashboard(this.data, this.dashboard.container);
-
-    this.dashboard.zoom = this.initializeZoom();
   }
 
   // render() {
   //     // this.dashboard.root.render();
   // }
 
-  createContainer(svg, className) {
+  createContainer(dashboard, className) {
     // create a container, to enable zooming and panning
-    return svg.append("g").attr("class", `${className}`);
+    return dashboard.svg.append("g").attr("class", `${className}`);
   }
+
 
   initializeSvg(divSelector) {
     const svg = d3.select(`${divSelector}`);
