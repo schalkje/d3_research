@@ -37,10 +37,78 @@ export class Dashboard {
   updateMinimap()
   {
     console.log("updateMinimap")
+
     // clone the dashboard container elements to the minimap
     const clone = this.dashboard.container.node().cloneNode(true);
-    console.log("     clone=",clone)
-    this.minimap.container.node().appendChild( clone );
+
+    this.minimap.scale = 0.2;
+
+    // remove old minimap
+    d3.select(".minimap").remove();
+
+    
+    // update zoom
+    console.log("     clone=",clone);
+    this.minimap.svg      
+      .attr("viewBox", `${-this.dashboard.width/2} ${-this.dashboard.height/2} ${this.dashboard.width} ${this.dashboard.height}`);
+
+    this.minimap.eye = {
+      x: -50,
+      y: -20,
+      width: 100,
+      height: 100,
+    }
+
+    this.minimap.svg
+      .append("rect")
+      .attr("class", `minimap`)
+      .attr("width", this.dashboard.width)
+      .attr("height", this.dashboard.height)
+      .attr('x', -this.dashboard.width/2)
+      .attr('y', -this.dashboard.height/2);
+
+    const defs = this.minimap.svg.append("defs");
+    const eye = defs
+      .append("mask")
+      .attr("id", "fade-mask");
+      eye
+        .append("rect")
+        .attr("id", "eyeball")
+        .attr("x",-this.dashboard.width/2)
+        .attr("y",-this.dashboard.height/2)
+        .attr("width","100%")
+        .attr("height","100%")
+        .attr("fill", "white");
+      eye
+        .append("rect")
+        .attr("id", "pupil")
+        .attr("x",this.minimap.eye.x)
+        .attr("y",this.minimap.eye.y)
+        .attr("width",this.minimap.eye.width)
+        .attr("height",this.minimap.eye.height)
+        .attr("fill", "black");
+
+
+    // clone dashboard to minimap
+    this.minimap.svg.node().appendChild( clone );
+    this.minimap.container = d3.select(clone);
+    this.minimap.container.attr("class",'minimap');
+
+    this.minimap.svg
+      .append("rect")
+      .attr("class", `eye`)
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("x",-this.dashboard.width/2)
+      .attr("y",-this.dashboard.height/2)      
+      .attr("mask","url(#fade-mask)");
+    this.minimap.svg
+      .append("rect")
+      .attr("class", `pupil`)
+      .attr("x",this.minimap.eye.x)
+      .attr("y",this.minimap.eye.y)
+      .attr("width",this.minimap.eye.width)
+      .attr("height",this.minimap.eye.height);
   }
 
   // render() {

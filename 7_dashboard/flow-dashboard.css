@@ -1,7 +1,7 @@
 #graph {
   border: 1px solid black;
   width: 100%;
-  height: 300px;
+  height: 800px;
 }
 
 #minimap-container {
@@ -10,7 +10,30 @@
 
 #minimap {
   border: 1px solid darkblue;
-  background-color: rgb(210, 255, 212);
+  background-color: black
+  /* background-color: rgba(200, 200, 200, 0.2); */
+}
+
+#minimap rect.minimap {
+  fill: white;  
+  stroke: rgb(136, 136, 136);
+}
+
+#minimap rect.boundingbox {
+  fill: none;  
+  stroke: rgba(255, 0, 0, 0.5);
+  stroke-width: 4px;
+}
+
+#minimap .eye {
+  /* fill: rgba(238, 237, 221, 0.6) */
+  fill: rgba(255,255,255, 0.7)
+}
+
+#minimap .pupil {
+  fill: none;
+  stroke: red;
+  stroke-width: 4px;
 }
 
 
