@@ -30,10 +30,10 @@
   fill: rgba(255,255,255, 0.7)
 }
 
-#minimap .pupil {
+#minimap .iris {
   fill: none;
-  stroke: red;
-  stroke-width: 4px;
+  stroke: rgba(255, 0, 0, 0.2);
+  stroke-width: 8px;
 }
 
 

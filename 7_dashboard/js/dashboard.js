@@ -5,7 +5,7 @@ import { createEdges } from "./edge.js";
 export class Dashboard {
   constructor(dashboardData) {
     this.data = dashboardData;
-    this.dashboard = {
+    this.main = {
       svg: null,
       width: 0,
       height: 0,
@@ -14,22 +14,32 @@ export class Dashboard {
       scale: 1,
       zoomSpeed: 0.2,
     };
-    this.minimap = null;
+    this.minimap = {
+      svg: null,
+      width: 0,
+      height: 0,
+      container: null,
+      eye: null,
+    };
   }
 
   async initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
-    this.dashboard = this.initializeSvg(mainDivSelector);
-    this.dashboard.onDragUpdate = this.onDragUpdate;
-    this.dashboard.container = this.createContainer(this.dashboard, "dashboard");
-    this.dashboard.root = await this.createDashboard(this.data, this.dashboard.container);
-    this.dashboard.zoom = this.initializeZoom();
+    this.main = this.initializeSvg(mainDivSelector);
+    this.main.onDragUpdate = this.onDragUpdate;
+    this.main.container = this.createContainer(this.main, "dashboard");
+    this.main.root = await this.createDashboard(this.data, this.main.container);
+    this.main.zoom = this.initializeZoom();
 
     // initialize minimap
     if (minimapDivSelector) {
-      this.minimap = this.initializeSvg(minimapDivSelector);
+      const div = this.initializeSvg(minimapDivSelector);
+      this.minimap.svg = div.svg;
+      this.minimap.width = div.width;
+      this.minimap.height = div.height;
+      this.minimap.onDragUpdate = div.onDragUpdate;
       this.minimap.container = this.createContainer(this.minimap, "minimap");
-      this.minimap = this.updateMinimap();
+      this.updateMinimap();
       console.log("minimap", this.minimap);
     }
 
@@ -39,7 +49,7 @@ export class Dashboard {
     console.log("updateMinimap")
 
     // clone the dashboard container elements to the minimap
-    const clone = this.dashboard.container.node().cloneNode(true);
+    const clone = this.main.container.node().cloneNode(true);
 
     this.minimap.scale = 0.2;
 
@@ -50,22 +60,22 @@ export class Dashboard {
     // update zoom
     console.log("     clone=",clone);
     this.minimap.svg      
-      .attr("viewBox", `${-this.dashboard.width/2} ${-this.dashboard.height/2} ${this.dashboard.width} ${this.dashboard.height}`);
+      .attr("viewBox", `${-this.main.width/2} ${-this.main.height/2} ${this.main.width} ${this.main.height}`);
 
     this.minimap.eye = {
-      x: -50,
-      y: -20,
-      width: 100,
-      height: 100,
+      x: -this.main.width/2,
+      y: -this.main.height/2,
+      width: this.main.width,
+      height: this.main.height,
     }
 
     this.minimap.svg
       .append("rect")
       .attr("class", `minimap`)
-      .attr("width", this.dashboard.width)
-      .attr("height", this.dashboard.height)
-      .attr('x', -this.dashboard.width/2)
-      .attr('y', -this.dashboard.height/2);
+      .attr("width", this.main.width)
+      .attr("height", this.main.height)
+      .attr('x', -this.main.width/2)
+      .attr('y', -this.main.height/2);
 
     const defs = this.minimap.svg.append("defs");
     const eye = defs
@@ -74,8 +84,8 @@ export class Dashboard {
       eye
         .append("rect")
         .attr("id", "eyeball")
-        .attr("x",-this.dashboard.width/2)
-        .attr("y",-this.dashboard.height/2)
+        .attr("x",-this.main.width/2)
+        .attr("y",-this.main.height/2)
         .attr("width","100%")
         .attr("height","100%")
         .attr("fill", "white");
@@ -99,16 +109,42 @@ export class Dashboard {
       .attr("class", `eye`)
       .attr("width", "100%")
       .attr("height", "100%")
-      .attr("x",-this.dashboard.width/2)
-      .attr("y",-this.dashboard.height/2)      
+      .attr("x",-this.main.width/2)
+      .attr("y",-this.main.height/2)      
       .attr("mask","url(#fade-mask)");
     this.minimap.svg
       .append("rect")
-      .attr("class", `pupil`)
+      .attr("class", `iris`)
       .attr("x",this.minimap.eye.x)
       .attr("y",this.minimap.eye.y)
       .attr("width",this.minimap.eye.width)
       .attr("height",this.minimap.eye.height);
+  }
+
+
+
+  // Function to update the position and size of the eye
+  updateMinimapEye(x, y, width, height) {
+    console.log("updateEye",this)
+    // Update minimap.eye properties
+    this.minimap.eye.x = x;
+    this.minimap.eye.y = y;
+    this.minimap.eye.width = width;
+    this.minimap.eye.height = height;
+  
+    // Select and update the 'pupil' rectangle in the mask for the clear area
+    this.minimap.svg.select("#pupil")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("width", width)
+      .attr("height", height);
+  
+    // If you are displaying a visible outline of the pupil, update it here as well
+    this.minimap.svg.select(".iris")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("width", width)
+      .attr("height", height);
   }
 
   // render() {
@@ -150,20 +186,20 @@ export class Dashboard {
 
 
   initializeZoom() {
-    // console.log("intializeZoom", this.dashboard);
+    console.log("intializeZoom", this);
     const dag = null; // todo: remove
   
     // const svg = this.dashboard.container;
-    const dashboard = this.dashboard;
+    const dashboard = this;
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
       .on("zoom", function (event) {
-        dashboard.container.attr("transform", event.transform);
+        dashboard.main.container.attr("transform", event.transform);
         updateViewport(dashboard, event.transform);
       });
 
-      this.dashboard.svg.call(zoom);
+      this.main.svg.call(zoom);
 
     // initialize default zoom buttons
     d3.select("#zoom-in").on("click", function () {
@@ -196,28 +232,28 @@ export class Dashboard {
 
 function zoomIn(dashboard) {
   // svg.selectAll(".boundingBox").remove();
-  dashboard.svg.transition().duration(750).call(dashboard.zoom.scaleBy, 1.2);
-  dashboard.scale = dashboard.scale * (1 + dashboard.zoomSpeed);
+  dashboard.main.svg.transition().duration(750).call(dashboard.main.zoom.scaleBy, 1.2);
+  dashboard.main.scale = dashboard.main.scale * (1 + dashboard.main.zoomSpeed);
 }
 
 function zoomOut(dashboard) {
   // svg.selectAll(".boundingBox").remove();
-  dashboard.svg.transition().duration(750).call(dashboard.zoom.scaleBy, 0.8);
-  dashboard.scale = dashboard.scale * (1 - dashboard.zoomSpeed);
+  dashboard.main.svg.transition().duration(750).call(dashboard.main.zoom.scaleBy, 0.8);
+  dashboard.main.scale = dashboard.main.scale * (1 - dashboard.main.zoomSpeed);
 }
 
 function zoomReset(dashboard) {
   console.log("zoomReset", dashboard);
   // canvas.svg.selectAll(".boundingBox").remove();
-  dashboard.svg
+  dashboard.main.svg
     .transition()
     .duration(750)
     .call(
-      dashboard.zoom.transform,
+      dashboard.main.zoom.transform,
       d3.zoomIdentity,
-      d3.zoomTransform(dashboard.svg.node()).invert([dashboard.width / 2, dashboard.height / 2])
+      d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
     );
-    dashboard.scale = 1;	
+    dashboard.main.scale = 1;	
 }
 
 
@@ -391,5 +427,10 @@ export function zoomToNode(node, dashboard, dag) {
 function updateViewport(dashboard, transform)
   {
     // js: is this the right function name?
-    // console.log("updateViewPort", transform)
+    // console.log("updateViewPort", dashboard, transform)
+    const x = (transform.x + dashboard.main.width / 2) / -transform.k;
+    const y = (transform.y + dashboard.main.height / 2) / -transform.k;
+    const width = dashboard.main.width / transform.k;
+    const height = dashboard.main.height / transform.k;
+    dashboard.updateMinimapEye(x,y,width, height);
   }
