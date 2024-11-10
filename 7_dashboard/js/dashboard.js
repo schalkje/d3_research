@@ -53,10 +53,7 @@ export class Dashboard {
     const clone = this.main.container.node().cloneNode(true);
 
     // comput the scale of the minimap compared to the main view
-    this.minimap.scale = Math.min(
-      this.minimap.width / this.main.width,
-      this.minimap.height / this.main.height
-    );
+    this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
 
     // remove old minimap
     d3.select(".minimap").remove();
@@ -186,14 +183,8 @@ export class Dashboard {
       .zoom()
       .scaleExtent([1, 40])
       .on("zoom", function (event) {
-        dashboard.main.container.attr("transform", event.transform);
-        dashboard.main.transform.k = event.transform.k;
-        dashboard.main.transform.x = event.transform.x;
-        dashboard.main.transform.y = event.transform.y;
+        zoomMain(dashboard, event);
 
-        // Apply transform to the main view
-        dashboard.main.container.attr("transform", event.transform);
-        updateViewport(dashboard, event.transform);
       });
 
     this.main.svg.call(zoom);
@@ -227,11 +218,25 @@ export class Dashboard {
 
     const dashboard = this;
 
+    // Initialize drag behavior
     const drag = d3.drag().on("drag", function (event) {
       dragEye(dashboard, event);
     });
     this.minimap.svg.call(drag);
 
+    // // Initialize zoom behavior
+    // const zoom = d3
+    //   .zoom()
+    //   .scaleExtent([1, 40])
+    //   .on("zoom", function (event) {
+    //     // dashboard.minimap.svg.attr("transform", event.transform);
+    //     console.log("minimap zoom", event);
+    //     applyTransformToMainView(dashboard, event);
+    //     // dashboard.updateMinimapEye(dashboard, event.transform);
+    //   });
+    // this.minimap.svg.call(zoom);
+
+    // return zoom;
     return drag;
   }
 
@@ -240,23 +245,80 @@ export class Dashboard {
   }
 }
 
-function applyTransformToMainView(dashboard, transform) {
-  // Temporarily disable zoom on the main view to avoid recursive events
-  dashboard.main.svg.on(".zoom", null);
+function applyTransformToMainView(dashboard, zoomEvent) {
+  console.log("applyTransformToMainView", dashboard, zoomEvent.transform);
+  // const eventX = zoomEvent.sourceEvent.screenX;
+  // const eventY = zoomEvent.sourceEvent.screenY;
+  // console.log(`         zoomEvent ${eventX},${eventY}`, zoomEvent);
+  // console.log(
+  //   `         zoomtransform - k=${Math.round(zoomEvent.transform.k * 100) / 100}, x=${
+  //     Math.round(zoomEvent.transform.x * 100) / 100
+  //   }, y=${Math.round(zoomEvent.transform.y * 100) / 100}`
+  // );
+  // console.log(
+  //   `        main.transform - k=${Math.round(dashboard.main.transform.k * 100) / 100}, x=${
+  //     Math.round(dashboard.main.transform.x * 100) / 100
+  //   }, y=${Math.round(dashboard.main.transform.y * 100) / 100}`
+  // );
+  // // Calculate scaled movement for the eye rectangle
+  // const scaledDx = zoomEvent.transform.x;
+  // const scaledDy = zoomEvent.transform.y;
+  // // const scaledDx = zoomEvent.transform.x / zoomEvent.transform.k/ zoomEvent.transform.k;
+  // // const scaledDy = zoomEvent.transform.y / zoomEvent.transform.k/ zoomEvent.transform.k;
+  // // const scaledDx = zoomEvent.transform.x / dashboard.minimap.scale;
+  // // const scaledDy = zoomEvent.transform.y / dashboard.minimap.scale;
+  // // const scaledDx = zoomEvent.transform.x / dashboard.minimap.scale / zoomEvent.transform.k ;
+  // // const scaledDy = zoomEvent.transform.y / dashboard.minimap.scale / zoomEvent.transform.k;
+  // // const scaledDx = zoomEvent.transform.x / dashboard.minimap.scale / dashboard.main.transform.k;
+  // // const scaledDy = zoomEvent.transform.y / dashboard.minimap.scale / dashboard.main.transform.k;
+  // // const scaledDx = zoomEvent.transform.x / dashboard.minimap.scale;
+  // // const scaledDy = zoomEvent.transform.y / dashboard.minimap.scale;
+  // // const scaledDx = eventX;
+  // // const scaledDy = eventY;
 
-  // Update the main view's transformation based on minimap transform
-  dashboard.main.container.attr("transform", transform);
+  // // const scaledDx = (-zoomEvent.transform.x + dashboard.main.transform.x) / dashboard.minimap.scale;
+  // // const scaledDy = (-zoomEvent.transform.y + dashboard.main.transform.y) / dashboard.minimap.scale;
+  // // const scaledDx = zoomEvent.transform.x  / zoomEvent.transform.k;
+  // // const scaledDy = zoomEvent.transform.y  / zoomEvent.transform.k;
 
-  // Re-enable the zoom behavior for the main view
-  const mainZoom = d3
-    .zoom()
-    .scaleExtent([1, 40])
-    .on("zoom", function (event) {
-      dashboard.main.container.attr("transform", event.transform);
-      updateViewport(dashboard, event.transform);
-    });
+  // // Temporarily disable zoom on the main view to avoid recursive events
+  // dashboard.main.svg.on(".zoom", null);
 
-  dashboard.main.svg.call(mainZoom).call(mainZoom.transform, transform);
+  // const k = zoomEvent.transform.k;
+
+  // console.log(
+  //   `         new           - k=${Math.round(k * 100) / 100}, scaledDx=${Math.round(scaledDx * 100) / 100}, scaledDy=${
+  //     Math.round(scaledDy * 100) / 100
+  //   }`
+  // );
+  // dashboard.main.transform.x = scaledDx;
+  // dashboard.main.transform.y = scaledDy;
+  // //dashboard.main.transform.x; // - scaledDx;
+  // // dashboard.main.transform.y = dashboard.main.transform.y; // - scaledDy;
+  // dashboard.main.transform.k = k;
+
+  // const mainTransform = d3.zoomIdentity
+  //   .translate(dashboard.main.transform.x, dashboard.main.transform.y)
+  //   .scale(dashboard.main.transform.k);
+
+  // console.log("- mainTransform", mainTransform);
+  // // Update the main view's transformation based on minimap transform
+  // dashboard.main.container.attr("transform", mainTransform);
+
+  // console.log("- updateViewport", dashboard, mainTransform);
+
+  // updateViewport(dashboard, mainTransform);
+
+  // // Re-enable the zoom behavior for the main view
+  // const mainZoom = d3
+  //   .zoom()
+  //   .scaleExtent([1, 40])
+  //   .on("zoom", function (event) {
+  //     zoomMain(dashboard, event);
+  //   });
+
+  // // dashboard.main.svg.call(mainZoom).call(mainZoom.transform, transform);
+  // dashboard.main.svg.call(mainZoom);
 }
 
 function zoomIn(dashboard) {
@@ -283,6 +345,16 @@ function zoomReset(dashboard) {
       d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
     );
   dashboard.main.scale = 1;
+
+  dashboard.minimap.svg
+  .transition()
+  .duration(750)
+  .call(
+    dashboard.main.zoom.transform,
+    d3.zoomIdentity,
+    d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
+  );
+
 }
 
 function zoomClicked(event, [x, y]) {
@@ -458,13 +530,14 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
 
 function updateViewport(dashboard, transform) {
   // js: is this the right function name?
-  // console.log("updateViewPort", dashboard, transform)
+  console.log("updateViewPort", dashboard, transform)
   const x = (transform.x + dashboard.main.width / 2) / -transform.k;
   const y = (transform.y + dashboard.main.height / 2) / -transform.k;
   const width = dashboard.main.width / transform.k;
   const height = dashboard.main.height / transform.k;
   dashboard.updateMinimapEye(x, y, width, height);
 }
+
 
 function dragEye(dashboard, dragEvent) {
   console.log("dragEye", dashboard.minimap, dragEvent);
@@ -480,9 +553,10 @@ function dragEye(dashboard, dragEvent) {
   dashboard.updateMinimapEye(newEyeX, newEyeY, dashboard.minimap.eye.width, dashboard.minimap.eye.height);
 
   // Calculate the corresponding translation for the main view, maintaining the current scale
-  dashboard.main.transform.x = -newEyeX * dashboard.main.transform.k + dashboard.width / 2;
-  dashboard.main.transform.y = -newEyeY * dashboard.main.transform.k + dashboard.height / 2;
+  dashboard.main.transform.x = -newEyeX * dashboard.main.transform.k - dashboard.main.width / 2;
+  dashboard.main.transform.y = -newEyeY * dashboard.main.transform.k - dashboard.main.height / 2;
 
+  console.log("dragEye", dashboard.main.transform);
   // Apply the updated transformation to the main view
   dashboard.main.container.attr(
     "transform",
@@ -490,4 +564,15 @@ function dragEye(dashboard, dragEvent) {
       .translate(dashboard.main.transform.x, dashboard.main.transform.y)
       .scale(dashboard.main.transform.k)
   );
+}
+
+function zoomMain(dashboard, event) {
+  console.log("zoomMain", dashboard, event);
+  dashboard.main.transform.k = event.transform.k;
+  dashboard.main.transform.x = event.transform.x;
+  dashboard.main.transform.y = event.transform.y;
+
+  // Apply transform to the main view
+  dashboard.main.container.attr("transform", event.transform);
+  updateViewport(dashboard, event.transform);
 }
