@@ -13,19 +13,23 @@ export class Dashboard {
       root: null,
       scale: 1,
       zoomSpeed: 0.2,
+      transform: { x: 0, y: 0, k: 1 },
     };
     this.minimap = {
       svg: null,
       width: 0,
       height: 0,
       container: null,
-      eye: null,
+      eye: { x: 0, y: 0, width: 0, height: 0 },
     };
   }
 
   async initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
-    this.main = this.initializeSvg(mainDivSelector);
+    const div = this.initializeSvg(mainDivSelector);
+    this.main.svg = div.svg;
+    this.main.width = div.width;
+    this.main.height = div.height;
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root = await this.createDashboard(this.data, this.main.container);
@@ -39,112 +43,101 @@ export class Dashboard {
       this.minimap.height = div.height;
       this.minimap.onDragUpdate = div.onDragUpdate;
       this.minimap.container = this.createContainer(this.minimap, "minimap");
+      this.minimap.zoom = this.initializeMinimap();
       this.updateMinimap();
       console.log("minimap", this.minimap);
     }
-
   }
-  updateMinimap()
-  {
-    console.log("updateMinimap")
-
+  updateMinimap() {
     // clone the dashboard container elements to the minimap
     const clone = this.main.container.node().cloneNode(true);
 
-    this.minimap.scale = 0.2;
+    // comput the scale of the minimap compared to the main view
+    this.minimap.scale = Math.min(
+      this.minimap.width / this.main.width,
+      this.minimap.height / this.main.height
+    );
 
     // remove old minimap
     d3.select(".minimap").remove();
 
-    
     // update zoom
-    console.log("     clone=",clone);
-    this.minimap.svg      
-      .attr("viewBox", `${-this.main.width/2} ${-this.main.height/2} ${this.main.width} ${this.main.height}`);
+    console.log("     clone=", clone);
+    this.minimap.svg.attr(
+      "viewBox",
+      `${-this.main.width / 2} ${-this.main.height / 2} ${this.main.width} ${this.main.height}`
+    );
 
     this.minimap.eye = {
-      x: -this.main.width/2,
-      y: -this.main.height/2,
+      x: -this.main.width / 2,
+      y: -this.main.height / 2,
       width: this.main.width,
       height: this.main.height,
-    }
+    };
 
     this.minimap.svg
       .append("rect")
       .attr("class", `minimap`)
       .attr("width", this.main.width)
       .attr("height", this.main.height)
-      .attr('x', -this.main.width/2)
-      .attr('y', -this.main.height/2);
+      .attr("x", -this.main.width / 2)
+      .attr("y", -this.main.height / 2);
 
     const defs = this.minimap.svg.append("defs");
-    const eye = defs
-      .append("mask")
-      .attr("id", "fade-mask");
-      eye
-        .append("rect")
-        .attr("id", "eyeball")
-        .attr("x",-this.main.width/2)
-        .attr("y",-this.main.height/2)
-        .attr("width","100%")
-        .attr("height","100%")
-        .attr("fill", "white");
-      eye
-        .append("rect")
-        .attr("id", "pupil")
-        .attr("x",this.minimap.eye.x)
-        .attr("y",this.minimap.eye.y)
-        .attr("width",this.minimap.eye.width)
-        .attr("height",this.minimap.eye.height)
-        .attr("fill", "black");
-
+    const eye = defs.append("mask").attr("id", "fade-mask");
+    eye
+      .append("rect")
+      .attr("id", "eyeball")
+      .attr("x", -this.main.width / 2)
+      .attr("y", -this.main.height / 2)
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("fill", "white");
+    eye
+      .append("rect")
+      .attr("id", "pupil")
+      .attr("x", this.minimap.eye.x)
+      .attr("y", this.minimap.eye.y)
+      .attr("width", this.minimap.eye.width)
+      .attr("height", this.minimap.eye.height)
+      .attr("fill", "black");
 
     // clone dashboard to minimap
-    this.minimap.svg.node().appendChild( clone );
+    this.minimap.svg.node().appendChild(clone);
     this.minimap.container = d3.select(clone);
-    this.minimap.container.attr("class",'minimap');
+    this.minimap.container.attr("class", "minimap");
 
     this.minimap.svg
       .append("rect")
       .attr("class", `eye`)
       .attr("width", "100%")
       .attr("height", "100%")
-      .attr("x",-this.main.width/2)
-      .attr("y",-this.main.height/2)      
-      .attr("mask","url(#fade-mask)");
+      .attr("x", -this.main.width / 2)
+      .attr("y", -this.main.height / 2)
+      .attr("mask", "url(#fade-mask)");
     this.minimap.svg
       .append("rect")
       .attr("class", `iris`)
-      .attr("x",this.minimap.eye.x)
-      .attr("y",this.minimap.eye.y)
-      .attr("width",this.minimap.eye.width)
-      .attr("height",this.minimap.eye.height);
+      .attr("x", this.minimap.eye.x)
+      .attr("y", this.minimap.eye.y)
+      .attr("width", this.minimap.eye.width)
+      .attr("height", this.minimap.eye.height);
   }
-
-
 
   // Function to update the position and size of the eye
   updateMinimapEye(x, y, width, height) {
-    console.log("updateEye",this)
+    console.log("updateMinimapEye", this);
     // Update minimap.eye properties
     this.minimap.eye.x = x;
     this.minimap.eye.y = y;
     this.minimap.eye.width = width;
     this.minimap.eye.height = height;
-  
+
     // Select and update the 'pupil' rectangle in the mask for the clear area
-    this.minimap.svg.select("#pupil")
-      .attr("x", x)
-      .attr("y", y)
-      .attr("width", width)
-      .attr("height", height);
-  
+    this.minimap.svg.select("#pupil").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+
     // If you are displaying a visible outline of the pupil, update it here as well
-    this.minimap.svg.select(".iris")
-      .attr("x", x)
-      .attr("y", y)
-      .attr("width", width)
-      .attr("height", height);
+    this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
   }
 
   // render() {
@@ -155,7 +148,6 @@ export class Dashboard {
     // create a container, to enable zooming and panning
     return dashboard.svg.append("g").attr("class", `${className}`);
   }
-
 
   initializeSvg(divSelector) {
     const svg = d3.select(`${divSelector}`);
@@ -184,11 +176,10 @@ export class Dashboard {
     return root;
   }
 
-
   initializeZoom() {
     console.log("intializeZoom", this);
     const dag = null; // todo: remove
-  
+
     // const svg = this.dashboard.container;
     const dashboard = this;
     const zoom = d3
@@ -196,10 +187,16 @@ export class Dashboard {
       .scaleExtent([1, 40])
       .on("zoom", function (event) {
         dashboard.main.container.attr("transform", event.transform);
+        dashboard.main.transform.k = event.transform.k;
+        dashboard.main.transform.x = event.transform.x;
+        dashboard.main.transform.y = event.transform.y;
+
+        // Apply transform to the main view
+        dashboard.main.container.attr("transform", event.transform);
         updateViewport(dashboard, event.transform);
       });
 
-      this.main.svg.call(zoom);
+    this.main.svg.call(zoom);
 
     // initialize default zoom buttons
     d3.select("#zoom-in").on("click", function () {
@@ -225,9 +222,41 @@ export class Dashboard {
     return zoom;
   }
 
+  initializeMinimap() {
+    console.log("initializeMinimap", this);
+
+    const dashboard = this;
+
+    const drag = d3.drag().on("drag", function (event) {
+      dragEye(dashboard, event);
+    });
+    this.minimap.svg.call(drag);
+
+    return drag;
+  }
+
   onDragUpdate() {
     console.log("Drag Update");
   }
+}
+
+function applyTransformToMainView(dashboard, transform) {
+  // Temporarily disable zoom on the main view to avoid recursive events
+  dashboard.main.svg.on(".zoom", null);
+
+  // Update the main view's transformation based on minimap transform
+  dashboard.main.container.attr("transform", transform);
+
+  // Re-enable the zoom behavior for the main view
+  const mainZoom = d3
+    .zoom()
+    .scaleExtent([1, 40])
+    .on("zoom", function (event) {
+      dashboard.main.container.attr("transform", event.transform);
+      updateViewport(dashboard, event.transform);
+    });
+
+  dashboard.main.svg.call(mainZoom).call(mainZoom.transform, transform);
 }
 
 function zoomIn(dashboard) {
@@ -253,184 +282,212 @@ function zoomReset(dashboard) {
       d3.zoomIdentity,
       d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
     );
-    dashboard.main.scale = 1;	
+  dashboard.main.scale = 1;
 }
 
+function zoomClicked(event, [x, y]) {
+  event.stopPropagation();
+  svg
+    .transition()
+    .duration(750)
+    .call(
+      zoom.transform,
+      d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(40)
+        .translate(-x, -y),
+      d3.pointer(event)
+    );
+}
 
-  function zoomClicked(event, [x, y]) {
-    event.stopPropagation();
-    svg
-      .transition()
-      .duration(750)
-      .call(
-        zoom.transform,
-        d3.zoomIdentity
-          .translate(width / 2, height / 2)
-          .scale(40)
-          .translate(-x, -y),
-        d3.pointer(event)
-      );
-  }
-  
-  export function zoomToNodeByName(name, dashboard, dag) {
-    console.log("zoomToNodeByName", name);
-    for (const node of dag.nodes()) {
-      if (node.data.label === name) {
-        return zoomToNode(node, dashboard, dag);
-      }
+export function zoomToNodeByName(name, dashboard, dag) {
+  console.log("zoomToNodeByName", name);
+  for (const node of dag.nodes()) {
+    if (node.data.label === name) {
+      return zoomToNode(node, dashboard, dag);
     }
   }
-  
-  export function zoomRandom(dashboard, dag){
-    const data = [];
-    for (const node of dag.nodes()) {
-      data.push(node);
-    }
-    const node = data[Math.floor(Math.random() * data.length)];
-    console.log("random node=", node.data.label, node);
-    return zoomToNode(node, dashboard, dag);
-  }
+}
 
-  
+export function zoomRandom(dashboard, dag) {
+  const data = [];
+  for (const node of dag.nodes()) {
+    data.push(node);
+  }
+  const node = data[Math.floor(Math.random() * data.length)];
+  console.log("random node=", node.data.label, node);
+  return zoomToNode(node, dashboard, dag);
+}
+
 export function zoomToNode(node, dashboard, dag) {
-    // 1. Identify the node's immediate neighbors
-    const neighbors = getImmediateNeighbors(node, dag);
-  
-    // 2. Compute the bounding box
-    const boundingBox = computeBoundingBox(neighbors, dashboard.layout.horizontal);
-  
-    // 3. Calculate the zoom scale and translation
-    const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
-  
-    if (dashboard.layout.showBoundingBox) {
-      dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
-      dashboard.main.canvas.svg
-        .append("rect")
-        .attr("class", "boundingBox")
-        .attr("stroke-width", scale * 2)
-        .attr("x", boundingBox.x)
-        .attr("y", boundingBox.y)
-        .attr("width", boundingBox.width)
-        .attr("height", boundingBox.height);
-    }
-  
-    dashboard.main.boundingbox = {
-      boundingBox: boundingBox,
-      x: boundingBox.x,
-      y: boundingBox.y,
-      width: boundingBox.width,
-      height: boundingBox.height,
-      scale: scale,
-    }
-  
-    // 4. Apply the zoom transform
-    dashboard.main.canvas.svg.transition().duration(750).call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
-  
-    return dashboard.main.boundingbox;
-  }
-  
-  export function getImmediateNeighbors(baseNode, graphData) {
-    const neighbors = [baseNode];
-  
-    // Iterate over all edges to find connected nodes
-    for (const node of graphData.nodes()) {
-      if (baseNode.data.parentIds.includes(node.data.id) || baseNode.data.childrenIds.includes(node.data.id)) {
-        neighbors.push(node);
-      }
-    }
-  
-    return neighbors;
-  }
-  
+  // 1. Identify the node's immediate neighbors
+  const neighbors = getImmediateNeighbors(node, dag);
 
-  export function computeBoundingBox(nodes, horizontal) {
-    const padding = 2; // Add some padding
-  
-    let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
-  
-    const updateBounds = (x, y, dimension1, dimension2) => {
-      minX = Math.min(minX, x - dimension1 / 2);
-      minY = Math.min(minY, y - dimension2 / 2);
-      maxX = Math.max(maxX, x + dimension1 / 2);
-      maxY = Math.max(maxY, y + dimension2 / 2);
-    };
-  
-    nodes.forEach((n) => {
-      const {
-        x,
-        y,
-        data: { width, height },
-      } = n;
-  
-      if (horizontal) {
-        updateBounds(y, x, width, height);
-      } else {
-        updateBounds(x, y, width, height);
-      }
-    });
-  
-    return {
-      x: minX - padding,
-      y: minY - padding,
-      width: maxX - minX + 2 * padding,
-      height: maxY - minY + 2 * padding,
-    };
+  // 2. Compute the bounding box
+  const boundingBox = computeBoundingBox(neighbors, dashboard.layout.horizontal);
+
+  // 3. Calculate the zoom scale and translation
+  const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
+
+  if (dashboard.layout.showBoundingBox) {
+    dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
+    dashboard.main.canvas.svg
+      .append("rect")
+      .attr("class", "boundingBox")
+      .attr("stroke-width", scale * 2)
+      .attr("x", boundingBox.x)
+      .attr("y", boundingBox.y)
+      .attr("width", boundingBox.width)
+      .attr("height", boundingBox.height);
   }
-  
-  function calculateScaleAndTranslate(boundingBox, dashboard) {
-    // correct canvas size for scaling
-    let correctedCanvasHeight = dashboard.main.canvas.height;
-    let correctedCanvasWidth = dashboard.main.canvas.width;
-    if (dashboard.main.canvas.width / dashboard.main.canvas.height > dashboard.main.view.width / dashboard.main.view.height) {
-      correctedCanvasHeight = dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width);
-    } else {
-      correctedCanvasWidth = dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height);
+
+  dashboard.main.boundingbox = {
+    boundingBox: boundingBox,
+    x: boundingBox.x,
+    y: boundingBox.y,
+    width: boundingBox.width,
+    height: boundingBox.height,
+    scale: scale,
+  };
+
+  // 4. Apply the zoom transform
+  dashboard.main.canvas.svg
+    .transition()
+    .duration(750)
+    .call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+
+  return dashboard.main.boundingbox;
+}
+
+export function getImmediateNeighbors(baseNode, graphData) {
+  const neighbors = [baseNode];
+
+  // Iterate over all edges to find connected nodes
+  for (const node of graphData.nodes()) {
+    if (baseNode.data.parentIds.includes(node.data.id) || baseNode.data.childrenIds.includes(node.data.id)) {
+      neighbors.push(node);
     }
-  
-    // compute the scale
-    let scale;
-    if (dashboard.layout.horizontal) {
-      scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
+  }
+
+  return neighbors;
+}
+
+export function computeBoundingBox(nodes, horizontal) {
+  const padding = 2; // Add some padding
+
+  let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
+
+  const updateBounds = (x, y, dimension1, dimension2) => {
+    minX = Math.min(minX, x - dimension1 / 2);
+    minY = Math.min(minY, y - dimension2 / 2);
+    maxX = Math.max(maxX, x + dimension1 / 2);
+    maxY = Math.max(maxY, y + dimension2 / 2);
+  };
+
+  nodes.forEach((n) => {
+    const {
+      x,
+      y,
+      data: { width, height },
+    } = n;
+
+    if (horizontal) {
+      updateBounds(y, x, width, height);
     } else {
-      scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
+      updateBounds(x, y, width, height);
     }
-    const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
-  
-    // compute the visual height and width of the bounding box
-    const visualHeight = boundingBox.width * (correctedCanvasHeight / correctedCanvasWidth);
-    const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
-  
-    const visualWidth = boundingBox.height * (correctedCanvasWidth / correctedCanvasHeight);
-    const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
-  
-    // compute the base translation
-    let translateX = -boundingBox.x * scale;
-    let translateY = -boundingBox.y * scale;
-  
-    // add the white space to the translation
-    if (dashboard.minimap.canvas.isHorizontalCanvas) translateY -= dashboard.minimap.canvas.whiteSpaceY;
-    else translateX -= dashboard.minimap.canvas.whiteSpaceX;
-  
-    // add the height correction to the translation
-    if (isHorizontalBoundingBox) translateY += heightCorrection * scale;
-    else translateX += widthCorrection * scale;
-  
-    return {
-      scale: scale,
-      translate: {
-        x: translateX,
-        y: translateY,
-      },
-    };
+  });
+
+  return {
+    x: minX - padding,
+    y: minY - padding,
+    width: maxX - minX + 2 * padding,
+    height: maxY - minY + 2 * padding,
+  };
+}
+
+function calculateScaleAndTranslate(boundingBox, dashboard) {
+  // correct canvas size for scaling
+  let correctedCanvasHeight = dashboard.main.canvas.height;
+  let correctedCanvasWidth = dashboard.main.canvas.width;
+  if (
+    dashboard.main.canvas.width / dashboard.main.canvas.height >
+    dashboard.main.view.width / dashboard.main.view.height
+  ) {
+    correctedCanvasHeight = dashboard.main.canvas.width * (dashboard.main.view.height / dashboard.main.view.width);
+  } else {
+    correctedCanvasWidth = dashboard.main.canvas.height * (dashboard.main.view.width / dashboard.main.view.height);
   }
-  
-function updateViewport(dashboard, transform)
-  {
-    // js: is this the right function name?
-    // console.log("updateViewPort", dashboard, transform)
-    const x = (transform.x + dashboard.main.width / 2) / -transform.k;
-    const y = (transform.y + dashboard.main.height / 2) / -transform.k;
-    const width = dashboard.main.width / transform.k;
-    const height = dashboard.main.height / transform.k;
-    dashboard.updateMinimapEye(x,y,width, height);
+
+  // compute the scale
+  let scale;
+  if (dashboard.layout.horizontal) {
+    scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
+  } else {
+    scale = Math.min(correctedCanvasWidth / boundingBox.width, correctedCanvasHeight / boundingBox.height);
   }
+  const isHorizontalBoundingBox = boundingBox.width / boundingBox.height > correctedCanvasWidth / correctedCanvasHeight;
+
+  // compute the visual height and width of the bounding box
+  const visualHeight = boundingBox.width * (correctedCanvasHeight / correctedCanvasWidth);
+  const heightCorrection = (visualHeight - boundingBox.height) * 0.5;
+
+  const visualWidth = boundingBox.height * (correctedCanvasWidth / correctedCanvasHeight);
+  const widthCorrection = (visualWidth - boundingBox.width) * 0.5;
+
+  // compute the base translation
+  let translateX = -boundingBox.x * scale;
+  let translateY = -boundingBox.y * scale;
+
+  // add the white space to the translation
+  if (dashboard.minimap.canvas.isHorizontalCanvas) translateY -= dashboard.minimap.canvas.whiteSpaceY;
+  else translateX -= dashboard.minimap.canvas.whiteSpaceX;
+
+  // add the height correction to the translation
+  if (isHorizontalBoundingBox) translateY += heightCorrection * scale;
+  else translateX += widthCorrection * scale;
+
+  return {
+    scale: scale,
+    translate: {
+      x: translateX,
+      y: translateY,
+    },
+  };
+}
+
+function updateViewport(dashboard, transform) {
+  // js: is this the right function name?
+  // console.log("updateViewPort", dashboard, transform)
+  const x = (transform.x + dashboard.main.width / 2) / -transform.k;
+  const y = (transform.y + dashboard.main.height / 2) / -transform.k;
+  const width = dashboard.main.width / transform.k;
+  const height = dashboard.main.height / transform.k;
+  dashboard.updateMinimapEye(x, y, width, height);
+}
+
+function dragEye(dashboard, dragEvent) {
+  console.log("dragEye", dashboard.minimap, dragEvent);
+    // Calculate scaled movement for the eye rectangle
+    const scaledDx = dragEvent.dx / dashboard.minimap.scale;
+    const scaledDy = dragEvent.dy / dashboard.minimap.scale;
+
+    // Calculate the new eye position based on the scaled movement
+    const newEyeX = dashboard.minimap.eye.x + scaledDx;
+    const newEyeY = dashboard.minimap.eye.y + scaledDy;
+
+  // Update the eye's position
+  dashboard.updateMinimapEye(newEyeX, newEyeY, dashboard.minimap.eye.width, dashboard.minimap.eye.height);
+
+  // Calculate the corresponding translation for the main view, maintaining the current scale
+  dashboard.main.transform.x = -newEyeX * dashboard.main.transform.k + dashboard.width / 2;
+  dashboard.main.transform.y = -newEyeY * dashboard.main.transform.k + dashboard.height / 2;
+
+  // Apply the updated transformation to the main view
+  dashboard.main.container.attr(
+    "transform",
+    d3.zoomIdentity
+      .translate(dashboard.main.transform.x, dashboard.main.transform.y)
+      .scale(dashboard.main.transform.k)
+  );
+}
