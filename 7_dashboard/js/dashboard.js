@@ -50,13 +50,13 @@ export class Dashboard {
       this.updateMinimap();
       console.log("minimap", this.minimap);
 
-      const dashboard = this;
-      this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
+      // const dashboard = this;
+      // this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
 
       this.main.root.onDisplayChange = () => {
         this.onMainDisplayChange();
       };
-      this.isMainAndMinimapSyncing = false;
+      // this.isMainAndMinimapSyncing = false;
     }
   }
 
@@ -148,9 +148,10 @@ export class Dashboard {
   }
 
   updateMinimap() {
+    // Use requestAnimationFrame to Wait for the Next Render Cycle
+    requestAnimationFrame(() => {
     // clone the dashboard container elements to the minimap
     const clone = this.main.container.node().cloneNode(true);
-    console.log("     clone=", clone);
 
     // remove old minimap
     const minimap = d3.select(".minimap");
@@ -159,7 +160,7 @@ export class Dashboard {
     // clone dashboard to minimap
     minimap.node().appendChild(clone);
     this.minimap.container = d3.select(clone);
-    // this.minimap.container.attr("class", "minimap2");
+    });
   }
 
   // Function to update the position and size of the eye
