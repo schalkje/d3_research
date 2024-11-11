@@ -90,8 +90,8 @@ export default class BaseEdge {
   }
 
   layout() {
-    console.log("----------------------------------------------------------------------------------------------");
-    console.log("--     Updating Render for EDGE BASE:", this.id);
+    // console.log("----------------------------------------------------------------------------------------------");
+    // console.log("--     Updating Render for EDGE BASE:", this.id);
 
     if (this.settings.showGhostlines) {
       const ghostEdge = generateDirectEdge(this);

@@ -35,6 +35,7 @@ export class Dashboard {
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root = await this.createDashboard(this.data, this.main.container);
+
     this.main.zoom = this.initializeZoom();
 
     // initialize minimap
@@ -48,8 +49,17 @@ export class Dashboard {
       this.initializeMinimap();
       this.updateMinimap();
       console.log("minimap", this.minimap);
+
+      const dashboard = this;
+      this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
+      
+      this.main.root.onDisplayChange = () => {
+        this.onMainDisplayChange();
+      }
+      this.isMainAndMinimapSyncing = false;
     }
   }
+
   updateMinimap() {
     // clone the dashboard container elements to the minimap
     const clone = this.main.container.node().cloneNode(true);
@@ -255,7 +265,31 @@ export class Dashboard {
   onDragUpdate() {
     console.log("Drag Update");
   }
+
+  onMainDisplayChange() {
+    console.log("#######################################");
+    console.log("##### onMainDisplayChange", this);
+    console.log("##### syncing=",this.isMainAndMinimapSyncing);
+    if (this.isMainAndMinimapSyncing) return;
+    this.isMainAndMinimapSyncing = true;
+    // Update the minimap
+    this.updateMinimap();
+    this.isMainAndMinimapSyncing = false;
+  }
+
+  
 }
+
+// function onMainDisplayChange(dashboard) {
+//   console.log("#######################################");
+//   console.log("##### onMainDisplayChange", dashboard);
+//   console.log("##### syncing=",dashboard.isMainAndMinimapSyncing);
+//   if (dashboard.isMainAndMinimapSyncing) return;
+//   dashboard.isMainAndMinimapSyncing = true;
+//   // Update the minimap
+//   dashboard.updateMinimap();
+//   dashboard.isMainAndMinimapSyncing = false;
+// }
 
 function zoomIn(dashboard) {
   // svg.selectAll(".boundingBox").remove();

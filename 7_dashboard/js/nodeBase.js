@@ -8,6 +8,7 @@ export default class BaseNode {
     this.parentNode = parentNode;
     this.settings = settings;
     this.computeConnectionPoints = computeConnectionPoints;
+    this.onDisplayChange = null;
 
     this.id = nodeData.id;
 
@@ -29,12 +30,26 @@ export default class BaseNode {
     this.data.height ??= 60;
   }
 
+  handleDisplayChange() {
+    console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
+    if (this.onDisplayChange) {
+      console.log(`          > calling`);
+      this.onDisplayChange();
+    } else {
+      if (this.parentNode)
+        this.parentNode.handleDisplayChange();
+    }
+  }
+
   move(x,y) {
     console.log(`          > move ${this.id}, (x:${x},y:${y})`);
     this.x = x;
     this.y = y;
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
+
+    this.handleDisplayChange();
   }
+
 
   renderContainer() {
     // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
@@ -91,28 +106,12 @@ export default class BaseNode {
 
   resize(size) {
     // node base has no elements of it's own, so just update the data
-
-    // const oldSize = {width: this.data.width, height: this.data.height};
-    // const elementDimensions = getComputedDimensions(this.element);
-    // console.log("    nodeBase.resize  > ", this.id, this.x, this.data.y, this.data.width, this.data.height, elementDimensions.width, elementDimensions.height, size.width, size.height);
     this.data.width = size.width;
     this.data.height = size.height;
 
-    // // this.x -= this.data.width / 2 - oldSize.width / 2;
-    // // this.data.y -= this.data.height / 2 - oldSize.height / 2;
-
-    // this.data.width = elementDimensions.width;
-    // this.data.height = elementDimensions.height;
-
-    // this.x += oldSize.width - elementDimensions.width;
-    // this.data.y -= elementDimensions.height / 2 - oldSize.height / 2;
-
-    // var ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  > before ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
-
-    // this.element.attr("transform", `translate(${this.x}, ${this.data.y})`);
-    //  ctm = this.container.node().getCTM(); console.log(`    nodeBase.resize  >  after ctm a=${ctm.a}, b=${ctm.b}, c=${ctm.c}, d=${ctm.d}, e=${ctm.e}, f=${ctm.f}`);
-
     this.layoutConnectionPoints();
+
+    this.handleDisplayChange();
   }
 
   findNode(nodeId) {
@@ -207,42 +206,9 @@ export default class BaseNode {
       });
     }
   }
-
-  // if (showConnectionPoints) {
-  //   node.each(function (d) {
-  //     const connectionPoints = computeConnectionPoints(d.data.width, d.data.height);
-  //     Object.values(connectionPoints).forEach((point) => {
-  //       d3.select(this)
-  //         .append("circle")
-  //         .attr("class", "connection-point")
-  //         .attr("cx", point.x)
-  //         .attr("cy", point.y)
-  //         .attr("r", 3);
-  //     });
-  //   });
-  // }
-  // function computeConnectionPoints(width, height) {
-  //   return {
-  //     top: { x: width / 2, y: 0 },
-  //     bottom: { x: width / 2, y: height },
-  //     left: { x: 0, y: height / 2 },
-  //     right: { x: width, y: height / 2 },
-  //   };
-  // }
   
   // drag
   drag_started(event, node) {
-    console.log("drag_started event", event, node);
-    // if (!d3.event.active) {
-    // Set the attenuation coefficient to simulate the node position movement process. The higher the value, the faster the movement. The value range is [0, 1]
-    // this.simulation.alphaTarget(0.8).restart()
-    // if (node.simulation) {
-    //   console.log("drag_started simulation",node.simulation);
-    //   // node.simulation.simulation.restart();
-    //   // node.runSimulation();
-    //   node.parentNode.cascadeRestartSimulation();
-    // }
-    // }
     node.cascadeRestartSimulation();
     event.fx = event.x;
     event.fy = event.y;
@@ -250,17 +216,14 @@ export default class BaseNode {
   }
 
   dragged(event, node) {
-    // console.log("dragged event",event);
-
     event.fx = event.x;
     event.fy = event.y;
+
     // move the simulation
     node.move(event.fx,event.fy);
   }
 
   drag_ended(event, node) {
-    // console.log("drag_ended event",event);
-
     node.element.classed("grabbing", false);
 
     node.cascadeStopSimulation();

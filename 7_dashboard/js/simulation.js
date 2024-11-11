@@ -11,9 +11,9 @@ export default class Simulation {
     this.simulation = null;
     this.tickCounter = 0; // Counter to control resizing frequency
     this.resizeFrequency = 10; // Resize every 10 ticks
-    console.log('---------------------------------------------------------------');
-    console.log(`-- Simulation created "${this.containerNode.id}"`);
-    console.log('--    container', this.containerNode);
+    // console.log('---------------------------------------------------------------');
+    // console.log(`-- Simulation created "${this.containerNode.id}"`);
+    // console.log('--    container', this.containerNode);
     this.links=[];
   }
 
