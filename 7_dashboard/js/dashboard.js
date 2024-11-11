@@ -145,7 +145,17 @@ export class Dashboard {
 
   createContainer(dashboard, className) {
     // create a container, to enable zooming and panning
-    return dashboard.svg.append("g").attr("class", `${className}`);
+    const container = dashboard.svg.append("g").attr("class", `${className}`);
+        // create background rect
+        container
+        .append("rect")
+        .attr("class", "background")
+        .attr("x", -dashboard.width / 2)
+        .attr("y", -dashboard.height / 2)
+        .attr("width", dashboard.width)
+        .attr("height", dashboard.height)
+        .attr("fill", "white");
+    return container;
   }
 
   initializeSvg(divSelector) {
@@ -153,6 +163,8 @@ export class Dashboard {
     const { width, height } = svg.node().getBoundingClientRect();
 
     svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+
 
     const onDragUpdate = null;
 
