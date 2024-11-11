@@ -22,7 +22,7 @@ export class Dashboard {
       container: null,
       eye: { x: 0, y: 0, width: 0, height: 0 },
     };
-    
+
     this.isMainAndMinimapSyncing = false; // isSyncing prevents re-entrant calls and ensures the synchronization code runs only once per zoom action.
   }
 
@@ -52,26 +52,40 @@ export class Dashboard {
 
       const dashboard = this;
       this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
-      
+
       this.main.root.onDisplayChange = () => {
         this.onMainDisplayChange();
-      }
+      };
       this.isMainAndMinimapSyncing = false;
     }
   }
 
-  updateMinimap() {
-    // clone the dashboard container elements to the minimap
-    const clone = this.main.container.node().cloneNode(true);
+  initializeMinimap() {
+    console.log("initializeMinimap", this);
+
+    const dashboard = this;
+
+    // Initialize drag behavior
+    const drag = d3.drag().on("drag", function (event) {
+      dragEye(dashboard, event);
+    });
+    this.minimap.svg.call(drag);
+    dashboard.minimap.drag = drag;
+
+    // Initialize zoom behavior
+    const zoom = d3
+      .zoom()
+      .scaleExtent([1, 40])
+      .on("zoom", function (event) {
+        zoomMinimap(dashboard, event);
+      });
+    this.minimap.svg.call(zoom);
+    dashboard.minimap.zoom = zoom;
 
     // comput the scale of the minimap compared to the main view
     this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
 
-    // remove old minimap
-    d3.select(".minimap").remove();
-
     // update zoom
-    console.log("     clone=", clone);
     this.minimap.svg.attr(
       "viewBox",
       `${-this.main.width / 2} ${-this.main.height / 2} ${this.main.width} ${this.main.height}`
@@ -83,14 +97,6 @@ export class Dashboard {
       width: this.main.width,
       height: this.main.height,
     };
-
-    this.minimap.svg
-      .append("rect")
-      .attr("class", `minimap`)
-      .attr("width", this.main.width)
-      .attr("height", this.main.height)
-      .attr("x", -this.main.width / 2)
-      .attr("y", -this.main.height / 2);
 
     const defs = this.minimap.svg.append("defs");
     const eye = defs.append("mask").attr("id", "fade-mask");
@@ -111,12 +117,15 @@ export class Dashboard {
       .attr("height", this.minimap.eye.height)
       .attr("fill", "black");
 
-    // clone dashboard to minimap
-    this.minimap.svg.node().appendChild(clone);
-    this.minimap.container = d3.select(clone);
-    this.minimap.container.attr("class", "minimap");
+      this.minimap.svg
+      .insert("rect", ":first-child") // Insert as the first child
+      .attr("class", `background`)
+      .attr("width", this.main.width)
+      .attr("height", this.main.height)
+      .attr("x", -this.main.width / 2)
+      .attr("y", -this.main.height / 2);
 
-    this.minimap.svg
+      this.minimap.svg
       .append("rect")
       .attr("class", `eye`)
       .attr("width", "100%")
@@ -124,6 +133,7 @@ export class Dashboard {
       .attr("x", -this.main.width / 2)
       .attr("y", -this.main.height / 2)
       .attr("mask", "url(#fade-mask)");
+
     this.minimap.svg
       .append("rect")
       .attr("class", `iris`)
@@ -131,6 +141,25 @@ export class Dashboard {
       .attr("y", this.minimap.eye.y)
       .attr("width", this.minimap.eye.width)
       .attr("height", this.minimap.eye.height);
+
+
+    // return zoom;
+    return zoom;
+  }
+
+  updateMinimap() {
+    // clone the dashboard container elements to the minimap
+    const clone = this.main.container.node().cloneNode(true);
+    console.log("     clone=", clone);
+
+    // remove old minimap
+    const minimap = d3.select(".minimap");
+    minimap.selectAll("*").remove();
+
+    // clone dashboard to minimap
+    minimap.node().appendChild(clone);
+    this.minimap.container = d3.select(clone);
+    // this.minimap.container.attr("class", "minimap2");
   }
 
   // Function to update the position and size of the eye
@@ -154,17 +183,17 @@ export class Dashboard {
   // }
 
   createContainer(dashboard, className) {
+    // create background rect
     // create a container, to enable zooming and panning
     const container = dashboard.svg.append("g").attr("class", `${className}`);
-        // create background rect
-        container
-        .append("rect")
-        .attr("class", "background")
-        .attr("x", -dashboard.width / 2)
-        .attr("y", -dashboard.height / 2)
-        .attr("width", dashboard.width)
-        .attr("height", dashboard.height)
-        .attr("fill", "white");
+    // container
+    //   .append("rect")
+    //   .attr("class", "background")
+    //   .attr("x", -dashboard.width / 2)
+    //   .attr("y", -dashboard.height / 2)
+    //   .attr("width", dashboard.width)
+    //   .attr("height", dashboard.height);
+
     return container;
   }
 
@@ -173,8 +202,6 @@ export class Dashboard {
     const { width, height } = svg.node().getBoundingClientRect();
 
     svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
-
-
 
     const onDragUpdate = null;
 
@@ -236,32 +263,6 @@ export class Dashboard {
     return zoom;
   }
 
-  initializeMinimap() {
-    console.log("initializeMinimap", this);
-
-    const dashboard = this;
-
-    // Initialize drag behavior
-    const drag = d3.drag().on("drag", function (event) {
-      dragEye(dashboard, event);
-    });
-    this.minimap.svg.call(drag);
-    dashboard.minimap.drag = drag;
-
-    // Initialize zoom behavior
-    const zoom = d3
-      .zoom()
-      .scaleExtent([1, 40])
-      .on("zoom", function (event) {
-        zoomMinimap(dashboard, event);
-      });
-    this.minimap.svg.call(zoom);
-    dashboard.minimap.zoom = zoom;
-
-    // return zoom;
-    return zoom;
-  }
-
   onDragUpdate() {
     console.log("Drag Update");
   }
@@ -269,15 +270,13 @@ export class Dashboard {
   onMainDisplayChange() {
     console.log("#######################################");
     console.log("##### onMainDisplayChange", this);
-    console.log("##### syncing=",this.isMainAndMinimapSyncing);
+    console.log("##### syncing=", this.isMainAndMinimapSyncing);
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
     // Update the minimap
     this.updateMinimap();
     this.isMainAndMinimapSyncing = false;
   }
-
-  
 }
 
 // function onMainDisplayChange(dashboard) {
@@ -532,7 +531,6 @@ function dragEye(dashboard, dragEvent) {
   // Store the current zoom level at svg level, for the next event
   dashboard.main.svg.call(dashboard.main.zoom.transform, transform);
 }
-
 
 function zoomMain(dashboard, zoomEvent) {
   if (dashboard.isMainAndMinimapSyncing) return;
