@@ -125,9 +125,9 @@ export default class BaseNode {
   }
 
   findNode(nodeId) {
-    // console.log("    nodeBase findNode:", this.id, nodeId, this.id == nodeId);
+    console.log("    nodeBase findNode:", this.id, nodeId, this.id == nodeId);
     if (this.id === nodeId) {
-      // console.log("    nodeBase findNode: return this", this);
+      console.log("    nodeBase findNode: return this", this);
       return this;
     }
     return null;

@@ -163,16 +163,16 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   findNode(nodeId) {
-    // console.log("    nodeBaseContainer findNode:", this.id, nodeId, this.id == nodeId);
+    console.log("    nodeBaseContainer findNode:", this.id, nodeId, this.id == nodeId);
     // console.log("                              :", this.childNodes.length, this.childNodes);
     // console.log("                              :", this.data);
     // console.log("                              :", this.childNodes[0]);
     if (this.id === nodeId) {
-      // console.log("    nodeBaseContainer findNode found:", this.id, nodeId);
+      console.log("    nodeBaseContainer findNode found:", this.id, nodeId);
       return this;
     }
     for (const childNode of this.childNodes) {
-      // console.log("    nodeBaseContainer findNode check child:", childNode.id, nodeId);
+      console.log("    nodeBaseContainer findNode check child:", childNode.id, nodeId);
       const foundNode = childNode.findNode(nodeId);
       if (foundNode) {
         return foundNode;

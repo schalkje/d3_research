@@ -248,25 +248,16 @@ export class Dashboard {
     this.main.svg.call(zoom);
 
     // initialize default zoom buttons
-    d3.select("#zoom-in").on("click", function () {
-      zoomIn(dashboard);
-    });
+    d3.select("#zoom-in").on("click", () => this.zoomIn(dashboard));
 
-    d3.select("#zoom-out").on("click", function () {
-      zoomOut(dashboard);
-    });
 
-    d3.select("#zoom-reset").on("click", function () {
-      zoomReset(dashboard);
-    });
+    d3.select("#zoom-out").on("click", () => this.zoomOut(dashboard));
 
-    d3.select("#zoom-random").on("click", function () {
-      zoomRandom(dashboard);
-    });
+    d3.select("#zoom-reset").on("click", () => this.zoomReset(dashboard));
 
-    d3.select("#zoom-node").on("click", function () {
-      zoomToNodeByName("EM_Stater", dashboard);
-    });
+    d3.select("#zoom-random").on("click", () => this.zoomRandom(dashboard));
+
+    d3.select("#zoom-node").on("click", () => this.zoomToNodeById("d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca", dashboard));
 
     return zoom;
   }
@@ -327,6 +318,119 @@ export class Dashboard {
     this.isMainAndMinimapSyncing = false;
   }
   
+  zoomIn() {
+    // svg.selectAll(".boundingBox").remove();
+    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 1.2);
+    this.main.scale = this.main.scale * (1 + this.main.zoomSpeed);
+  }
+  
+  zoomOut() {
+    // svg.selectAll(".boundingBox").remove();
+    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 0.8);
+    this.main.scale = this.main.scale * (1 - this.main.zoomSpeed);
+  }
+  
+  zoomReset() {
+    console.log("zoomReset", this);
+    // canvas.svg.selectAll(".boundingBox").remove();
+    this.main.svg
+      .transition()
+      .duration(750)
+      .call(
+        this.main.zoom.transform,
+        d3.zoomIdentity,
+        d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
+      );
+    this.main.scale = 1;
+  
+    this.minimap.svg
+      .transition()
+      .duration(750)
+      .call(
+        this.minimap.zoom.transform,
+        d3.zoomIdentity,
+        d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
+      );
+  }
+  
+  zoomClicked(event, [x, y]) {
+    event.stopPropagation();
+    svg
+      .transition()
+      .duration(750)
+      .call(
+        zoom.transform,
+        d3.zoomIdentity
+          .translate(width / 2, height / 2)
+          .scale(40)
+          .translate(-x, -y),
+        d3.pointer(event)
+      );
+  }
+  
+  zoomToNodeById(nodeId) {
+    console.log("zoomToNodeById", nodeId);
+    const node = this.main.root.findNode(nodeId)
+    if (node) {
+      console.log("node=", node);
+      return zoomToNode(node, this);
+    };
+  
+    console.error("zoomToNodeById: Node not found:", nodeId);
+    return null;
+  }
+  
+  zoomRandom(dag) {
+    // todo: remove dag; and get nodes from this.main.root
+    const data = [];
+    for (const node of dag.nodes()) {
+      data.push(node);
+    }
+    const node = data[Math.floor(Math.random() * data.length)];
+    console.log("random node=", node.data.label, node);
+    return zoomToNode(node, this, dag);
+  }
+  
+  zoomToNode(node, dag) {
+    // 1. Identify the node's immediate neighbors
+    const neighbors = getImmediateNeighbors(node, dag);
+  
+    // 2. Compute the bounding box
+    const boundingBox = computeBoundingBox(neighbors, this.layout.horizontal);
+  
+    // 3. Calculate the zoom scale and translation
+    const { scale, translate } = calculateScaleAndTranslate(boundingBox, this);
+  
+    if (this.layout.showBoundingBox) {
+      this.main.canvas.svg.selectAll(".boundingBox").remove();
+      this.main.canvas.svg
+        .append("rect")
+        .attr("class", "boundingBox")
+        .attr("stroke-width", scale * 2)
+        .attr("x", boundingBox.x)
+        .attr("y", boundingBox.y)
+        .attr("width", boundingBox.width)
+        .attr("height", boundingBox.height);
+    }
+  
+    this.main.boundingbox = {
+      boundingBox: boundingBox,
+      x: boundingBox.x,
+      y: boundingBox.y,
+      width: boundingBox.width,
+      height: boundingBox.height,
+      scale: scale,
+    };
+  
+    // 4. Apply the zoom transform
+    this.main.canvas.svg
+      .transition()
+      .duration(750)
+      .call(this.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+  
+    return this.main.boundingbox;
+  }
+  
 }
 
 // function onMainDisplayChange(dashboard) {
@@ -340,114 +444,6 @@ export class Dashboard {
 //   dashboard.isMainAndMinimapSyncing = false;
 // }
 
-function zoomIn(dashboard) {
-  // svg.selectAll(".boundingBox").remove();
-  dashboard.main.svg.transition().duration(750).call(dashboard.main.zoom.scaleBy, 1.2);
-  dashboard.main.scale = dashboard.main.scale * (1 + dashboard.main.zoomSpeed);
-}
-
-function zoomOut(dashboard) {
-  // svg.selectAll(".boundingBox").remove();
-  dashboard.main.svg.transition().duration(750).call(dashboard.main.zoom.scaleBy, 0.8);
-  dashboard.main.scale = dashboard.main.scale * (1 - dashboard.main.zoomSpeed);
-}
-
-function zoomReset(dashboard) {
-  console.log("zoomReset", dashboard);
-  // canvas.svg.selectAll(".boundingBox").remove();
-  dashboard.main.svg
-    .transition()
-    .duration(750)
-    .call(
-      dashboard.main.zoom.transform,
-      d3.zoomIdentity,
-      d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
-    );
-  dashboard.main.scale = 1;
-
-  dashboard.minimap.svg
-    .transition()
-    .duration(750)
-    .call(
-      dashboard.minimap.zoom.transform,
-      d3.zoomIdentity,
-      d3.zoomTransform(dashboard.main.svg.node()).invert([dashboard.main.width / 2, dashboard.main.height / 2])
-    );
-}
-
-function zoomClicked(event, [x, y]) {
-  event.stopPropagation();
-  svg
-    .transition()
-    .duration(750)
-    .call(
-      zoom.transform,
-      d3.zoomIdentity
-        .translate(width / 2, height / 2)
-        .scale(40)
-        .translate(-x, -y),
-      d3.pointer(event)
-    );
-}
-
-export function zoomToNodeByName(name, dashboard, dag) {
-  console.log("zoomToNodeByName", name);
-  for (const node of dag.nodes()) {
-    if (node.data.label === name) {
-      return zoomToNode(node, dashboard, dag);
-    }
-  }
-}
-
-export function zoomRandom(dashboard, dag) {
-  const data = [];
-  for (const node of dag.nodes()) {
-    data.push(node);
-  }
-  const node = data[Math.floor(Math.random() * data.length)];
-  console.log("random node=", node.data.label, node);
-  return zoomToNode(node, dashboard, dag);
-}
-
-export function zoomToNode(node, dashboard, dag) {
-  // 1. Identify the node's immediate neighbors
-  const neighbors = getImmediateNeighbors(node, dag);
-
-  // 2. Compute the bounding box
-  const boundingBox = computeBoundingBox(neighbors, dashboard.layout.horizontal);
-
-  // 3. Calculate the zoom scale and translation
-  const { scale, translate } = calculateScaleAndTranslate(boundingBox, dashboard);
-
-  if (dashboard.layout.showBoundingBox) {
-    dashboard.main.canvas.svg.selectAll(".boundingBox").remove();
-    dashboard.main.canvas.svg
-      .append("rect")
-      .attr("class", "boundingBox")
-      .attr("stroke-width", scale * 2)
-      .attr("x", boundingBox.x)
-      .attr("y", boundingBox.y)
-      .attr("width", boundingBox.width)
-      .attr("height", boundingBox.height);
-  }
-
-  dashboard.main.boundingbox = {
-    boundingBox: boundingBox,
-    x: boundingBox.x,
-    y: boundingBox.y,
-    width: boundingBox.width,
-    height: boundingBox.height,
-    scale: scale,
-  };
-
-  // 4. Apply the zoom transform
-  dashboard.main.canvas.svg
-    .transition()
-    .duration(750)
-    .call(dashboard.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
-
-  return dashboard.main.boundingbox;
-}
 
 export function getImmediateNeighbors(baseNode, graphData) {
   const neighbors = [baseNode];
