@@ -12,7 +12,7 @@ export class Dashboard {
     this.data.settings.selector.incomming ??= 1;
     this.data.settings.selector.outgoing ??= 1;
     this.data.settings.showBoundingBox ??= true;
-    
+
     this.main = {
       svg: null,
       width: 0,
@@ -90,7 +90,7 @@ export class Dashboard {
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
-      .on("zoom", (event) => this.zoomMinimap(event));      
+      .on("zoom", (event) => this.zoomMinimap(event));
     this.minimap.svg.call(zoom);
     dashboard.minimap.zoom = zoom;
 
@@ -129,7 +129,7 @@ export class Dashboard {
       .attr("height", this.minimap.eye.height)
       .attr("fill", "black");
 
-      this.minimap.svg
+    this.minimap.svg
       .insert("rect", ":first-child") // Insert as the first child
       .attr("class", `background`)
       .attr("width", this.main.width)
@@ -137,7 +137,7 @@ export class Dashboard {
       .attr("x", -this.main.width / 2)
       .attr("y", -this.main.height / 2);
 
-      this.minimap.svg
+    this.minimap.svg
       .append("rect")
       .attr("class", `eye`)
       .attr("width", "100%")
@@ -154,7 +154,6 @@ export class Dashboard {
       .attr("width", this.minimap.eye.width)
       .attr("height", this.minimap.eye.height);
 
-
     // return zoom;
     return zoom;
   }
@@ -162,16 +161,16 @@ export class Dashboard {
   updateMinimap() {
     // Use requestAnimationFrame to Wait for the Next Render Cycle
     requestAnimationFrame(() => {
-    // clone the dashboard container elements to the minimap
-    const clone = this.main.container.node().cloneNode(true);
+      // clone the dashboard container elements to the minimap
+      const clone = this.main.container.node().cloneNode(true);
 
-    // remove old minimap
-    const minimap = d3.select(".minimap");
-    minimap.selectAll("*").remove();
+      // remove old minimap
+      const minimap = d3.select(".minimap");
+      minimap.selectAll("*").remove();
 
-    // clone dashboard to minimap
-    minimap.node().appendChild(clone);
-    this.minimap.container = d3.select(clone);
+      // clone dashboard to minimap
+      minimap.node().appendChild(clone);
+      this.minimap.container = d3.select(clone);
     });
   }
 
@@ -246,13 +245,12 @@ export class Dashboard {
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
-      .on("zoom", (event) => this.zoomMain(event));      
+      .on("zoom", (event) => this.zoomMain(event));
 
     this.main.svg.call(zoom);
 
     // initialize default zoom buttons
     d3.select("#zoom-in").on("click", () => this.zoomIn(dashboard));
-
 
     d3.select("#zoom-out").on("click", () => this.zoomOut(dashboard));
 
@@ -283,56 +281,56 @@ export class Dashboard {
   zoomMain(zoomEvent) {
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
-  
+
     this.main.transform.k = zoomEvent.transform.k;
     this.main.transform.x = zoomEvent.transform.x;
     this.main.transform.y = zoomEvent.transform.y;
-  
+
     // Apply transform to the main view
     this.main.container.attr("transform", zoomEvent.transform);
-  
+
     // Update the viewport in the minimap
     updateViewport(this, zoomEvent.transform);
-  
+
     // Store the current zoom level at svg level, for the next event
     this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
-  
+
     this.isMainAndMinimapSyncing = false;
   }
-  
+
   zoomMinimap(zoomEvent) {
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
-  
+
     console.log("zoomMinimap", this, zoomEvent, zoomEvent.transform);
-  
+
     this.main.transform.x = zoomEvent.transform.x;
     this.main.transform.y = zoomEvent.transform.y;
     this.main.transform.k = zoomEvent.transform.k;
-  
+
     // Apply transform to the main view
     this.main.container.attr("transform", zoomEvent.transform);
     // Store the current zoom level at svg level, for the next event
     this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
-  
+
     // Update the viewport in the minimap
     updateViewport(this, zoomEvent.transform);
-  
+
     this.isMainAndMinimapSyncing = false;
   }
-  
+
   zoomIn() {
     // svg.selectAll(".boundingBox").remove();
     this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 1.2);
     this.main.scale = this.main.scale * (1 + this.main.zoomSpeed);
   }
-  
+
   zoomOut() {
     // svg.selectAll(".boundingBox").remove();
     this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 0.8);
     this.main.scale = this.main.scale * (1 - this.main.zoomSpeed);
   }
-  
+
   zoomReset() {
     console.log("zoomReset", this);
     // canvas.svg.selectAll(".boundingBox").remove();
@@ -345,7 +343,7 @@ export class Dashboard {
         d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
       );
     this.main.scale = 1;
-  
+
     this.minimap.svg
       .transition()
       .duration(750)
@@ -355,7 +353,7 @@ export class Dashboard {
         d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
       );
   }
-  
+
   zoomClicked(event, [x, y]) {
     event.stopPropagation();
     svg
@@ -370,19 +368,19 @@ export class Dashboard {
         d3.pointer(event)
       );
   }
-  
+
   zoomToNodeById(nodeId) {
     console.log("zoomToNodeById", nodeId);
-    const node = this.main.root.findNode(nodeId)
+    const node = this.main.root.findNode(nodeId);
     if (node) {
       console.log("node=", node);
       return this.zoomToNode(node);
-    };
-  
+    }
+
     console.error("zoomToNodeById: Node not found:", nodeId);
     return null;
   }
-  
+
   zoomRandom(dag) {
     // todo: remove dag; and get nodes from this.main.root
     const data = [];
@@ -393,21 +391,21 @@ export class Dashboard {
     console.log("random node=", node.data.label, node);
     return zoomToNode(node, this, dag);
   }
-  
+
   zoomToNode(node) {
     console.log("zoomToNode", node);
     // 1. Identify the node's immediate neighbors
     const neighbors = node.getNeighbors(this.data.settings.selector);
     console.log("zoomToNode: neighbors", neighbors);
-  
+
     // 2. Compute the bounding box
     const boundingBox = computeBoundingBox(this, neighbors);
     console.log("zoomToNode: boundingBox", boundingBox);
-  
+
     // 3. Calculate the zoom scale and translation
     // const { scale, translate } = calculateScaleAndTranslate(boundingBox, this);
     const scale = this.main.transform.k;
-  
+
     if (this.data.settings.showBoundingBox) {
       const borderWidth = 2;
       this.main.container.selectAll(".boundingBox").remove();
@@ -415,12 +413,12 @@ export class Dashboard {
         .append("rect")
         .attr("class", "boundingBox")
         .attr("stroke-width", borderWidth)
-        .attr("x", boundingBox.x )
-        .attr("y", boundingBox.y )
+        .attr("x", boundingBox.x)
+        .attr("y", boundingBox.y)
         .attr("width", boundingBox.width)
         .attr("height", boundingBox.height);
     }
-  
+
     this.main.boundingbox = {
       boundingBox: boundingBox,
       x: boundingBox.x,
@@ -429,28 +427,49 @@ export class Dashboard {
       height: boundingBox.height,
       scale: scale,
     };
-  
+
     // 4. Apply the zoom transform
     // this.main.canvas.svg
     //   .transition()
     //   .duration(750)
     //   .call(this.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
-  
+    this.zoomToBoundingBox(boundingBox);
+
     return this.main.boundingbox;
   }
-  
-}
 
-// function onMainDisplayChange(dashboard) {
-//   console.log("#######################################");
-//   console.log("##### onMainDisplayChange", dashboard);
-//   console.log("##### syncing=",dashboard.isMainAndMinimapSyncing);
-//   if (dashboard.isMainAndMinimapSyncing) return;
-//   dashboard.isMainAndMinimapSyncing = true;
-//   // Update the minimap
-//   dashboard.updateMinimap();
-//   dashboard.isMainAndMinimapSyncing = false;
-// }
+  zoomToBoundingBox(boundingBox) {
+    // Get the dimensions of the SVG viewport
+    const svgWidth = this.main.width;
+    const svgHeight = this.main.height;
+
+    // Calculate the scale factor to fit the bounding box within the SVG
+    const scaleX = svgWidth / boundingBox.width;
+    const scaleY = svgHeight / boundingBox.height;
+    const scale = Math.min(scaleX, scaleY); // Use the smaller scale to fit within both dimensions
+
+    // Calculate the translation to center the bounding box in the SVG
+    this.main.transform.x = (-boundingBox.width * scale) / 2 - boundingBox.x * scale;
+    this.main.transform.y = (-boundingBox.height * scale) / 2 - boundingBox.y * scale;
+    this.main.transform.k = scale;
+
+    // Apply transform to the main view
+    // this.main.container.attr("transform", zoomEvent.transform);
+    const transform = d3.zoomIdentity
+      .translate(this.main.transform.x, this.main.transform.y)
+      .scale(this.main.transform.k);
+    this.main.container.attr("transform", transform);
+
+    // Update the viewport in the minimap
+    updateViewport(this, transform);
+
+    // Store the current zoom level at svg level, for the next event
+    this.minimap.svg.call(this.minimap.zoom.transform, transform);
+
+    this.isMainAndMinimapSyncing = false;
+  }
+
+}
 
 
 export function getImmediateNeighbors(baseNode, graphData) {
