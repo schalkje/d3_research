@@ -62,6 +62,11 @@ export default class BaseNode {
       .on("click", (event) => {
         console.log("Clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
+        this.handleClicked(event);
+      })
+      .on("dblclick", (event) => {
+        console.log("Double-clicked on Adapter Node [BASE]:", this.id, event);
+        if (event) event.stopPropagation();
         this.toggleExpandCollapse(this.element);
       });
     // .call(d3.drag()
@@ -98,6 +103,11 @@ export default class BaseNode {
     }
 
     return this.element;
+  }
+
+  handleClicked(event) {
+    console.log("handleClicked:", this.id, event);
+
   }
 
   render() {

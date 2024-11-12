@@ -5,6 +5,12 @@ import { createEdges } from "./edge.js";
 export class Dashboard {
   constructor(dashboardData) {
     this.data = dashboardData;
+
+    this.data.settings ??= {};
+    this.data.settings.selector ??= {};
+    this.data.settings.selector.incomming ??= 1;
+    this.data.settings.selector.outgoing ??= 1;
+    
     this.main = {
       svg: null,
       width: 0,
@@ -21,6 +27,11 @@ export class Dashboard {
       height: 0,
       container: null,
       eye: { x: 0, y: 0, width: 0, height: 0 },
+    };
+    this.selection = {
+      nodes: [],
+      edges: [],
+      boundingBox: { x: 0, y: 0, width: 0, height: 0 },
     };
 
     this.isMainAndMinimapSyncing = false; // isSyncing prevents re-entrant calls and ensures the synchronization code runs only once per zoom action.
@@ -76,9 +87,7 @@ export class Dashboard {
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
-      .on("zoom", function (event) {
-        zoomMinimap(dashboard, event);
-      });
+      .on("zoom", (event) => this.zoomMinimap(event));      
     this.minimap.svg.call(zoom);
     dashboard.minimap.zoom = zoom;
 
@@ -234,9 +243,7 @@ export class Dashboard {
     const zoom = d3
       .zoom()
       .scaleExtent([1, 40])
-      .on("zoom", function (event) {
-        zoomMain(dashboard, event);
-      });
+      .on("zoom", (event) => this.zoomMain(event));      
 
     this.main.svg.call(zoom);
 
@@ -278,6 +285,48 @@ export class Dashboard {
     this.updateMinimap();
     this.isMainAndMinimapSyncing = false;
   }
+
+  zoomMain(zoomEvent) {
+    if (this.isMainAndMinimapSyncing) return;
+    this.isMainAndMinimapSyncing = true;
+  
+    this.main.transform.k = zoomEvent.transform.k;
+    this.main.transform.x = zoomEvent.transform.x;
+    this.main.transform.y = zoomEvent.transform.y;
+  
+    // Apply transform to the main view
+    this.main.container.attr("transform", zoomEvent.transform);
+  
+    // Update the viewport in the minimap
+    updateViewport(this, zoomEvent.transform);
+  
+    // Store the current zoom level at svg level, for the next event
+    this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
+  
+    this.isMainAndMinimapSyncing = false;
+  }
+  
+  zoomMinimap(zoomEvent) {
+    if (this.isMainAndMinimapSyncing) return;
+    this.isMainAndMinimapSyncing = true;
+  
+    console.log("zoomMinimap", this, zoomEvent, zoomEvent.transform);
+  
+    this.main.transform.x = zoomEvent.transform.x;
+    this.main.transform.y = zoomEvent.transform.y;
+    this.main.transform.k = zoomEvent.transform.k;
+  
+    // Apply transform to the main view
+    this.main.container.attr("transform", zoomEvent.transform);
+    // Store the current zoom level at svg level, for the next event
+    this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
+  
+    // Update the viewport in the minimap
+    updateViewport(this, zoomEvent.transform);
+  
+    this.isMainAndMinimapSyncing = false;
+  }
+  
 }
 
 // function onMainDisplayChange(dashboard) {
@@ -533,43 +582,3 @@ function dragEye(dashboard, dragEvent) {
   dashboard.main.svg.call(dashboard.main.zoom.transform, transform);
 }
 
-function zoomMain(dashboard, zoomEvent) {
-  if (dashboard.isMainAndMinimapSyncing) return;
-  dashboard.isMainAndMinimapSyncing = true;
-
-  dashboard.main.transform.k = zoomEvent.transform.k;
-  dashboard.main.transform.x = zoomEvent.transform.x;
-  dashboard.main.transform.y = zoomEvent.transform.y;
-
-  // Apply transform to the main view
-  dashboard.main.container.attr("transform", zoomEvent.transform);
-
-  // Update the viewport in the minimap
-  updateViewport(dashboard, zoomEvent.transform);
-
-  // Store the current zoom level at svg level, for the next event
-  dashboard.minimap.svg.call(dashboard.minimap.zoom.transform, zoomEvent.transform);
-
-  dashboard.isMainAndMinimapSyncing = false;
-}
-
-function zoomMinimap(dashboard, zoomEvent) {
-  if (dashboard.isMainAndMinimapSyncing) return;
-  dashboard.isMainAndMinimapSyncing = true;
-
-  console.log("zoomMinimap", dashboard, zoomEvent, zoomEvent.transform);
-
-  dashboard.main.transform.x = zoomEvent.transform.x;
-  dashboard.main.transform.y = zoomEvent.transform.y;
-  dashboard.main.transform.k = zoomEvent.transform.k;
-
-  // Apply transform to the main view
-  dashboard.main.container.attr("transform", zoomEvent.transform);
-  // Store the current zoom level at svg level, for the next event
-  dashboard.main.svg.call(dashboard.main.zoom.transform, zoomEvent.transform);
-
-  // Update the viewport in the minimap
-  updateViewport(dashboard, zoomEvent.transform);
-
-  dashboard.isMainAndMinimapSyncing = false;
-}
