@@ -50,3 +50,39 @@ export function computeBoundingBox(nodes, horizontal = false) {
     // return element.node().getBoundingClientRect(); // getBoundingClientRect forces a reflow; getBBox doesn't
   }
   
+  // get the bounding box of an element relative to the parent SVG
+  export function getRelativeBBox(element) {
+    const bbox = element.node().getBBox();
+    const ctm = element.node().getCTM();
+    return {
+      x: ctm.e + bbox.x * ctm.a + bbox.y * ctm.c,
+      y: ctm.f + bbox.x * ctm.b + bbox.y * ctm.d,
+      width: bbox.width,
+      height: bbox.height,
+    };
+  }
+
+
+  export function getBoundingBoxRelativeToParent(element, parentElement) {
+    // Get the bounding box of the element relative to its immediate parent
+    const bbox = element.node().getBBox();
+
+    // Get the transformation matrix of the element
+    const elementCTM = element.node().getCTM();
+
+    // Get the transformation matrix of the specified parent element
+    const parentCTM = parentElement.node().getCTM();
+
+    // Calculate the relative transformation matrix from element to parent
+    const relativeCTM = parentCTM.inverse().multiply(elementCTM);
+
+    // Calculate the bounding box coordinates relative to the specified parent
+    const relativeDimensions = {
+        x: relativeCTM.e + bbox.x * relativeCTM.a + bbox.y * relativeCTM.c,
+        y: relativeCTM.f + bbox.x * relativeCTM.b + bbox.y * relativeCTM.d,
+        width: bbox.width,
+        height: bbox.height
+    };
+
+    return relativeDimensions;
+}

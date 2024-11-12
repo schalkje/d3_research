@@ -3,7 +3,8 @@
     "showCenterMark": false,
     "showConnectionPoints": true,
     "showGhostlines": false,
-    "curved": true
+    "curved": true,
+    "showBoundingBox": true
   },
   "nodes": [
     {

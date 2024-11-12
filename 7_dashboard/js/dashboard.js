@@ -1,4 +1,5 @@
 import { createNode, createNodes } from "./node.js";
+import { getBoundingBoxRelativeToParent, getRelativeBBox, getComputedDimensions } from "./utils.js";
 import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
 
@@ -10,6 +11,7 @@ export class Dashboard {
     this.data.settings.selector ??= {};
     this.data.settings.selector.incomming ??= 1;
     this.data.settings.selector.outgoing ??= 1;
+    this.data.settings.showBoundingBox ??= true;
     
     this.main = {
       svg: null,
@@ -48,6 +50,7 @@ export class Dashboard {
     this.main.root = await this.createDashboard(this.data, this.main.container);
 
     this.main.zoom = this.initializeZoom();
+    this.main.root.onClick = (node) => this.zoomToNode(node);
 
     // initialize minimap
     if (minimapDivSelector) {
@@ -373,7 +376,7 @@ export class Dashboard {
     const node = this.main.root.findNode(nodeId)
     if (node) {
       console.log("node=", node);
-      return zoomToNode(node, this);
+      return this.zoomToNode(node);
     };
   
     console.error("zoomToNodeById: Node not found:", nodeId);
@@ -391,24 +394,29 @@ export class Dashboard {
     return zoomToNode(node, this, dag);
   }
   
-  zoomToNode(node, dag) {
+  zoomToNode(node) {
+    console.log("zoomToNode", node);
     // 1. Identify the node's immediate neighbors
-    const neighbors = getImmediateNeighbors(node, dag);
+    const neighbors = node.getNeighbors(this.data.settings.selector);
+    console.log("zoomToNode: neighbors", neighbors);
   
     // 2. Compute the bounding box
-    const boundingBox = computeBoundingBox(neighbors, this.layout.horizontal);
+    const boundingBox = computeBoundingBox(this, neighbors);
+    console.log("zoomToNode: boundingBox", boundingBox);
   
     // 3. Calculate the zoom scale and translation
-    const { scale, translate } = calculateScaleAndTranslate(boundingBox, this);
+    // const { scale, translate } = calculateScaleAndTranslate(boundingBox, this);
+    const scale = this.main.transform.k;
   
-    if (this.layout.showBoundingBox) {
-      this.main.canvas.svg.selectAll(".boundingBox").remove();
-      this.main.canvas.svg
+    if (this.data.settings.showBoundingBox) {
+      const borderWidth = 2;
+      this.main.container.selectAll(".boundingBox").remove();
+      this.main.container
         .append("rect")
         .attr("class", "boundingBox")
-        .attr("stroke-width", scale * 2)
-        .attr("x", boundingBox.x)
-        .attr("y", boundingBox.y)
+        .attr("stroke-width", borderWidth)
+        .attr("x", boundingBox.x )
+        .attr("y", boundingBox.y )
         .attr("width", boundingBox.width)
         .attr("height", boundingBox.height);
     }
@@ -423,10 +431,10 @@ export class Dashboard {
     };
   
     // 4. Apply the zoom transform
-    this.main.canvas.svg
-      .transition()
-      .duration(750)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
+    // this.main.canvas.svg
+    //   .transition()
+    //   .duration(750)
+    //   .call(this.zoom.transform, d3.zoomIdentity.translate(translate.x, translate.y).scale(scale));
   
     return this.main.boundingbox;
   }
@@ -458,31 +466,49 @@ export function getImmediateNeighbors(baseNode, graphData) {
   return neighbors;
 }
 
-export function computeBoundingBox(nodes, horizontal) {
+export function computeBoundingBox(dashboard, nodes) {
   const padding = 2; // Add some padding
 
   let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
 
-  const updateBounds = (x, y, dimension1, dimension2) => {
-    minX = Math.min(minX, x - dimension1 / 2);
-    minY = Math.min(minY, y - dimension2 / 2);
-    maxX = Math.max(maxX, x + dimension1 / 2);
-    maxY = Math.max(maxY, y + dimension2 / 2);
+  const updateBounds = (x, y, width, height) => {
+    console.log("computeBoundingBox updateBounds:", x, y, width, height);
+    minX = Math.min(minX, x - (width / 2));
+    minY = Math.min(minY, y - height / 2);
+    maxX = Math.max(maxX, x + width / 2);
+    maxY = Math.max(maxY, y + height / 2);
   };
+  console.log(`                   bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
 
-  nodes.forEach((n) => {
-    const {
-      x,
-      y,
-      data: { width, height },
-    } = n;
+  nodes.forEach((node) => {
+    // const {
+    //   x,
+    //   y,
+    //   data: { width, height },
+    // } = node;
 
-    if (horizontal) {
-      updateBounds(y, x, width, height);
-    } else {
-      updateBounds(x, y, width, height);
-    }
+    // const dimensions = getRelativeBBox(node.element)
+    const dimensions = getBoundingBoxRelativeToParent(node.element, dashboard.main.container);
+    // const dimensions = node.element.node().getBBox();
+    // minX = Math.min(minX, dimensions.x - dashboard.main.width / 2);
+    // minY = Math.min(minY, dimensions.y - dashboard.main.height / 2);
+    // maxX = Math.max(maxX, dimensions.x + dimensions.width - dashboard.main.width / 2);
+    // maxY = Math.max(maxY, dimensions.y + dimensions.height - dashboard.main.height / 2);
+    minX = Math.min(minX, dimensions.x);
+    minY = Math.min(minY, dimensions.y);
+    maxX = Math.max(maxX, dimensions.x + dimensions.width);
+    maxY = Math.max(maxY, dimensions.y + dimensions.height);
+
+    console.log("computeBoundingBox dimensions:", node.id, dimensions, node);
+    
+
+    // updateBounds(x, y, width, height);
+    // console.log("computeBoundingBox node:", node.id, x, y, width, height, x -(width/2));
+    console.log(`                   bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
+
+      
   });
+
 
   return {
     x: minX - padding,

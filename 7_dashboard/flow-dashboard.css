@@ -5,6 +5,12 @@
   background-color: rgba(200, 200, 200, 0.2);
 }
 
+#graph rect.boundingBox {
+  fill: none;  
+  stroke: rgba(0, 160, 0, 0.5);  
+}
+
+
 #minimap-container {
   border: 1px solid black;
 }
@@ -27,6 +33,7 @@
   stroke: rgba(255, 0, 0, 0.5);
   stroke-width: 4px;
 }
+
 
 #minimap .eye {
   /* fill: rgba(238, 237, 221, 0.6) */

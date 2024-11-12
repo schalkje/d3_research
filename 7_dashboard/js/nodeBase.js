@@ -9,13 +9,14 @@ export default class BaseNode {
     this.settings = settings;
     this.computeConnectionPoints = computeConnectionPoints;
     this.onDisplayChange = null;
+    this.onClick = null;
 
     this.id = nodeData.id;
 
     this.edges = {
       incoming: [],
       outgoing: [],
-    }
+    };
 
     this.element = null;
     this.simulation = null;
@@ -36,12 +37,11 @@ export default class BaseNode {
       console.log(`          > calling`);
       this.onDisplayChange();
     } else {
-      if (this.parentNode)
-        this.parentNode.handleDisplayChange();
+      if (this.parentNode) this.parentNode.handleDisplayChange();
     }
   }
 
-  move(x,y) {
+  move(x, y) {
     console.log(`          > move ${this.id}, (x:${x},y:${y})`);
     this.x = x;
     this.y = y;
@@ -49,7 +49,6 @@ export default class BaseNode {
 
     this.handleDisplayChange();
   }
-
 
   renderContainer() {
     // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
@@ -75,16 +74,11 @@ export default class BaseNode {
     //   .on("end", (event) => this.drag_ended(event, this)));
 
     // show the center stip
-    if ( this.settings.showCenterMark )
-      this.element
-        .append("circle")
-        .attr("class", "centermark")
-        .attr("r", 3)
-        .attr("cx", 0)
-        .attr("cy", 0);	
-    
+    if (this.settings.showCenterMark)
+      this.element.append("circle").attr("class", "centermark").attr("r", 3).attr("cx", 0).attr("cy", 0);
+
     if (this.settings.showConnectionPoints) {
-      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
       Object.values(connectionPoints).forEach((point) => {
         this.element
           .append("circle")
@@ -105,9 +99,16 @@ export default class BaseNode {
     return this.element;
   }
 
-  handleClicked(event) {
+  handleClicked(event, node = this) {
     console.log("handleClicked:", this.id, event);
 
+    if (this.onClick) {
+      this.onClick(node);
+    } else if (this.parentNode) {
+      this.parentNode.handleClicked(event, node);
+    } else {
+      console.warn(`No onClicked handler, node ${node.id} clicked!`);
+    }
   }
 
   render() {
@@ -142,6 +143,42 @@ export default class BaseNode {
       current = current.parentNode;
     }
     return false;
+  }
+
+  getNeighbors(selector = { incomming: 1, outgoing: 1 }) {
+    console.log("    getNeighbors:", this.id, selector);
+    const neighbors = [];
+
+    // Add the incoming neighbors
+    if (selector.incomming > 0) {
+      this.edges.incoming.forEach((edge) => {
+        if (selector.incomming > 1) {
+          // Get the neighbors recursively and add them to the neighbors array
+          neighbors.push(...edge.source.getNeighbors({ incomming: selector.incomming - 1, outgoing: 0 }));
+        } else {
+          // Directly add the source node to the neighbors array
+          neighbors.push(edge.source);
+        }
+      });
+    }
+
+    // Add the current node to the neighbors array
+    neighbors.push(this);
+
+    // Add the outgoing neighbors
+    if (selector.outgoing > 0) {
+      this.edges.outgoing.forEach((edge) => {
+        if (selector.outgoing > 1) {
+          // Get the neighbors recursively and add them to the neighbors array
+          neighbors.push(...edge.target.getNeighbors({ incomming: 0, outgoing: selector.outgoing - 1 }));
+        } else {
+          // Directly add the source node to the neighbors array
+          neighbors.push(edge.target);
+        }
+      });
+    }
+
+    return neighbors;
   }
 
   findJointParentContainer(target) {
@@ -180,7 +217,6 @@ export default class BaseNode {
     } else {
       console.log(`cascadeLayoutUpdate "${this.id}" --> has no parent to cascade to`);
     }
-
   }
 
   cascadeRestartSimulation() {
@@ -204,19 +240,16 @@ export default class BaseNode {
       this.parentNode.cascadeStopSimulation();
     }
   }
-  
+
   layoutConnectionPoints() {
     if (this.settings.showConnectionPoints) {
-      const connectionPoints = this.computeConnectionPoints(0,0,this.data.width, this.data.height);
+      const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
       Object.values(connectionPoints).forEach((point) => {
-        this.element
-          .select(`.connection-point.side-${point.side}`)
-          .attr("cx", point.x)
-          .attr("cy", point.y);
+        this.element.select(`.connection-point.side-${point.side}`).attr("cx", point.x).attr("cy", point.y);
       });
     }
   }
-  
+
   // drag
   drag_started(event, node) {
     node.cascadeRestartSimulation();
@@ -230,7 +263,7 @@ export default class BaseNode {
     event.fy = event.y;
 
     // move the simulation
-    node.move(event.fx,event.fy);
+    node.move(event.fx, event.fy);
   }
 
   drag_ended(event, node) {
