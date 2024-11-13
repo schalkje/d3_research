@@ -52,9 +52,9 @@ body {
     font-family: Arial;
   }
 
-  #graph-container {
-    /* background-color: red; */
-  }
+  /* #graph-container {
+    background-color: red;
+  } */
 
 
   #graph .dashboard {
@@ -125,7 +125,7 @@ body {
     stroke: rgb(65, 65, 151);
     stroke-opacity: 0.4;
     stroke-width: 2;
-    cursor: grab;
+    cursor: pointer;
     opacity: 0.3;
   }
   
@@ -290,4 +290,26 @@ body {
   }
   .expanded {
     font-weight: bold;
+  }
+
+
+
+  .zoom-button circle {
+    display: none;
+    transition: all 0.2s;
+  }
+  
+  .zoom-button:hover circle {
+    display: block;
+    fill: #ddd;
+    stroke: #bbb;
+    stroke-width: none;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .zoom-button rect.icon {
+    fill: #acace7;
+    transition: fill 0.2s;
   }

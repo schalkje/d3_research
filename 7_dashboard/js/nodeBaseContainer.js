@@ -1,6 +1,7 @@
 import BaseNode from "./nodeBase.js";
 import Simulation from "./simulation.js";
 import { getComputedDimensions } from "./utils.js";
+import ZoomButton from "./buttonZoom.js";
 
 export default class BaseContainerNode extends BaseNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
@@ -39,6 +40,7 @@ export default class BaseContainerNode extends BaseNode {
       //   this.toggleExpandCollapse(this.element);
       // });
 
+
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 8;
     this.minimumSize.height += 4;
@@ -68,6 +70,19 @@ export default class BaseContainerNode extends BaseNode {
       this.element.classed("collapsed", true);
       this.renderCollapsed();
     }
+
+    // Add zoom button
+    this.zoomButton = new ZoomButton(
+      this.element,
+      { x: this.data.width / 2 - 18, y: -this.data.height / 2 + 16 },
+      (event, button) => {
+        if (event) event.stopPropagation();
+
+        button.toggle(); // Toggle between plus and minus on click
+        this.toggleExpandCollapse();
+      }
+    );     
+
 
     // you cannot move the g node,, move the child elements in stead
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
@@ -102,17 +117,20 @@ export default class BaseContainerNode extends BaseNode {
 
     // redraw the elements based on the new size; position the elements relative to the container center point
     this.element
-      .select("rect")
+      .select(".shape")
       .attr("width", this.data.width)
       .attr("height", this.data.height)
       .attr("x", -this.data.width / 2)
       .attr("y", -this.data.height / 2);
 
     this.element
-      .select("text")
+      .select(".label")
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);      
-  }
+
+      // this.zoomButton.move(this.data.width / 2 - 14, -this.data.height / 2);
+      this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);
+    }
 
   // resize the node based on a resize of the container and it's child
   resizeContainer(size) {
@@ -156,7 +174,9 @@ export default class BaseContainerNode extends BaseNode {
 
     // set the collapsed size
     this.data.height = this.minimumSize.height;
-    this.data.width = this.minimumSize.width;
+    this.data.width = this.minimumSize.width + 14;
+
+    // reposition zoom button
 
     // apply the collapsed size to the rectangle
     this.resize({ width: this.data.width, height: this.data.height });
