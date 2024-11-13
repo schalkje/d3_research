@@ -8,14 +8,14 @@ export default class BaseContainerNode extends BaseNode {
     super(nodeData, parentElement, settings, parentNode);
 
     this.createNode = createNode;
-    
+
     this.simulation = null;
     this.container = null;
     this.edgesContainer = null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.childNodes = [];
 
-    // edges contain the edges that are between nodes where this container 
+    // edges contain the edges that are between nodes where this container
     // is the first joined parent
     this.childEdges = [];
   }
@@ -35,17 +35,22 @@ export default class BaseContainerNode extends BaseNode {
       .attr("y", -this.data.height / 2 + 4)
       .text(this.data.label)
       .attr("class", `node label container ${this.data.type}`);
-      // .on("click", (event) => {
-      //   event.stopPropagation();
-      //   this.toggleExpandCollapse(this.element);
-      // });
-
+    // .on("click", (event) => {
+    //   event.stopPropagation();
+    //   this.toggleExpandCollapse(this.element);
+    // });
 
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 8;
     this.minimumSize.height += 4;
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
-      console.log("Render Resizing BaseContainerNode:", this.data.width, this.minimumSize.width, this.data.height, this.minimumSize.height);
+      console.log(
+        "Render Resizing BaseContainerNode:",
+        this.data.width,
+        this.minimumSize.width,
+        this.data.height,
+        this.minimumSize.height
+      );
       this.data.width = Math.max(this.minimumSize.width, this.data.width);
       this.data.height = Math.max(this.minimumSize.height, this.data.height);
       // reposition the label based on the new size
@@ -81,8 +86,7 @@ export default class BaseContainerNode extends BaseNode {
         button.toggle(); // Toggle between plus and minus on click
         this.toggleExpandCollapse();
       }
-    );     
-
+    );
 
     // you cannot move the g node,, move the child elements in stead
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
@@ -93,16 +97,13 @@ export default class BaseContainerNode extends BaseNode {
     // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
       // create container for child nodes
-      this.edgesContainer = this.container
-        .append("g")
-        .attr("class", (d) => `node edges`);
+      this.edgesContainer = this.container.append("g").attr("class", (d) => `node edges`);
 
       // create container for child nodes
       this.ghostContainer = this.container
         .append("g")
         .attr("class", (d) => `node ghost`)
         .lower(); // move it to the background
-
 
       this.childEdges.forEach((edge) => edge.render());
     }
@@ -126,11 +127,11 @@ export default class BaseContainerNode extends BaseNode {
     this.element
       .select(".label")
       .attr("x", -this.data.width / 2 + 4)
-      .attr("y", -this.data.height / 2 + 4);      
+      .attr("y", -this.data.height / 2 + 4);
 
-      // this.zoomButton.move(this.data.width / 2 - 14, -this.data.height / 2);
-      this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);
-    }
+    // this.zoomButton.move(this.data.width / 2 - 14, -this.data.height / 2);
+    this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);
+  }
 
   // resize the node based on a resize of the container and it's child
   resizeContainer(size) {
@@ -156,10 +157,7 @@ export default class BaseContainerNode extends BaseNode {
     const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
 
     // create container for child nodes
-    this.container = this.element
-      .append("g")
-      .attr("class", (d) => `node container parent`);
-
+    this.container = this.element.append("g").attr("class", (d) => `node container parent`);
 
     // Set expanded or collapsed state
     await this.renderChildren();
@@ -209,21 +207,17 @@ export default class BaseContainerNode extends BaseNode {
 
   positionContainer() {
     // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
-    var containerDimensions = getComputedDimensions(this.container); 
+    var containerDimensions = getComputedDimensions(this.container);
     //console.log(`          < positionContainer before - container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
-    var elementDimensions = getComputedDimensions(this.element); 
+    var elementDimensions = getComputedDimensions(this.element);
     //console.log(`          < positionContainer before - element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
     // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm before move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
     // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm before move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
 
     const containerX = 0;
-    var containerY = (elementDimensions.y - containerDimensions.y) + this.containerMargin.top
+    var containerY = elementDimensions.y - containerDimensions.y + this.containerMargin.top;
     // console.log(`   containerX=${containerX}, containerY=${containerY} = ${this.containerMargin.top} - (${elementDimensions.y} - ${containerDimensions.y})`);
-    this.container
-    .attr(
-      "transform",
-      `translate(${containerX}, ${containerY})`
-    );
+    this.container.attr("transform", `translate(${containerX}, ${containerY})`);
 
     // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm after move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
     // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm after move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
@@ -244,16 +238,25 @@ export default class BaseContainerNode extends BaseNode {
 
     this.cascadeArrange();
 
-    this.layoutEdges();    
+    this.layoutEdges();
   }
 
   layoutEdges() {
     if (this.childEdges.length > 0) {
       this.childEdges.forEach((edge) => edge.layout());
     }
-    
   }
 
+  // function to return all the nodes in the graph
+  getAllNodes() {
+    const nodes = [this];
+    if (this.childNodes) {
+      this.childNodes.forEach((childNode) => {
+        nodes.push(...childNode.getAllNodes());
+      });
+    }
+    return nodes;
+  }
 
   arrange() {
     // console.log("Arranging BaseContainerNode:", this.id);
@@ -275,18 +278,16 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -containerWidth / 2)
       .attr("y", -containerHeight / 2);
 
-    if ( this.layoutDebug )
-      this.container.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");	
-  
+    if (this.layoutDebug) this.container.append("circle").attr("r", 3).attr("cx", 0).attr("cy", 0).attr("fill", "red");
 
     this.container.attr(
       "transform",
       `translate(
             ${this.containerMargin.left - this.containerMargin.right}, 
-            ${this.containerMargin.top- this.containerMargin.bottom}
+            ${this.containerMargin.top - this.containerMargin.bottom}
           )`
     );
-}
+  }
 
   // Method to remove child nodes from the SVG
   removeChildren() {

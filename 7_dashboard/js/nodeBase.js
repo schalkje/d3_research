@@ -134,6 +134,12 @@ export default class BaseNode {
     return null;
   }
 
+  // function to return all the nodes in the graph
+  getAllNodes() {
+    const nodes = [this];
+    return nodes;
+  }
+
   isDescendantOf(node) {
     let current = this.parentNode;
     while (current) {

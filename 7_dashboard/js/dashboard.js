@@ -381,15 +381,12 @@ export class Dashboard {
     return null;
   }
 
-  zoomRandom(dag) {
+  zoomRandom(dashboard) {
     // todo: remove dag; and get nodes from this.main.root
-    const data = [];
-    for (const node of dag.nodes()) {
-      data.push(node);
-    }
-    const node = data[Math.floor(Math.random() * data.length)];
+    const nodes = dashboard.main.root.getAllNodes();
+    const node = nodes[Math.floor(Math.random() * nodes.length)];
     console.log("random node=", node.data.label, node);
-    return zoomToNode(node, this, dag);
+    return this.zoomToNode(node);
   }
 
   zoomToNode(node) {
