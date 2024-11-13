@@ -10,6 +10,8 @@ export default class BaseNode {
     this.computeConnectionPoints = computeConnectionPoints;
     this.onDisplayChange = null;
     this.onClick = null;
+    this.onDblClick = null;
+    this.isSelected = false;
 
     this.id = nodeData.id;
 
@@ -50,6 +52,20 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
+  select(isSelecting=true) {
+    this.isSelected = isSelecting;
+    if (this.isSelected) {
+      this.element.classed("selected", true);
+    } else {
+      this.element.classed("selected", false);
+    }
+  }
+
+  deselect() {
+    this.select(false);
+  }
+
+
   renderContainer() {
     // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
     this.element = this.parentElement
@@ -66,7 +82,7 @@ export default class BaseNode {
       .on("dblclick", (event) => {
         console.log("Double-clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
-        this.toggleExpandCollapse(this.element);
+        this.handleDblClicked(event);
       });
     // .call(d3.drag()
     //   .on("start", (event) => this.drag_started(event, this))
@@ -99,6 +115,7 @@ export default class BaseNode {
     return this.element;
   }
 
+
   handleClicked(event, node = this) {
     console.log("handleClicked:", this.id, event);
 
@@ -108,6 +125,18 @@ export default class BaseNode {
       this.parentNode.handleClicked(event, node);
     } else {
       console.warn(`No onClicked handler, node ${node.id} clicked!`);
+    }
+  }
+
+  handleDblClicked(event, node = this) {
+    console.log("handleClicked:", this.id, event);
+
+    if (this.onDblClick) {
+      this.onDblClick(node);
+    } else if (this.parentNode) {
+      this.parentNode.handleDblClicked(event, node);
+    } else {
+      console.warn(`No onDblClick handler, node ${node.id} clicked!`);
     }
   }
 

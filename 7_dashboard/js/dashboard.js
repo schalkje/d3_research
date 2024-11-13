@@ -50,7 +50,8 @@ export class Dashboard {
     this.main.root = await this.createDashboard(this.data, this.main.container);
 
     this.main.zoom = this.initializeZoom();
-    this.main.root.onClick = (node) => this.zoomToNode(node);
+    this.main.root.onClick = (node) => this.selectNode(node);
+    this.main.root.onDblClick = (node) => this.zoomToNode(node);
 
     // initialize minimap
     if (minimapDivSelector) {
@@ -388,6 +389,12 @@ export class Dashboard {
     console.log("random node=", node.data.label, node);
     return this.zoomToNode(node);
   }
+
+  selectNode(node) {
+    console.log("selectNode", node.isSelected, node);
+    node.select(!node.isSelected);
+  }
+
 
   zoomToNode(node) {
     console.log("zoomToNode", node);
