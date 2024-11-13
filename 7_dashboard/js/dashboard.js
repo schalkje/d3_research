@@ -385,6 +385,18 @@ export class Dashboard {
     return null;
   }
 
+  setStatusToNodeById(nodeId, status) {
+    console.log("setStatusToNodeById", nodeId);
+    const node = this.main.root.findNode(nodeId);
+    if (node) {
+      console.log("node=", node);
+      node.status = status;
+    }
+
+    console.error("setStatusToNodeById: Node not found:", nodeId);
+    return null;
+  }
+
   zoomRandom(dashboard) {
     // todo: remove dag; and get nodes from this.main.root
     const nodes = dashboard.main.root.getAllNodes();
