@@ -258,11 +258,11 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   // function to return all the nodes in the graph
-  getAllNodes() {
+  getAllNodes(onlySelected = false) {
     const nodes = [this];
     if (this.childNodes) {
       this.childNodes.forEach((childNode) => {
-        nodes.push(...childNode.getAllNodes());
+        nodes.push(...childNode.getAllNodes(onlySelected));
       });
     }
     return nodes;

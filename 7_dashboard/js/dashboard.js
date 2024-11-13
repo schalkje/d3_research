@@ -178,7 +178,7 @@ export class Dashboard {
 
   // Function to update the position and size of the eye
   updateMinimapEye(x, y, width, height) {
-    console.log("updateMinimapEye", this);
+    // console.log("updateMinimapEye", this);
     // Update minimap.eye properties
     this.minimap.eye.x = x;
     this.minimap.eye.y = y;
@@ -354,6 +354,8 @@ export class Dashboard {
         d3.zoomIdentity,
         d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
       );
+
+    this.deselectAllNodes();
   }
 
   zoomClicked(event, [x, y]) {
@@ -423,6 +425,17 @@ export class Dashboard {
     //     node.status = NodeStatus.UNKNOWN;
     //     console.log("            Unknown status", node.status);
     // }
+  }
+
+  getSelectedNodes() {
+    return this.main.root.getAllNodes(true);
+  }
+
+  deselectAllNodes() {
+    console.log("deselectAllNodes"); 
+    const nodes = this.getSelectedNodes();
+    console.log("deselectAllNodes - nodes", nodes); 
+    nodes.forEach((node) => node.select(false));
   }
 
   zoomToNode(node) {
@@ -621,7 +634,7 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
 
 function updateViewport(dashboard, transform) {
   // js: is this the right function name?
-  console.log("updateViewPort", dashboard, transform);
+  // console.log("updateViewPort", dashboard, transform);
   const x = (transform.x + dashboard.main.width / 2) / -transform.k;
   const y = (transform.y + dashboard.main.height / 2) / -transform.k;
   const width = dashboard.main.width / transform.k;

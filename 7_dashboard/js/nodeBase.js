@@ -187,9 +187,9 @@ export default class BaseNode {
   }
 
   // function to return all the nodes in the graph
-  getAllNodes() {
-    const nodes = [this];
-    return nodes;
+  getAllNodes(onlySelected = false) {
+    if (onlySelected && !this.isSelected) return [];
+    return [this];
   }
 
   isDescendantOf(node) {
