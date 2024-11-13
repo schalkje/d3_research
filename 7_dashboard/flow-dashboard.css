@@ -125,7 +125,7 @@ body {
     stroke: rgb(65, 65, 151);
     stroke-opacity: 0.4;
     stroke-width: 2;
-    cursor: pointer;
+    cursor: default;
     opacity: 0.3;
   }
   
@@ -301,15 +301,17 @@ body {
   
   .zoom-button:hover circle {
     display: block;
-    fill: #ddd;
+    fill: #f0f0f0;
     stroke: #bbb;
-    stroke-width: none;
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    stroke-width: 1px;
     transition: all 0.2s;
     cursor: pointer;
+    
+    /* Add shadow for depth */
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
   }
   
   .zoom-button rect.icon {
     fill: #acace7;
-    transition: fill 0.2s;
+    transition: fill 0.2s, transform 0.2s;
   }
