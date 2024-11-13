@@ -394,8 +394,8 @@ export class Dashboard {
   }
 
   selectNode(node) {
-    console.log("dashboard - selectNode", node.isSelected, node);
-    node.select(!node.isSelected);
+    console.log("dashboard - selectNode", node.selected, node);
+    node.selected = !node.selected;
 
     // // test status updates:
     // switch (node.status) {
@@ -435,7 +435,7 @@ export class Dashboard {
     console.log("deselectAllNodes"); 
     const nodes = this.getSelectedNodes();
     console.log("deselectAllNodes - nodes", nodes); 
-    nodes.forEach((node) => node.select(false));
+    nodes.forEach((node) => node.selected = false);
   }
 
   zoomToNode(node) {

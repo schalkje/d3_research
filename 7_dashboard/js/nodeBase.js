@@ -21,7 +21,7 @@ export default class BaseNode {
     this.onDisplayChange = null;
     this.onClick = null;
     this.onDblClick = null;
-    this.isSelected = false;
+    this._selected = false;
     this._status = NodeStatus.UNKNOWN;
 
     this.id = nodeData.id;
@@ -49,10 +49,18 @@ export default class BaseNode {
   }
 
   set status(value) {
-    console.log("nodeBase - Setting status", value);
-
     this._status = value;
     this.element.attr("status", value);    
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(value) {
+    console.log("nodeBase - Setting selected", value);
+    this._selected = value;
+    this.element.classed("selected", this._selected);
   }
 
   handleDisplayChange() {
@@ -74,18 +82,7 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
-  select(isSelecting=true) {
-    this.isSelected = isSelecting;
-    if (this.isSelected) {
-      this.element.classed("selected", true);
-    } else {
-      this.element.classed("selected", false);
-    }
-  }
 
-  deselect() {
-    this.select(false);
-  }
 
 
   renderContainer() {

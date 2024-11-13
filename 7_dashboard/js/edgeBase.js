@@ -7,6 +7,15 @@ import { generateDirectEdge, generateEdgePath } from "./utilPath.js";
 //     CODE: 'code'
 //   });
 
+export const EdgeStatus = Object.freeze({
+  READY: 'ready',
+  ACTIVE: 'active',
+  ERROR: 'error',
+  WARNING: 'warning',
+  UNKNOWN: 'unknown',
+  DISABLED: 'disabled'
+});
+
 export default class BaseEdge {
   constructor(edgeData, parent, source, target, settings) {
     this.data = edgeData;
@@ -14,6 +23,10 @@ export default class BaseEdge {
     this.source = source; 
     this.target = target;
     this.settings = settings;
+    this._status = EdgeStatus.UNKNOWN;
+    this._selected = false;
+    this.onClick = null;
+    this.onDblClick = null;
 
     this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
 
@@ -30,6 +43,24 @@ export default class BaseEdge {
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  set status(value) {
+    this._status = value;
+    this.element.attr("status", value);    
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(value) {
+    this._selected = value;
+    this.element.classed("selected", this._selected);
   }
 
   get x1() {
@@ -79,7 +110,16 @@ export default class BaseEdge {
       this.element = this.parent.edgesContainer
       .append("g")
       .attr("class", `edge ${this.data.type}`)
-      .attr("id", this.data.id);
+      .attr("id", this.id)
+      .on("click", (event) => {
+        if (event) event.stopPropagation();
+        this.handleClicked(event);
+      })
+      .on("dblclick", (event) => {
+        if (event) event.stopPropagation();
+        this.handleDblClicked(event);
+      });
+
 
       this.element
         .append("path")
@@ -134,6 +174,27 @@ export default class BaseEdge {
 //   }
 
 
+handleClicked(event, edge = this) {
+  console.log("handleClicked:", this.id, event);
+
+  this.selected = !this.selected;
+
+  if (this.onClick) {
+    this.onClick(edge);
+  } else {
+    console.warn(`No onClicked handler, node ${edge.id} clicked!`);
+  }
+}
+
+handleDblClicked(event, edge = this) {
+  console.log("handleClicked:", this.id, event);
+
+  if (this.onDblClick) {
+    this.onDblClick(edge);
+  } else {
+    console.warn(`No onDblClick handler, node ${edge.id} clicked!`);
+  }
+}
 
 
 }
