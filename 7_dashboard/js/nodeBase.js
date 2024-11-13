@@ -185,8 +185,30 @@ export default class BaseNode {
 
   // function to return all the nodes in the graph
   getAllNodes(onlySelected = false) {
-    if (onlySelected && !this.isSelected) return [];
+    if (onlySelected && !this.selected) return [];
     return [this];
+  }
+
+  // function to return all the nodes in the graph
+  getAllEdges(onlySelected = false, allEdges = []) {
+    // console.log("    getAllEdges:", this.id, onlySelected, allEdges);
+    this.edges.incoming.forEach((edge) => {
+      if (!onlySelected || edge.selected) 
+      {
+        // console.log("    getAllEdges: incoming", edge, allEdges.indexOf(edge));
+        if (allEdges.indexOf(edge) === -1) {
+          allEdges.push(edge);
+        } 
+      }
+    });
+    this.edges.outgoing.forEach((edge) => {
+      if (!onlySelected || edge.selected) 
+        {
+          if (allEdges.indexOf(edge) === -1) {
+            allEdges.push(edge);
+          } 
+        }
+      });
   }
 
   isDescendantOf(node) {
@@ -202,33 +224,35 @@ export default class BaseNode {
 
   getNeighbors(selector = { incomming: 1, outgoing: 1 }) {
     console.log("    getNeighbors:", this.id, selector);
-    const neighbors = [];
+    const neighbors = {nodes:[],edges:[]};
 
     // Add the incoming neighbors
     if (selector.incomming > 0) {
       this.edges.incoming.forEach((edge) => {
+        neighbors.edges.push(edge);
         if (selector.incomming > 1) {
           // Get the neighbors recursively and add them to the neighbors array
-          neighbors.push(...edge.source.getNeighbors({ incomming: selector.incomming - 1, outgoing: 0 }));
+          neighbors.nodes.push(...edge.source.getNeighbors({ incomming: selector.incomming - 1, outgoing: 0 }));
         } else {
           // Directly add the source node to the neighbors array
-          neighbors.push(edge.source);
+          neighbors.nodes.push(edge.source);
         }
       });
     }
 
     // Add the current node to the neighbors array
-    neighbors.push(this);
+    neighbors.nodes.push(this);
 
     // Add the outgoing neighbors
     if (selector.outgoing > 0) {
       this.edges.outgoing.forEach((edge) => {
+        neighbors.edges.push(edge);
         if (selector.outgoing > 1) {
           // Get the neighbors recursively and add them to the neighbors array
-          neighbors.push(...edge.target.getNeighbors({ incomming: 0, outgoing: selector.outgoing - 1 }));
+          neighbors.nodes.push(...edge.target.getNeighbors({ incomming: 0, outgoing: selector.outgoing - 1 }));
         } else {
           // Directly add the source node to the neighbors array
-          neighbors.push(edge.target);
+          neighbors.nodes.push(edge.target);
         }
       });
     }

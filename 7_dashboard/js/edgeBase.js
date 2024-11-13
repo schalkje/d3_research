@@ -60,6 +60,10 @@ export default class BaseEdge {
 
   set selected(value) {
     this._selected = value;
+    if (!this.element){
+      console.warn("No element to select.");
+      return;
+    }
     this.element.classed("selected", this._selected);
   }
 

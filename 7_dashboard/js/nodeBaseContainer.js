@@ -259,7 +259,10 @@ export default class BaseContainerNode extends BaseNode {
 
   // function to return all the nodes in the graph
   getAllNodes(onlySelected = false) {
-    const nodes = [this];
+    const nodes = [];
+    if (!onlySelected || this.selected) 
+      nodes.push(this);
+
     if (this.childNodes) {
       this.childNodes.forEach((childNode) => {
         nodes.push(...childNode.getAllNodes(onlySelected));
@@ -267,6 +270,19 @@ export default class BaseContainerNode extends BaseNode {
     }
     return nodes;
   }
+
+  getAllEdges(onlySelected = false, allEdges = []) {
+    // console.log("    getAllEdges BaseContainerNode:", this.id, onlySelected, allEdges.length);
+    super.getAllEdges(onlySelected, allEdges);
+
+    if (this.childNodes) {
+      this.childNodes.forEach((childNode) => {
+        childNode.getAllEdges(onlySelected, allEdges);
+      });
+    }
+  }
+
+
 
   arrange() {
     // console.log("Arranging BaseContainerNode:", this.id);

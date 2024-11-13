@@ -355,7 +355,7 @@ export class Dashboard {
         d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
       );
 
-    this.deselectAllNodes();
+    this.deselectAll();
   }
 
   zoomClicked(event, [x, y]) {
@@ -431,11 +431,17 @@ export class Dashboard {
     return this.main.root.getAllNodes(true);
   }
 
-  deselectAllNodes() {
-    console.log("deselectAllNodes"); 
+  deselectAll() {
+    // console.log("deselectAllNodes"); 
     const nodes = this.getSelectedNodes();
-    console.log("deselectAllNodes - nodes", nodes); 
+    // console.log("deselectAllNodes - nodes", nodes); 
     nodes.forEach((node) => node.selected = false);
+
+    const edges = [];
+    this.main.root.getAllEdges(true, edges);
+    // console.log("deselectAllNodes - edges", edges);
+    edges.forEach((edge) => edge.selected = false);
+
   }
 
   zoomToNode(node) {
@@ -444,8 +450,13 @@ export class Dashboard {
     const neighbors = node.getNeighbors(this.data.settings.selector);
     console.log("zoomToNode: neighbors", neighbors);
 
+    // select the node and its neighbors
+    this.deselectAll();
+    neighbors.nodes.forEach((node) => node.selected = true);
+    neighbors.edges.forEach((edge) => edge.selected = true);
+
     // 2. Compute the bounding box
-    const boundingBox = computeBoundingBox(this, neighbors);
+    const boundingBox = computeBoundingBox(this, neighbors.nodes);
     console.log("zoomToNode: boundingBox", boundingBox);
 
     // 3. Calculate the zoom scale and translation
