@@ -2,6 +2,7 @@ import { createNode, createNodes } from "./node.js";
 import { getBoundingBoxRelativeToParent, getRelativeBBox, getComputedDimensions } from "./utils.js";
 import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
+import {NodeStatus} from "./nodeBase.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -391,10 +392,38 @@ export class Dashboard {
   }
 
   selectNode(node) {
-    console.log("selectNode", node.isSelected, node);
+    console.log("dashboard - selectNode", node.isSelected, node);
     node.select(!node.isSelected);
-  }
 
+    // // test status updates:
+    // switch (node.status) {
+    //   case NodeStatus.NEW:
+    //     node.status = NodeStatus.READY;
+    //     break;
+    //   case NodeStatus.READY:
+    //     node.status = NodeStatus.ACTIVE;
+    //     break;
+    //   case NodeStatus.ACTIVE:
+    //     node.status = NodeStatus.WARNING;
+    //     break;
+    //   case NodeStatus.WARNING:
+    //     node.status = NodeStatus.ERROR;
+    //     break;
+    //   case NodeStatus.ERROR:
+    //     node.status = NodeStatus.DISABLED;
+    //     break;
+    //   case NodeStatus.DISABLED:
+    //     node.status = NodeStatus.UNKNOWN;
+    //     break;
+    //   case NodeStatus.UNKNOWN:
+    //     node.status = NodeStatus.NEW;
+    //     break;
+    //   // otherwise
+    //   default:
+    //     node.status = NodeStatus.UNKNOWN;
+    //     console.log("            Unknown status", node.status);
+    // }
+  }
 
   zoomToNode(node) {
     console.log("zoomToNode", node);
@@ -472,7 +501,6 @@ export class Dashboard {
 
     this.isMainAndMinimapSyncing = false;
   }
-
 }
 
 

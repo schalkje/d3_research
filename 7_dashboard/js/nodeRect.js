@@ -14,7 +14,7 @@ export default class RectangularNode extends BaseNode {
     // console.log("Rendering Rectangular Node:", this.id);
 
     // Draw the node shape
-    container
+    this.shape = container
       .append("rect")
       .attr("class", `node shape`)
       .attr("width", this.data.width)
@@ -31,6 +31,15 @@ export default class RectangularNode extends BaseNode {
       .attr("x", 0)
       .attr("y", 0)
       .text(this.data.label);
+  }
+
+  get status() {
+    return super.status;
+  }
+  set status(value) {
+    console.log("nodeRect - Setting status", value);
+    super.status = value;
+    this.shape.attr("status", value);
   }
 
   resize(size) {

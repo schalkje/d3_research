@@ -1,6 +1,16 @@
 import { getComputedDimensions } from "./utils.js";
 import { computeConnectionPoints } from "./utilPath.js";
 
+export const NodeStatus = Object.freeze({
+  NEW: 'new', 
+  READY: 'ready',
+  ACTIVE: 'active',
+  ERROR: 'error',
+  WARNING: 'warning',
+  UNKNOWN: 'unknown',
+  DISABLED: 'disabled'
+});
+
 export default class BaseNode {
   constructor(nodeData, parentElement, settings, parentNode = null) {
     this.data = nodeData;
@@ -12,6 +22,7 @@ export default class BaseNode {
     this.onClick = null;
     this.onDblClick = null;
     this.isSelected = false;
+    this._status = NodeStatus.UNKNOWN;
 
     this.id = nodeData.id;
 
@@ -31,6 +42,17 @@ export default class BaseNode {
     this.y ??= 0;
     this.data.width ??= 60;
     this.data.height ??= 60;
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  set status(value) {
+    console.log("nodeBase - Setting status", value);
+
+    this._status = value;
+    this.element.attr("status", value);    
   }
 
   handleDisplayChange() {
@@ -74,6 +96,7 @@ export default class BaseNode {
       // .attr("height", this.data.height)
       .attr("class", "node")
       .attr("id", this.id)
+      .attr("status", this.status)
       .on("click", (event) => {
         console.log("Clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();

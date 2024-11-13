@@ -129,6 +129,70 @@ body {
     opacity: 0.3;
   }
 
+  /* g.node[status="unknown"] .node.shape {
+    fill: #9b9bfa;
+  }
+
+  g.node[status="disabled"] .node.shape {
+    fill: rgb(142, 142, 142);
+  }
+
+  g[status="new"] .node.shape {
+    fill: #9bccfa;
+  }
+
+  g[status="ready"] .node.shape {
+    fill: #9b9bfa;
+  }
+
+  g[status="active"] .node.shape {
+    fill: rgb(151, 147, 65);
+  }
+
+  g[status="warning"] .node.shape {
+    fill: rgb(255, 98, 0);
+  }
+
+  g[status="error"] .node.shape {
+    fill: rgb(255, 0, 0);
+    opacity: 0.8;
+  } */
+  .node.shape[status="unknown"] {
+    fill: #9b9bfa;
+    opacity: 0.8;
+  }
+
+  .node.shape[status="disabled"] {
+    fill: rgb(142, 142, 142);
+    opacity: 0.8;
+  }
+
+  .node.shape[status="new"] {
+    fill: #9bccfa;
+    opacity: 0.8;
+  }
+
+  .node.shape[status="ready"] {
+    fill: #26ff00;
+    opacity: 0.8;
+  }
+
+  .node.shape[status="active"] {
+    fill: rgb(151, 147, 65);
+    opacity: 0.8;
+  }
+
+  .node.shape[status="warning"] {
+    fill: rgb(255, 98, 0);
+    opacity: 0.8;
+  }
+
+  .node.shape[status="error"] {
+    fill: rgb(255, 0, 0);
+    opacity: 0.8;
+  }
+
+
   .node.selected .node.shape {
     stroke: rgb(0, 0, 255);
     stroke-opacity: 0.95;

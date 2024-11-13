@@ -20,6 +20,16 @@ export default class BaseContainerNode extends BaseNode {
     this.childEdges = [];
   }
 
+  get status() {
+    return super.status;
+  }
+  set status(value) {
+    console.log("nodeBaseContainer - Setting status", value);
+    super.status = value;
+    this.shape.attr("status", value);
+  }
+
+
   // Method to render the parent node and its children
   async render() {
     // console.log(`Rendering BaseContainerNode type=${this.data.type} Node:`, this.id);
@@ -58,8 +68,8 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // Draw the node shape
-    this.element
-      .append("rect")
+    this.shape = this.element
+      .insert("rect", ":first-child")
       .attr("class", (d) => `node shape container ${this.data.type}`)
       .attr("width", this.data.width)
       .attr("height", this.data.height)
