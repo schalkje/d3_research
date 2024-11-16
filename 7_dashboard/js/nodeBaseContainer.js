@@ -20,6 +20,17 @@ export default class BaseContainerNode extends BaseNode {
     this.childEdges = [];
   }
 
+  get visible() {
+    return this._visible;
+  }
+
+  set visible(value) {
+    if (value === this._visible) return;
+    super.visible = value;
+    // JS: todo - change visibility of the children
+  }
+
+
   get status() {
     return super.status;
   }
@@ -218,30 +229,30 @@ export default class BaseContainerNode extends BaseNode {
   positionContainer() {
     // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
     var containerDimensions = getComputedDimensions(this.container);
-    //console.log(`          < positionContainer before - container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
     var elementDimensions = getComputedDimensions(this.element);
-    //console.log(`          < positionContainer before - element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
-    // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm before move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-    // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm before move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
 
     const containerX = 0;
     var containerY = elementDimensions.y - containerDimensions.y + this.containerMargin.top;
-    // console.log(`   containerX=${containerX}, containerY=${containerY} = ${this.containerMargin.top} - (${elementDimensions.y} - ${containerDimensions.y})`);
     this.container.attr("transform", `translate(${containerX}, ${containerY})`);
-
-    // var containerCtm = this.container.node().getCTM(); console.log(`    containerCtm after move: a=${containerCtm.a}, b=${containerCtm.b}, c=${containerCtm.c}, d=${containerCtm.d}, e=${containerCtm.e}, f=${containerCtm.f}`);
-    // var elementCtm = this.element.node().getCTM(); console.log(`    elementCtm after move: a=${elementCtm.a}, b=${elementCtm.b}, c=${elementCtm.c}, d=${elementCtm.d}, e=${elementCtm.e}, f=${elementCtm.f}`);
-    // var containerDimensions = getComputedDimensions(this.container); console.log(`          < positionContainer after  - container ${this.id}, (${Math.round(containerDimensions.x)},${Math.round(containerDimensions.y)}) [${Math.round(containerDimensions.width)}x${Math.round(containerDimensions.height)}]`);
-    // var elementDimensions = getComputedDimensions(this.element); console.log(`          < positionContainer after  - element   ${this.id}, (${Math.round(elementDimensions.x)},${Math.round(elementDimensions.y)}) [${Math.round(elementDimensions.width)}x${Math.round(elementDimensions.height)}] data=[${Math.round(this.data.width)}x${Math.round(this.data.height)}]`);
   }
 
   // Method to update rendering based on interaction state
   updateLayout() {
     if (this.data.interactionState.expanded) {
       this.element.classed("collapsed", false).classed("expanded", true);
+      // mark children as visible
+      this.childNodes.forEach((childNode) => {
+        childNode.visible = true;
+      });
+
       this.renderExpanded();
     } else {
       this.element.classed("expanded", false).classed("collapsed", true);
+      // mark children as invisible
+      this.childNodes.forEach((childNode) => {
+        childNode.visible = false;
+      });
+
       this.removeChildren();
       this.renderCollapsed();
     }

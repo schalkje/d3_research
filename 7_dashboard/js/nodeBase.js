@@ -23,6 +23,7 @@ export default class BaseNode {
     this.onDblClick = null;
     this._selected = false;
     this._status = NodeStatus.UNKNOWN;
+    this._visible = true; // JS: todo - implement visibility
 
     this.id = nodeData.id;
 
@@ -42,6 +43,15 @@ export default class BaseNode {
     this.y ??= 0;
     this.data.width ??= 60;
     this.data.height ??= 60;
+  }
+
+  get visible() {
+    return this._visible;
+  }
+
+  set visible(value) {
+    if (value === this._visible) return;
+    this._visible = value;    
   }
 
   get status() {

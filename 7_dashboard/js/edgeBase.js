@@ -8,19 +8,19 @@ import { generateDirectEdge, generateEdgePath } from "./utilPath.js";
 //   });
 
 export const EdgeStatus = Object.freeze({
-  READY: 'ready',
-  ACTIVE: 'active',
-  ERROR: 'error',
-  WARNING: 'warning',
-  UNKNOWN: 'unknown',
-  DISABLED: 'disabled'
+  READY: "ready",
+  ACTIVE: "active",
+  ERROR: "error",
+  WARNING: "warning",
+  UNKNOWN: "unknown",
+  DISABLED: "disabled",
 });
 
 export default class BaseEdge {
   constructor(edgeData, parents, settings) {
     console.log("Creating Base Edge:", edgeData, parents, settings);
     this.data = edgeData;
-    this.parents = parents; 
+    this.parents = parents;
     this.settings = settings;
     this._status = EdgeStatus.UNKNOWN;
     this._selected = false;
@@ -46,6 +46,10 @@ export default class BaseEdge {
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
   }
 
+  get label() {
+    return `${this.source.data.label} --${this.data.type}--> ${this.target.data.label}`;
+  }
+
   get parent() {
     // log error if no parents or no container
     if (!this.parents || !this.parents.container) {
@@ -55,23 +59,30 @@ export default class BaseEdge {
     return this.parents.container;
   }
 
-  get source() {
-    // log error if no parents or no source
-    if (!this.parents || !this.parents.source) {
-      console.error("No parents or source for edge:", this.id);
-      return null;
+  get sourceIndex() {
+    // take the lowest visible parent
+    for (let i = 0; i < this.parents.source.length; i++) {
+      if (this.parents.source[i].visible) return i;
     }
-    return this.parents.source[0];
+
+    return this.parents.source.length;
   }
 
+  get source() {
+    return this.parents.source[this.sourceIndex];
+  }
+
+  get targetIndex() {
+    // take the lowest visible parent
+    for (let i = 0; i < this.parents.target.length; i++) {
+      if (this.parents.target[i].visible) return i;
+    }
+
+    return this.parents.target.length - 1;
+  }
 
   get target() {
-    // log error if no parents or no target
-    if (!this.parents || !this.parents.target) {
-      console.error("No parents or target for edge:", this.id);
-      return null;
-    }
-    return this.parents.target[0];
+    return this.parents.target[this.targetIndex];
   }
 
   get status() {
@@ -80,7 +91,7 @@ export default class BaseEdge {
 
   set status(value) {
     this._status = value;
-    this.element.attr("status", value);    
+    this.element.attr("status", value);
   }
 
   get selected() {
@@ -89,7 +100,7 @@ export default class BaseEdge {
 
   set selected(value) {
     this._selected = value;
-    if (!this.element){
+    if (!this.element) {
       console.warn("No element to select.");
       return;
     }
@@ -97,35 +108,34 @@ export default class BaseEdge {
   }
 
   get x1() {
-    // console.log("    Getting x1:", this.source, this.source.x);
     let correction = 0;
-    for (let i = 1; i < this.parents.source.length; i++){
+    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].x;
-      } 
+    }
     return this.source ? this.source.x + correction : null;
   }
 
   get y1() {
     let correction = 0;
-    for (let i = 1; i < this.parents.source.length; i++){
+    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].y;
-      } 
+    }
     return this.source ? this.source.y + correction : null;
   }
 
   get x2() {
     let correction = 0;
-    for (let i = 1; i < this.parents.target.length; i++){
+    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].x;
-      } 
+    }
     return this.target ? this.target.x + correction : null;
   }
 
   get y2() {
     let correction = 0;
-    for (let i = 1; i < this.parents.target.length; i++){
+    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].y;
-      } 
+    }
     return this.target ? this.target.y + correction : null;
   }
 
@@ -145,63 +155,52 @@ export default class BaseEdge {
 
     // Create ghostlines
     if (this.settings.showGhostlines) {
-      this.ghostElement = this.parent.ghostContainer
-        .append("g")
-        .attr("class", `edge ghostline`);
+      this.ghostElement = this.parent.ghostContainer.append("g").attr("class", `edge ghostline`);
 
-      this.ghostElement
-        .append("path")
-        .attr("class", "path");
+      this.ghostElement.append("path").attr("class", "path");
     }
 
     // Create edge
     if (this.settings.showEdges) {
       this.element = this.parent.edgesContainer
-      .append("g")
-      .attr("class", `edge ${this.data.type}`)
-      .attr("id", this.id)
-      .on("click", (event) => {
-        if (event) event.stopPropagation();
-        this.handleClicked(event);
-      })
-      .on("dblclick", (event) => {
-        if (event) event.stopPropagation();
-        this.handleDblClicked(event);
-      });
+        .append("g")
+        .attr("class", `edge ${this.data.type}`)
+        .attr("id", this.id)
+        .on("click", (event) => {
+          if (event) event.stopPropagation();
+          this.handleClicked(event);
+        })
+        .on("dblclick", (event) => {
+          if (event) event.stopPropagation();
+          this.handleDblClicked(event);
+        });
 
-
-      this.element
-        .append("path")
-        .attr("class", "path");
+      this.element.append("path").attr("class", "path");
     }
 
     return this.element;
   }
 
   layout() {
-    // console.log("----------------------------------------------------------------------------------------------");
-    // console.log("--     Updating Render for EDGE BASE:", this.id);
+    console.log("----------------------------------------------------------------------------------------------");
+    console.log("--     Updating Render for EDGE BASE:", this.id);
+    console.log("--     Updating Render for EDGE BASE:", this.label);
 
     if (this.settings.showGhostlines) {
       const ghostEdge = generateDirectEdge(this);
       const ghostLine = this.ghostlineGenerator();
-      
-      this.ghostElement.
-        select(".path").
-        attr("d", ghostLine(ghostEdge));
-    }
 
+      this.ghostElement.select(".path").attr("d", ghostLine(ghostEdge));
+    }
 
     // Draw edges
     if (this.settings.showEdges) {
       const edge = generateEdgePath(this);
       // const line = d3.line().curve(d3.curveBasis);
       const line = this.lineGenerator();
-  
+
       console.log("    Updating Edge:", this.element, edge);
-      this.element.
-        select(".path").
-        attr("d", line(edge));
+      this.element.select(".path").attr("d", line(edge));
     }
   }
 
@@ -209,41 +208,36 @@ export default class BaseEdge {
     return d3.line();
   }
 
-
   lineGenerator(edge) {
     if (this.settings.curved) {
       return d3.line().curve(d3.curveBasis);
-    }
-    else {
+    } else {
       return d3.line();
     }
   }
-//   getDefaultLineGenerator(layout) {
-//     return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
-//   }
+  //   getDefaultLineGenerator(layout) {
+  //     return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
+  //   }
 
+  handleClicked(event, edge = this) {
+    console.log("handleClicked:", this.id, event);
 
-handleClicked(event, edge = this) {
-  console.log("handleClicked:", this.id, event);
+    this.selected = !this.selected;
 
-  this.selected = !this.selected;
-
-  if (this.onClick) {
-    this.onClick(edge);
-  } else {
-    console.warn(`No onClicked handler, node ${edge.id} clicked!`);
+    if (this.onClick) {
+      this.onClick(edge);
+    } else {
+      console.warn(`No onClicked handler, node ${edge.id} clicked!`);
+    }
   }
-}
 
-handleDblClicked(event, edge = this) {
-  console.log("handleClicked:", this.id, event);
+  handleDblClicked(event, edge = this) {
+    console.log("handleClicked:", this.id, event);
 
-  if (this.onDblClick) {
-    this.onDblClick(edge);
-  } else {
-    console.warn(`No onDblClick handler, node ${edge.id} clicked!`);
+    if (this.onDblClick) {
+      this.onDblClick(edge);
+    } else {
+      console.warn(`No onDblClick handler, node ${edge.id} clicked!`);
+    }
   }
-}
-
-
 }
