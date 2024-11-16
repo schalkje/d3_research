@@ -42,7 +42,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   layoutChildren() {
-    console.log("layoutChildren - Layout for Columns:", this.id, this.data.layout);
+    // console.log("layoutChildren - Layout for Columns:", this.id, this.data.layout);
 
     // each child is a column
     var x = 0;

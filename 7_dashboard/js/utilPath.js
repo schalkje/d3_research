@@ -27,6 +27,8 @@ export function generateEdgePath(edge) {
   console.log(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
   const sourceNode = edge.source;
   const targetNode = edge.target;
+  console.log("    Source Node:", sourceNode);
+  console.log("    Target Node:", targetNode);
 
   const sourceConnectionPoints = sourceNode.computeConnectionPoints(
     edge.x1,

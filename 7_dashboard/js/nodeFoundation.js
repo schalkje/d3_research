@@ -99,7 +99,6 @@ export default class FoundationNode extends BaseContainerNode {
         type: "SSIS",
         state: "Ready",
       },
-      this,
       this.rawNode,
       this.baseNode,
       this.settings,

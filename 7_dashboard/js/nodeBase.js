@@ -64,7 +64,7 @@ export default class BaseNode {
   }
 
   handleDisplayChange() {
-    console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
+    // console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
     if (this.onDisplayChange) {
       console.log(`          > calling`);
       this.onDisplayChange();
@@ -74,7 +74,7 @@ export default class BaseNode {
   }
 
   move(x, y) {
-    console.log(`          > move ${this.id}, (x:${x},y:${y})`);
+    // console.log(`          > move ${this.id}, (x:${x},y:${y})`);
     this.x = x;
     this.y = y;
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
@@ -260,17 +260,22 @@ export default class BaseNode {
     return neighbors;
   }
 
-  findJointParentContainer(target) {
-    console.log("    findJointParentContainer:", this.id, target.id);
-    let parent = this;
-    while (parent && !target.isDescendantOf(parent)) {
-      console.log("    findJointParentContainer: next", parent);
-      parent = parent.parentNode;
-    }
-    console.log("    findJointParentContainer: return", parent);
-    return parent;
+  // JS: deprecated
+  // findJointParentContainer(target) {
+  //   console.log("    findJointParentContainer:", this.id, target.id);
+  //   let parent = this;
+  //   while (parent && !target.isDescendantOf(parent)) {
+  //     console.log("    findJointParentContainer: next", parent);
+  //     parent = parent.parentNode;
+  //   }
+  //   console.log("    findJointParentContainer: return", parent);
+  //   return parent;
+  // }
+  getParents() {
+    // console.log("    getParents:", this.id, this.parentNode);
+    return this.parentNode ? [this.parentNode, ...this.parentNode.getParents()] : [];
   }
-
+  
   // Method to toggle expansion/collapse of the node
   toggleExpandCollapse(container) {
     this.data.interactionState.expanded = !this.data.interactionState.expanded;

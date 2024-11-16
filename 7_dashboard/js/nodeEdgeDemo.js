@@ -269,7 +269,6 @@ export default class EdgeDemoNode extends BaseContainerNode {
           type: "SSIS",
           state: "Ready",
         },
-        this,
         sourceNode,
         childNode,
         this.settings

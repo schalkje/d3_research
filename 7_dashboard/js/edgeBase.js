@@ -17,17 +17,18 @@ export const EdgeStatus = Object.freeze({
 });
 
 export default class BaseEdge {
-  constructor(edgeData, parent, source, target, settings) {
+  constructor(edgeData, parents, settings) {
+    console.log("Creating Base Edge:", edgeData, parents, settings);
     this.data = edgeData;
-    this.parent = parent; // this is the joined parented container node of source and target
-    this.source = source; 
-    this.target = target;
+    this.parents = parents; 
     this.settings = settings;
     this._status = EdgeStatus.UNKNOWN;
     this._selected = false;
     this.onClick = null;
     this.onDblClick = null;
 
+    console.log("Creating Base Edge - source", this.source, this.source.id);
+    console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
     this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
 
     this.element = null;
@@ -43,6 +44,33 @@ export default class BaseEdge {
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
+  }
+
+  get parent() {
+    // log error if no parents or no container
+    if (!this.parents || !this.parents.container) {
+      console.error("No parent or container for edge:", this.id);
+      return null;
+    }
+    return this.parents.container;
+  }
+
+  get source() {
+    // log error if no parents or no source
+    if (!this.parents || !this.parents.source) {
+      console.error("No parents or source for edge:", this.id);
+      return null;
+    }
+    return this.parents.source[0];
+  }
+
+  get target() {
+    // log error if no parents or no target
+    if (!this.parents || !this.parents.target) {
+      console.error("No parents or target for edge:", this.id);
+      return null;
+    }
+    return this.parents.target[0];
   }
 
   get status() {
