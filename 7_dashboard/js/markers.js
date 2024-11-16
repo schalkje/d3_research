@@ -13,6 +13,9 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
+    .attr("stroke", "context-stroke")
+    .attr("fill", "context-stroke")
+    .attr("stroke-width", 2)
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
     defs
@@ -27,6 +30,9 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
+    .attr("stroke", "context-stroke")
+    .attr("fill", "none")
+    .attr("stroke-width", 2)
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
     defs
@@ -41,6 +47,8 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
+    .attr("stroke", "context-stroke")
+    .attr("fill", "none")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");    
 
 // defs
@@ -54,6 +62,25 @@ export function createMarkers(container) {
 //     .attr("orient","auto-start-reverse")
 //     .attr("d","M 0 0 L 10 5 L 0 10 z");
 
+defs
+.append("marker")
+.attr("id", "debugcircle")
+.attr("class", "marker circle")
+.attr("viewBox", "-5 -5 10 10")
+.attr("refX", 0)
+.attr("refY", 0)
+.attr("orient", "auto")
+.attr("markerWidth", 4)
+.attr("markerHeight", 4)
+.attr("xoverflow", "visible")
+.append("circle")
+.attr("stroke", "context-stroke")
+.attr("stroke-width", 2)  
+.attr("fill", "red")
+.attr("cx", 0)
+.attr("cy", 0)
+.attr("r", 5);
+
   defs
     .append("marker")
     .attr("id", "circle")
@@ -66,6 +93,8 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("circle")
+    .attr("stroke", "context-stroke")
+    .attr("fill", "context-stroke")
     .attr("cx", 0)
     .attr("cy", 0)
     .attr("r", 5);
@@ -82,6 +111,8 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("circle")
+    .attr("stroke", "context-stroke")
+    .attr("fill", "context-stroke")
     .attr("cx", 0)
     .attr("cy", 0)
     .attr("r", 5);
@@ -97,6 +128,18 @@ export function createMarkers(container) {
     .attr("markerWidth", 6)
     .attr("markerHeight", 6)
     .attr("xoverflow", "visible");
-    circle_arrow.append("circle").attr("cx", 0).attr("cy", 0).attr("r", 7);
-    circle_arrow.append("svg:path").attr("d", "M 0,-5 L 20 ,0 L 0,5");
+
+    circle_arrow
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", 7)
+      .attr("stroke", "context-stroke")
+      .attr("fill", "context-stroke");
+
+    circle_arrow
+      .append("svg:path")
+      .attr("d", "M 0,-5 L 20 ,0 L 0,5")
+      .attr("stroke", "context-stroke")
+      .attr("fill", "context-stroke");
 }

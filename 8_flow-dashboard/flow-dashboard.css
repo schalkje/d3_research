@@ -87,8 +87,9 @@ label {
     stroke: red;
     stroke-width: 1px;
     fill: none;
-    marker-start: url(#circle-marker);
-    marker-end: url(#circle-marker);
+    marker-end: none;
+    /* marker-start: url(#circle-marker);
+    marker-end: url(#circle-marker); */
 }
 
 .marker {

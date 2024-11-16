@@ -2,7 +2,7 @@
   "settings": {
     "showCenterMark": false,
     "showConnectionPoints": true,
-    "showGhostlines": false,
+    "showGhostlines": true,
     "curved": true,
     "showBoundingBox": true
   },

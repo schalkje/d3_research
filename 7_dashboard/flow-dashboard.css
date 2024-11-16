@@ -6,8 +6,8 @@
 }
 
 #graph rect.boundingBox {
-  fill: none;  
-  stroke: rgba(0, 160, 0, 0.5);  
+  fill: none;
+  stroke: rgba(0, 160, 0, 0.5);
 }
 
 
@@ -24,12 +24,12 @@
 }
 
 #minimap rect.background {
-  fill: white;  
+  fill: white;
   stroke: rgb(136, 136, 136);
 }
 
 #minimap rect.boundingbox {
-  fill: none;  
+  fill: none;
   stroke: rgba(255, 0, 0, 0.5);
   stroke-width: 4px;
 }
@@ -37,7 +37,7 @@
 
 #minimap .eye {
   /* fill: rgba(238, 237, 221, 0.6) */
-  fill: rgba(255,255,255, 0.7)
+  fill: rgba(255, 255, 255, 0.7)
 }
 
 #minimap .iris {
@@ -48,50 +48,50 @@
 
 
 body {
-    background-color: white;
-    font-family: Arial;
-  }
+  background-color: white;
+  font-family: Arial;
+}
 
-  /* #graph-container {
+/* #graph-container {
     background-color: red;
   } */
 
 
-  #graph .dashboard {
-    fill: green;
-  }
+#graph .dashboard {
+  fill: green;
+}
 
-  svg.container {
-    border: 1px solid #000;
-    background-color: red;
-  }
-  
-  svg.canvas {
-    background-color:#e6e3e3;
-    border-color: #d3d3d3;
-    border-width: 2px;
-    border-style: solid;
-    box-shadow: 4px 3px 8px 1px #969696;
-    -webkit-box-shadow: 4px 3px 8px 1px #969696;
-  }
-  
-  .centermark {
-    fill: red;
-    stroke: white;
-    stroke-width: 1;
-  }
-  
-  .connection-point {
-    fill: rgb(155, 155, 226);
-    stroke: none;
-  }
+svg.container {
+  border: 1px solid #000;
+  background-color: red;
+}
 
-  /* .connection-point {
+svg.canvas {
+  background-color: #e6e3e3;
+  border-color: #d3d3d3;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 4px 3px 8px 1px #969696;
+  -webkit-box-shadow: 4px 3px 8px 1px #969696;
+}
+
+.centermark {
+  fill: red;
+  stroke: white;
+  stroke-width: 1;
+}
+
+.connection-point {
+  fill: rgb(155, 155, 226);
+  stroke: none;
+}
+
+/* .connection-point {
     fill: rgb(70, 130, 180, 0.8);
     stroke: rgb(154, 169, 182);
   } */
-  
-  /* 
+
+/* 
   line {
     fill: none;
     stroke: #ccc;
@@ -109,27 +109,26 @@ body {
     opacity: 0.3;
     stroke: white;
   } */
-  
-  .lanelabel
-  {
-    font-size: 16px;
-    fill: gray;
-    text-anchor: middle;
-  }
-  
-  
-  
-  .node.shape {
-    fill: #9b9bfa;
-    fill-opacity: 0.95;
-    stroke: rgb(65, 65, 151);
-    stroke-opacity: 0.4;
-    stroke-width: 2;
-    cursor: default;
-    opacity: 0.3;
-  }
 
-  /* g.node[status="unknown"] .node.shape {
+.lanelabel {
+  font-size: 16px;
+  fill: gray;
+  text-anchor: middle;
+}
+
+
+
+.node.shape {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
+  stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.4;
+  stroke-width: 2;
+  cursor: default;
+  opacity: 0.3;
+}
+
+/* g.node[status="unknown"] .node.shape {
     fill: #9b9bfa;
   }
 
@@ -157,234 +156,201 @@ body {
     fill: rgb(255, 0, 0);
     opacity: 0.8;
   } */
-  .node.shape[status="unknown"] {
-    fill: #9b9bfa;
-    opacity: 0.8;
-  }
+.node.shape[status="unknown"] {
+  fill: #9b9bfa;
+  opacity: 0.8;
+}
 
-  .node.shape[status="disabled"] {
-    fill: rgb(142, 142, 142);
-    opacity: 0.8;
-  }
+.node.shape[status="disabled"] {
+  fill: rgb(142, 142, 142);
+  opacity: 0.8;
+}
 
-  .node.shape[status="new"] {
-    fill: #9bccfa;
-    opacity: 0.8;
-  }
+.node.shape[status="new"] {
+  fill: #9bccfa;
+  opacity: 0.8;
+}
 
-  .node.shape[status="ready"] {
-    fill: #26ff00;
-    opacity: 0.8;
-  }
+.node.shape[status="ready"] {
+  fill: #26ff00;
+  opacity: 0.8;
+}
 
-  .node.shape[status="active"] {
-    fill: rgb(151, 147, 65);
-    opacity: 0.8;
-  }
+.node.shape[status="active"] {
+  fill: rgb(151, 147, 65);
+  opacity: 0.8;
+}
 
-  .node.shape[status="warning"] {
-    fill: rgb(255, 98, 0);
-    opacity: 0.8;
-  }
+.node.shape[status="warning"] {
+  fill: rgb(255, 98, 0);
+  opacity: 0.8;
+}
 
-  .node.shape[status="error"] {
-    fill: rgb(255, 0, 0);
-    opacity: 0.8;
-  }
+.node.shape[status="error"] {
+  fill: rgb(255, 0, 0);
+  opacity: 0.8;
+}
 
 
-  .node.selected .node.shape {
-    stroke: rgb(0, 0, 255);
-    stroke-opacity: 0.95;
-    stroke-width: 3;
-  }
-  
-  .node.placeholder {
-    stroke: red;
-    stroke-opacity: 1;
-    stroke-width: 2;
-  }
-  
-  .node_grabbing {
-    fill: #9b9bfa;
-    fill-opacity: 0.95;
-    stroke: rgb(65, 65, 151);
-    stroke-opacity: 0.8;
-    stroke-width: 4;
-    cursor: grabbing;
-  }
-  
-  .node.label
-  {
-    stroke: none;
-    font-size: 14px;
-    font-weight: bold;
-    /* fill: rgb(216, 216, 241); */
-    fill: black;
-    fill-opacity: 0.8;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-  
-  .node.label.container
-  {
-    font-size: 12px;
-    font-weight: normal;
-    /* fill: rgb(216, 216, 241); */
-    fill: rgb(65, 65, 151);
-    fill-opacity: 0.8;
-    text-anchor: start;
-    dominant-baseline: hanging;
-  }
-  
-  
-  .node.label.group
-  {
-    font-size: 12px;
-    font-weight: normal;
-    /* fill: rgb(216, 216, 241); */
-    fill: rgb(65, 65, 151);
-    fill-opacity: 0.8;
-    text-anchor: start;
-    dominant-baseline: hanging;
-  }
-  
-  .node.label.adapter
-  {
-    font-size: 12px;
-    font-weight: normal;
-    /* fill: rgb(216, 216, 241); */
-    fill: rgb(65, 65, 151);
-    fill-opacity: 0.8;
-    text-anchor: start;
-    dominant-baseline: hanging;
-  }
-  
-  .edge .path {
-    stroke-width: 2px;
-    stroke: #7795D1;
-    /* stroke: green; */
-    fill: none;
-    marker-end: url(#arrow);
-    /* marker-mid: url(#mid-arrow);  */
-    /* marker-start: url(#arrow); */
-  }
-  
-  .edge.selected .path {
-    stroke: rgb(0, 0, 255);
-    stroke-opacity: 0.5;
-    opacity: 0.8;
-  }
-  
-  
-  .edge.ghostline .path {
-    stroke-width: 2px;
-    /* stroke: #4679BD; */
-    stroke: white;
-    stroke-opacity: 0.6;
-  }
-  
+.node.selected .node.shape {
+  stroke: rgb(0, 0, 255);
+  stroke-opacity: 0.95;
+  stroke-width: 3;
+}
 
-  .edge.ghostline {
-    stroke-width: 1px;
-    /* stroke: #4679BD; */
-    stroke: white;
-    stroke-opacity: 0.6;
-  }
-  
-  
-  
-  line.link {
-    stroke-width: 2px;
-    stroke: #4679BD;
-    stroke-opacity: 0.6;
-  }
-  
-  line.ghostlink {
-    stroke-width: 2px;
-    stroke: #FFF;
-    stroke-opacity: 0.15;
-  }
-  
-  .marker {
-    stroke: #7795D1;
-    stroke-width: 2px;
-    fill: #7795D1;
-  }
-  
-  .marker#arrow {
-    stroke: #7795D1;
-    fill: none;
-    stroke-width: 2px;
-  }
-  
-  .marker#mid-arrow {
-    stroke: none;
-    fill: #7795D1;
-    /* stroke-width: 2px; */
-  }
-  
-  
-  .marker#arrowhead {
-    stroke: #7795D1;
-    stroke-width: 2px;
-    fill: #7795D1;
-  }
-  
-  
-  .lane {
-    stroke: rgb(211, 211, 211);
-    stroke-opacity: 1;
-    stroke-width: 1;
-  }
-  
-  .lane1 {
-    text-align: center;
-    fill:rgb(83, 142, 194);
-    fill-opacity: 0.1;
-  }
-  
-  
-  .lane2 {
-    text-align: center;
-    fill: #2fc792;
-    fill-opacity: 0.1;
-  }
-  
-  
-  .parent-node {
-    fill: #9b9bfa;
-  }
-  .parent-node text {
-    user-select: none;
-  }
-  .collapsed {
-    opacity: 0.7;
-  }
-  .expanded {
-    font-weight: bold;
-  }
+.node.placeholder {
+  stroke: red;
+  stroke-opacity: 1;
+  stroke-width: 2;
+}
+
+.node_grabbing {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
+  stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.8;
+  stroke-width: 4;
+  cursor: grabbing;
+}
+
+.node.label {
+  stroke: none;
+  font-size: 14px;
+  font-weight: bold;
+  /* fill: rgb(216, 216, 241); */
+  fill: black;
+  fill-opacity: 0.8;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.node.label.container {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+
+.node.label.group {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+.node.label.adapter {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+.edge .path {
+  stroke-width: 2px;
+  stroke: #7795D1;
+  /* stroke: green; */
+  fill: none;
+  marker-end: url(#arrow);
+  /* marker-mid: url(#mid-arrow);  */
+  /* marker-start: url(#arrow); */
+}
+
+.edge.selected .path {
+  stroke: rgb(0, 0, 255);
+  stroke-opacity: 0.5;
+  opacity: 0.8;
+}
+
+
+.edge.ghostline {
+  stroke-width: 1px;
+  /* stroke: #4679BD; */
+  stroke: white;
+  stroke-opacity: 0.6;
+}
+
+.edge.ghostline .path {
+  stroke-width: 2px;
+  /* stroke: #4679BD; */
+  /* stroke: white; */
+  stroke: white;
+  stroke-opacity: 1;
+  /* 0.6; */
+  marker-end: url(#debugcircle);
+  marker-start: url(#debugcircle);
+}
 
 
 
-  .zoom-button circle {
-    display: none;
-    transition: all 0.2s;
-  }
-  
-  .zoom-button:hover circle {
-    display: block;
-    fill: #f0f0f0;
-    stroke: #bbb;
-    stroke-width: 1px;
-    transition: all 0.2s;
-    cursor: pointer;
-    
-    /* Add shadow for depth */
-    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
-  }
-  
-  .zoom-button rect.icon {
-    fill: #acace7;
-    transition: fill 0.2s, transform 0.2s;
-  }
+
+
+
+.lane {
+  stroke: rgb(211, 211, 211);
+  stroke-opacity: 1;
+  stroke-width: 1;
+}
+
+.lane1 {
+  text-align: center;
+  fill: rgb(83, 142, 194);
+  fill-opacity: 0.1;
+}
+
+
+.lane2 {
+  text-align: center;
+  fill: #2fc792;
+  fill-opacity: 0.1;
+}
+
+
+.parent-node {
+  fill: #9b9bfa;
+}
+
+.parent-node text {
+  user-select: none;
+}
+
+.collapsed {
+  opacity: 0.7;
+}
+
+.expanded {
+  font-weight: bold;
+}
+
+
+
+.zoom-button circle {
+  display: none;
+  transition: all 0.2s;
+}
+
+.zoom-button:hover circle {
+  display: block;
+  fill: #f0f0f0;
+  stroke: #bbb;
+  stroke-width: 1px;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  /* Add shadow for depth */
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.zoom-button rect.icon {
+  fill: #acace7;
+  transition: fill 0.2s, transform 0.2s;
+}
