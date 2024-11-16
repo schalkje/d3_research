@@ -66,7 +66,7 @@ defs
 .append("marker")
 .attr("id", "debugcircle")
 .attr("class", "marker circle")
-.attr("viewBox", "-5 -5 10 10")
+.attr("viewBox", "-7 -7 14 14")
 .attr("refX", 0)
 .attr("refY", 0)
 .attr("orient", "auto")
@@ -76,7 +76,8 @@ defs
 .append("circle")
 .attr("stroke", "context-stroke")
 .attr("stroke-width", 2)  
-.attr("fill", "red")
+.attr("fill", "none")
+// https://www.w3.org/TR/SVG2/painting.html#LineJoin
 .attr("cx", 0)
 .attr("cy", 0)
 .attr("r", 5);

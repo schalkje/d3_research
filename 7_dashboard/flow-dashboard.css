@@ -285,6 +285,7 @@ svg.canvas {
   /* stroke: white; */
   stroke: white;
   stroke-opacity: 1;
+  stroke-linecap: round;
   /* 0.6; */
   marker-end: url(#debugcircle);
   marker-start: url(#debugcircle);
