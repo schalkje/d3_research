@@ -1,6 +1,6 @@
 {
   "settings": {
-    "showCenterMark": false,
+    "showCenterMark": true,
     "showConnectionPoints": true,
     "showGhostlines": true,
     "curved": true,

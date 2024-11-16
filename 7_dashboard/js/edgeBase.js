@@ -64,6 +64,7 @@ export default class BaseEdge {
     return this.parents.source[0];
   }
 
+
   get target() {
     // log error if no parents or no target
     if (!this.parents || !this.parents.target) {
@@ -97,19 +98,35 @@ export default class BaseEdge {
 
   get x1() {
     // console.log("    Getting x1:", this.source, this.source.x);
-    return this.source ? this.source.x : null;
+    let correction = 0;
+    for (let i = 1; i < this.parents.source.length; i++){
+      correction += this.parents.source[i].x;
+      } 
+    return this.source ? this.source.x + correction : null;
   }
 
   get y1() {
-    return this.source ? this.source.y : null;
+    let correction = 0;
+    for (let i = 1; i < this.parents.source.length; i++){
+      correction += this.parents.source[i].y;
+      } 
+    return this.source ? this.source.y + correction : null;
   }
 
   get x2() {
-    return this.target ? this.target.x : null;
+    let correction = 0;
+    for (let i = 1; i < this.parents.target.length; i++){
+      correction += this.parents.target[i].x;
+      } 
+    return this.target ? this.target.x + correction : null;
   }
 
   get y2() {
-    return this.target ? this.target.y : null;
+    let correction = 0;
+    for (let i = 1; i < this.parents.target.length; i++){
+      correction += this.parents.target[i].y;
+      } 
+    return this.target ? this.target.y + correction : null;
   }
 
   get sourcePoint() {
