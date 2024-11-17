@@ -9,12 +9,12 @@ export default class RectangularNode extends BaseNode {
   }
 
   // Method to render the node using D3
-  render() {
-    const container = super.renderContainer();
+  init() {
+    super.init();
     // console.log("Rendering Rectangular Node:", this.id);
 
     // Draw the node shape
-    this.shape = container
+    this.shape = this.element
       .append("rect")
       .attr("class", `node shape`)
       .attr("width", this.data.width)
@@ -25,7 +25,7 @@ export default class RectangularNode extends BaseNode {
       .attr("ry", 5);
 
     // Append text for default type
-    container
+    this.element
       .append("text")
       .attr("class", "node label")
       .attr("x", 0)
@@ -36,6 +36,7 @@ export default class RectangularNode extends BaseNode {
   get status() {
     return super.status;
   }
+  
   set status(value) {
     console.log("nodeRect - Setting status", value);
     super.status = value;

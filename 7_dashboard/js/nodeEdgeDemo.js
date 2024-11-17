@@ -36,18 +36,6 @@ export default class EdgeDemoNode extends BaseContainerNode {
 
     // render "center" node
     this.centerNode = this.createChild(null, "center", 0, 0);
-    // let centerChild = {
-    //     id: `center_${this.data.id}`,
-    //     label: `Source`,
-    //     category: "center",
-    //     type: "node",
-    // };
-    // this.data.children.push(centerChild);
-
-    // if (centerChild) {
-    //   this.centerNode = new RectangularNode(centerChild, this.container, this.settings, this);
-    //   this.centerNode.render();
-    // }
 
     // grid layout
     switch (this.data.layout) {
@@ -251,12 +239,11 @@ export default class EdgeDemoNode extends BaseContainerNode {
 
     let childNode = new RectangularNode(child, this.container, this.settings, this);
     childNode.render();
-    // childNode.move(x + this.containerMargin.left / 2, y + this.containerMargin.top / 2);
+    
     childNode.move(
       x + (this.containerMargin.left - this.containerMargin.right) / 2,
       y + (this.containerMargin.top - this.containerMargin.bottom) / 2
-    );
-    // childNode.move(x, y);
+    );    
 
     console.log(">>>> Created Child:", this.centerNode);
     // create edge

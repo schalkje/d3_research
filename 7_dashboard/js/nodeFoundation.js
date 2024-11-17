@@ -58,7 +58,9 @@ export default class FoundationNode extends BaseContainerNode {
       this.data.children.push(rawChild);
     }
     if (rawChild) {
-      this.rawNode = new RectangularNode(rawChild, this.container, this.settings, this);
+      if (this.rawNode == null)
+        this.rawNode = new RectangularNode(rawChild, this.container, this.settings, this);
+      
       this.rawNode.render();
     }
 
@@ -78,7 +80,9 @@ export default class FoundationNode extends BaseContainerNode {
     }
     if (baseChild) {
       // console.log("    Rendering Base Node:", baseChild, this);
-      this.baseNode = new RectangularNode(baseChild, this.container, this.settings, this);
+      if (this.baseNode == null)
+        this.baseNode = new RectangularNode(baseChild, this.container, this.settings, this);
+      
       this.baseNode.render();
     }
 

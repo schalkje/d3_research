@@ -72,14 +72,14 @@ export function buildEdgeParents(sourceNode, targetNode) {
 export function createEdge(rootNode, edgeData, settings)
 {
     console.log("Creating Edge:", edgeData, rootNode, settings);
-    const source = rootNode.findNode(edgeData.source);
+    const source = rootNode.getNode(edgeData.source);
     if (!source) {
       console.error(`Source node ${edgeData.source} not found`);
       return;
     }
 
     // find target
-    const target = rootNode.findNode(edgeData.target);
+    const target = rootNode.getNode(edgeData.target);
     if (!target) {
       console.error(`Target node ${edgeData.target} not found`);
       return;

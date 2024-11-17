@@ -231,7 +231,7 @@ export class Dashboard {
     } else {
       root = await createNodes(dashboard.nodes, container, dashboard.settings);
     }
-    await root.render();
+    await root.init();
 
     if (dashboard.edges.length > 0) await createEdges(root, dashboard.edges, dashboard.settings);
 
@@ -375,7 +375,7 @@ export class Dashboard {
 
   zoomToNodeById(nodeId) {
     console.log("zoomToNodeById", nodeId);
-    const node = this.main.root.findNode(nodeId);
+    const node = this.main.root.getNode(nodeId);
     if (node) {
       console.log("node=", node);
       return this.zoomToNode(node);
@@ -387,7 +387,7 @@ export class Dashboard {
 
   setStatusToNodeById(nodeId, status) {
     console.log("setStatusToNodeById", nodeId);
-    const node = this.main.root.findNode(nodeId);
+    const node = this.main.root.getNode(nodeId);
     if (node) {
       console.log("node=", node);
       node.status = status;

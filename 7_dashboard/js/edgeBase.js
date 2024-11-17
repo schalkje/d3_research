@@ -148,10 +148,8 @@ export default class BaseEdge {
     return [this.x2, this.y2];
   }
 
-  render() {
-    // console.log(
-    //   `Rendering Base Edge: ${this.data.source}--${this.data.type}-->${this.data.target}  [${this.data.active}]`
-    // );
+  init() {
+    console.log("edgeBase - init", this.label);
 
     // Create ghostlines
     if (this.settings.showGhostlines) {
@@ -177,11 +175,9 @@ export default class BaseEdge {
 
       this.element.append("path").attr("class", "path");
     }
-
-    return this.element;
   }
 
-  layout() {
+  update() {
     console.log("----------------------------------------------------------------------------------------------");
     console.log("--     Updating Render for EDGE BASE:", this.id);
     console.log("--     Updating Render for EDGE BASE:", this.label);

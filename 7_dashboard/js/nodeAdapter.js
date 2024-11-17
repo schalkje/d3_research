@@ -3,12 +3,11 @@ import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
 import { createInternalEdge } from "./edge.js";
 
-
 const AdapterMode = Object.freeze({
-  MANUAL: 'manual', 
-  FULL: 'full',
-  ARCHIVE_ONLY: 'archive-only',
-  STAGING_ARCHIVE: 'staging-archive'
+  MANUAL: "manual",
+  FULL: "full",
+  ARCHIVE_ONLY: "archive-only",
+  STAGING_ARCHIVE: "staging-archive",
 });
 
 export default class AdapterNode extends BaseContainerNode {
@@ -16,10 +15,8 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive 
+    if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
-    
-
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
@@ -27,10 +24,12 @@ export default class AdapterNode extends BaseContainerNode {
     this.transformNode = null;
     this.archiveNode = null;
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
+    this.firstInit = true;
   }
 
-  async renderChildren() {
-    // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
+  async initChildren() {
+    this.suspenseDisplayChange = true;
+    console.log("nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -53,16 +52,19 @@ export default class AdapterNode extends BaseContainerNode {
     }
     if (archiveChild) {
       console.log("    Rendering Archive Node:", archiveChild, this);
-      this.archiveNode = new RectangularNode(archiveChild, this.container, this.settings, this);
-      this.archiveNode.render();
-    } 
+      if (this.archiveNode == null) {
+        this.archiveNode = new RectangularNode(archiveChild, this.container, this.settings, this);
+        this.childNodes.push(this.archiveNode);
+      }
+
+      this.archiveNode.init();
+    }
 
     // render "staging" node
     let stagingChild = this.data.children.find((child) => child.role === "staging");
     if (
       !stagingChild &&
-      (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || 
-        this.data.layout.mode == AdapterMode.FULL)
+      (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || this.data.layout.mode == AdapterMode.FULL)
     ) {
       stagingChild = {
         id: `stg_${this.data.id}`,
@@ -73,14 +75,18 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(stagingChild);
     }
     if (stagingChild) {
-      this.stagingNode = new RectangularNode(stagingChild, this.container, this.settings, this);
-      this.stagingNode.render();
+      console.log("    Rendering Staging Node:", stagingChild, this);
+      if (this.stagingNode == null) {
+        this.stagingNode = new RectangularNode(stagingChild, this.container, this.settings, this);
+        this.childNodes.push(this.stagingNode);
+      }
+
+      this.stagingNode.init();
     }
 
     // render "transform" node
     let transformChild = this.data.children.find((child) => child.role === "transform");
-    if (!transformChild && 
-        this.data.layout.mode == AdapterMode.FULL) {
+    if (!transformChild && this.data.layout.mode == AdapterMode.FULL) {
       transformChild = {
         id: `trn_${this.data.id}`,
         label: `Transform ${this.data.label}`,
@@ -90,62 +96,71 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(transformChild);
     }
     if (transformChild) {
-      this.transformNode = new RectangularNode(transformChild, this.container, this.settings, this);
-      this.transformNode.render();
+      console.log("    Rendering Transform Node:", transformChild, this);
+      if (this.transformNode == null) {
+        this.transformNode = new RectangularNode(transformChild, this.container, this.settings, this);
+        this.childNodes.push(this.transformNode);
+      }
+
+      this.transformNode.init();
     }
 
-    // store the child nodes in an array for following the requirements of the base container node
-    this.childNodes.push(this.stagingNode);
-    this.childNodes.push(this.archiveNode);
-    this.childNodes.push(this.transformNode);
+    this.updateChildren;
 
-    this.layoutChildren();
+    // JS: do not recreate edges if they are already existing
+    if (this.firstInit) {
+      createInternalEdge(
+        {
+          source: this.stagingNode,
+          target: this.transformNode,
+          isActive: true,
+          type: "SSIS",
+          state: "Ready",
+        },
+        this.stagingNode,
+        this.transformNode,
+        this.settings
+      );
+      createInternalEdge(
+        {
+          source: this.stagingNode,
+          target: this.archiveNode,
+          isActive: true,
+          type: "SSIS",
+          state: "Ready",
+        },
+        this.stagingNode,
+        this.archiveNode,
+        this.settings
+      );
+    }
 
-    createInternalEdge(
-      {
-        source: this.stagingNode,
-        target: this.transformNode,
-        isActive: true,
-        type: "SSIS",
-        state: "Ready",
-      },
-      this.stagingNode,
-      this.transformNode,      
-      this.settings,
-    );
-    createInternalEdge(
-      {
-        source: this.stagingNode,
-        target: this.archiveNode,
-        isActive: true,
-        type: "SSIS",
-        state: "Ready",
-      },
-      this.stagingNode,
-      this.archiveNode,
-      this.settings,
-    );
+    this.initEdges();
 
-    this.renderEdges();
-    this.layoutEdges();
+    this.update();
+
+    console.log("*************** END ****** Rendering Children for Adapter:", this.data.label);
+    this.suspenseDisplayChange = false;
+    this.handleDisplayChange();
+    this.firstInit = false;
   }
 
-  layoutChildren() {
-    console.log("    Layout for Adapter:", this.id, this.data.layout);
+  updateChildren() {
+    console.log(`    Layout ${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
     switch (this.data.layout.arrangement) {
       case 1:
-        this.layout1();
+        this.updateLayout1();
         break;
       case 2:
-        this.layout2();
+        this.updateLayout2();
         break;
       case 3:
-        this.layout3();
+        this.updateLayout3();
         break;
     }
   }
 
-  async layout1() {
+  async updateLayout1() {
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
@@ -179,19 +194,19 @@ export default class AdapterNode extends BaseContainerNode {
         -this.data.width / 2 +
         this.transformNode.data.width / 2 +
         this.containerMargin.left +
-        this.stagingNode.data.width / 2 + 
+        this.stagingNode.data.width / 2 +
         2 * this.nodeSpacing.horizontal;
       const y =
         -this.data.height / 2 +
         this.transformNode.data.height / 2 +
-        this.containerMargin.top + 
+        this.containerMargin.top +
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
       this.transformNode.move(x, y);
     }
   }
 
-  async layout2() {
+  async updateLayout2() {
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y =
@@ -231,11 +246,11 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async layout3() {
+  async updateLayout3() {
     if (this.stagingNode) {
       // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
-      var height = this.archiveNode.data.height ;
+      var height = this.archiveNode.data.height;
       if (this.transformNode) {
         height += this.transformNode.data.height + this.nodeSpacing.vertical;
       }

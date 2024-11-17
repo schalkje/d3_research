@@ -23,7 +23,9 @@ export default class BaseNode {
     this.onDblClick = null;
     this._selected = false;
     this._status = NodeStatus.UNKNOWN;
-    this._visible = true; // JS: todo - implement visibility
+    this._visible = true; 
+    this._collapsed = false; 
+    this.suspenseDisplayChange = false;
 
     this.id = nodeData.id;
 
@@ -35,8 +37,6 @@ export default class BaseNode {
     this.element = null;
     this.simulation = null;
     this.layoutDebug = true;
-
-    this.data.interactionState ??= { expanded: true };
 
     // Set default values for x, y, width, and height
     this.x ??= 0;
@@ -51,7 +51,20 @@ export default class BaseNode {
 
   set visible(value) {
     if (value === this._visible) return;
+    console.log("nodeBase - Setting visible", this.data.label, value);
     this._visible = value;    
+  }
+
+  get collapsed() {
+    return this._collapsed;
+  }
+
+  set collapsed(value) {
+    if (value === this._collapsed) return;
+    this._collapsed = value;
+
+    this.element.classed("collapsed", this.collapsed);
+    this.element.classed("expanded", !this.collapsed);
   }
 
   get status() {
@@ -74,9 +87,13 @@ export default class BaseNode {
   }
 
   handleDisplayChange() {
+    if (this.suspenseDisplayChange) {
+      console.log(`          > skip handleDisplayChange ${this.data.label}`);
+      return;
+    }
     // console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
     if (this.onDisplayChange) {
-      console.log(`          > calling`);
+      console.log(`          > calling handleDisplayChange ${this.data.label}`);
       this.onDisplayChange();
     } else {
       if (this.parentNode) this.parentNode.handleDisplayChange();
@@ -92,15 +109,11 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
+  init() {
+    console.log("nodeBase - init", this.data.label);
 
-
-
-  renderContainer() {
-    // console.log("Rendering Base Node renderContainer:", this.id, this.x, this.data.y, this.parentElement);
     this.element = this.parentElement
       .append("g")
-      // .attr("width", this.data.width) // a g element doesn't have width/height attributes
-      // .attr("height", this.data.height)
       .attr("class", "node")
       .attr("id", this.id)
       .attr("status", this.status)
@@ -114,15 +127,17 @@ export default class BaseNode {
         if (event) event.stopPropagation();
         this.handleDblClicked(event);
       });
-    // .call(d3.drag()
-    //   .on("start", (event) => this.drag_started(event, this))
-    //   .on("drag", (event) => this.dragged(event, this))
-    //   .on("end", (event) => this.drag_ended(event, this)));
+
+      
+    // Set expanded or collapsed state
+    this.element.classed("collapsed", this.collapsed);
+    this.element.classed("expanded", !this.collapsed);
 
     // show the center stip
     if (this.settings.showCenterMark)
       this.element.append("circle").attr("class", "centermark").attr("r", 3).attr("cx", 0).attr("cy", 0);
 
+    // show the connection points
     if (this.settings.showConnectionPoints) {
       const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
       Object.values(connectionPoints).forEach((point) => {
@@ -134,18 +149,20 @@ export default class BaseNode {
           .attr("r", 2);
       });
     }
-
-    // Set expanded or collapsed state
-    if (this.data.interactionState.expanded) {
-      this.element.classed("expanded", true);
-    } else {
-      this.element.classed("collapsed", true);
-    }
-
-    return this.element;
   }
 
+  // function to put all the elements in the correct place
+  update() {
+    console.log("nodeBase - update", this.data.label);
 
+    if (this.settings.showConnectionPoints) {
+      const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
+      Object.values(connectionPoints).forEach((point) => {
+        this.element.select(`.connection-point.side-${point.side}`).attr("cx", point.x).attr("cy", point.y);
+      });
+    }
+  }
+  
   handleClicked(event, node = this) {
     console.log("handleClicked:", this.id, event);
 
@@ -170,24 +187,20 @@ export default class BaseNode {
     }
   }
 
-  render() {
-    renderContainer();
-  }
-
   resize(size) {
     // node base has no elements of it's own, so just update the data
     this.data.width = size.width;
     this.data.height = size.height;
 
-    this.layoutConnectionPoints();
+    this.update();
 
     this.handleDisplayChange();
   }
 
-  findNode(nodeId) {
-    console.log("    nodeBase findNode:", this.id, nodeId, this.id == nodeId);
+  getNode(nodeId) {
+    console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
     if (this.id === nodeId) {
-      console.log("    nodeBase findNode: return this", this);
+      console.log("    nodeBase getNode: return this", this);
       return this;
     }
     return null;
@@ -286,30 +299,16 @@ export default class BaseNode {
     return this.parentNode ? [this.parentNode, ...this.parentNode.getParents()] : [];
   }
   
-  // Method to toggle expansion/collapse of the node
-  toggleExpandCollapse(container) {
-    this.data.interactionState.expanded = !this.data.interactionState.expanded;
-    this.updateLayout(container);
-  }
 
-  // Method to update the node rendering based on interaction state
-  updateLayout() {
-    console.log("    Updating Render for BASE:", this.id, this.data.interactionState.expanded);
 
-    if (this.data.interactionState.expanded) {
-      this.element.classed("collapsed", false).classed("expanded", true);
-    } else {
-      this.element.classed("expanded", false).classed("collapsed", true);
-    }
-  }
 
-  cascadeArrange() {
+  cascadeUpdate() {
     if (this.parentNode) {
-      console.log(`cascadeLayoutUpdate cascade from "${this.id}" --> "${this.parentNode.id}"`);
-      this.parentNode.arrange();
-      this.parentNode.cascadeArrange();
+      console.log(`cascadeUpdate from "${this.data.label}" --> "${this.parentNode.data.label}"`);
+      this.parentNode.render();
+      this.parentNode.cascadeRender();
     } else {
-      console.log(`cascadeLayoutUpdate "${this.id}" --> has no parent to cascade to`);
+      console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
     }
   }
 
@@ -335,14 +334,6 @@ export default class BaseNode {
     }
   }
 
-  layoutConnectionPoints() {
-    if (this.settings.showConnectionPoints) {
-      const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
-      Object.values(connectionPoints).forEach((point) => {
-        this.element.select(`.connection-point.side-${point.side}`).attr("cx", point.x).attr("cy", point.y);
-      });
-    }
-  }
 
   // drag
   drag_started(event, node) {

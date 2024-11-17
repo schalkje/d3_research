@@ -36,10 +36,10 @@ import BaseNode from "./nodeBase.js";
       .text(this.data.label);
 
     // Set expanded or collapsed state
-    if (this.data.interactionState.expanded) {
-      container.classed("expanded", true);
-    } else {
+    if (this.collapsed) {
       container.classed("collapsed", true);
+    } else {
+      container.classed("expanded", true);
     }
   }
 }
