@@ -10,7 +10,7 @@ import EdgeDemoNode from "./nodeEdgeDemo.js";
 
 // Function to create nodes with positioning and drag behavior
 export function createNode(nodeData, container, settings, parentNode = null) {
-  console.log("Creating Node:", nodeData, settings, parentNode);
+  // console.log("Creating Node:", nodeData, settings, parentNode);
   var node = null;
   switch (nodeData.type) {
     case "group":

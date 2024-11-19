@@ -41,6 +41,7 @@ export class Dashboard {
   }
 
   async initialize(mainDivSelector, minimapDivSelector = null) {
+    console.log("dashboard - initialize", this);
     // initialize dashboard
     const div = this.initializeSvg(mainDivSelector);
     this.main.svg = div.svg;
@@ -74,6 +75,7 @@ export class Dashboard {
       };
       // this.isMainAndMinimapSyncing = false;
     }
+    console.log("dashboard - initialize - finished", this);
   }
 
   initializeMinimap() {
@@ -223,18 +225,20 @@ export class Dashboard {
   }
 
   async createDashboard(dashboard, container) {
+    console.log("dashboard - createDashboard", dashboard, container);
     createMarkers(container);
 
     var root;
     if (dashboard.nodes.length == 1) {
-      root = await createNode(dashboard.nodes[0], container, dashboard.settings);
+      root = createNode(dashboard.nodes[0], container, dashboard.settings);
     } else {
-      root = await createNodes(dashboard.nodes, container, dashboard.settings);
+      root = createNodes(dashboard.nodes, container, dashboard.settings);
     }
     await root.init();
 
-    if (dashboard.edges.length > 0) await createEdges(root, dashboard.edges, dashboard.settings);
+    // if (dashboard.edges.length > 0) await createEdges(root, dashboard.edges, dashboard.settings);
 
+    console.log("dashboard - createDashboard - finish", dashboard, container);
     return root;
   }
 

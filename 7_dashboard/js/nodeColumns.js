@@ -12,45 +12,51 @@ export default class ColumnsNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async renderChildren() {
-    // console.log("    Rendering Children for Group:", this.id, this.data.children);
+  async initChildren() {
+    console.warn("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
 
     // Create an array to hold all the render promises
-    const renderPromises = [];
 
-    for (const node of this.data.children) {
+      const initPromises = [];
+      for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const childComponent = this.createNode(node, this.container, this.settings, this);
 
-      // console.log("Rendering Child:", childComponent);
-      // console.log("               :", this.x, this.data.y, this.data.width, this.data.height);
+      var childComponent = this.getNode(node.id);
+      if (childComponent == null) {
+        childComponent = this.createNode(node, this.container, this.settings, this);
+        this.childNodes.push(childComponent);
+
+        console.warn("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
+      }
+
       childComponent.x = 0;
       childComponent.y = 0;
 
-      this.childNodes.push(childComponent);
       // Push the render promise into the array
-      renderPromises.push(childComponent.render());
+      initPromises.push(childComponent.init());
     }
-
     // Wait for all renders to complete in parallel
-    await Promise.all(renderPromises);
+    await Promise.all(initPromises);
 
-    this.layoutChildren();
+
+    this.updateChildren();
   }
 
-  layoutChildren() {
-    // console.log("layoutChildren - Layout for Columns:", this.id, this.data.layout);
+  updateChildren() {
+    console.warn(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
+    this.suspenseDisplayChange = true;
 
     // each child is a column
-    var x = 0;
+    var x = 0; 
     var y = 0;
     var containerHeight = 0;
 
     // position the nodes
     this.childNodes.forEach((node, index) => {
+      console.log(`      nodeColumns - updateChildren - Layout for Node: ${node.data.label}, ${Math.round(node.data.width)}x${Math.round(node.data.height)}`, node.data.layout);
       // add spacing between nodes
       if (index > 0 )
         x += this.nodeSpacing.horizontal;
@@ -66,7 +72,7 @@ export default class ColumnsNode extends BaseContainerNode {
       containerHeight = Math.max(containerHeight, node.data.height);
     });
 
-    this.layoutEdges();
+    // this.updateEdges();
 
 
     // reposition the container
@@ -76,12 +82,14 @@ export default class ColumnsNode extends BaseContainerNode {
     var containerY = this.containerMargin.top/2;
     this.container
         .attr("transform", `translate(${containerX}, ${containerY})`);
-    
+
+    this.suspenseDisplayChange = false;    
+    // this.handleDisplayChange();
   }
 
   async arrange() {
-    console.log("Arranging ColumnsNode:", this.id);
-    this.layoutChildren();
+    console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
+    this.updateChildren();
   }
 }
 

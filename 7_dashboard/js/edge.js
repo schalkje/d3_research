@@ -2,16 +2,23 @@ import BaseEdge from "./edgeBase.js";
 
 export function createInternalEdge(edgeData, source, target, settings)
 {
-    console.log("Creating Internal Edge:", edgeData, source, target);
+    // console.log("Creating Internal Edge:", edgeData, source, target);
+    console.log(`  Creating Internal Edge: ${source.data.label} -> ${target.data.label}`);
     
-    console.log("       Settings:", settings);
+    // console.log("       Settings:", settings);
 
     // Find the joint parent container node and build the parent list for both source and target
     const parents = buildEdgeParents(source, target);
 
-    console.log("       Parents:", parents);
+    // console.log("       Parents:", parents);
 
     const parent = parents.container;
+
+    // check if edge already exists (no two edges between the same nodes)
+    if (source.edges.outgoing.find((edge) => edge.target === target)) {
+      console.log(`Edge from ${source.data.label} to ${target.data.label} already exists, no need to define explicitly.`);
+      return;
+    }
 
         // console.log("Creating Edge:", edgeData, source, target);
     // create edge
@@ -33,14 +40,14 @@ export function createInternalEdge(edgeData, source, target, settings)
 //   container: null // the joint parent container node for source and target
 // }
 export function buildEdgeParents(sourceNode, targetNode) {
-  console.log("Building Edge Parents", sourceNode.data.label, targetNode.data.label);
+  // console.log("Building Edge Parents", sourceNode.data.label, targetNode.data.label);
 
   // Get parent nodes for source and target
   const sourceParents = [sourceNode, ...sourceNode.getParents()];
   const targetParents = [targetNode, ...targetNode.getParents()];
 
-  console.log("   Source Parents:", sourceParents);
-  console.log("   Target Parents:", targetParents);
+  // console.log("   Source Parents:", sourceParents);
+  // console.log("   Target Parents:", targetParents);
 
   let container = null;
 
@@ -57,8 +64,8 @@ export function buildEdgeParents(sourceNode, targetNode) {
   const prunedSourceParents = sourceParents.slice(0, sourceParents.indexOf(container));
   const prunedTargetParents = targetParents.slice(0, targetParents.indexOf(container));
 
-  console.log("   Pruned Source Parents:", prunedSourceParents);
-  console.log("   Pruned Target Parents:", prunedTargetParents);
+  // console.log("   Pruned Source Parents:", prunedSourceParents);
+  // console.log("   Pruned Target Parents:", prunedTargetParents);
 
   return {
     source: prunedSourceParents,
@@ -71,7 +78,7 @@ export function buildEdgeParents(sourceNode, targetNode) {
 
 export function createEdge(rootNode, edgeData, settings)
 {
-    console.log("Creating Edge:", edgeData, rootNode, settings);
+    // console.log("Creating Edge:", edgeData, rootNode, settings);
     const source = rootNode.getNode(edgeData.source);
     if (!source) {
       console.error(`Source node ${edgeData.source} not found`);
@@ -84,17 +91,18 @@ export function createEdge(rootNode, edgeData, settings)
       console.error(`Target node ${edgeData.target} not found`);
       return;
     }
+    console.log(`Creating Edge: ${source.data.label} -> ${target.data.label}`);
 
     createInternalEdge(edgeData, source, target, settings)
 }
 
 
-export function createEdges(rootNode, edges, settings) {
+export async function createEdges(rootNode, edges, settings) {
   console.log("Creating Edges:", rootNode, edges, settings);
   edges.forEach((edgeData) => {
     createEdge(rootNode, edgeData, settings);
   });
   console.log("Edges created");
 
-  rootNode.renderEdges();
+  await rootNode.initEdges(true);
 }

@@ -9,7 +9,7 @@
   "nodes": [
     {
       "label": "sources",
-      "id": "lane1",
+      "id": "columns1",
       "description": "Sources",
       "type": "columns",
       "children":[

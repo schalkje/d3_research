@@ -101,7 +101,7 @@ export default class BaseNode {
   }
 
   move(x, y) {
-    // console.log(`          > move ${this.id}, (x:${x},y:${y})`);
+    console.log(`          > move ${this.id}, (x:${Math.round(this.x)},y:${Math.round(this.y)}) -> (x:${Math.round(x)},y:${Math.round(y)})`);
     this.x = x;
     this.y = y;
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
@@ -109,7 +109,7 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
-  init() {
+  async init() {
     console.log("nodeBase - init", this.data.label);
 
     this.element = this.parentElement
@@ -152,7 +152,7 @@ export default class BaseNode {
   }
 
   // function to put all the elements in the correct place
-  update() {
+  async update() {
     console.log("nodeBase - update", this.data.label);
 
     if (this.settings.showConnectionPoints) {
@@ -187,20 +187,25 @@ export default class BaseNode {
     }
   }
 
-  resize(size) {
+  async resize(size) {
     // node base has no elements of it's own, so just update the data
-    this.data.width = size.width;
-    this.data.height = size.height;
+    if  (this.data.width != size.width || this.data.height != size.height)
+    {
+      console.log("nodeBase - resize", this.data.label, size); 
+      this.data.width = size.width;
+      this.data.height = size.height;
 
-    this.update();
+      await this.update();
 
-    this.handleDisplayChange();
+      this.handleDisplayChange();
+    }
+    else console.log("SKIPPED - nodeBase - resize", this.data.label, size, this.data.width, this.data.height);   
   }
 
   getNode(nodeId) {
-    console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
+    // console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
     if (this.id === nodeId) {
-      console.log("    nodeBase getNode: return this", this);
+      // console.log("    nodeBase getNode: return this", this);
       return this;
     }
     return null;
@@ -283,17 +288,6 @@ export default class BaseNode {
     return neighbors;
   }
 
-  // JS: deprecated
-  // findJointParentContainer(target) {
-  //   console.log("    findJointParentContainer:", this.id, target.id);
-  //   let parent = this;
-  //   while (parent && !target.isDescendantOf(parent)) {
-  //     console.log("    findJointParentContainer: next", parent);
-  //     parent = parent.parentNode;
-  //   }
-  //   console.log("    findJointParentContainer: return", parent);
-  //   return parent;
-  // }
   getParents() {
     // console.log("    getParents:", this.id, this.parentNode);
     return this.parentNode ? [this.parentNode, ...this.parentNode.getParents()] : [];
@@ -305,8 +299,8 @@ export default class BaseNode {
   cascadeUpdate() {
     if (this.parentNode) {
       console.log(`cascadeUpdate from "${this.data.label}" --> "${this.parentNode.data.label}"`);
-      this.parentNode.render();
-      this.parentNode.cascadeRender();
+      this.parentNode.update();
+      this.parentNode.cascadeUpdate();
     } else {
       console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
     }

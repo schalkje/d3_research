@@ -62,8 +62,8 @@ export default class EdgeDemoNode extends BaseContainerNode {
     // resize to contain all children
     this.resizeToFitChildren();
 
-    this.renderEdges();
-    this.layoutEdges();
+    await this.initEdges();
+    // this.updateEdges();
   }
 
   gridLayout()

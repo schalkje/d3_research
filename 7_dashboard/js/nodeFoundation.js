@@ -108,8 +108,8 @@ export default class FoundationNode extends BaseContainerNode {
       this.settings,
     );
 
-    this.renderEdges();
-    this.layoutEdges();
+    await this.initEdges();
+    // this.updateEdges();
   }
 
   layoutChildren() {

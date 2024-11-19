@@ -19,6 +19,7 @@ export default class Simulation {
 
   // Method to initialize the force simulation
   init() {
+    console.log(`simulation - init - Simulation init for ${this.containerNode.data.id}`);
     return new Promise((resolve) => {
     // make everything ready to run the simulation
     this.tickCounter = 0;

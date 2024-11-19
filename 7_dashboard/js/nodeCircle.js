@@ -15,9 +15,9 @@ import BaseNode from "./nodeBase.js";
   }
 
   // Method to render the node using D3
-  render() {
+  init() {
     const container = super.renderContainer();
-    console.log('Rendering Circle Node:', this.id);
+    console.log('nodeCircle - init - Rendering Circle Node:', this.id);
 
     // Draw the node shape
     container

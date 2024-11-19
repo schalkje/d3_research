@@ -49,7 +49,7 @@ export default class GroupNode extends BaseContainerNode {
 
     await this.runSimulation();
 
-    this.layoutEdges();
+    this.updateEdges();
   }
 
   async arrange() {

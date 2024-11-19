@@ -10,6 +10,7 @@ export default class RectangularNode extends BaseNode {
 
   // Method to render the node using D3
   init() {
+    console.log("  nodeRect - init:", this.data.label);
     super.init();
     // console.log("Rendering Rectangular Node:", this.id);
 
@@ -38,12 +39,13 @@ export default class RectangularNode extends BaseNode {
   }
   
   set status(value) {
-    console.log("nodeRect - Setting status", value);
+    console.log("  nodeRect - status", value);
     super.status = value;
     this.shape.attr("status", value);
   }
 
   resize(size) {
+    console.log("  nodeRect - size", size);
     // const oldSize = {width: this.data.width, height: this.data.height};
 
     super.resize(size);

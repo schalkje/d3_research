@@ -24,14 +24,12 @@ export function computeLocalConnectionPoints(width, height) {
 }
 
 export function generateEdgePath(edge) {
-  console.log(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
+  // console.log(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
 
-  // JS: todo - determine the source based on visibility; take the highest visible parent
-  // JS: do we need to do something if the parent is not visible?
   const sourceNode = edge.source;
   const targetNode = edge.target;
-  console.log("    Source Node:", sourceNode);
-  console.log("    Target Node:", targetNode);
+  // console.log("    Source Node:", sourceNode);
+  // console.log("    Target Node:", targetNode);
 
   const sourceConnectionPoints = sourceNode.computeConnectionPoints(
     edge.x1,
@@ -42,14 +40,14 @@ export function generateEdgePath(edge) {
   // correct the source connection points, if the drawing surface of the node is not the container
 
 
-  console.log("    Source Connection Points:", sourceConnectionPoints);
+  // console.log("    Source Connection Points:", sourceConnectionPoints);
   const targetConnectionPoints = targetNode.computeConnectionPoints(
     edge.x2,
     edge.y2,
     targetNode.data.width,
     targetNode.data.height
   );
-  console.log("    Target Connection Points:", targetConnectionPoints);
+  // console.log("    Target Connection Points:", targetConnectionPoints);
 
   let sourcePoint, targetPoint;
 

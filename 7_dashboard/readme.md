@@ -205,3 +205,41 @@ For non-module environments (e.g., if ES modules aren’t supported or you want 
 </body>
 </html>
 ```
+
+## structure of elements
+
+
+### init
+scope: __node__, __edge__
+create the elements that make up the node of edge
+
+### update
+scope: __node__, __edge__
+place the elements in the right places
+
+### initChildren
+scope: __container node__
+
+
+### updateChildren
+scope: __container node__
+Place the child elements in the right place within the container.
+
+__Implicit actions:__
+1. Resize container
+    1. Resize node
+1. Cascade Resize
+
+### resize
+scope: __node__
+
+### resizeContainer
+scope: __node__, __container node__
+
+Add the container margins to compute the element size, and call resize.
+
+__Implicit actions:__
+1. resize
+1. cascadeResize
+
+

@@ -18,7 +18,7 @@ export const EdgeStatus = Object.freeze({
 
 export default class BaseEdge {
   constructor(edgeData, parents, settings) {
-    console.log("Creating Base Edge:", edgeData, parents, settings);
+    // console.log("Creating Base Edge:", edgeData, parents, settings);
     this.data = edgeData;
     this.parents = parents;
     this.settings = settings;
@@ -27,8 +27,8 @@ export default class BaseEdge {
     this.onClick = null;
     this.onDblClick = null;
 
-    console.log("Creating Base Edge - source", this.source, this.source.id);
-    console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
+    // console.log("Creating Base Edge - source", this.source, this.source.id);
+    // console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
     this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
 
     this.element = null;
@@ -178,9 +178,10 @@ export default class BaseEdge {
   }
 
   update() {
-    console.log("----------------------------------------------------------------------------------------------");
-    console.log("--     Updating Render for EDGE BASE:", this.id);
-    console.log("--     Updating Render for EDGE BASE:", this.label);
+    console.log("edgeBase - update", this.label);
+    // console.log("----------------------------------------------------------------------------------------------");
+    // console.log("--     Updating Render for EDGE BASE:", this.id);
+    // console.log("--     Updating Render for EDGE BASE:", this.label);
 
     if (this.settings.showGhostlines) {
       const ghostEdge = generateDirectEdge(this);
@@ -195,7 +196,7 @@ export default class BaseEdge {
       // const line = d3.line().curve(d3.curveBasis);
       const line = this.lineGenerator();
 
-      console.log("    Updating Edge:", this.element, edge);
+      // console.log("    Updating Edge:", this.element, edge);
       this.element.select(".path").attr("d", line(edge));
     }
   }

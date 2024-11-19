@@ -40,7 +40,7 @@ export default class LaneNode extends BaseContainerNode {
     console.log("Layout for Lanes:", this.id, this.data.layout, this.childNodes.length);
     this.layoutLane();
 
-    this.layoutEdges();
+    // this.updateEdges();
   }
 
   layoutLane()

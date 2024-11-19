@@ -29,7 +29,7 @@ export default class AdapterNode extends BaseContainerNode {
 
   async initChildren() {
     this.suspenseDisplayChange = true;
-    console.log("nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children);
+    console.log("        nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -51,7 +51,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(archiveChild);
     }
     if (archiveChild) {
-      console.log("    Rendering Archive Node:", archiveChild, this);
+      console.log("        nodeAdapter - Rendering Archive Node:", archiveChild);
       if (this.archiveNode == null) {
         this.archiveNode = new RectangularNode(archiveChild, this.container, this.settings, this);
         this.childNodes.push(this.archiveNode);
@@ -75,7 +75,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(stagingChild);
     }
     if (stagingChild) {
-      console.log("    Rendering Staging Node:", stagingChild, this);
+      console.log("        nodeAdapter - Rendering Staging Node:", stagingChild);
       if (this.stagingNode == null) {
         this.stagingNode = new RectangularNode(stagingChild, this.container, this.settings, this);
         this.childNodes.push(this.stagingNode);
@@ -96,7 +96,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children.push(transformChild);
     }
     if (transformChild) {
-      console.log("    Rendering Transform Node:", transformChild, this);
+      console.log("        nodeAdapter - Rendering Transform Node:", transformChild);
       if (this.transformNode == null) {
         this.transformNode = new RectangularNode(transformChild, this.container, this.settings, this);
         this.childNodes.push(this.transformNode);
@@ -105,10 +105,10 @@ export default class AdapterNode extends BaseContainerNode {
       this.transformNode.init();
     }
 
-    this.updateChildren;
+    // this.updateChildren;
 
     // JS: do not recreate edges if they are already existing
-    if (this.firstInit) {
+    // if (this.firstInit) {
       createInternalEdge(
         {
           source: this.stagingNode,
@@ -133,20 +133,21 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode,
         this.settings
       );
-    }
+    // }
 
-    this.initEdges();
+    await this.initEdges();
 
-    this.update();
-
-    console.log("*************** END ****** Rendering Children for Adapter:", this.data.label);
+    // this.updateChildren();
+    // this.updateEdges();
+    await this.update();
+    console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
     this.firstInit = false;
   }
 
   updateChildren() {
-    console.log(`    Layout ${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
+    console.log(`        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
     switch (this.data.layout.arrangement) {
       case 1:
         this.updateLayout1();
