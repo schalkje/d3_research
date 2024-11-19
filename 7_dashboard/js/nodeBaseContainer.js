@@ -68,7 +68,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   resize(size) {
-    console.log("    BaseContainerNode - resize", this.data.label, size.width, size.height);
+    console.log("    BaseContainerNode - resize", this.data.label, Math.round(size.width), Math.round(size.height));
 
     // make sure the size of the element doesn't go below minimum size
     size.width = Math.max(size.width, this.minimumSize.width);
@@ -89,10 +89,10 @@ export default class BaseContainerNode extends BaseNode {
   async expand() {
     console.log("    BaseContainerNode - expand", this.data.label);
     // restore the expanded size if it was stored
-    // if (this.data.expandedSize) {
-    //   this.data.height = this.data.expandedSize.height;
-    //   this.data.width = this.data.expandedSize.width;
-    // }
+    if (this.data.expandedSize) {
+      this.resize(this.data.expandedSize);
+    }
+
 
     // const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
     // const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
@@ -107,8 +107,8 @@ export default class BaseContainerNode extends BaseNode {
     // await this.updateChildren();
 
     // this.resize({ width: this.data.width, height: this.data.height });
-    if (this.parentNode)
-      this.parentNode.update();
+    // if (this.parentNode)
+    //   this.parentNode.update();
 
   }
 
@@ -242,8 +242,12 @@ export default class BaseContainerNode extends BaseNode {
         this.data.height,
         this.minimumSize.height
       );
-      this.data.width = Math.max(this.minimumSize.width, this.data.width);
-      this.data.height = Math.max(this.minimumSize.height, this.data.height);
+      // this.data.width = Math.max(this.minimumSize.width, this.data.width);
+      // this.data.height = Math.max(this.minimumSize.height, this.data.height);
+      this.resize({
+        width: Math.max(this.minimumSize.width, this.data.width),
+        height: Math.max(this.minimumSize.height, this.data.height),
+      });
       // reposition the label based on the new size
       labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
@@ -302,7 +306,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -containerWidth / 2)
       .attr("y", -containerHeight / 2);
 
-    this.updateChildren();
+    // this.updateChildren();
   }
 
   async update() {
@@ -366,6 +370,5 @@ export default class BaseContainerNode extends BaseNode {
   cleanContainer() {
     console.log("    Removing Children for:", this.data.label);
     this.container.selectAll("*").remove();
-    this.container.remove();
   }
 }

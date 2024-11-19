@@ -10,8 +10,7 @@ import BaseNode from "./nodeBase.js";
 
     // for a circle node, width and height are the same and twice the radius to make a bounding rectangle
     // set width and height to the same value
-    this.data.width = this.data.radius*2;
-    this.data.height = this.data.width;
+    this.resize({width: this.data.width, height: this.data.height});
   }
 
   // Method to render the node using D3

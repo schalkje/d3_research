@@ -137,6 +137,8 @@ export default class AdapterNode extends BaseContainerNode {
 
     await this.initEdges();
 
+
+
     // this.updateChildren();
     // this.updateEdges();
     await this.update();

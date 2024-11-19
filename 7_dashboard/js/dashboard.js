@@ -1,8 +1,6 @@
 import { createNode, createNodes } from "./node.js";
 import { getBoundingBoxRelativeToParent, getRelativeBBox, getComputedDimensions } from "./utils.js";
 import { createMarkers } from "./markers.js";
-import { createEdges } from "./edge.js";
-import {NodeStatus} from "./nodeBase.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -25,6 +23,7 @@ export class Dashboard {
       transform: { x: 0, y: 0, k: 1 },
     };
     this.minimap = {
+      active: false,
       svg: null,
       width: 0,
       height: 0,
@@ -58,6 +57,7 @@ export class Dashboard {
     // initialize minimap
     if (minimapDivSelector) {
       const div = this.initializeSvg(minimapDivSelector);
+      this.minimap.active = true;
       this.minimap.svg = div.svg;
       this.minimap.width = div.width;
       this.minimap.height = div.height;
@@ -180,7 +180,9 @@ export class Dashboard {
 
   // Function to update the position and size of the eye
   updateMinimapEye(x, y, width, height) {
-    // console.log("updateMinimapEye", this);
+    if (!this.minimap.active) return;
+
+    console.log("updateMinimapEye", this);
     // Update minimap.eye properties
     this.minimap.eye.x = x;
     this.minimap.eye.y = y;
@@ -193,10 +195,6 @@ export class Dashboard {
     // If you are displaying a visible outline of the pupil, update it here as well
     this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
   }
-
-  // render() {
-  //     // this.dashboard.root.render();
-  // }
 
   createContainer(dashboard, className) {
     // create background rect
@@ -299,7 +297,8 @@ export class Dashboard {
     updateViewport(this, zoomEvent.transform);
 
     // Store the current zoom level at svg level, for the next event
-    this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
+    if (this.minimap.active)
+      this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
 
     this.isMainAndMinimapSyncing = false;
   }
@@ -350,14 +349,16 @@ export class Dashboard {
       );
     this.main.scale = 1;
 
-    this.minimap.svg
-      .transition()
-      .duration(750)
-      .call(
-        this.minimap.zoom.transform,
-        d3.zoomIdentity,
-        d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
-      );
+
+    if (this.minimap.active)
+      this.minimap.svg
+        .transition()
+        .duration(750)
+        .call(
+          this.minimap.zoom.transform,
+          d3.zoomIdentity,
+          d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
+        );
 
     this.deselectAll();
   }
@@ -537,7 +538,8 @@ export class Dashboard {
     updateViewport(this, transform);
 
     // Store the current zoom level at svg level, for the next event
-    this.minimap.svg.call(this.minimap.zoom.transform, transform);
+    if (this.minimap.active)
+      this.minimap.svg.call(this.minimap.zoom.transform, transform);
 
     this.isMainAndMinimapSyncing = false;
   }
