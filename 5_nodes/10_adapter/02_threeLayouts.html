@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <link rel="stylesheet" href="../../7_dashboard/flow-dashboard.css">
+
+   <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+   <h1>Nodes</h1>
+
+   <h2>Adapter Node</h2>
+
+   <div class="container">
+      <svg id="graph" class="canvas">
+      </svg>
+   </div>
+
+   <script type="module">
+      
+      import { threeLayouts as dashboard  } from './js/graphData.js';
+      import flowDashboard from '../../7_dashboard/js/index.js';
+
+      const flowdash = new flowDashboard.Dashboard(dashboard);
+      flowdash.initialize('#graph');
+
+  </script>
+
+   <button onclick="update()">Update</button>
+</body>
+
+</html>
