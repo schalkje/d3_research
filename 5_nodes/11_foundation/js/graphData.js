@@ -89,4 +89,63 @@ export const threeFoundationNodes = {
   edges: [],
 };
 
+export const threeFoundationNodesColumns = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
+  },
+  nodes: [
+    {
+      id: "columns1",
+      label: "Foundation",
+      type: "columns",
+      groupType: "dynamic",
+      layout: {
+        displayMode: "code",
+        numberOfLanes: 1,
+      },
+      children: [
+        {
+          id: "bankview",
+          label: "Bankview",
+          code: "BNV",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "code",
+          },
+        },
+        {
+          id: "matrix",
+          label: "Matrix",
+          code: "MTX",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "code",
+          },
+        },
+        {
+          id: "eximius",
+          label: "Eximius",
+          code: "EXM",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "code",
+          },
+        },
+      ],
+    },
+  ],
+  edges: [],
+};
+
 export const dataModel = threeFoundationNodes;
