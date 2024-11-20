@@ -9,11 +9,6 @@ export const singleFoundation = {
 
     // edges
     showGhostlines: false,
-
-    // ideas
-    showGrid: true,
-    showGroupLabels: true,
-    showGroupTitles: true,
   },
   nodes: [
     {
