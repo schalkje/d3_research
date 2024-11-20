@@ -132,25 +132,22 @@
         // Function to update graph data when a new file is selected
         function updateGraphData() {
             console.log('updateGraphData');
-            selectedFile = document.getElementById('fileSelect').value;
-            flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
-                d3.select("#graph").selectAll("*").remove();
-                dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph', '#minimap');
-            });
-
-            // FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-            //     if (result) {
-            //         dag = result;
-            //         renderDashboard();
-            //     }
-            // });
+            renderDashboard();
         }
 
         // Function to render or re-render the dashboard
         function renderDashboard() {
-            // const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved, layoutMechanism: layoutMechanism, showEdges: showEdges, showGhostlines: showGhostlines, showBoundingBox: showBoundingBox };
-            // dashboard = FD.Layout.initialize(dag, layout, '#graph', '#minimap');
+            selectedFile = document.getElementById('fileSelect').value;
+            flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
+                d3.select("#graph").selectAll("*").remove();
+                dashboardData.settings.showGhostlines = showGhostlines;
+                dashboardData.settings.showBoundingBox = showBoundingBox;
+                dashboardData.settings.showEdges = showEdges;
+                dashboardData.settings.horizontal = horizontal;
+                dashboardData.settings.curved = isEdgeCurved;
+                dashboard = new flowDashboard.Dashboard(dashboardData);
+                dashboard.initialize('#graph', '#minimap');
+            });
         }
 
             </script>
