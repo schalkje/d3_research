@@ -1,4 +1,4 @@
-import * as GraphData from './graphData.js';
+import * as GraphData from '../graphData.js';
 import * as Node from './node.js';
 
 

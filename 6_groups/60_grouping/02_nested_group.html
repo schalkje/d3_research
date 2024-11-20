@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Group Node Demo</title>
+    <link rel="stylesheet" href="../../7_dashboard/flow-dashboard.css">
+
+    <script src="../../7_dashboard/libs/d3.min.js"></script>
+    <script src="../../7_dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../7_dashboard/libs/d3-dag.iife.min.js"></script>
+</head>
+<body>
+    <h1>Grouping</h1>
+
+    <h2>Group</h2>
+    <p>Dynamic organising group</p>
+    <p>This demo showcases the nested node components implemented using D3.js. Click on a node to expand or collapse it.</p>
+
+    <div class="container">
+        <svg id="graph" class="canvas">
+        </svg>
+     </div>
+
+    <script type="module">
+
+        import {nested as dashboard} from './js/graphData.js';
+        import flowDashboard from '../../7_dashboard/js/index.js';
+
+        const flowdash = new flowDashboard.Dashboard(dashboard);
+        flowdash.initialize('#graph');
+
+    </script>
+</body>
+</html>
