@@ -14,7 +14,6 @@ export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
-    nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
@@ -25,7 +24,6 @@ export default class AdapterNode extends BaseContainerNode {
     this.transformNode = null;
     this.archiveNode = null;
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
-    this.firstInit = true;
   }
 
   async initChildren() {
@@ -106,10 +104,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.transformNode.init(this.container);
     }
 
-    // this.updateChildren;
 
-    // JS: do not recreate edges if they are already existing
-    // if (this.firstInit) {
       createInternalEdge(
         {
           source: this.stagingNode,
@@ -134,7 +129,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode,
         this.settings
       );
-    // }
+
 
     await this.initEdges();
 
@@ -147,7 +142,6 @@ export default class AdapterNode extends BaseContainerNode {
     console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
-    this.firstInit = false;
   }
 
   updateChildren() {

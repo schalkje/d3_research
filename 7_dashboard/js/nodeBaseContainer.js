@@ -7,7 +7,7 @@ export default class BaseContainerNode extends BaseNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     nodeData.width ??= 0;
     nodeData.height ??= 0;
-    nodeData.expandedSize ??= { width: 0, height: 0 };
+    nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
     super(nodeData, parentElement, settings, parentNode);
 
     this.createNode = createNode;
@@ -35,8 +35,13 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   set collapsed(value) {
+    console.error("    BaseContainerNode - Setting collapsed", value, this.data.label);
     if (value === this._collapsed) return;
     super.collapsed = value;
+
+    this.zoomButton.toggle(value); // Toggle between plus and minus on click
+
+
 
     this.childNodes.forEach((childNode) => {
       childNode.visible = !this.collapsed;
@@ -275,9 +280,11 @@ export default class BaseContainerNode extends BaseNode {
       (event, button) => {
         if (event) event.stopPropagation();
 
-        button.toggle(); // Toggle between plus and minus on click
         this.collapsed = !this.collapsed;
-      }
+        // button.toggle(this.collapsed); // Toggle between plus and minus on click
+      },
+      14,
+      this.collapsed
     );
 
     if (this.collapsed) {
@@ -312,7 +319,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   async update() {
-    console.error(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
+    console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
     await super.update();
 
     this.element
@@ -327,7 +334,6 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);
 
-      console.error(`                    - move zoombutton ${this.data.width}x${this.data.height}`, this.data.label);
       this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
 
       if (!this.collapsed) {

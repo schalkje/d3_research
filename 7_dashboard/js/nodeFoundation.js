@@ -1,10 +1,11 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
 import { createInternalEdge } from "./edge.js";
+import { getComputedDimensions } from "./utils.js";
 
 const DisplayMode = Object.freeze({
   FULL: 'full',
-  CODE: 'code'  
+  ROLE: 'role'  
 });
 
 const Orientation = Object.freeze({
@@ -24,9 +25,9 @@ const FoundationMode = Object.freeze({
 export default class FoundationNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
-    if (!nodeData.height) nodeData.height = 48;
+    if (!nodeData.height) nodeData.height = 44;
     if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.FULL;
+    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.ROLE;
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
 
@@ -37,7 +38,9 @@ export default class FoundationNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async renderChildren() {
+  async initChildren() {
+    this.suspenseDisplayChange = true;
+
     // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
@@ -58,10 +61,17 @@ export default class FoundationNode extends BaseContainerNode {
       this.data.children.push(rawChild);
     }
     if (rawChild) {
-      if (this.rawNode == null)
-        this.rawNode = new RectangularNode(rawChild, this.container, this.settings, this);
+      if (this.rawNode == null) {
+        const copyRawChild = JSON.parse(JSON.stringify(rawChild));
+        if (this.data.layout.displayMode == DisplayMode.ROLE) {
+          copyRawChild.label = copyRawChild.role;
+          copyRawChild.width = 50;
+        }
+        this.rawNode = new RectangularNode(copyRawChild, this.container, this.settings, this);
+        this.childNodes.push(this.rawNode);
+      }
       
-      this.rawNode.render();
+      this.rawNode.init(this.container);
     }
 
     // render "base" node
@@ -80,21 +90,19 @@ export default class FoundationNode extends BaseContainerNode {
     }
     if (baseChild) {
       // console.log("    Rendering Base Node:", baseChild, this);
-      if (this.baseNode == null)
-        this.baseNode = new RectangularNode(baseChild, this.container, this.settings, this);
+      if (this.baseNode == null) {
+        const copyBaseChild = JSON.parse(JSON.stringify(baseChild));
+        if (this.data.layout.displayMode == DisplayMode.ROLE) {
+          copyBaseChild.label = copyBaseChild.role;
+          copyBaseChild.width = 50;
+        }
+        this.baseNode = new RectangularNode(copyBaseChild, this.container, this.settings, this);
+        this.childNodes.push(this.baseNode);
+      }
       
-      this.baseNode.render();
+      this.baseNode.init(this.container);
     }
 
-
-
-    // store the child nodes in an array for following the requirements of the base container node
-    this.childNodes.push(this.rawNode);
-    this.childNodes.push(this.baseNode);
-
-    this.layoutChildren();
-
-    console.log("    AdapterNode children:", this.rawNode, this.baseNode);
     createInternalEdge(
       {
         source: this.rawNode.data.id,
@@ -109,26 +117,44 @@ export default class FoundationNode extends BaseContainerNode {
     );
 
     await this.initEdges();
-    // this.updateEdges();
+
+    // compute the size of the container
+    this.data.expandedSize = {
+      width:
+        this.rawNode.data.width +
+        this.nodeSpacing.horizontal +
+        this.baseNode.data.width +
+        this.containerMargin.left +
+        this.containerMargin.right,
+      height: this.containerMargin.top + this.containerMargin.bottom + 18,
+    };
+
+    this.resize(this.data.expandedSize, true);
+
+    await this.update();
+    this.cascadeUpdate();
+
+    this.suspenseDisplayChange = false;
+    this.handleDisplayChange();
   }
 
-  layoutChildren() {
+  updateChildren() {
     console.log("    Layout for Adapter:", this.id, this.data.layout);
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
-        this.layoutFull();
+        this.updateFull();
         break;
-      case DisplayMode.CODE:
-        this.layoutCode();
+      case DisplayMode.ROLE:
+        this.updateRole();
         break;
       default:
-        console.log(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
-        this.layoutFull();
+        console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
+        this.updateFull();
         break;
     }
   }
 
-  async layoutFull() {
+  async updateFull() {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
@@ -147,7 +173,7 @@ export default class FoundationNode extends BaseContainerNode {
     }    
   }
 
-  async layoutCode() {
+  async updateRole() {
     // JS: TODO: use code as label; need rerendering of the children
     console.log("    Layout Code for Adapter:", this.id);
     if (this.rawNode) {

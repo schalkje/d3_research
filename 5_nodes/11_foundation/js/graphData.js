@@ -22,9 +22,6 @@ export const singleFoundation = {
       code: "BNV",
       type: "foundation",
       groupType: "fixed",
-      layout: {
-        displayMode: "code",
-      },
     },
   ],
   edges: [],
@@ -59,9 +56,6 @@ export const threeFoundationNodes = {
           code: "BNV",
           type: "foundation",
           groupType: "fixed",
-          layout: {
-            displayMode: "code",
-          },
         },
         {
           id: "matrix",
@@ -70,7 +64,7 @@ export const threeFoundationNodes = {
           type: "foundation",
           groupType: "fixed",
           layout: {
-            displayMode: "code",
+            displayMode: "role",
           },
         },
         {
@@ -80,7 +74,66 @@ export const threeFoundationNodes = {
           type: "foundation",
           groupType: "fixed",
           layout: {
-            displayMode: "code",
+            displayMode: "role",
+          },
+        },
+      ],
+    },
+  ],
+  edges: [],
+};
+
+export const threeFullNames = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
+  },
+  nodes: [
+    {
+      id: "lane1",
+      label: "Foundation",
+      type: "lane",
+      groupType: "dynamic",
+      layout: {
+        displayMode: "code",
+        numberOfLanes: 1,
+      },
+      children: [
+        {
+          id: "bankview",
+          label: "Bankview",
+          code: "BNV",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "full",
+          },
+        },
+        {
+          id: "matrix",
+          label: "Matrix",
+          code: "MTX",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "full",
+          },
+        },
+        {
+          id: "eximius",
+          label: "Eximius",
+          code: "EXM",
+          type: "foundation",
+          groupType: "fixed",
+          layout: {
+            displayMode: "full",
           },
         },
       ],
@@ -118,9 +171,6 @@ export const threeFoundationNodesColumns = {
           code: "BNV",
           type: "foundation",
           groupType: "fixed",
-          layout: {
-            displayMode: "code",
-          },
         },
         {
           id: "matrix",
@@ -129,7 +179,7 @@ export const threeFoundationNodesColumns = {
           type: "foundation",
           groupType: "fixed",
           layout: {
-            displayMode: "code",
+            displayMode: "role",
           },
         },
         {
@@ -139,7 +189,7 @@ export const threeFoundationNodesColumns = {
           type: "foundation",
           groupType: "fixed",
           layout: {
-            displayMode: "code",
+            displayMode: "role",
           },
         },
       ],

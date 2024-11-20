@@ -29,9 +29,13 @@ export default class ZoomButton {
     }
   }
 
-  toggle() {
+  toggle(collapsed = null) {
     // Toggle between plus and minus
-    this.isToggled = !this.isToggled;
+    if (collapsed !== null) {
+      this.isToggled = collapsed;
+    } else {
+      this.isToggled = !this.isToggled;
+    }
     if (this.isToggled) {
       this.setPlusIcon();
     } else {
@@ -39,8 +43,6 @@ export default class ZoomButton {
     }
   }
   move(x, y) {
-    console.error(`                zoombutton - move ${this.position.x}x${this.position.y} --> ${x}x${y}`);
-
     this.position = { x, y };
     this.buttonGroup
       .selectAll("circle")
