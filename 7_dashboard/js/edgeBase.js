@@ -1,5 +1,4 @@
 // import { line } from "d3";
-import { getComputedDimensions } from "./utils.js";
 import { generateDirectEdge, generateEdgePath } from "./utilPath.js";
 
 // const EdgeType = Object.freeze({
@@ -148,7 +147,8 @@ export default class BaseEdge {
     return [this.x2, this.y2];
   }
 
-  init() {
+  init(parentElement = null) {
+    if (parentElement) this.parentElement = parentElement;
     console.log("edgeBase - init", this.label);
 
     // Create ghostlines

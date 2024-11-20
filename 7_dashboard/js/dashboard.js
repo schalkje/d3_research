@@ -1,5 +1,5 @@
 import { createNode, createNodes } from "./node.js";
-import { getBoundingBoxRelativeToParent, getRelativeBBox, getComputedDimensions } from "./utils.js";
+import { getBoundingBoxRelativeToParent } from "./utils.js";
 import { createMarkers } from "./markers.js";
 
 export class Dashboard {

@@ -36,7 +36,7 @@ export default class ColumnsNode extends BaseContainerNode {
       childComponent.y = 0;
 
       // Push the render promise into the array
-      initPromises.push(childComponent.init());
+      initPromises.push(childComponent.init(this.container));
     }
     // Wait for all renders to complete in parallel
     await Promise.all(initPromises);

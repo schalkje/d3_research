@@ -39,6 +39,8 @@ export default class ZoomButton {
     }
   }
   move(x, y) {
+    console.error(`                zoombutton - move ${this.position.x}x${this.position.y} --> ${x}x${y}`);
+
     this.position = { x, y };
     this.buttonGroup
       .selectAll("circle")

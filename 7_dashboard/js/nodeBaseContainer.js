@@ -5,6 +5,9 @@ import ZoomButton from "./buttonZoom.js";
 
 export default class BaseContainerNode extends BaseNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    nodeData.width ??= 0;
+    nodeData.height ??= 0;
+    nodeData.expandedSize ??= { width: 0, height: 0 };
     super(nodeData, parentElement, settings, parentNode);
 
     this.createNode = createNode;
@@ -67,30 +70,30 @@ export default class BaseContainerNode extends BaseNode {
     this.shape.attr("status", value);
   }
 
-  resize(size) {
+  resize(size, forced = false) {
     console.log("    BaseContainerNode - resize", this.data.label, Math.round(size.width), Math.round(size.height));
 
     // make sure the size of the element doesn't go below minimum size
     size.width = Math.max(size.width, this.minimumSize.width);
     size.height = Math.max(size.height, this.minimumSize.height);
 
-    super.resize(size);
+    super.resize(size, forced);
   }
 
   // resize the node based on a resize of the container and it's child
-  resizeContainer(size) {
+  resizeContainer(size, forced = false) {
     size.width += this.containerMargin.left + this.containerMargin.right;
     size.height += this.containerMargin.top + this.containerMargin.bottom;
     console.log(`    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(this.data.height)} --> ${Math.round(size.width)}x${Math.round(size.height)}`);
 
-    this.resize(size);
+    this.resize(size, forced);
   }
 
   async expand() {
-    console.log("    BaseContainerNode - expand", this.data.label);
+    console.log(`    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(this.data.expandedSize.width)}x${Math.round(this.data.expandedSize.height)}`, this.data.label);
     // restore the expanded size if it was stored
     if (this.data.expandedSize) {
-      this.resize(this.data.expandedSize);
+      this.resize(this.data.expandedSize, true);
     }
 
 
@@ -100,11 +103,11 @@ export default class BaseContainerNode extends BaseNode {
 
     await this.initChildren();
     await this.initEdges();
+
     // await this.updateChildren();
     // await this.updateEdges();
     // await this.update();
     // Set expanded or collapsed state
-    // await this.updateChildren();
 
     // this.resize({ width: this.data.width, height: this.data.height });
     // if (this.parentNode)
@@ -121,11 +124,10 @@ export default class BaseContainerNode extends BaseNode {
 
     this.cleanContainer();
 
-    // set the collapsed size
+    this.update();
 
-    // apply the collapsed size to the rectangle
-    // this.resize({ width: this.minimumSize.height, height: this.minimumSize.width + 14 });
-    this.resize({ width: this.minimumSize.width + 14, height: this.minimumSize.height });
+    // set the collapsed size
+    this.resize({ width: this.minimumSize.width, height: this.minimumSize.height });
 
     if (this.parentNode)
       this.parentNode.update();
@@ -218,9 +220,10 @@ export default class BaseContainerNode extends BaseNode {
     }
   }
 
-  async init() {
-    console.log("    BaseContainerNode - init", this.id);
-    await super.init();
+  async init(parentElement = null) {
+    if (parentElement) this.parentElement = parentElement;
+    console.warn("    BaseContainerNode - init", this.id);
+    await super.init(parentElement);
 
     // Append text to the top left corner of the element
     const labelElement = this.element
@@ -232,28 +235,29 @@ export default class BaseContainerNode extends BaseNode {
 
     // the size of the text label determines the minimum size of the node
     this.minimumSize = getComputedDimensions(labelElement);
-    this.minimumSize.width += 8;
+    this.minimumSize.width += 22;
     this.minimumSize.height += 4;
+    console.log("    BaseContainerNode - init minimumSize", this.data.label, this.minimumSize.width, this.minimumSize.height);
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
-      console.log(
-        "Render Resizing BaseContainerNode:",
-        this.data.width,
-        this.minimumSize.width,
-        this.data.height,
-        this.minimumSize.height
-      );
+      // console.log(
+      //   "Render Resizing BaseContainerNode:",
+      //   this.data.width,
+      //   this.minimumSize.width,
+      //   this.data.height,
+      //   this.minimumSize.height
+      // );
       // this.data.width = Math.max(this.minimumSize.width, this.data.width);
       // this.data.height = Math.max(this.minimumSize.height, this.data.height);
       this.resize({
         width: Math.max(this.minimumSize.width, this.data.width),
         height: Math.max(this.minimumSize.height, this.data.height),
-      });
+      }, true);
       // reposition the label based on the new size
       labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
 
     // Draw the node shape
-    if (!this.shape)
+    // if (!this.shape)
       this.shape = this.element
         .insert("rect", ":first-child")
         .attr("class", (d) => `node shape container ${this.data.type}`)
@@ -267,7 +271,7 @@ export default class BaseContainerNode extends BaseNode {
     // Add zoom button
     this.zoomButton = new ZoomButton(
       this.element,
-      { x: 16, y: 16 },
+      { x: 0, y: 0 },
       (event, button) => {
         if (event) event.stopPropagation();
 
@@ -277,10 +281,8 @@ export default class BaseContainerNode extends BaseNode {
     );
 
     if (this.collapsed) {
-      this.element.classed("collapsed", true);
       this.collapse();
     } else {
-      this.element.classed("expanded", true);
       this.expand();
     }
 
@@ -310,7 +312,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   async update() {
-    console.log("    BaseContainerNode - update", this.data.label);
+    console.error(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
     await super.update();
 
     this.element
@@ -325,13 +327,15 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);
 
-    if (!this.collapsed) {
+      console.error(`                    - move zoombutton ${this.data.width}x${this.data.height}`, this.data.label);
+      this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
+
+      if (!this.collapsed) {
       await this.updateChildren();
 
       this.updateEdges();
     }
 
-    this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
   }
 
   // // Method to update rendering based on interaction state
@@ -367,8 +371,14 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   // Method to remove child nodes from the SVG
-  cleanContainer() {
+  cleanContainer(propagate = true) {
     console.log("    Removing Children for:", this.data.label);
     this.container.selectAll("*").remove();
+    this.container.remove();
+    this._container = null;
+    for (const childNode of this.childNodes) {
+      if (childNode instanceof BaseContainerNode)
+        childNode.cleanContainer(propagate);
+    }
   }
 }

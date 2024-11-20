@@ -1,4 +1,3 @@
-import { getComputedDimensions } from "./utils.js";
 import { computeConnectionPoints } from "./utilPath.js";
 
 export const NodeStatus = Object.freeze({
@@ -109,7 +108,8 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
-  async init() {
+  async init(parentElement = null) {
+    if (parentElement) this.parentElement = parentElement;
     console.log("nodeBase - init", this.data.label);
 
     this.element = this.parentElement
@@ -187,11 +187,11 @@ export default class BaseNode {
     }
   }
 
-  async resize(size) {
+  async resize(size, forced = false) {
     // node base has no elements of it's own, so just update the data
-    if  (this.data.width != size.width || this.data.height != size.height)
+    if  (forced || this.data.width != size.width || this.data.height != size.height)
     {
-      console.log("nodeBase - resize", this.data.label, size); 
+      console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
       this.data.width = size.width;
       this.data.height = size.height;
 

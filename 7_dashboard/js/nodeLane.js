@@ -8,35 +8,39 @@ export default class LaneNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async renderChildren() {
+  async initChildren() {
     // console.log("    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
+
+    console.log("      nodeLane - initChildren    Rendering Children for Group: ", this.data.label, this.container);
 
     // Create an array to hold all the render promises
     const renderPromises = [];
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
-      const childComponent = this.createNode(node, this.container, this.settings, this);
+      var childComponent = this.getNode(node.id);
+      if (childComponent == null) {
+        childComponent = this.createNode(node, this.container, this.settings, this);
+        this.childNodes.push(childComponent);
 
-      // console.log("renderChildren Child:", childComponent);
-      // console.log("               :", this.x, this.data.y);
+        console.warn("      nodeLane - initChildren - Creating Node:", node.id, childComponent);
+      }
 
-      this.childNodes.push(childComponent);
       // Push the render promise into the array
-      renderPromises.push(childComponent.render());
+      renderPromises.push(childComponent.init(this.container));
     }
 
     // Wait for all renders to complete in parallel
     await Promise.all(renderPromises);
 
-    this.layoutChildren();
+    // this.updateChildren();
 
   }
 
-  layoutChildren() {
+  updateChildren() {
     console.log("Layout for Lanes:", this.id, this.data.layout, this.childNodes.length);
     this.layoutLane();
 
@@ -141,6 +145,6 @@ export default class LaneNode extends BaseContainerNode {
 
   async arrange() {
     console.log("Arranging LaneNode:", this.id);
-    this.layoutChildren();
+    this.updateChildren();
   }
 }

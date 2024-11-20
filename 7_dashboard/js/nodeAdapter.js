@@ -14,6 +14,7 @@ export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
+    nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
@@ -29,7 +30,7 @@ export default class AdapterNode extends BaseContainerNode {
 
   async initChildren() {
     this.suspenseDisplayChange = true;
-    console.log("        nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children);
+    console.log("        nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children, this.container);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -57,7 +58,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.childNodes.push(this.archiveNode);
       }
 
-      this.archiveNode.init();
+      this.archiveNode.init(this.container);
     }
 
     // render "staging" node
@@ -81,7 +82,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.childNodes.push(this.stagingNode);
       }
 
-      this.stagingNode.init();
+      this.stagingNode.init(this.container);
     }
 
     // render "transform" node
@@ -102,7 +103,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.childNodes.push(this.transformNode);
       }
 
-      this.transformNode.init();
+      this.transformNode.init(this.container);
     }
 
     // this.updateChildren;
@@ -141,6 +142,7 @@ export default class AdapterNode extends BaseContainerNode {
 
     // this.updateChildren();
     // this.updateEdges();
+    this.resize(this.data.expandedSize, true);
     await this.update();
     console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
@@ -149,7 +151,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log(`        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
+    console.warn(`        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
     switch (this.data.layout.arrangement) {
       case 1:
         this.updateLayout1();
@@ -178,6 +180,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.stagingNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
+      // console.log("        nodeAdapter - updateLayout1 - ArchiveNode:", x, y, this.archiveNode.data.width, this.archiveNode.data.height);
       this.archiveNode.move(x, y);
     }
 
