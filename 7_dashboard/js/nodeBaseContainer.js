@@ -35,9 +35,10 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   set collapsed(value) {
-    console.error("    BaseContainerNode - Setting collapsed", value, this.data.label);
+    console.log("    BaseContainerNode - Setting collapsed", value, this.data.label);
     if (value === this._collapsed) return;
     super.collapsed = value;
+    
 
     this.zoomButton.toggle(value); // Toggle between plus and minus on click
 
@@ -54,6 +55,7 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     this.cascadeUpdate();
+
   }
 
   get visible() {

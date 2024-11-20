@@ -1,4 +1,77 @@
 {
+  "settings": {
+    "showCenterMark": false,
+    "showConnectionPoints": false,
+    "showGhostlines": false,
+    "curved": true,
+    "showBoundingBox": false
+  },
+  "nodes": [
+    {
+      "label": "ODS",
+      "state": "Ready",
+      "id": "2789c005-ef55-4c58-acf9-d6a76351fdd2",
+      "description": "Database : ODS",
+      "type": "node",
+      "link": "https://example.com/ODS"
+    },
+    {
+      "label": "DWH",
+      "state": "Ready",
+      "id": "6e4e2bd4-0257-409a-883b-04716a76dc05",
+      "description": "Database : DWH",
+      "type": "node",
+      "link": "https://example.com/DWH"
+    },
+    {
+      "label": "STAGING_Bankview",
+      "state": "Ready",
+      "id": "59ff186a-33af-4336-9465-c04a69dda2b0",
+      "description": "Database : STAGING_Bankview",
+      "type": "node",
+      "link": "https://example.com/STAGING_Bankview"
+    },
+    {
+      "label": "STG_ARCHIVE_Bankview",
+      "state": "Ready",
+      "id": "d1aca95d-00da-4fb9-96e0-54db32272369",
+      "description": "Database : STG_ARCHIVE_Bankview",
+      "type": "node",
+      "link": "https://example.com/STG_ARCHIVE_Bankview"
+    },
+    {
+      "label": "TRANSFORM_Bankview",
+      "state": "Ready",
+      "id": "e4aabd33-a7b3-46a1-ab6f-72589ce2ba2d",
+      "description": "Database : TRANSFORM_Bankview",
+      "type": "node",
+      "link": "https://example.com/TRANSFORM_Bankview"
+    },
+    {
+      "label": "STAGING_Fidor",
+      "state": "Ready",
+      "id": "9acd0021-14bf-4609-b6b9-d7f0fdaa1e95",
+      "description": "Database : STAGING_Fidor",
+      "type": "node",
+      "link": "https://example.com/STAGING_Fidor"
+    },
+    {
+      "label": "STG_ARCHIVE_Fidor",
+      "state": "Ready",
+      "id": "198c5ec0-cf2c-481a-9432-1a17dedd8c07",
+      "description": "Database : STG_ARCHIVE_Fidor",
+      "type": "node",
+      "link": "https://example.com/STG_ARCHIVE_Fidor"
+    },
+    {
+      "label": "TRANSFORM_Fidor",
+      "state": "Ready",
+      "id": "a8aa88e7-4dfc-4de8-ad4b-4a0bf560d0a0",
+      "description": "Database : TRANSFORM_Fidor",
+      "type": "node",
+      "link": "https://example.com/TRANSFORM_Fidor"
+    }
+  ],
   "edges": [
     {
       "isActive": true,
@@ -48,72 +121,6 @@
       "type": "SSIS",
       "state": "Unknown",
       "target": "6e4e2bd4-0257-409a-883b-04716a76dc05"
-    }
-  ],
-  "nodes": [
-    {
-      "label": "ODS",
-      "state": "Ready",
-      "id": "2789c005-ef55-4c58-acf9-d6a76351fdd2",
-      "description": "Database : ODS",
-      "type": "Database",
-      "link": "https://example.com/ODS"
-    },
-    {
-      "label": "DWH",
-      "state": "Ready",
-      "id": "6e4e2bd4-0257-409a-883b-04716a76dc05",
-      "description": "Database : DWH",
-      "type": "Database",
-      "link": "https://example.com/DWH"
-    },
-    {
-      "label": "STAGING_Bankview",
-      "state": "Ready",
-      "id": "59ff186a-33af-4336-9465-c04a69dda2b0",
-      "description": "Database : STAGING_Bankview",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Bankview"
-    },
-    {
-      "label": "STG_ARCHIVE_Bankview",
-      "state": "Ready",
-      "id": "d1aca95d-00da-4fb9-96e0-54db32272369",
-      "description": "Database : STG_ARCHIVE_Bankview",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Bankview"
-    },
-    {
-      "label": "TRANSFORM_Bankview",
-      "state": "Ready",
-      "id": "e4aabd33-a7b3-46a1-ab6f-72589ce2ba2d",
-      "description": "Database : TRANSFORM_Bankview",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Bankview"
-    },
-    {
-      "label": "STAGING_Fidor",
-      "state": "Ready",
-      "id": "9acd0021-14bf-4609-b6b9-d7f0fdaa1e95",
-      "description": "Database : STAGING_Fidor",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Fidor"
-    },
-    {
-      "label": "STG_ARCHIVE_Fidor",
-      "state": "Ready",
-      "id": "198c5ec0-cf2c-481a-9432-1a17dedd8c07",
-      "description": "Database : STG_ARCHIVE_Fidor",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Fidor"
-    },
-    {
-      "label": "TRANSFORM_Fidor",
-      "state": "Ready",
-      "id": "a8aa88e7-4dfc-4de8-ad4b-4a0bf560d0a0",
-      "description": "Database : TRANSFORM_Fidor",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Fidor"
     }
   ]
 }

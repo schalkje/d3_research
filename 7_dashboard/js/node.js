@@ -62,7 +62,7 @@ export function createNodes(nodes, container, settings) {
   const root = {
     id: "root",
     label: "Automatic root",
-    type: "group",
+    type: "lane",
     groupType: "dynamic",
     layout: {
       size: { width: 1000, height: 1000 },
