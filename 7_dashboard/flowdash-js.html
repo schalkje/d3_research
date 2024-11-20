@@ -121,11 +121,11 @@
     // Function to update the graph layout
     function updateLayout() {
         horizontal = document.getElementById('horizontalCheckbox').checked;
-         isEdgeCurved = document.getElementById('curveCheckbox').checked;
-         layoutMechanism = document.getElementById('layoutMechanismSelect').value;
-         showEdges = document.getElementById('showEdgesCheckbox').checked;
-         showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
-         showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
+        isEdgeCurved = document.getElementById('curveCheckbox').checked;
+        layoutMechanism = document.getElementById('layoutMechanismSelect').value;
+        showEdges = document.getElementById('showEdgesCheckbox').checked;
+        showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
+        showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
 
         renderDashboard();
     }
@@ -133,11 +133,10 @@
         function updateGraphData() {
             console.log('updateGraphData');
             selectedFile = document.getElementById('fileSelect').value;
-            flowDashboard.fetchDashboardFile(selectedFile).then(result => {
-                if (result) {
-                    dag = result;
-                    // renderDashboard();
-                }
+            flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
+                d3.select("#graph").selectAll("*").remove();
+                dashboard = new flowDashboard.Dashboard(dashboardData);
+                dashboard.initialize('#graph', '#minimap');
             });
 
             // FD.GraphData.fetchFileToDag(selectedFile).then(result => {
