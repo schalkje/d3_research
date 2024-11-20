@@ -227,7 +227,7 @@ export default class BaseContainerNode extends BaseNode {
 
   async init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    console.warn("    BaseContainerNode - init", this.id);
+    console.log("    BaseContainerNode - init", this.id);
     await super.init(parentElement);
 
     // Append text to the top left corner of the element

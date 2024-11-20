@@ -1,8 +1,8 @@
 {
   "settings": {
-    "showCenterMark": true,
-    "showConnectionPoints": true,
-    "showGhostlines": true,
+    "showCenterMark": false,
+    "showConnectionPoints": false,
+    "showGhostlines": false,
     "curved": true,
     "showBoundingBox": true
   },
@@ -20,40 +20,9 @@
       "type": "adapter",
       "layout": {
         "mode": "full",
+        "displayMode": "role",
         "arrangement": 1
-      },
-      "children": [
-        {
-          "label": "STAGING",
-          "state": "Ready",
-          "id": "e25f618d-bc39-4d79-ad1e-aef3ae877002",
-          "description": "Database : STAGING_Bankview",
-          "type": "node",
-          "category": "Database",
-          "role": "staging",
-          "link": "https://example.com/STAGING_Bankview"
-        },
-        {
-          "label": "ARCHIVE",
-          "state": "Ready",
-          "id": "35024689-50d0-4045-9130-d07d61c42ce0",
-          "description": "Database : STG_ARCHIVE_Bankview",
-          "type": "node",
-          "category": "Database",
-          "role": "archive",
-          "link": "https://example.com/STG_ARCHIVE_Bankview"
-        },
-        {
-          "label": "TRANSFORM",
-          "state": "Ready",
-          "id": "3fd98a58-cdd7-46e7-9322-d7549b1c858e",
-          "description": "Database : TRANSFORM_Bankview",
-          "type": "node",
-          "category": "Database",
-          "role": "transform",
-          "link": "https://example.com/TRANSFORM_Bankview"
-        }
-      ]
+      }
     },
     {
       "label": "ODS",
@@ -77,22 +46,8 @@
   ],
   "edges": [
     {
-      "isActive": true,
-      "source": "e25f618d-bc39-4d79-ad1e-aef3ae877002",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "35024689-50d0-4045-9130-d07d61c42ce0"
-    },
-    {
-      "isActive": true,
-      "source": "e25f618d-bc39-4d79-ad1e-aef3ae877002",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "3fd98a58-cdd7-46e7-9322-d7549b1c858e"
-    },
-    {
       "isActive": false,
-      "source": "3fd98a58-cdd7-46e7-9322-d7549b1c858e",
+      "source": "trn_bankview",
       "type": "SSIS",
       "state": "Unknown",
       "target": "d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca"

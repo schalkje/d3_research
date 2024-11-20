@@ -168,7 +168,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.warn(
+    console.log(
       `        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`,
       this.id,
       this.data.layout

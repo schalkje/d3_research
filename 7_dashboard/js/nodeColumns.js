@@ -13,7 +13,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   async initChildren() {
-    console.warn("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
+    console.log("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
@@ -29,7 +29,7 @@ export default class ColumnsNode extends BaseContainerNode {
         childComponent = this.createNode(node, this.container, this.settings, this);
         this.childNodes.push(childComponent);
 
-        console.warn("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
+        console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
       }
 
       childComponent.x = 0;
@@ -46,7 +46,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.warn(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
+    console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
     this.suspenseDisplayChange = true;
 
     // each child is a column

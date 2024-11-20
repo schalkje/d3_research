@@ -1,6 +1,7 @@
 import { createNode, createNodes } from "./node.js";
 import { getBoundingBoxRelativeToParent } from "./utils.js";
 import { createMarkers } from "./markers.js";
+import { createEdges } from "./edge.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -234,7 +235,7 @@ export class Dashboard {
     }
     await root.init();
 
-    // if (dashboard.edges.length > 0) await createEdges(root, dashboard.edges, dashboard.settings);
+    if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
 
     console.log("dashboard - createDashboard - finish", dashboard, container);
     return root;
