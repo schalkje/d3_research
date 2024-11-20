@@ -3,6 +3,11 @@ import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
 import { createInternalEdge } from "./edge.js";
 
+const DisplayMode = Object.freeze({
+  FULL: 'full',
+  ROLE: 'role'  
+});
+
 const AdapterMode = Object.freeze({
   MANUAL: "manual",
   FULL: "full",
@@ -16,6 +21,10 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
+    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.FULL;
+    if (nodeData.layout.displayMode == DisplayMode.ROLE) {
+      nodeData.width = 80 + 80 + 20 + 8 + 8;
+    }
     if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive
     if (nodeData.layout.mode == AdapterMode.STAGING_ARCHIVE || nodeData.layout.mode == AdapterMode.STAGING_TRANSFORM) {
       nodeData.layout.arrangement = 4;
@@ -24,7 +33,10 @@ export default class AdapterNode extends BaseContainerNode {
     if (nodeData.layout.mode == AdapterMode.ARCHIVE_ONLY) {
       nodeData.layout.arrangement = 5;
       nodeData.height = 44;
-      nodeData.width = 150 + 8 + 8;
+      if (nodeData.layout.displayMode == DisplayMode.ROLE)
+        nodeData.width = 80 + 8 + 8;
+      else
+        nodeData.width = 150 + 8 + 8;
     }
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
 
@@ -64,15 +76,7 @@ export default class AdapterNode extends BaseContainerNode {
       };
       this.data.children.push(archiveChild);
     }
-    if (archiveChild) {
-      console.log("        nodeAdapter - Rendering Archive Node:", archiveChild);
-      if (this.archiveNode == null) {
-        this.archiveNode = new RectangularNode(archiveChild, this.container, this.settings, this);
-        this.childNodes.push(this.archiveNode);
-      }
-
-      this.archiveNode.init(this.container);
-    }
+    this.archiveNode = this.initChildNode(archiveChild, this.archiveNode);
 
     // render "staging" node
     let stagingChild = this.data.children.find((child) => child.role === "staging");
@@ -90,15 +94,7 @@ export default class AdapterNode extends BaseContainerNode {
       };
       this.data.children.push(stagingChild);
     }
-    if (stagingChild) {
-      console.log("        nodeAdapter - Rendering Staging Node:", stagingChild);
-      if (this.stagingNode == null) {
-        this.stagingNode = new RectangularNode(stagingChild, this.container, this.settings, this);
-        this.childNodes.push(this.stagingNode);
-      }
-
-      this.stagingNode.init(this.container);
-    }
+    this.stagingNode = this.initChildNode(stagingChild, this.stagingNode);
 
     // render "transform" node
     let transformChild = this.data.children.find((child) => child.role === "transform");
@@ -114,15 +110,7 @@ export default class AdapterNode extends BaseContainerNode {
       };
       this.data.children.push(transformChild);
     }
-    if (transformChild) {
-      console.log("        nodeAdapter - Rendering Transform Node:", transformChild);
-      if (this.transformNode == null) {
-        this.transformNode = new RectangularNode(transformChild, this.container, this.settings, this);
-        this.childNodes.push(this.transformNode);
-      }
-
-      this.transformNode.init(this.container);
-    }
+    this.transformNode = this.initChildNode(transformChild, this.transformNode);
 
     if (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
       createInternalEdge(
@@ -160,6 +148,23 @@ export default class AdapterNode extends BaseContainerNode {
     console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
+  }
+
+  initChildNode(childData, childNode) {
+    if (childData) {
+      if (childNode == null) {
+        const copyChild = JSON.parse(JSON.stringify(childData));
+        if (this.data.layout.displayMode == DisplayMode.ROLE) {
+          copyChild.label = copyChild.role;
+          copyChild.width = 80;
+        }
+        childNode = new RectangularNode(copyChild, this.container, this.settings, this);
+        this.childNodes.push(childNode);
+      }
+
+      childNode.init(this.container);
+    }
+    return childNode;
   }
 
   updateChildren() {
@@ -208,22 +213,19 @@ export default class AdapterNode extends BaseContainerNode {
 
     if (this.transformNode) {
       // first resize the transform node to fit the width of the other two nodes
+
+      // width = archive.width + 
+      const factor = 5/16;
       const width =
-        this.stagingNode.data.width +
-        this.archiveNode.data.width -
-        this.stagingNode.data.width / 2 +
-        this.nodeSpacing.horizontal -
-        +2 * this.nodeSpacing.horizontal;
+      this.archiveNode.data.width +
+      this.stagingNode.data.width * factor+
+      this.nodeSpacing.horizontal;
+
       const height = this.transformNode.data.height;
       this.transformNode.resize({ width: width, height: height });
 
-      // then position the transform node based on the new size
-      const x =
-        -this.data.width / 2 +
-        this.transformNode.data.width / 2 +
-        this.containerMargin.left +
-        this.stagingNode.data.width / 2 +
-        2 * this.nodeSpacing.horizontal;
+      const x = width / 2 - this.stagingNode.data.width * factor - this.nodeSpacing.horizontal / 2;
+
       const y =
         -this.data.height / 2 +
         this.transformNode.data.height / 2 +
@@ -336,7 +338,7 @@ export default class AdapterNode extends BaseContainerNode {
         -this.data.width / 2 +
         otherNode.data.width / 2 +
         this.containerMargin.left +
-        otherNode.data.width +
+        this.stagingNode.data.width +
         this.nodeSpacing.horizontal;
       const y = -this.data.height / 2 + otherNode.data.height / 2 + this.containerMargin.top;
 
