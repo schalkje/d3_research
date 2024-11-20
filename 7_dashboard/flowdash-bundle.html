@@ -8,8 +8,8 @@
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
-    <script src="dist/flow-dashboard.min.js"></script>
-    <link rel="stylesheet" href="flow-dashboard.css">
+    <script src="dist/flowdash.min.js"></script>
+    <link rel="stylesheet" href="flowdash.css">
 </head>
 
 <body>
@@ -52,9 +52,10 @@
     <label for="curveCheckbox">Curve</label>
     <input type="checkbox" id="curveCheckbox" checked>
 
-    <div>
+    <div id="graph-container">
         <svg id="graph"></svg>
     </div>
+
     <div id="zoom-controls">
         <button id="zoom-in">Zoom In</button>
         <button id="zoom-out">Zoom Out</button>
@@ -64,7 +65,7 @@
     </div>
 
     <div id="minimap-container">
-        <svg id="minimap" width="200" height="200"></svg>
+        <svg id="minimap"></svg>
     </div>
 
     <script>
@@ -108,18 +109,11 @@
         });
 
 
-        let dag, dashboard;
-
-        // initial layout computation and drawing
-        FD.GraphData.fetchFileToDag(selectedFile).then(result => {
-            if (result) {
-                dag = result;
-
-                const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-                // Initial layout computation and drawing
-                dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
-            }
-        });
+        selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
+            flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
+                dashboard = new flowDashboard.Dashboard(dashboardData);
+                dashboard.initialize('#graph', '#minimap');
+            });
     </script>
 </body>
 

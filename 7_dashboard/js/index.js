@@ -1,8 +1,5 @@
-// import * as GraphData from './graphData.js';
-// import * as Node from './node.js';
 import * as data from './data.js';
 import * as dashboard from './dashboard.js';
-
 
 const flowDashboard = {
     ...data,
@@ -16,5 +13,4 @@ if (typeof window !== 'undefined') {
 
 export default flowDashboard;
 
-
-console.log('Webpack flow-dashboard loaded');
+console.log('Webpack flowdash loaded');

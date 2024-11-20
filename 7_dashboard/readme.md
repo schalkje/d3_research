@@ -132,7 +132,7 @@ For ES module environments:
 </head>
 <body>
     <script type="module">
-        import flowDashboard from './dist/flow-dashboard.min.js';
+        import flowDashboard from './dist/flowdash.min.js';
 
         flowDashboard.initialize();
         flowDashboard.render();
@@ -152,7 +152,7 @@ For non-module environments (e.g., if ES modules aren’t supported or you want 
     <title>Dashboard Test</title>
 </head>
 <body>
-    <script src="./dist/flow-dashboard.min.js"></script>
+    <script src="./dist/flowdash.min.js"></script>
     <script>
         // `flowDashboard` is available globally
         flowDashboard.initialize();
