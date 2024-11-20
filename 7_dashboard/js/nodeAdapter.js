@@ -8,6 +8,7 @@ const AdapterMode = Object.freeze({
   FULL: "full",
   ARCHIVE_ONLY: "archive-only",
   STAGING_ARCHIVE: "staging-archive",
+  STAGING_TRANSFORM: "staging-transform",
 });
 
 export default class AdapterNode extends BaseContainerNode {
@@ -16,6 +17,15 @@ export default class AdapterNode extends BaseContainerNode {
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.mode) nodeData.layout.mode = AdapterMode.FULL; // manual, full, archive-only, staging-archive
+    if (nodeData.layout.mode == AdapterMode.STAGING_ARCHIVE || nodeData.layout.mode == AdapterMode.STAGING_TRANSFORM) {
+      nodeData.layout.arrangement = 4;
+      nodeData.height = 44;
+    }
+    if (nodeData.layout.mode == AdapterMode.ARCHIVE_ONLY) {
+      nodeData.layout.arrangement = 5;
+      nodeData.height = 44;
+      nodeData.width = 150 + 8 + 8;
+    }
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1; // 1,2,3
 
     super(nodeData, parentElement, createNode, settings, parentNode);
@@ -28,7 +38,12 @@ export default class AdapterNode extends BaseContainerNode {
 
   async initChildren() {
     this.suspenseDisplayChange = true;
-    console.log("        nodeAdapter - initChildren - Create Children for Adapter:", this.data.label, this.data.children, this.container);
+    console.log(
+      "        nodeAdapter - initChildren - Create Children for Adapter:",
+      this.data.label,
+      this.data.children,
+      this.container
+    );
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
@@ -63,7 +78,9 @@ export default class AdapterNode extends BaseContainerNode {
     let stagingChild = this.data.children.find((child) => child.role === "staging");
     if (
       !stagingChild &&
-      (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || this.data.layout.mode == AdapterMode.FULL)
+      (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE ||
+        this.data.layout.mode == AdapterMode.STAGING_TRANSFORM ||
+        this.data.layout.mode == AdapterMode.FULL)
     ) {
       stagingChild = {
         id: `stg_${this.data.id}`,
@@ -85,7 +102,10 @@ export default class AdapterNode extends BaseContainerNode {
 
     // render "transform" node
     let transformChild = this.data.children.find((child) => child.role === "transform");
-    if (!transformChild && this.data.layout.mode == AdapterMode.FULL) {
+    if (
+      !transformChild &&
+      (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
+    ) {
       transformChild = {
         id: `trn_${this.data.id}`,
         label: `Transform ${this.data.label}`,
@@ -104,7 +124,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.transformNode.init(this.container);
     }
 
-
+    if (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
       createInternalEdge(
         {
           source: this.stagingNode,
@@ -117,6 +137,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.transformNode,
         this.settings
       );
+    if (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE || this.data.layout.mode == AdapterMode.FULL)
       createInternalEdge(
         {
           source: this.stagingNode,
@@ -130,10 +151,7 @@ export default class AdapterNode extends BaseContainerNode {
         this.settings
       );
 
-
     await this.initEdges();
-
-
 
     // this.updateChildren();
     // this.updateEdges();
@@ -145,7 +163,11 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.warn(`        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`, this.id, this.data.layout);
+    console.warn(
+      `        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`,
+      this.id,
+      this.data.layout
+    );
     switch (this.data.layout.arrangement) {
       case 1:
         this.updateLayout1();
@@ -155,6 +177,12 @@ export default class AdapterNode extends BaseContainerNode {
         break;
       case 3:
         this.updateLayout3();
+        break;
+      case 4:
+        this.updateLayout4();
+        break;
+      case 5:
+        this.updateLayout5();
         break;
     }
   }
@@ -287,6 +315,42 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode.data.height +
         this.nodeSpacing.vertical;
       this.transformNode.move(x, y);
+    }
+  }
+
+  async updateLayout4() {
+    let otherNode = this.archiveNode;
+    if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
+      otherNode = this.transformNode;
+    }
+    console.warn("        nodeAdapter - updateLayout4 - OtherNode:", otherNode);
+
+    if (this.stagingNode) {
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
+      this.stagingNode.move(x, y);
+    }
+
+    if (otherNode) {
+      const x =
+        -this.data.width / 2 +
+        otherNode.data.width / 2 +
+        this.containerMargin.left +
+        otherNode.data.width +
+        this.nodeSpacing.horizontal;
+      const y = -this.data.height / 2 + otherNode.data.height / 2 + this.containerMargin.top;
+
+      otherNode.move(x, y);
+    }
+  }
+
+  async updateLayout5() {
+    let onlyNode = this.archiveNode;
+
+    if (onlyNode) {
+      const x = -this.data.width / 2 + onlyNode.data.width / 2 + this.containerMargin.left;
+      const y = -this.data.height / 2 + onlyNode.data.height / 2 + this.containerMargin.top;
+      onlyNode.move(x, y);
     }
   }
 }

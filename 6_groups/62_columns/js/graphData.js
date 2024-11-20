@@ -3,31 +3,47 @@
 // Setup data
 //
 
-export const testDataModel1 = [
-  {
-    id: "columns1",
-    label: "Columns 1",
-    type: "columns",
-    groupType: "fixed",
-    layout: {
-      displayMode: "code",
-    },
-    children: [
-      {
-        id: "bankview",
-        label: "Bankview",
-        type: "node",
-      },
-      {
-        id: "matrix",
-        label: "Matrix",
-        type: "node",
-      },
-    ],
-  },
-];
+export const simple = {
+  settings: {
+    showCenterMark: false,
 
-export const testDataModel21 = [
+    // edges
+    showGhostlines: false,
+  },
+  nodes: [
+    {
+      id: "columns1",
+      label: "Columns ",
+      type: "columns",
+      groupType: "fixed",
+      layout: {
+        displayMode: "code",
+      },
+      children: [
+        {
+          id: "bankview",
+          label: "Bankview",
+          type: "node",
+        },
+        {
+          id: "matrix",
+          label: "Matrix",
+          type: "node",
+        },
+      ],
+    },
+  ],
+  edges: [],
+};
+
+export const simpleAdapters = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+  },
+  nodes: [
   {
     id: "columns1",
     label: "Columns 1",
@@ -46,27 +62,6 @@ export const testDataModel21 = [
           mode: "full",
           arrangement: 1,
         },
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_bankview",
-            label: "Staging Bankview",
-            role: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_bankview",
-            label: "Archive Bankview",
-            role: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_bankview",
-            label: "Transform Bankview",
-            role: "transform",
-            type: "node",
-          },
-        ],
       },
       {
         id: "matrix",
@@ -77,30 +72,9 @@ export const testDataModel21 = [
           mode: "full",
           arrangement: 2,
         },
-        groupType: "fixed",
         interactionState: {
           expanded: true,
         },
-        children: [
-          {
-            id: "stg_matrix",
-            label: "Staging Matrix",
-            role: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_matrix",
-            label: "Archive Matrix",
-            role: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_matrix",
-            label: "Transform Matrix",
-            role: "transform",
-            type: "node",
-          },
-        ],
       },
       {
         id: "eximius",
@@ -111,33 +85,21 @@ export const testDataModel21 = [
           mode: "full",
           arrangement: 3,
         },
-        groupType: "fixed",
-        children: [
-          {
-            id: "stg_eximius",
-            label: "Staging Eximius",
-            role: "staging",
-            type: "node",
-          },
-          {
-            id: "arc_eximius",
-            label: "Archive Eximius",
-            role: "archive",
-            type: "node",
-          },
-          {
-            id: "trn_eximius",
-            label: "Transform Eximius",
-            role: "transform",
-            type: "node",
-          },
-        ],
       },
     ],
   },
-];
+],
+edges: [],
+};
 
-export const testDataModel22 = [
+export const nested = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+  },
+  nodes: [
   {
     id: "columns",
     label: "Columns Parent",
@@ -190,9 +152,18 @@ export const testDataModel22 = [
       },
     ],
   },
-];
+],
+edges: [],
+};
 
-export const testDataModel31 = [
+export const lane = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+  },
+  nodes: [
   {
     id: "columns",
     label: "Columns",
@@ -245,9 +216,20 @@ export const testDataModel31 = [
       },
     ],
   },
-];
+],
+edges: [],
+};
 
-export const testDataModel32 = [
+export const lanes = {
+  settings: {
+    showCenterMark: false,
+
+    curved: true,
+
+    // edges
+    showGhostlines: false,
+  },
+  nodes: [
   {
     id: "columns",
     label: "Columns",
@@ -322,7 +304,7 @@ export const testDataModel32 = [
             code: "MTX",
             type: "adapter",
             layout: {
-              mode: "full",
+              mode: "staging-archive",
             },
           },
           {
@@ -331,7 +313,7 @@ export const testDataModel32 = [
             code: "EXI",
             type: "adapter",
             layout: {
-              mode: "full",
+              mode: "staging-transform",
             },
           },
         ],
@@ -361,7 +343,7 @@ export const testDataModel32 = [
             code: "MTX",
             type: "adapter",
             layout: {
-              mode: "full",
+              mode: "archive-only",
               arrangement: 3,
             },
           },
@@ -379,6 +361,7 @@ export const testDataModel32 = [
       },
     ],
   },
-];
+],
+edges: [],
+};
 
-export const dataModel = testDataModel32;

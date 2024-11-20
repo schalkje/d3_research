@@ -10,9 +10,9 @@
 </head>
 
 <body>
-   <h1>Nodes</h1>
+   <h1>Grouping</h1>
 
-   <h2>Adapter Node</h2>
+   <h2>Columns</h2>
 
    <div class="container">
       <svg id="graph" class="canvas">
@@ -20,8 +20,8 @@
    </div>
 
    <script type="module">
-      
-      import { singleAdapter as dashboard } from './js/graphData.js';
+   
+      import { simpleAdapters as dashboard } from './js/graphData.js';
       import flowDashboard from '../../7_dashboard/js/index.js';
 
       const flowdash = new flowDashboard.Dashboard(dashboard);
