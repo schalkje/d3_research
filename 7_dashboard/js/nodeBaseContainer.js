@@ -25,7 +25,7 @@ export default class BaseContainerNode extends BaseNode {
 
   get container() {
     if (this._container == null) {
-      this._container = this.element.append("g").attr("class", (d) => `container`);
+      this._container = this.element.append("g").attr("class", (d) => `node-container`);
     }
     return this._container;
   }
