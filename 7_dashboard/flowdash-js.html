@@ -145,8 +145,10 @@
                 dashboardData.settings.showEdges = showEdges;
                 dashboardData.settings.horizontal = horizontal;
                 dashboardData.settings.curved = isEdgeCurved;
-                dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph', '#minimap');
+
+                dashboard = flowDashboard.createDashboard(dashboardData, '#graph', '#minimap');
+                // dashboard = new flowDashboard.Dashboard(dashboardData);
+                // dashboard.initialize('#graph', '#minimap');
             });
         }
 

@@ -698,3 +698,9 @@ function dragEye(dashboard, dragEvent) {
   dashboard.main.svg.call(dashboard.main.zoom.transform, transform);
 }
 
+
+export function createAndInitDashboard(dashboardData, mainDivSelector, minimapDivSelector = null) {  
+  const dashboard = new Dashboard(dashboardData);
+  dashboard.initialize(mainDivSelector, minimapDivSelector);
+  return dashboard;
+}
