@@ -267,7 +267,7 @@ export default class BaseContainerNode extends BaseNode {
     // if (!this.shape)
       this.shape = this.element
         .insert("rect", ":first-child")
-        .attr("class", (d) => `node shape container ${this.data.type}`)
+        .attr("class", (d) => `node shape ${this.data.type}`)
         .attr("width", this.data.width)
         .attr("height", this.data.height)
         .attr("x", -this.data.width / 2)
