@@ -115,6 +115,11 @@
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph', '#minimap');
+                // console.error('dashboard', dashboard.getStructure());
+                // // wait 2 seconds, before getting the structure
+                // setTimeout(() => {
+                //     console.error('dashboard', dashboard.getStructure());
+                // }, 2000);
             });
         }
 
@@ -147,6 +152,7 @@
                 dashboardData.settings.curved = isEdgeCurved;
 
                 dashboard = flowDashboard.createDashboard(dashboardData, '#graph', '#minimap');
+                
                 // dashboard = new flowDashboard.Dashboard(dashboardData);
                 // dashboard.initialize('#graph', '#minimap');
             });

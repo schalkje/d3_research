@@ -197,6 +197,16 @@ export class Dashboard {
     this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
   }
 
+  updateNodeStatus(nodeId, status) {
+    console.log("updateNodeStatus", nodeId, status);
+    const node = this.main.root.getNode(nodeId);
+    if (node) {
+      node.status = status;
+    } else {
+      console.error("updateNodeStatus: Node not found:", nodeId);
+    }
+  }
+
   createContainer(dashboard, className) {
     // create background rect
     // create a container, to enable zooming and panning
@@ -214,6 +224,8 @@ export class Dashboard {
 
   initializeSvg(divSelector) {
     const svg = d3.select(`${divSelector}`);
+    svg.selectAll("*").remove(); // clear the svg
+    
     const { width, height } = svg.node().getBoundingClientRect();
 
     svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
@@ -447,6 +459,31 @@ export class Dashboard {
 
   getSelectedNodes() {
     return this.main.root.getAllNodes(true);
+  }
+
+  getStructure() {
+    if (!this.main.root) return null;
+    
+    var nodes = this.main.root.getAllNodes(false, true);
+    const edges = [];
+    this.main.root.getAllEdges(false,edges);
+
+    // strip the nodes and edges to the base structure
+    const structureNodes = nodes.map((node) => {
+      return {
+        Id: node.id,
+      };
+    });
+
+    const structureEdges = edges.map((edge) => {
+      return {
+        Source: edge.source.id,
+        Target: edge.target.id,
+        Id: edge.id,
+      };
+    });
+
+    return { Nodes: structureNodes, Edges: structureEdges };
   }
 
   deselectAll() {

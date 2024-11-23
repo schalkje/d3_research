@@ -40,7 +40,6 @@ export default class RectangularNode extends BaseNode {
   }
   
   set status(value) {
-    console.log("  nodeRect - status", value);
     super.status = value;
     this.shape.attr("status", value);
   }

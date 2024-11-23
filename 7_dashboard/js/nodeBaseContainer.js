@@ -1,5 +1,4 @@
-import BaseNode from "./nodeBase.js";
-import Simulation from "./simulation.js";
+import BaseNode, { NodeStatus } from "./nodeBase.js";
 import { getComputedDimensions } from "./utils.js";
 import ZoomButton from "./buttonZoom.js";
 
@@ -72,9 +71,37 @@ export default class BaseContainerNode extends BaseNode {
     return super.status;
   }
   set status(value) {
-    console.log("nodeBaseContainer - Setting status", value);
     super.status = value;
     this.shape.attr("status", value);
+  }
+
+  determineStatusBasedOnChildren() {
+    // if the status of all children is Ready, then the status of the container is Ready
+    // if the status of all children is Updated, then the status of the container is Updated
+    // if the status of all children is Disabled, then the status of the container is Disabled
+    // if the status of all children is Unknown, then the status of the container is Unknown
+    if (this.childNodes.length == 0) return;
+
+    var firstStatus = this.childNodes[0].status;
+    for (const childNode of this.childNodes) {
+
+      if (childNode.status != firstStatus) {
+        // if the status of any child is Warning and the status of any other children is Warning or Updated, then the status of the container is Warning
+        if ((firstStatus == NodeStatus.WARNING && childNode.status == NodeStatus.UPDATED)) continue;
+        if ((firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.WARNING)) {
+          firstStatus = NodeStatus.WARNING;
+          continue;
+        } 
+        
+        this.status = "Unknown";
+        return;
+      }
+    }
+    if (firstStatus == "Ready") this.status = "Ready";
+    if (firstStatus == "Updated") this.status = "Updated";
+    if (firstStatus == "Disabled") this.status = "Disabled";
+    if (firstStatus == "Unknown") this.status = "Unknown";
+    if (firstStatus == "Warning") this.status = "Warning";
   }
 
   resize(size, forced = false) {
@@ -142,16 +169,16 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   getNode(nodeId) {
-    // console.log("    nodeBaseContainer getNode:", this.id, nodeId, this.id == nodeId);
+    console.log("    nodeBaseContainer getNode:", this.id, nodeId, this.id == nodeId);
     // console.log("                              :", this.childNodes.length, this.childNodes);
     // console.log("                              :", this.data);
     // console.log("                              :", this.childNodes[0]);
-    if (this.id === nodeId) {
-      // console.log("    nodeBaseContainer getNode found:", this.id, nodeId);
+    if (this.id == nodeId) {
+      console.log("    nodeBaseContainer getNode found:", this.id, nodeId);
       return this;
     }
     for (const childNode of this.childNodes) {
-      // console.log("    nodeBaseContainer getNode check child:", childNode.id, nodeId);
+      console.log("    nodeBaseContainer getNode check child:", childNode.id, nodeId);
       const foundNode = childNode.getNode(nodeId);
       if (foundNode) {
         return foundNode;
@@ -204,13 +231,13 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   // function to return all the nodes in the graph
-  getAllNodes(onlySelected = false) {
+  getAllNodes(onlySelected = false, onlyEndNodes = false) {
     const nodes = [];
-    if (!onlySelected || this.selected) nodes.push(this);
+    if ((!onlySelected || this.selected) && !onlyEndNodes) nodes.push(this);
 
     if (this.childNodes) {
       this.childNodes.forEach((childNode) => {
-        nodes.push(...childNode.getAllNodes(onlySelected));
+        nodes.push(...childNode.getAllNodes(onlySelected ,onlyEndNodes));
       });
     }
     return nodes;

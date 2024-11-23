@@ -2,41 +2,34 @@
 <html>
 
 <head>
-   <link rel="stylesheet" href="styles.css">
+   <link rel="stylesheet" href="../../7_dashboard/flowdash.css">
 
-   <script type="text/javascript" src="libs/d3.min.js"></script>
-   <script type="text/javascript" src="libs/d3-shape.min.js"></script>
-   <script type="text/javascript" src="libs/d3-dag.iife.min.js"></script>
+   <script src="../../7_dashboard/libs/d3.min.js"></script>
+   <script src="../../7_dashboard/libs/d3-shape.min.js"></script>
+   <script src="../../7_dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 
 <body>
    <h1>Edges</h1>
 
-   <h2>Edge demo</h2>
+   <h2>Grouped edges demo</h2>
    <p>
-      Show all possible edges between two nodes.
+      Show dynamic positioning with edges
    </p>
 
    <div class="container">
-      <svg id="svg_container" class="canvas">
+      <svg id="graph" class="canvas">
       </svg>
    </div>
 
    <script type="module">
-      // import './js/index.js';
-      import { groupEdgeDemo as dashboard } from './js/graphData.js';
-      import { createDashboard } from './js/dashboard.js';
       
+      import { groupEdgeDemo as dashboard } from './js/graphData.js';
+      import flowDashboard from '../../7_dashboard/js/index.js';
 
-      const svgWidth = 1200;
-      const svgHeight = 1000;
-      const svg = d3.select('svg')
-         .attr('width', svgWidth)
-         .attr('height', svgHeight)
-         .attr("viewBox", [-svgWidth/2, -svgHeight/2, svgWidth, svgHeight])
-         .attr("class", "canvas");
+      const flowdash = new flowDashboard.Dashboard(dashboard);
+      flowdash.initialize('#graph');
 
-      createDashboard(dashboard, svg);
   </script>
 
    <button onclick="update()">Update</button>

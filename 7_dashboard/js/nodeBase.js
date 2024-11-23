@@ -1,13 +1,16 @@
 import { computeConnectionPoints } from "./utilPath.js";
 
 export const NodeStatus = Object.freeze({
-  NEW: 'new', 
-  READY: 'ready',
-  ACTIVE: 'active',
-  ERROR: 'error',
-  WARNING: 'warning',
-  UNKNOWN: 'unknown',
-  DISABLED: 'disabled'
+  UNKNOWN: 'Unknown',
+  DISABLED: 'Disabled',
+  // process states
+  READY: 'Ready',
+  UPDATING: 'Udating',
+  UPDATED: 'Updated',
+  // error states
+  DELAYED: 'Delayed',  
+  WARNING: 'Warning',
+  ERROR: 'Error'
 });
 
 export default class BaseNode {
@@ -16,6 +19,7 @@ export default class BaseNode {
     this.parentElement = parentElement;
     this.parentNode = parentNode;
     this.settings = settings;
+    this.settings.toggleCollapseOnStatusChange ??= true;
     this.computeConnectionPoints = computeConnectionPoints;
     this.onDisplayChange = null;
     this.onClick = null;
@@ -72,7 +76,14 @@ export default class BaseNode {
 
   set status(value) {
     this._status = value;
-    this.element.attr("status", value);    
+    this.element.attr("status", value);
+
+    if (this.settings.toggleCollapseOnStatusChange) {
+      // if status is ready, unknown, disabled or updated then collapse the node, otherwise expand it
+      this.collapsed = ![NodeStatus.READY, NodeStatus.UNKNOWN, NodeStatus.DISABLED, NodeStatus.UPDATED].includes(value);
+    }
+
+    this.cascadeStatusChange();
   }
 
   get selected() {
@@ -204,7 +215,7 @@ export default class BaseNode {
 
   getNode(nodeId) {
     // console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
-    if (this.id === nodeId) {
+    if (this.id == nodeId) {
       // console.log("    nodeBase getNode: return this", this);
       return this;
     }
@@ -212,7 +223,7 @@ export default class BaseNode {
   }
 
   // function to return all the nodes in the graph
-  getAllNodes(onlySelected = false) {
+  getAllNodes(onlySelected = false, onlyEndNodes = false) {
     if (onlySelected && !this.selected) return [];
     return [this];
   }
@@ -304,6 +315,12 @@ export default class BaseNode {
     } else {
       console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
     }
+  }
+
+  cascadeStatusChange() {
+    if (this.parentNode) {
+      this.parentNode.determineStatusBasedOnChildren();
+    } 
   }
 
   cascadeRestartSimulation() {
