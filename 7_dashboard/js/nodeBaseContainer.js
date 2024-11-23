@@ -178,7 +178,7 @@ export default class BaseContainerNode extends BaseNode {
       return this;
     }
     for (const childNode of this.childNodes) {
-      console.log("    nodeBaseContainer getNode check child:", childNode.id, nodeId);
+      console.log("    nodeBaseContainer getNode check child:", this.id, childNode.id, nodeId);
       const foundNode = childNode.getNode(nodeId);
       if (foundNode) {
         return foundNode;

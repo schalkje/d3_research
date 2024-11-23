@@ -253,6 +253,103 @@ export const columnEdgeDemo = {
     type: "columns",
     groupType: "dynamic",
     children: [
+          {
+        id: "bankview",
+        label: "Bankview",
+        code: "BNV",
+        type: "adapter",
+                    layout: {
+              mode: "full",
+              arrangement: 1,
+            },
+       },
+      {
+        id: "matrix",
+        label: "Matrix",
+        code: "MTX",
+        type: "adapter",
+        layout: {
+              mode: "full",
+              arrangement: 2,
+            },
+      },
+      {
+        id: "eximius",
+        label: "Eximius",
+        code: "EXI",
+        type: "adapter",
+                    layout: {
+              mode: "full",
+              arrangement: 3,
+            },        
+      },
+  {
+      id: "ods",
+      label: "ODS",
+      code: "ODS",
+      type: "node",  
+  },
+  {
+      id: "dwh",
+      label: "DWH",
+      code: "DWH",
+      type: "node",  
+  }
+],
+  },
+],
+edges: [
+  {
+    isActive: true,
+    source: "ods",
+    type: "SSIS",
+    state: "Ready",
+    target: "dwh"
+  },
+  {
+    isActive: true,
+    source: "trn_bankview",
+    type: "SSIS",
+    state: "Ready",
+    target: "ods"
+  },
+  {
+    isActive: true,
+    source: "trn_matrix",
+    type: "SSIS",
+    state: "Ready",
+    target: "ods"
+  },
+  {
+    isActive: true,
+    source: "trn_eximius",
+    type: "SSIS",
+    state: "Ready",
+    target: "ods"
+  },
+]
+};
+
+export const columnsWithLane = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+    curved: true,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
+  },
+  nodes: [
+  {
+    id: "root",
+    label: "Root",
+    type: "columns",
+    groupType: "dynamic",
+    children: [
       {
         id: "sources",
         label: "Sources",
@@ -337,7 +434,6 @@ edges: [
   },
 ]
 };
-
 
 
 export const groupEdgeDemo = {

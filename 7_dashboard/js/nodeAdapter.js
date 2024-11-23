@@ -145,7 +145,7 @@ export default class AdapterNode extends BaseContainerNode {
     // this.updateEdges();
     this.resize(this.data.expandedSize, true);
     await this.update();
-    console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
+    console.warn("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
   }

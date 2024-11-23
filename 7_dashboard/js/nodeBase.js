@@ -214,9 +214,9 @@ export default class BaseNode {
   }
 
   getNode(nodeId) {
-    // console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
+    console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
     if (this.id == nodeId) {
-      // console.log("    nodeBase getNode: return this", this);
+      console.log("    nodeBase getNode: return this", this);
       return this;
     }
     return null;
