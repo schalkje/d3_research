@@ -193,9 +193,11 @@ svg.canvas {
 
 
 .node.selected .node.shape {
-  stroke: rgb(0, 0, 255);
-  stroke-opacity: 0.95;
+  stroke: rgb(53, 53, 175);
+  /* stroke-opacity: 0.95; */
+  stroke-opacity: 1;
   stroke-width: 3;
+  opacity: 0.8;
 }
 
 .node.placeholder {
@@ -266,8 +268,9 @@ svg.canvas {
 }
 
 .edge.selected .path {
-  stroke: rgb(0, 0, 255);
-  stroke-opacity: 0.5;
+  stroke: rgb(53, 53, 175);
+  /* stroke-opacity: 0.5; */
+  stroke-opacity: 1;
   opacity: 0.8;
 }
 

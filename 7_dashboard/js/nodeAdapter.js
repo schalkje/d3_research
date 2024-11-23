@@ -48,7 +48,7 @@ export default class AdapterNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  get nestedCorrection_y1() {
+  get nestedCorrection_y() {
     return this.y;
   }
 

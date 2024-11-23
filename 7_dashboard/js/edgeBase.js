@@ -119,11 +119,11 @@ export default class BaseEdge {
   get y1() {
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
-      console.warn("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y1);
+      console.warn("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       // correction += this.parents.source[i].y -this.parents.source[i].data.height / 2;
       // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
       // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
-      correction += this.parents.source[i].nestedCorrection_y1;
+      correction += this.parents.source[i].nestedCorrection_y;
       // correction += - this.parents.source[i].data.height / 2;
       // correction += this.parents.source[i].y; 
     }
@@ -144,7 +144,8 @@ export default class BaseEdge {
   get y2() {
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
-      correction += this.parents.target[i].y;
+      correction += this.parents.target[i].nestedCorrection_y;
+      // correction += this.parents.target[i].y;
     }
     return this.target ? this.target.y + correction : null;
   }

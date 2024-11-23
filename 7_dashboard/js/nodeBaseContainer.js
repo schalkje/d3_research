@@ -22,7 +22,7 @@ export default class BaseContainerNode extends BaseNode {
     this.childEdges = [];
   }
   
-  get nestedCorrection_y1() {
+  get nestedCorrection_y() {
     return this.y - this.data.height/2 + this.containerMargin.top;
   }
 

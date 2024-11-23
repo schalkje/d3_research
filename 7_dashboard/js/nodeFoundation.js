@@ -38,6 +38,11 @@ export default class FoundationNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
+  get nestedCorrection_y() {
+    return this.y;
+  }
+
+
    initChildren() {
     this.suspenseDisplayChange = true;
 

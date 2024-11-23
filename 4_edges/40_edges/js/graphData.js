@@ -354,7 +354,7 @@ export const adaptedColumnEdgeDemo = {
   ],
 };
 
-export const columnsWithLane = {
+export const columnsWithLane1 = {
   settings: {
     showCenterMark: false,
 
@@ -459,7 +459,7 @@ export const columnsWithLane = {
   ],
 };
 
-export const columnsWithLane2 = {
+export const columnsWithLane = {
   settings: {
     showCenterMark: false,
 
@@ -530,8 +530,20 @@ export const columnsWithLane2 = {
           groupType: "dynamic",
           children: [
             {
-              id: "dwh",
-              label: "DWH",
+              id: "dwh1",
+              label: "DWH 1",
+              code: "DWH",
+              type: "node",
+            },
+            {
+              id: "dwh2",
+              label: "DWH 2",
+              code: "DWH",
+              type: "node",
+            },
+            {
+              id: "dwh3",
+              label: "DWH 3",
               code: "DWH",
               type: "node",
             },
@@ -546,7 +558,21 @@ export const columnsWithLane2 = {
       source: "ods",
       type: "SSIS",
       state: "Ready",
-      target: "dwh",
+      target: "dwh1",
+    },
+    {
+      isActive: true,
+      source: "ods",
+      type: "SSIS",
+      state: "Ready",
+      target: "dwh2",
+    },
+    {
+      isActive: true,
+      source: "ods",
+      type: "SSIS",
+      state: "Ready",
+      target: "dwh3",
     },
     {
       isActive: true,
@@ -637,15 +663,76 @@ export const adapterColumnsWithLane = {
           type: "node",
         },
         {
-          id: "dwh",
-          label: "DWH",
-          code: "DWH",
-          type: "node",
+          id: "dwhs",
+          label: "DWH's",
+          type: "lane",
+          groupType: "dynamic",
+          children: [
+            {
+              id: "dwh1",
+              label: "DWH 1",
+              code: "DWH",
+              type: "foundation",
+            },
+            {
+              id: "dwh2",
+              label: "DWH 2",
+              code: "DWH",
+              type: "foundation",
+            },
+            {
+              id: "dwh3",
+              label: "DWH 3",
+              code: "DWH",
+              type: "foundation",
+            },
+          ],
+        },
+        {
+          id: "streets",
+          label: "Streets",
+          type: "lane",
+          groupType: "dynamic",
+          children: [
+            {
+              id: "street1",
+              label: "Street 1",
+              code: "DWH",
+              type: "foundation",
+            },
+            {
+              id: "street2",
+              label: "Street 2",
+              code: "DWH",
+              type: "foundation",
+            },
+          ],
         },
       ],
     },
   ],
   edges: [
+    {
+      isActive: true,
+      source: "ods",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_dwh1",
+    },
+    {
+      isActive: true,
+      source: "ods",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_dwh2",
+    },
+    {
+      isActive: true,
+      source: "ods",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_dwh3",
+    },
     {
       isActive: true,
       source: "ods",
@@ -673,6 +760,41 @@ export const adapterColumnsWithLane = {
       type: "SSIS",
       state: "Ready",
       target: "ods",
+    },
+    {
+      isActive: true,
+      source: "base_dwh1",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_street1",
+    },
+    {
+      isActive: true,
+      source: "base_dwh2",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_street1",
+    },
+    {
+      isActive: true,
+      source: "base_dwh1",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_street2",
+    },
+    {
+      isActive: true,
+      source: "base_dwh2",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_street2",
+    },
+    {
+      isActive: true,
+      source: "base_dwh3",
+      type: "SSIS",
+      state: "Ready",
+      target: "raw_street2",
     },
   ],
 };
