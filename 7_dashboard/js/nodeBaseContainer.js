@@ -21,6 +21,10 @@ export default class BaseContainerNode extends BaseNode {
     // is the first joined parent
     this.childEdges = [];
   }
+  
+  get nestedCorrection_y1() {
+    return this.y - this.data.height/2 + this.containerMargin.top;
+  }
 
   get container() {
     if (this._container == null) {
@@ -42,11 +46,6 @@ export default class BaseContainerNode extends BaseNode {
     this.zoomButton.toggle(value); // Toggle between plus and minus on click
 
 
-
-    this.childNodes.forEach((childNode) => {
-      childNode.visible = !this.collapsed;
-    });
-
     if (this.collapsed) {
       this.collapse();
     } else {
@@ -55,6 +54,14 @@ export default class BaseContainerNode extends BaseNode {
 
     this.cascadeUpdate();
 
+  }
+
+  propagateVisibility(visible) {
+    this.childNodes.forEach((childNode) => {
+      childNode.visible = visible;
+      if (childNode instanceof BaseContainerNode)
+        childNode.propagateVisibility(visible)
+    });
   }
 
   get visible() {
@@ -123,7 +130,7 @@ export default class BaseContainerNode extends BaseNode {
     this.resize(size, forced);
   }
 
-  async expand() {
+   expand() {
     console.log(`    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(this.data.expandedSize.width)}x${Math.round(this.data.expandedSize.height)}`, this.data.label);
     // restore the expanded size if it was stored
     if (this.data.expandedSize) {
@@ -135,12 +142,12 @@ export default class BaseContainerNode extends BaseNode {
     // const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
 
 
-    await this.initChildren();
-    await this.initEdges();
+     this.initChildren();
+     this.initEdges();
 
-    // await this.updateChildren();
-    // await this.updateEdges();
-    // await this.update();
+    //  this.updateChildren();
+    //  this.updateEdges();
+    //  this.update();
     // Set expanded or collapsed state
 
     // this.resize({ width: this.data.width, height: this.data.height });
@@ -149,7 +156,7 @@ export default class BaseContainerNode extends BaseNode {
 
   }
 
-  async collapse() {
+   collapse() {
     console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
@@ -197,8 +204,8 @@ export default class BaseContainerNode extends BaseNode {
     this.container.attr("transform", `translate(${containerX}, ${containerY})`);
   }
 
-  async initEdges(propagate = false) {
-    console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
+   initEdges(propagate = false) {
+    console.error("nodeBaseContainer - initEdges:", this.id, this.childEdges);
     // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
       // create container for child nodes
@@ -254,10 +261,10 @@ export default class BaseContainerNode extends BaseNode {
     }
   }
 
-  async init(parentElement = null) {
+   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
     console.log("    BaseContainerNode - init", this.id);
-    await super.init(parentElement);
+     super.init(parentElement);
 
     // Append text to the top left corner of the element
     const labelElement = this.element
@@ -327,7 +334,7 @@ export default class BaseContainerNode extends BaseNode {
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
   }
 
-  async initChildren() {
+   initChildren() {
     console.log("BaseContainer - initChildren", this.data.label, this.data.children);
 
     // no default rendering of the children, but this renders a placeholder rect
@@ -347,9 +354,9 @@ export default class BaseContainerNode extends BaseNode {
     // this.updateChildren();
   }
 
-  async update() {
+   update() {
     console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
-    await super.update();
+     super.update();
 
     this.element
       .select(".shape")
@@ -363,10 +370,11 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);
 
-      this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
+      if (this.zoomButton)
+        this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
 
       if (!this.collapsed) {
-      await this.updateChildren();
+       this.updateChildren();
 
       this.updateEdges();
     }
@@ -393,7 +401,7 @@ export default class BaseContainerNode extends BaseNode {
   //   this.updateEdges();
   // }
 
-  async updateChildren() {
+   updateChildren() {
     console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
 
     this.container.attr(

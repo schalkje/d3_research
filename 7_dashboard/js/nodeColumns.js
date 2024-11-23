@@ -12,15 +12,14 @@ export default class ColumnsNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async initChildren() {
+   initChildren() {
     console.log("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
 
-    // Create an array to hold all the render promises
+    
 
-      const initPromises = [];
       for (const node of this.data.children) {
       // Create the childComponent instance based on node type
 
@@ -35,11 +34,10 @@ export default class ColumnsNode extends BaseContainerNode {
       childComponent.x = 0;
       childComponent.y = 0;
 
-      // Push the render promise into the array
-      initPromises.push(childComponent.init(this.container));
+      childComponent.init(this.container);
     }
-    // Wait for all renders to complete in parallel
-    await Promise.all(initPromises);
+    
+
 
 
     this.updateChildren();
@@ -87,7 +85,7 @@ export default class ColumnsNode extends BaseContainerNode {
     // this.handleDisplayChange();
   }
 
-  async arrange() {
+   arrange() {
     console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
     this.updateChildren();
   }

@@ -97,12 +97,12 @@ export function createEdge(rootNode, edgeData, settings)
 }
 
 
-export async function createEdges(rootNode, edges, settings) {
+export  function createEdges(rootNode, edges, settings) {
   console.log("Creating Edges:", rootNode, edges, settings);
   edges.forEach((edgeData) => {
     createEdge(rootNode, edgeData, settings);
   });
   console.log("Edges created");
 
-  await rootNode.initEdges(true);
+   rootNode.initEdges(true);
 }

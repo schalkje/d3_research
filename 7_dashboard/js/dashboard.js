@@ -40,7 +40,7 @@ export class Dashboard {
     this.isMainAndMinimapSyncing = false; // isSyncing prevents re-entrant calls and ensures the synchronization code runs only once per zoom action.
   }
 
-  async initialize(mainDivSelector, minimapDivSelector = null) {
+   initialize(mainDivSelector, minimapDivSelector = null) {
     console.log("dashboard - initialize", this);
     // initialize dashboard
     const div = this.initializeSvg(mainDivSelector);
@@ -49,7 +49,7 @@ export class Dashboard {
     this.main.height = div.height;
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
-    this.main.root = await this.createDashboard(this.data, this.main.container);
+    this.main.root =  this.createDashboard(this.data, this.main.container);
 
     this.main.zoom = this.initializeZoom();
     this.main.root.onClick = (node) => this.selectNode(node);
@@ -235,7 +235,7 @@ export class Dashboard {
     return { svg, width, height, onDragUpdate };
   }
 
-  async createDashboard(dashboard, container) {
+   createDashboard(dashboard, container) {
     console.log("dashboard - createDashboard", dashboard, container);
     createMarkers(container);
 
@@ -245,7 +245,7 @@ export class Dashboard {
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
     }
-    await root.init();
+     root.init();
 
     if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
 

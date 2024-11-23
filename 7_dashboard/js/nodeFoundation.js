@@ -38,7 +38,7 @@ export default class FoundationNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async initChildren() {
+   initChildren() {
     this.suspenseDisplayChange = true;
 
     // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
@@ -116,7 +116,7 @@ export default class FoundationNode extends BaseContainerNode {
       this.settings,
     );
 
-    await this.initEdges();
+     this.initEdges();
 
     // compute the size of the container
     this.data.expandedSize = {
@@ -131,7 +131,7 @@ export default class FoundationNode extends BaseContainerNode {
 
     this.resize(this.data.expandedSize, true);
 
-    await this.update();
+     this.update();
     this.cascadeUpdate();
 
     this.suspenseDisplayChange = false;
@@ -154,7 +154,7 @@ export default class FoundationNode extends BaseContainerNode {
     }
   }
 
-  async updateFull() {
+   updateFull() {
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
@@ -173,7 +173,7 @@ export default class FoundationNode extends BaseContainerNode {
     }    
   }
 
-  async updateRole() {
+   updateRole() {
     // JS: TODO: use code as label; need rerendering of the children
     console.log("    Layout Code for Adapter:", this.id);
     if (this.rawNode) {

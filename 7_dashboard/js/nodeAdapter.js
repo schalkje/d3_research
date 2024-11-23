@@ -48,7 +48,12 @@ export default class AdapterNode extends BaseContainerNode {
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-  async initChildren() {
+  get nestedCorrection_y1() {
+    return this.y;
+  }
+
+
+   initChildren() {
     this.suspenseDisplayChange = true;
     console.log(
       "        nodeAdapter - initChildren - Create Children for Adapter:",
@@ -139,13 +144,13 @@ export default class AdapterNode extends BaseContainerNode {
         this.settings
       );
 
-    await this.initEdges();
+     this.initEdges();
 
     // this.updateChildren();
     // this.updateEdges();
     this.resize(this.data.expandedSize, true);
-    await this.update();
-    console.warn("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
+     this.update();
+    console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
   }
@@ -192,7 +197,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async updateLayout1() {
+   updateLayout1() {
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
@@ -236,7 +241,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async updateLayout2() {
+   updateLayout2() {
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y =
@@ -276,7 +281,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async updateLayout3() {
+   updateLayout3() {
     if (this.stagingNode) {
       // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
@@ -320,7 +325,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async updateLayout4() {
+   updateLayout4() {
     let otherNode = this.archiveNode;
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
       otherNode = this.transformNode;
@@ -346,7 +351,7 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  async updateLayout5() {
+   updateLayout5() {
     let onlyNode = this.archiveNode;
 
     if (onlyNode) {

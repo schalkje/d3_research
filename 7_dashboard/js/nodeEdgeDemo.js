@@ -28,7 +28,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
     this.nodeSpacing = nodeData.nodeSpacing || { horizontal: 30, vertical: 20 };
   }
 
-  async renderChildren() {
+   renderChildren() {
     // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
@@ -62,7 +62,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
     // resize to contain all children
     this.resizeToFitChildren();
 
-    await this.initEdges();
+     this.initEdges();
     // this.updateEdges();
   }
 

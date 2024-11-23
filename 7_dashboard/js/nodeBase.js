@@ -119,7 +119,7 @@ export default class BaseNode {
     this.handleDisplayChange();
   }
 
-  async init(parentElement = null) {
+   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
     console.log("nodeBase - init", this.data.label);
 
@@ -163,7 +163,7 @@ export default class BaseNode {
   }
 
   // function to put all the elements in the correct place
-  async update() {
+   update() {
     console.log("nodeBase - update", this.data.label);
 
     if (this.settings.showConnectionPoints) {
@@ -198,7 +198,7 @@ export default class BaseNode {
     }
   }
 
-  async resize(size, forced = false) {
+   resize(size, forced = false) {
     // node base has no elements of it's own, so just update the data
     if  (forced || this.data.width != size.width || this.data.height != size.height)
     {
@@ -206,7 +206,7 @@ export default class BaseNode {
       this.data.width = size.width;
       this.data.height = size.height;
 
-      await this.update();
+       this.update();
 
       this.handleDisplayChange();
     }

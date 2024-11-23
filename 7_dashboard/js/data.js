@@ -1,5 +1,5 @@
 
-export async function fetchDashboardFile(selectedFile) {
-    const graphData = await d3.json(`data/${selectedFile}`);
+export  function fetchDashboardFile(selectedFile) {
+    const graphData =  d3.json(`data/${selectedFile}`);
     return graphData;
 }

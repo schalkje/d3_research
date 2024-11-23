@@ -59,12 +59,12 @@ export default class BaseEdge {
   }
 
   get sourceIndex() {
-    // take the lowest visible parent
-    for (let i = 0; i < this.parents.source.length; i++) {
-      if (this.parents.source[i].visible) return i;
+    // take the lowest expanded parent
+    for (let i = this.parents.source.length-1; i > 0; i--) {
+      if (this.parents.source[i].collapsed) return i;
     }
 
-    return this.parents.source.length;
+    return 0;
   }
 
   get source() {
@@ -111,15 +111,26 @@ export default class BaseEdge {
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].x;
     }
+    // console.warn("    Getting x1:", this.source.id, this.source.x, correction, this.parents);
+    // return this.source ? this.source.x + correction : null;
     return this.source ? this.source.x + correction : null;
   }
 
   get y1() {
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
-      correction += this.parents.source[i].y;
+      console.warn("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y1);
+      // correction += this.parents.source[i].y -this.parents.source[i].data.height / 2;
+      // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
+      // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
+      correction += this.parents.source[i].nestedCorrection_y1;
+      // correction += - this.parents.source[i].data.height / 2;
+      // correction += this.parents.source[i].y; 
     }
+    console.warn("    Getting y1:", this.source.id, this.source.y, correction, this.source.y + correction, this.parents);
     return this.source ? this.source.y + correction : null;
+    // return this.source ? this.source.y + this.source.data.height + correction : null;
+    // return this.source ? this.source.y : null;
   }
 
   get x2() {
@@ -175,6 +186,8 @@ export default class BaseEdge {
 
       this.element.append("path").attr("class", "path");
     }
+
+    this.update();
   }
 
   update() {
