@@ -80,7 +80,7 @@ export default class BaseNode {
 
     if (this.settings.toggleCollapseOnStatusChange) {
       // if status is ready, unknown, disabled or updated then collapse the node, otherwise expand it
-      this.collapsed = ![NodeStatus.READY, NodeStatus.UNKNOWN, NodeStatus.DISABLED, NodeStatus.UPDATED].includes(value);
+      this.collapsed = [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED].includes(value);
     }
 
     this.cascadeStatusChange();
