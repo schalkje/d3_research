@@ -330,7 +330,7 @@ export default class AdapterNode extends BaseContainerNode {
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
       otherNode = this.transformNode;
     }
-    console.warn("        nodeAdapter - updateLayout4 - OtherNode:", otherNode);
+    // console.log("        nodeAdapter - updateLayout4 - OtherNode:", otherNode);
 
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;

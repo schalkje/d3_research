@@ -4,123 +4,105 @@
     "showConnectionPoints": false,
     "showGhostlines": false,
     "curved": true,
-    "showBoundingBox": false
+    "showBoundingBox": false,
+    "toggleCollapseOnStatusChange": true
   },
   "nodes": [
     {
-      "label": "ODS",
-      "state": "Ready",
-      "id": "2789c005-ef55-4c58-acf9-d6a76351fdd2",
-      "description": "Database : ODS",
-      "type": "node",
-      "link": "https://example.com/ODS"
-    },
-    {
-      "label": "DWH",
-      "state": "Ready",
-      "id": "6e4e2bd4-0257-409a-883b-04716a76dc05",
-      "description": "Database : DWH",
-      "type": "node",
-      "link": "https://example.com/DWH"
-    },
-    {
-      "label": "STAGING_Bankview",
-      "state": "Ready",
-      "id": "59ff186a-33af-4336-9465-c04a69dda2b0",
-      "description": "Database : STAGING_Bankview",
-      "type": "node",
-      "link": "https://example.com/STAGING_Bankview"
-    },
-    {
-      "label": "STG_ARCHIVE_Bankview",
-      "state": "Ready",
-      "id": "d1aca95d-00da-4fb9-96e0-54db32272369",
-      "description": "Database : STG_ARCHIVE_Bankview",
-      "type": "node",
-      "link": "https://example.com/STG_ARCHIVE_Bankview"
-    },
-    {
-      "label": "TRANSFORM_Bankview",
-      "state": "Ready",
-      "id": "e4aabd33-a7b3-46a1-ab6f-72589ce2ba2d",
-      "description": "Database : TRANSFORM_Bankview",
-      "type": "node",
-      "link": "https://example.com/TRANSFORM_Bankview"
-    },
-    {
-      "label": "STAGING_Fidor",
-      "state": "Ready",
-      "id": "9acd0021-14bf-4609-b6b9-d7f0fdaa1e95",
-      "description": "Database : STAGING_Fidor",
-      "type": "node",
-      "link": "https://example.com/STAGING_Fidor"
-    },
-    {
-      "label": "STG_ARCHIVE_Fidor",
-      "state": "Ready",
-      "id": "198c5ec0-cf2c-481a-9432-1a17dedd8c07",
-      "description": "Database : STG_ARCHIVE_Fidor",
-      "type": "node",
-      "link": "https://example.com/STG_ARCHIVE_Fidor"
-    },
-    {
-      "label": "TRANSFORM_Fidor",
-      "state": "Ready",
-      "id": "a8aa88e7-4dfc-4de8-ad4b-4a0bf560d0a0",
-      "description": "Database : TRANSFORM_Fidor",
-      "type": "node",
-      "link": "https://example.com/TRANSFORM_Fidor"
+      "label": "PB DWH",
+      "id": "pbdwh",
+      "description": "Van Lanschot Private Bank DWH",
+      "type": "columns",
+      "children": [
+        {
+          "id": "sources",
+          "label": "Sources",
+          "type": "lane",
+          "children": [
+            {
+              "id": "bankview",
+              "label": "Bankview",
+              "code": "BNV",
+              "type": "adapter",
+              "layout": {
+                "mode": "full",
+                "displayMode": "role",
+                "arrangement": 1
+              }
+            },
+            {
+              "id": "matrix",
+              "label": "Matrix",
+              "code": "MTX",
+              "type": "adapter",
+              "layout": {
+                "mode": "full",
+                "displayMode": "role",
+                "arrangement": 1
+              }
+            },
+            {
+              "id": "fidor",
+              "label": "Fidor",
+              "code": "FDR",
+              "type": "adapter",
+              "layout": {
+                "mode": "full",
+                "displayMode": "role",
+                "arrangement": 1
+              }
+            }
+          ]
+        },
+        {
+          "label": "ODS",
+          "state": "Ready",
+          "id": "pbdwh_ods",
+          "description": "Database : ODS",
+          "type": "node",
+          "category": "Database",
+          "link": "https://example.com/ODS"
+        },
+        {
+          "label": "DWH",
+          "state": "Ready",
+          "id": "pbdwh_dwh",
+          "description": "Database : DWH",
+          "type": "node",
+          "category": "Database",
+          "link": "https://example.com/DWH"
+        }
+      ]
     }
   ],
   "edges": [
     {
-      "isActive": true,
-      "source": "59ff186a-33af-4336-9465-c04a69dda2b0",
+      "isActive": false,
+      "source": "trn_bankview",
       "type": "SSIS",
-      "state": "Ready",
-      "target": "d1aca95d-00da-4fb9-96e0-54db32272369"
-    },
-    {
-      "isActive": true,
-      "source": "59ff186a-33af-4336-9465-c04a69dda2b0",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "e4aabd33-a7b3-46a1-ab6f-72589ce2ba2d"
+      "state": "Unknown",
+      "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "e4aabd33-a7b3-46a1-ab6f-72589ce2ba2d",
+      "source": "trn_matrix",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "2789c005-ef55-4c58-acf9-d6a76351fdd2"
-    },
-    {
-      "isActive": true,
-      "source": "9acd0021-14bf-4609-b6b9-d7f0fdaa1e95",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "198c5ec0-cf2c-481a-9432-1a17dedd8c07"
-    },
-    {
-      "isActive": true,
-      "source": "9acd0021-14bf-4609-b6b9-d7f0fdaa1e95",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "a8aa88e7-4dfc-4de8-ad4b-4a0bf560d0a0"
+      "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "a8aa88e7-4dfc-4de8-ad4b-4a0bf560d0a0",
+      "source": "trn_fidor",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "2789c005-ef55-4c58-acf9-d6a76351fdd2"
+      "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "2789c005-ef55-4c58-acf9-d6a76351fdd2",
+      "source": "pbdwh_ods",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "6e4e2bd4-0257-409a-883b-04716a76dc05"
+      "target": "pbdwh_dwh"
     }
   ]
 }

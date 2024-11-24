@@ -3,7 +3,7 @@ import BaseEdge from "./edgeBase.js";
 export function createInternalEdge(edgeData, source, target, settings)
 {
     // console.log("Creating Internal Edge:", edgeData, source, target);
-    console.log(`  Creating Internal Edge: ${source.data.label} -> ${target.data.label}`);
+    // console.log(`  Creating Internal Edge: ${source.data.label} -> ${target.data.label}`);
     
     // console.log("       Settings:", settings);
 
@@ -91,18 +91,18 @@ export function createEdge(rootNode, edgeData, settings)
       console.error(`Target node ${edgeData.target} not found`);
       return;
     }
-    console.log(`Creating Edge: ${source.data.label} -> ${target.data.label}`);
+    // console.log(`Creating Edge: ${source.data.label} -> ${target.data.label}`);
 
     createInternalEdge(edgeData, source, target, settings)
 }
 
 
 export  function createEdges(rootNode, edges, settings) {
-  console.log("Creating Edges:", rootNode, edges, settings);
+  // console.log("Creating Edges:", rootNode, edges, settings);
   edges.forEach((edgeData) => {
     createEdge(rootNode, edgeData, settings);
   });
-  console.log("Edges created");
+  // console.log("Edges created");
 
    rootNode.initEdges(true);
 }

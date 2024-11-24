@@ -111,26 +111,16 @@ export default class BaseEdge {
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].x;
     }
-    // console.warn("    Getting x1:", this.source.id, this.source.x, correction, this.parents);
-    // return this.source ? this.source.x + correction : null;
     return this.source ? this.source.x + correction : null;
   }
 
   get y1() {
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
-      console.warn("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
-      // correction += this.parents.source[i].y -this.parents.source[i].data.height / 2;
-      // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
-      // correction += this.parents.source[i].y - this.parents.source[i].data.height / 2 + this.parents.source[i].containerMargin.top;
+      // console.log("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       correction += this.parents.source[i].nestedCorrection_y;
-      // correction += - this.parents.source[i].data.height / 2;
-      // correction += this.parents.source[i].y; 
     }
-    console.warn("    Getting y1:", this.source.id, this.source.y, correction, this.source.y + correction, this.parents);
     return this.source ? this.source.y + correction : null;
-    // return this.source ? this.source.y + this.source.data.height + correction : null;
-    // return this.source ? this.source.y : null;
   }
 
   get x2() {
@@ -161,7 +151,7 @@ export default class BaseEdge {
 
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    console.log("edgeBase - init", this.label);
+    // console.log("edgeBase - init", this.label);
 
     // Create ghostlines
     if (this.settings.showGhostlines) {
@@ -192,7 +182,7 @@ export default class BaseEdge {
   }
 
   update() {
-    console.log("edgeBase - update", this.label);
+    // console.log("edgeBase - update", this.label);
     // console.log("----------------------------------------------------------------------------------------------");
     // console.log("--     Updating Render for EDGE BASE:", this.id);
     // console.log("--     Updating Render for EDGE BASE:", this.label);

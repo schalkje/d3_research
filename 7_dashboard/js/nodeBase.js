@@ -91,19 +91,19 @@ export default class BaseNode {
   }
 
   set selected(value) {
-    console.log("nodeBase - Setting selected", value);
+    // console.log("nodeBase - Setting selected", value);
     this._selected = value;
     this.element.classed("selected", this._selected);
   }
 
   handleDisplayChange() {
     if (this.suspenseDisplayChange) {
-      console.log(`          > skip handleDisplayChange ${this.data.label}`);
+      // console.log(`          > skip handleDisplayChange ${this.data.label}`);
       return;
     }
     // console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
     if (this.onDisplayChange) {
-      console.log(`          > calling handleDisplayChange ${this.data.label}`);
+      // console.log(`          > calling handleDisplayChange ${this.data.label}`);
       this.onDisplayChange();
     } else {
       if (this.parentNode) this.parentNode.handleDisplayChange();
@@ -111,7 +111,7 @@ export default class BaseNode {
   }
 
   move(x, y) {
-    console.log(`          > move ${this.id}, (x:${Math.round(this.x)},y:${Math.round(this.y)}) -> (x:${Math.round(x)},y:${Math.round(y)})`);
+    // console.log(`          > move ${this.id}, (x:${Math.round(this.x)},y:${Math.round(this.y)}) -> (x:${Math.round(x)},y:${Math.round(y)})`);
     this.x = x;
     this.y = y;
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
@@ -214,9 +214,9 @@ export default class BaseNode {
   }
 
   getNode(nodeId) {
-    console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
+    // console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
     if (this.id == nodeId) {
-      console.log("    nodeBase getNode: return this", this);
+      // console.log("    nodeBase getNode: return this", this);
       return this;
     }
     return null;

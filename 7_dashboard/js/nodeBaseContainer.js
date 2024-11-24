@@ -176,16 +176,16 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   getNode(nodeId) {
-    console.log("    nodeBaseContainer getNode:", this.id, nodeId, this.id == nodeId);
+    // console.log("    nodeBaseContainer getNode:", this.id, nodeId, this.id == nodeId);
     // console.log("                              :", this.childNodes.length, this.childNodes);
     // console.log("                              :", this.data);
     // console.log("                              :", this.childNodes[0]);
     if (this.id == nodeId) {
-      console.log("    nodeBaseContainer getNode found:", this.id, nodeId);
+      // console.log("    nodeBaseContainer getNode found:", this.id, nodeId);
       return this;
     }
     for (const childNode of this.childNodes) {
-      console.log("    nodeBaseContainer getNode check child:", this.id, childNode.id, nodeId);
+      // console.log("    nodeBaseContainer getNode check child:", this.id, childNode.id, nodeId);
       const foundNode = childNode.getNode(nodeId);
       if (foundNode) {
         return foundNode;
@@ -205,7 +205,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
    initEdges(propagate = false) {
-    console.error("nodeBaseContainer - initEdges:", this.id, this.childEdges);
+    // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
     // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
       // create container for child nodes

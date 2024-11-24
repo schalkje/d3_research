@@ -13,7 +13,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
    initChildren() {
-    console.log("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
+    // console.log("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
@@ -28,7 +28,7 @@ export default class ColumnsNode extends BaseContainerNode {
         childComponent = this.createNode(node, this.container, this.settings, this);
         this.childNodes.push(childComponent);
 
-        console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
+        // console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
       }
 
       childComponent.x = 0;
@@ -44,7 +44,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
+    // console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
     this.suspenseDisplayChange = true;
 
     // each child is a column
@@ -54,7 +54,7 @@ export default class ColumnsNode extends BaseContainerNode {
 
     // position the nodes
     this.childNodes.forEach((node, index) => {
-      console.log(`      nodeColumns - updateChildren - Layout for Node: ${node.data.label}, ${Math.round(node.data.width)}x${Math.round(node.data.height)}`, node.data.layout);
+      // console.log(`      nodeColumns - updateChildren - Layout for Node: ${node.data.label}, ${Math.round(node.data.width)}x${Math.round(node.data.height)}`, node.data.layout);
       // add spacing between nodes
       if (index > 0 )
         x += this.nodeSpacing.horizontal;
@@ -86,7 +86,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
    arrange() {
-    console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
+    // console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
     this.updateChildren();
   }
 }
