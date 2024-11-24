@@ -128,68 +128,66 @@ svg.canvas {
   opacity: 0.3;
 }
 
-/* g.node[status="unknown"] .node.shape {
-    fill: #9b9bfa;
+/* status update */
+
+.node.shape[status="Unknown"] {
+  color: lightslategray;
+}
+
+.node.shape[status="Ready"] {
+  fill: lightblue;
+}
+
+@keyframes running-process {
+  0% {
+      background: lightgreen;
+      box-shadow: 0px 0px 5px 5px lightgreen;
   }
 
-  g.node[status="disabled"] .node.shape {
-    fill: rgb(142, 142, 142);
+  15% {
+      background: lightgreen;
+      box-shadow: none;
   }
 
-  g[status="new"] .node.shape {
-    fill: #9bccfa;
+  50% {
+      background: transparent;
+      box-shadow: none;
   }
 
-  g[status="ready"] .node.shape {
-    fill: #9b9bfa;
+  85% {
+      background: lightgreen;
+      box-shadow: none;
   }
 
-  g[status="active"] .node.shape {
-    fill: rgb(151, 147, 65);
+  100% {
+      background: lightgreen;
+      box-shadow: 0px 0px 5px 5px lightgreen;
   }
-
-  g[status="warning"] .node.shape {
-    fill: rgb(255, 98, 0);
-  }
-
-  g[status="error"] .node.shape {
-    fill: rgb(255, 0, 0);
-    opacity: 0.8;
-  } */
-.node.shape[status="unknown"] {
-  fill: #9b9bfa;
-  opacity: 0.8;
 }
 
-.node.shape[status="disabled"] {
-  fill: rgb(142, 142, 142);
-  opacity: 0.8;
+.node.shape[status="Updating"] {
+  animation: running-process 1s infinite;
 }
 
-.node.shape[status="new"] {
-  fill: #9bccfa;
-  opacity: 0.8;
+.node.shape[status="Updated"] {
+  fill: green;
 }
 
-.node.shape[status="ready"] {
-  fill: #26ff00;
-  opacity: 0.8;
+
+.node.shape[status="Delayed"] {
+  fill: orange;
 }
 
-.node.shape[status="active"] {
-  fill: rgb(151, 147, 65);
-  opacity: 0.8;
+.node.shape[status="Warning"] {
+  fill: orangered;
 }
 
-.node.shape[status="warning"] {
-  fill: rgb(255, 98, 0);
-  opacity: 0.8;
+.node.shape[status="Error"] {
+  fill: red;
 }
 
-.node.shape[status="error"] {
-  fill: rgb(255, 0, 0);
-  opacity: 0.8;
-}
+/* default styles */
+
 
 
 .node.selected .node.shape {
