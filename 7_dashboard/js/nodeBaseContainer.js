@@ -21,14 +21,19 @@ export default class BaseContainerNode extends BaseNode {
     // is the first joined parent
     this.childEdges = [];
   }
-  
+
   get nestedCorrection_y() {
-    return this.y - this.data.height/2 + this.containerMargin.top;
+    return this.y - this.data.height / 2 + this.containerMargin.top;
   }
 
   get container() {
     if (this._container == null) {
+      console.warn("    BaseContainerNode - Creating container", this.data.label);
       this._container = this.element.append("g").attr("class", (d) => `node-container`);
+      // // for all child nodes, set the parentElement to the container
+      // this.childNodes.forEach((childNode) => {
+      //   childNode.parentElement = this._container;
+      // });
     }
     return this._container;
   }
@@ -38,13 +43,11 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   set collapsed(value) {
-    console.log("    BaseContainerNode - Setting collapsed", value, this.data.label);
+    console.warn("    BaseContainerNode - Setting collapsed", value, this.data.label);
     if (value === this._collapsed) return;
     super.collapsed = value;
-    
 
     this.zoomButton.toggle(value); // Toggle between plus and minus on click
-
 
     if (this.collapsed) {
       this.collapse();
@@ -53,14 +56,12 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     this.cascadeUpdate();
-
   }
 
   propagateVisibility(visible) {
     this.childNodes.forEach((childNode) => {
       childNode.visible = visible;
-      if (childNode instanceof BaseContainerNode)
-        childNode.propagateVisibility(visible)
+      if (childNode instanceof BaseContainerNode) childNode.propagateVisibility(visible);
     });
   }
 
@@ -91,15 +92,14 @@ export default class BaseContainerNode extends BaseNode {
 
     var firstStatus = this.childNodes[0].status;
     for (const childNode of this.childNodes) {
-
       if (childNode.status != firstStatus) {
         // if the status of any child is Warning and the status of any other children is Warning or Updated, then the status of the container is Warning
-        if ((firstStatus == NodeStatus.WARNING && childNode.status == NodeStatus.UPDATED)) continue;
-        if ((firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.WARNING)) {
+        if (firstStatus == NodeStatus.WARNING && childNode.status == NodeStatus.UPDATED) continue;
+        if (firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.WARNING) {
           firstStatus = NodeStatus.WARNING;
           continue;
-        } 
-        
+        }
+
         this.status = "Unknown";
         return;
       }
@@ -125,38 +125,42 @@ export default class BaseContainerNode extends BaseNode {
   resizeContainer(size, forced = false) {
     size.width += this.containerMargin.left + this.containerMargin.right;
     size.height += this.containerMargin.top + this.containerMargin.bottom;
-    console.log(`    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(this.data.height)} --> ${Math.round(size.width)}x${Math.round(size.height)}`);
+    console.log(
+      `    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(
+        this.data.height
+      )} --> ${Math.round(size.width)}x${Math.round(size.height)}`
+    );
 
     this.resize(size, forced);
   }
 
-   expand() {
-    console.log(`    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(this.data.expandedSize.width)}x${Math.round(this.data.expandedSize.height)}`, this.data.label);
+  expand() {
+    // console.log(
+    //   `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
+    //     this.data.expandedSize.width
+    //   )}x${Math.round(this.data.expandedSize.height)}`,
+    //   this.data.label
+    // );
+
+    // you can only expand a container if it's parent is already expanded
+    // expand parent first when not expanded
+    if (this.parentNode && this.parentNode.collapsed) {
+      this.parentNode.collapsed = false;
+    }
+    else {
+
+    this.initChildren();
+
     // restore the expanded size if it was stored
     if (this.data.expandedSize) {
       this.resize(this.data.expandedSize, true);
     }
 
-
-    // const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
-    // const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-
-
-     this.initChildren();
-     this.initEdges();
-
-    //  this.updateChildren();
-    //  this.updateEdges();
-    //  this.update();
-    // Set expanded or collapsed state
-
-    // this.resize({ width: this.data.width, height: this.data.height });
-    // if (this.parentNode)
-    //   this.parentNode.update();
-
+    this.initEdges();
+  }
   }
 
-   collapse() {
+  collapse() {
     console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
@@ -170,8 +174,7 @@ export default class BaseContainerNode extends BaseNode {
     // set the collapsed size
     this.resize({ width: this.minimumSize.width, height: this.minimumSize.height });
 
-    if (this.parentNode)
-      this.parentNode.update();
+    if (this.parentNode) this.parentNode.update();
     this.suspenseDisplayChange = false;
   }
 
@@ -204,7 +207,7 @@ export default class BaseContainerNode extends BaseNode {
     this.container.attr("transform", `translate(${containerX}, ${containerY})`);
   }
 
-   initEdges(propagate = false) {
+  initEdges(propagate = false) {
     // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
     // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
@@ -244,7 +247,7 @@ export default class BaseContainerNode extends BaseNode {
 
     if (this.childNodes) {
       this.childNodes.forEach((childNode) => {
-        nodes.push(...childNode.getAllNodes(onlySelected ,onlyEndNodes));
+        nodes.push(...childNode.getAllNodes(onlySelected, onlyEndNodes));
       });
     }
     return nodes;
@@ -261,10 +264,10 @@ export default class BaseContainerNode extends BaseNode {
     }
   }
 
-   init(parentElement = null) {
+  init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
     console.log("    BaseContainerNode - init", this.id);
-     super.init(parentElement);
+    super.init(parentElement);
 
     // Append text to the top left corner of the element
     const labelElement = this.element
@@ -278,7 +281,12 @@ export default class BaseContainerNode extends BaseNode {
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 22;
     this.minimumSize.height += 4;
-    console.log("    BaseContainerNode - init minimumSize", this.data.label, this.minimumSize.width, this.minimumSize.height);
+    console.log(
+      "    BaseContainerNode - init minimumSize",
+      this.data.label,
+      this.minimumSize.width,
+      this.minimumSize.height
+    );
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
       // console.log(
       //   "Render Resizing BaseContainerNode:",
@@ -289,25 +297,28 @@ export default class BaseContainerNode extends BaseNode {
       // );
       // this.data.width = Math.max(this.minimumSize.width, this.data.width);
       // this.data.height = Math.max(this.minimumSize.height, this.data.height);
-      this.resize({
-        width: Math.max(this.minimumSize.width, this.data.width),
-        height: Math.max(this.minimumSize.height, this.data.height),
-      }, true);
+      this.resize(
+        {
+          width: Math.max(this.minimumSize.width, this.data.width),
+          height: Math.max(this.minimumSize.height, this.data.height),
+        },
+        true
+      );
       // reposition the label based on the new size
       labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
 
     // Draw the node shape
     // if (!this.shape)
-      this.shape = this.element
-        .insert("rect", ":first-child")
-        .attr("class", (d) => `node shape ${this.data.type}`)
-        .attr("width", this.data.width)
-        .attr("height", this.data.height)
-        .attr("x", -this.data.width / 2)
-        .attr("y", -this.data.height / 2)
-        .attr("rx", 5)
-        .attr("ry", 5);
+    this.shape = this.element
+      .insert("rect", ":first-child")
+      .attr("class", (d) => `node shape ${this.data.type}`)
+      .attr("width", this.data.width)
+      .attr("height", this.data.height)
+      .attr("x", -this.data.width / 2)
+      .attr("y", -this.data.height / 2)
+      .attr("rx", 5)
+      .attr("ry", 5);
 
     // Add zoom button
     this.zoomButton = new ZoomButton(
@@ -329,12 +340,11 @@ export default class BaseContainerNode extends BaseNode {
       this.expand();
     }
 
-
     // you cannot move the g node,, move the child elements in stead
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
   }
 
-   initChildren() {
+  initChildren() {
     console.log("BaseContainer - initChildren", this.data.label, this.data.children);
 
     // no default rendering of the children, but this renders a placeholder rect
@@ -354,9 +364,9 @@ export default class BaseContainerNode extends BaseNode {
     // this.updateChildren();
   }
 
-   update() {
+  update() {
     console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
-     super.update();
+    super.update();
 
     this.element
       .select(".shape")
@@ -370,15 +380,13 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);
 
-      if (this.zoomButton)
-        this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);    
+    if (this.zoomButton) this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);
 
-      if (!this.collapsed) {
-       this.updateChildren();
+    if (!this.collapsed) {
+      this.updateChildren();
 
       this.updateEdges();
     }
-
   }
 
   // // Method to update rendering based on interaction state
@@ -401,7 +409,7 @@ export default class BaseContainerNode extends BaseNode {
   //   this.updateEdges();
   // }
 
-   updateChildren() {
+  updateChildren() {
     console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
 
     this.container.attr(
@@ -420,8 +428,7 @@ export default class BaseContainerNode extends BaseNode {
     this.container.remove();
     this._container = null;
     for (const childNode of this.childNodes) {
-      if (childNode instanceof BaseContainerNode)
-        childNode.cleanContainer(propagate);
+      if (childNode instanceof BaseContainerNode) childNode.cleanContainer(propagate);
     }
   }
 }
