@@ -72,12 +72,12 @@ export default class BaseEdge {
   }
 
   get targetIndex() {
-    // take the lowest visible parent
-    for (let i = 0; i < this.parents.target.length; i++) {
-      if (this.parents.target[i].visible) return i;
+    // take the lowest expanded parent
+    for (let i = this.parents.target.length-1; i > 0; i--) {
+      if (this.parents.target[i].collapsed) return i;
     }
 
-    return this.parents.target.length - 1;
+    return 0;
   }
 
   get target() {
