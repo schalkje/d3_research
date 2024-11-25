@@ -9,7 +9,7 @@
   },
   "nodes": [
     {
-      "label": "PB DWH",
+      "label": "Private Bank DWH",
       "id": "pbdwh",
       "description": "Van Lanschot Private Bank DWH",
       "type": "columns",

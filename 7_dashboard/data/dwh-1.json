@@ -27,7 +27,7 @@
     {
       "label": "ODS",
       "state": "Ready",
-      "id": "d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca",
+      "id": "pbdwh_ods",
       "description": "Database : ODS",
       "type": "node",
       "category": "Database",
@@ -36,7 +36,7 @@
     {
       "label": "DWH",
       "state": "Ready",
-      "id": "9b7c24ed-be08-4ca5-a722-530ddcfc30c9",
+      "id": "pbdwh_dwh",
       "description": "Database : DWH",
       "type": "node",
       "category": "Database",
@@ -50,14 +50,14 @@
       "source": "trn_bankview",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca"
+      "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca",
+      "source": "pbdwh_ods",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "9b7c24ed-be08-4ca5-a722-530ddcfc30c9"
+      "target": "pbdwh_dwh"
     }
   ]
 }

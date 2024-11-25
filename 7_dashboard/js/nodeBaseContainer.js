@@ -28,12 +28,8 @@ export default class BaseContainerNode extends BaseNode {
 
   get container() {
     if (this._container == null) {
-      console.warn("    BaseContainerNode - Creating container", this.data.label);
+      // console.log("    BaseContainerNode - Creating container", this.data.label);
       this._container = this.element.append("g").attr("class", (d) => `node-container`);
-      // // for all child nodes, set the parentElement to the container
-      // this.childNodes.forEach((childNode) => {
-      //   childNode.parentElement = this._container;
-      // });
     }
     return this._container;
   }
@@ -43,7 +39,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   set collapsed(value) {
-    console.warn("    BaseContainerNode - Setting collapsed", value, this.data.label);
+    // console.log("    BaseContainerNode - Setting collapsed", value, this.data.label);
     if (value === this._collapsed) return;
     super.collapsed = value;
 
@@ -51,6 +47,7 @@ export default class BaseContainerNode extends BaseNode {
 
     if (this.collapsed) {
       this.collapse();
+      this.handleDisplayChange(this, false);
     } else {
       this.expand();
     }
@@ -135,12 +132,12 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   expand() {
-    // console.log(
-    //   `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
-    //     this.data.expandedSize.width
-    //   )}x${Math.round(this.data.expandedSize.height)}`,
-    //   this.data.label
-    // );
+    console.warn(
+      `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
+        this.data.expandedSize.width
+      )}x${Math.round(this.data.expandedSize.height)}`,
+      this.data.label
+    );
 
     // you can only expand a container if it's parent is already expanded
     // expand parent first when not expanded
@@ -149,12 +146,12 @@ export default class BaseContainerNode extends BaseNode {
     }
     else {
 
-    this.initChildren();
-
     // restore the expanded size if it was stored
     if (this.data.expandedSize) {
       this.resize(this.data.expandedSize, true);
-    }
+    } 
+
+    this.initChildren();
 
     this.initEdges();
   }
@@ -164,7 +161,8 @@ export default class BaseContainerNode extends BaseNode {
     console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
-    if (this.data.height > this.minimumSize.height || this.data.width > this.minimumSize.width)
+    if (this.data.height > this.minimumSize.height+5 || this.data.width > this.minimumSize.width+5)
+      // Js: + 5, because of a strange bug, where the size differs slightly between renders, depending on the zoom level
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
     this.cleanContainer();

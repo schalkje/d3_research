@@ -17,11 +17,12 @@ export class Dashboard {
       svg: null,
       width: 0,
       height: 0,
+      divRatio: 0,
       container: null,
       root: null,
       scale: 1,
       zoomSpeed: 0.2,
-      transform: { x: 0, y: 0, k: 1 },
+      transform: { k: 1, x: 0, y: 0 },
     };
     this.minimap = {
       active: false,
@@ -47,6 +48,7 @@ export class Dashboard {
     this.main.svg = div.svg;
     this.main.width = div.width;
     this.main.height = div.height;
+    this.main.divRatio = this.main.width / this.main.height;
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root =  this.createDashboard(this.data, this.main.container);
@@ -71,11 +73,13 @@ export class Dashboard {
       // const dashboard = this;
       // this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
 
-      this.main.root.onDisplayChange = () => {
-        this.onMainDisplayChange();
-      };
       // this.isMainAndMinimapSyncing = false;
     }
+    this.main.root.onDisplayChange = () => {
+      this.onMainDisplayChange();
+    };
+
+    this.zoomToRoot();
     console.log("dashboard - initialize - finished", this);
   }
 
@@ -207,17 +211,12 @@ export class Dashboard {
     }
   }
 
-  createContainer(dashboard, className) {
+  createContainer(parentContainer, className) {
     // create background rect
     // create a container, to enable zooming and panning
-    const container = dashboard.svg.append("g").attr("class", `${className}`);
-    // container
-    //   .append("rect")
-    //   .attr("class", "background")
-    //   .attr("x", -dashboard.width / 2)
-    //   .attr("y", -dashboard.height / 2)
-    //   .attr("width", dashboard.width)
-    //   .attr("height", dashboard.height);
+    parentContainer.svg.selectAll("*").remove(); // clear the svg
+
+    const container = parentContainer.svg.append("g").attr("class", `${className}`);    
 
     return container;
   }
@@ -275,7 +274,8 @@ export class Dashboard {
 
     d3.select("#zoom-random").on("click", () => this.zoomRandom(dashboard));
 
-    d3.select("#zoom-node").on("click", () => this.zoomToNodeById("d1cb07b5-8b61-4b27-9e59-c88f07a9c2ca", dashboard));
+    // d3.select("#zoom-node").on("click", () => this.zoomToNodeById("pbdwh_dwh", dashboard));
+    d3.select("#zoom-node").on("click", () => this.zoomToRoot(dashboard));
 
     return zoom;
   }
@@ -288,11 +288,16 @@ export class Dashboard {
     console.log("#######################################");
     console.log("##### onMainDisplayChange", this);
     console.log("##### syncing=", this.isMainAndMinimapSyncing);
-    if (this.isMainAndMinimapSyncing) return;
-    this.isMainAndMinimapSyncing = true;
-    // Update the minimap
-    this.updateMinimap();
-    this.isMainAndMinimapSyncing = false;
+
+    if (this.minimap.svg) {
+      if (this.isMainAndMinimapSyncing) return;
+      this.isMainAndMinimapSyncing = true;
+      // Update the minimap
+      this.updateMinimap();
+      this.isMainAndMinimapSyncing = false;
+    }
+
+    this.zoomToRoot();
   }
 
   zoomMain(zoomEvent) {
@@ -304,8 +309,11 @@ export class Dashboard {
     this.main.transform.y = zoomEvent.transform.y;
 
     // Apply transform to the main view
-    this.main.container.attr("transform", zoomEvent.transform);
-
+    console.log("zoomMain", zoomEvent.transform, this.main.transform);
+    // this.main.container.attr("transform", zoomEvent.transform);
+    const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
+    this.main.container.attr("transform", transform );
+    
     // Update the viewport in the minimap
     updateViewport(this, zoomEvent.transform);
 
@@ -347,6 +355,42 @@ export class Dashboard {
     // svg.selectAll(".boundingBox").remove();
     this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 0.8);
     this.main.scale = this.main.scale * (1 - this.main.zoomSpeed);
+  }
+
+  zoomToRoot() {
+    console.warn("zoomToRoot", this);
+    // set the viewport to the root node
+    var width = this.main.root.data.width;
+    var height = this.main.root.data.height;
+
+    // keep aspect ratio
+    if (width / height > this.main.divRatio) {
+      height = width / this.main.divRatio;
+    } else {
+      width = height * this.main.divRatio;
+    }
+
+    this.main.width = width;
+    this.main.height = height;
+
+    this.main.svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+    this.main.transform.k = 1;
+    this.main.transform.x = 0;
+    this.main.transform.y = 0;
+    const transform = d3.zoomIdentity
+      .translate(this.main.transform.x, this.main.transform.y)
+      .scale(this.main.transform.k);
+    this.main.container.attr("transform", transform);
+
+    if (this.minimap.svg) {
+      // this.initializeMinimap();
+      this.minimap.svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+      this.updateMinimap();
+      this.updateMinimapEye(-width / 2, -height / 2, width, height);
+    }
+
+    // Store the current zoom level at svg level, for the next event
+    this.main.svg.call(this.main.zoom.transform, transform);
   }
 
   zoomReset() {
@@ -499,6 +543,7 @@ export class Dashboard {
 
   }
 
+  
   zoomToNode(node) {
     console.log("zoomToNode", node);
     // 1. Identify the node's immediate neighbors
@@ -700,8 +745,8 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
 }
 
 function updateViewport(dashboard, transform) {
+  console.log("updateViewport", dashboard, transform);
   // js: is this the right function name?
-  // console.log("updateViewPort", dashboard, transform);
   const x = (transform.x + dashboard.main.width / 2) / -transform.k;
   const y = (transform.y + dashboard.main.height / 2) / -transform.k;
   const width = dashboard.main.width / transform.k;
@@ -710,6 +755,7 @@ function updateViewport(dashboard, transform) {
 }
 
 function dragEye(dashboard, dragEvent) {
+  console.warn("dragEye", dragEvent);
   // Calculate scaled movement for the eye rectangle
   const scaledDx = dragEvent.dx / dashboard.minimap.scale;
   const scaledDy = dragEvent.dy / dashboard.minimap.scale;
