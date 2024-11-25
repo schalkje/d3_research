@@ -109,7 +109,7 @@ export default class BaseEdge {
   get x1() {
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
-      correction += this.parents.source[i].x;
+      correction += this.parents.source[i].nestedCorrection_x;
     }
     return this.source ? this.source.x + correction : null;
   }
@@ -126,7 +126,7 @@ export default class BaseEdge {
   get x2() {
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
-      correction += this.parents.target[i].x;
+      correction += this.parents.target[i].nestedCorrection_x;
     }
     return this.target ? this.target.x + correction : null;
   }

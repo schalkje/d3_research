@@ -26,6 +26,10 @@ export default class BaseContainerNode extends BaseNode {
     return this.y - this.data.height / 2 + this.containerMargin.top;
   }
 
+  get nestedCorrection_x() {
+    return this.x;
+  }
+
   get container() {
     if (this._container == null) {
       // console.log("    BaseContainerNode - Creating container", this.data.label);

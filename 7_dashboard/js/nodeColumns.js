@@ -1,26 +1,32 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
 import RectangularNode from "./nodeRect.js";
 
-
 export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.minimumColumnWidth) nodeData.layout.minimumColumnWidth = 0;
+    nodeData.layout.minimumColumnWidth ??= 0;
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
-   initChildren() {
+  get nestedCorrection_y() {
+    // return this.y;
+    return this.y  + this.containerMargin.top/2;
+  }
+
+  get nestedCorrection_x() {
+    return this.x - this.data.width / 2 + this.containerMargin.left;
+  }
+
+  initChildren() {
     // console.log("      nodeColumns - initChildren    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
 
-    
-
-      for (const node of this.data.children) {
+    for (const node of this.data.children) {
       // Create the childComponent instance based on node type
 
       var childComponent = this.getNode(node.id);
@@ -36,9 +42,6 @@ export default class ColumnsNode extends BaseContainerNode {
 
       childComponent.init(this.container);
     }
-    
-
-
 
     this.updateChildren();
   }
@@ -48,7 +51,7 @@ export default class ColumnsNode extends BaseContainerNode {
     this.suspenseDisplayChange = true;
 
     // each child is a column
-    var x = 0; 
+    var x = 0;
     var y = 0;
     var containerHeight = 0;
 
@@ -56,15 +59,14 @@ export default class ColumnsNode extends BaseContainerNode {
     this.childNodes.forEach((node, index) => {
       // console.log(`      nodeColumns - updateChildren - Layout for Node: ${node.data.label}, ${Math.round(node.data.width)}x${Math.round(node.data.height)}`, node.data.layout);
       // add spacing between nodes
-      if (index > 0 )
-        x += this.nodeSpacing.horizontal;
+      if (index > 0) x += this.nodeSpacing.horizontal;
 
-      x += Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
+      x += Math.max(node.data.width / 2, this.data.layout.minimumColumnWidth / 2);
 
       // position the node
       node.move(x, y);
 
-      x = x + Math.max(node.data.width/2, this.data.layout.minimumColumnWidth/2);
+      x = x + Math.max(node.data.width / 2, this.data.layout.minimumColumnWidth / 2);
 
       // compute the height of the group container
       containerHeight = Math.max(containerHeight, node.data.height);
@@ -72,23 +74,19 @@ export default class ColumnsNode extends BaseContainerNode {
 
     // this.updateEdges();
 
-
     // reposition the container
-    this.resizeContainer({width: x, height: containerHeight});
+    this.resizeContainer({ width: x, height: containerHeight });
 
-    var containerX = -this.data.width/2 + this.containerMargin.left;
-    var containerY = this.containerMargin.top/2;
-    this.container
-        .attr("transform", `translate(${containerX}, ${containerY})`);
+    var containerX = -this.data.width / 2 + this.containerMargin.left;
+    var containerY = this.containerMargin.top / 2;
+    this.container.attr("transform", `translate(${containerX}, ${containerY})`);
 
-    this.suspenseDisplayChange = false;    
+    this.suspenseDisplayChange = false;
     // this.handleDisplayChange();
   }
 
-   arrange() {
+  arrange() {
     // console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
     this.updateChildren();
   }
 }
-
-

@@ -1,357 +1,279 @@
 {
-  "edges": [
-    {
-      "isActive": true,
-      "source": "03b53ddb-a15a-4900-8723-52dc7a6cb615",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "e10e20d6-5d29-4f77-9639-f159c901e640"
-    },
-    {
-      "isActive": true,
-      "source": "03b53ddb-a15a-4900-8723-52dc7a6cb615",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "60bf7a83-d63a-42b5-b689-ea0a55a36fbb"
-    },
-    {
-      "isActive": false,
-      "source": "60bf7a83-d63a-42b5-b689-ea0a55a36fbb",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "268b0415-d4b7-4106-975c-d8cee947c751"
-    },
-    {
-      "isActive": true,
-      "source": "3c3fc20f-f34c-4758-940d-944638769e14",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "00d91809-f68a-42e3-9da7-cafc143530a0"
-    },
-    {
-      "isActive": true,
-      "source": "3c3fc20f-f34c-4758-940d-944638769e14",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "14acd791-3cf5-4dfb-93fe-1c06fec9df2c"
-    },
-    {
-      "isActive": false,
-      "source": "14acd791-3cf5-4dfb-93fe-1c06fec9df2c",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "268b0415-d4b7-4106-975c-d8cee947c751"
-    },
-    {
-      "isActive": false,
-      "source": "268b0415-d4b7-4106-975c-d8cee947c751",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "f1d5b6e7-3213-436d-8227-8350520999ae"
-    },
-    {
-      "isActive": true,
-      "source": "d2ff88f2-9fd3-43c5-a027-521ba6a59a58",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "acff04fe-1016-46d8-b7e1-95fa295ec14f"
-    },
-    {
-      "isActive": true,
-      "source": "d2ff88f2-9fd3-43c5-a027-521ba6a59a58",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "a630bd01-4f64-43c2-886a-e12c35ad41bd"
-    },
-    {
-      "isActive": false,
-      "source": "a630bd01-4f64-43c2-886a-e12c35ad41bd",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "268b0415-d4b7-4106-975c-d8cee947c751"
-    },
-    {
-      "isActive": false,
-      "source": "268b0415-d4b7-4106-975c-d8cee947c751",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "f1d5b6e7-3213-436d-8227-8350520999ae"
-    },
-    {
-      "isActive": true,
-      "source": "c5b18168-4da4-4bb8-b06a-80d5f1df09e2",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "124bce6b-88e0-4ccf-8283-d90ec5161858"
-    },
-    {
-      "isActive": true,
-      "source": "c5b18168-4da4-4bb8-b06a-80d5f1df09e2",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "ffe50f2b-41b1-4940-9b1e-d58979d081b2"
-    },
-    {
-      "isActive": false,
-      "source": "ffe50f2b-41b1-4940-9b1e-d58979d081b2",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "268b0415-d4b7-4106-975c-d8cee947c751"
-    },
-    {
-      "isActive": false,
-      "source": "268b0415-d4b7-4106-975c-d8cee947c751",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "f1d5b6e7-3213-436d-8227-8350520999ae"
-    },
-    {
-      "isActive": true,
-      "source": "3366ad58-3868-47cf-ac48-cd26de171527",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "695569aa-ed7b-498e-838e-487d17e88bb6"
-    },
-    {
-      "isActive": true,
-      "source": "3366ad58-3868-47cf-ac48-cd26de171527",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "9b5833c6-91f5-4033-a6c3-212cdc29c6a0"
-    },
-    {
-      "isActive": false,
-      "source": "9b5833c6-91f5-4033-a6c3-212cdc29c6a0",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "268b0415-d4b7-4106-975c-d8cee947c751"
-    },
-    {
-      "isActive": false,
-      "source": "268b0415-d4b7-4106-975c-d8cee947c751",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "f1d5b6e7-3213-436d-8227-8350520999ae"
-    },
-    {
-      "isActive": true,
-      "source": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "e05b8898-091b-4fb5-9406-f99bd4c1dea4"
-    },
-    {
-      "isActive": true,
-      "source": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "6c5b1545-2817-4745-a708-df5be273acf6"
-    },
-    {
-      "isActive": true,
-      "source": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "95302447-2fff-47f3-9445-c26f5e0b61b5"
-    },
-    {
-      "isActive": true,
-      "source": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "be8e3198-c980-4b0a-acc6-a823b309a99c"
-    },
-    {
-      "isActive": true,
-      "source": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "d9057e87-4d80-4a5b-86e6-102f456c2a62"
-    },
-    {
-      "isActive": true,
-      "source": "00d91809-f68a-42e3-9da7-cafc143530a0",
-      "type": "SSIS",
-      "state": "Ready",
-      "target": "d9057e87-4d80-4a5b-86e6-102f456c2a62"
-    }
-  ],
+  "settings": {
+    "showCenterMark": false,
+    "showConnectionPoints": false,
+    "showGhostlines": false,
+    "curved": true,
+    "showBoundingBox": false,
+    "toggleCollapseOnStatusChange": true
+  },
   "nodes": [
     {
-      "label": "ODS",
-      "state": "Ready",
-      "id": "268b0415-d4b7-4106-975c-d8cee947c751",
-      "description": "Database : ODS",
-      "type": "Database",
-      "link": "https://example.com/ODS"
-    },
-    {
-      "label": "DWH",
-      "state": "Ready",
-      "id": "f1d5b6e7-3213-436d-8227-8350520999ae",
-      "description": "Database : DWH",
-      "type": "Database",
-      "link": "https://example.com/DWH"
-    },
-    {
-      "label": "STAGING_Bankview",
-      "state": "Ready",
-      "id": "03b53ddb-a15a-4900-8723-52dc7a6cb615",
-      "description": "Database : STAGING_Bankview",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Bankview"
-    },
-    {
-      "label": "STG_ARCHIVE_Bankview",
-      "state": "Ready",
-      "id": "e10e20d6-5d29-4f77-9639-f159c901e640",
-      "description": "Database : STG_ARCHIVE_Bankview",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Bankview"
-    },
-    {
-      "label": "TRANSFORM_Bankview",
-      "state": "Ready",
-      "id": "60bf7a83-d63a-42b5-b689-ea0a55a36fbb",
-      "description": "Database : TRANSFORM_Bankview",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Bankview"
-    },
-    {
-      "label": "STAGING_Fidor",
-      "state": "Ready",
-      "id": "3c3fc20f-f34c-4758-940d-944638769e14",
-      "description": "Database : STAGING_Fidor",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Fidor"
-    },
-    {
-      "label": "STG_ARCHIVE_Fidor",
-      "state": "Ready",
-      "id": "00d91809-f68a-42e3-9da7-cafc143530a0",
-      "description": "Database : STG_ARCHIVE_Fidor",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Fidor"
-    },
-    {
-      "label": "TRANSFORM_Fidor",
-      "state": "Ready",
-      "id": "14acd791-3cf5-4dfb-93fe-1c06fec9df2c",
-      "description": "Database : TRANSFORM_Fidor",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Fidor"
-    },
-    {
-      "label": "STAGING_Stater",
-      "state": "Ready",
-      "id": "d2ff88f2-9fd3-43c5-a027-521ba6a59a58",
-      "description": "Database : STAGING_Stater",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Stater"
-    },
-    {
-      "label": "STG_ARCHIVE_Stater",
-      "state": "Ready",
-      "id": "acff04fe-1016-46d8-b7e1-95fa295ec14f",
-      "description": "Database : STG_ARCHIVE_Stater",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Stater"
-    },
-    {
-      "label": "TRANSFORM_Stater",
-      "state": "Ready",
-      "id": "a630bd01-4f64-43c2-886a-e12c35ad41bd",
-      "description": "Database : TRANSFORM_Stater",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Stater"
-    },
-    {
-      "label": "STAGING_Matrix",
-      "state": "Ready",
-      "id": "c5b18168-4da4-4bb8-b06a-80d5f1df09e2",
-      "description": "Database : STAGING_Matrix",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Matrix"
-    },
-    {
-      "label": "STG_ARCHIVE_Matrix",
-      "state": "Ready",
-      "id": "124bce6b-88e0-4ccf-8283-d90ec5161858",
-      "description": "Database : STG_ARCHIVE_Matrix",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Matrix"
-    },
-    {
-      "label": "TRANSFORM_Matrix",
-      "state": "Ready",
-      "id": "ffe50f2b-41b1-4940-9b1e-d58979d081b2",
-      "description": "Database : TRANSFORM_Matrix",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Matrix"
-    },
-    {
-      "label": "STAGING_Eximius",
-      "state": "Ready",
-      "id": "3366ad58-3868-47cf-ac48-cd26de171527",
-      "description": "Database : STAGING_Eximius",
-      "type": "Database",
-      "link": "https://example.com/STAGING_Eximius"
-    },
-    {
-      "label": "STG_ARCHIVE_Eximius",
-      "state": "Ready",
-      "id": "695569aa-ed7b-498e-838e-487d17e88bb6",
-      "description": "Database : STG_ARCHIVE_Eximius",
-      "type": "Database",
-      "link": "https://example.com/STG_ARCHIVE_Eximius"
-    },
-    {
-      "label": "TRANSFORM_Eximius",
-      "state": "Ready",
-      "id": "9b5833c6-91f5-4033-a6c3-212cdc29c6a0",
-      "description": "Database : TRANSFORM_Eximius",
-      "type": "Database",
-      "link": "https://example.com/TRANSFORM_Eximius"
-    },
-    {
-      "label": "EM_Matrix",
-      "state": "Ready",
-      "id": "e05b8898-091b-4fb5-9406-f99bd4c1dea4",
-      "description": "Database : EM_Matrix",
-      "type": "Database",
-      "link": "https://example.com/EM_Matrix"
-    },
-    {
-      "label": "EM_Belgie",
-      "state": "Ready",
-      "id": "6c5b1545-2817-4745-a708-df5be273acf6",
-      "description": "Database : EM_Belgie",
-      "type": "Database",
-      "link": "https://example.com/EM_Belgie"
-    },
-    {
-      "label": "EM_Stater",
-      "state": "Ready",
-      "id": "95302447-2fff-47f3-9445-c26f5e0b61b5",
-      "description": "Database : EM_Stater",
-      "type": "Database",
-      "link": "https://example.com/EM_Stater"
-    },
-    {
-      "label": "DM_VIA",
-      "state": "Ready",
-      "id": "be8e3198-c980-4b0a-acc6-a823b309a99c",
-      "description": "Database : DM_VIA",
-      "type": "Database",
-      "link": "https://example.com/DM_VIA"
-    },
-    {
-      "label": "DM_Payments",
-      "state": "Ready",
-      "id": "d9057e87-4d80-4a5b-86e6-102f456c2a62",
-      "description": "Database : DM_Payments",
-      "type": "Database",
-      "link": "https://example.com/DM_Payments"
+      "label": "Data Warehouse",
+      "id": "pbdwh",
+      "description": "DWH",
+      "type": "columns",
+      "children": [
+        {
+          "id": "sources",
+          "label": "Sources",
+          "type": "columns",
+          "children": [
+            {
+              "id": "lane1",
+              "label": "Lane",
+              "type": "lane",
+              "children": [
+                {
+                  "id": "exm_ren",
+                  "label": "Eximius",
+                  "code": "EXM_REN",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                },
+                {
+                  "id": "exm_exi",
+                  "label": "Eximius",
+                  "code": "EXM_EXI",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                },
+                {
+                  "id": "cro",
+                  "label": "CRO",
+                  "code": "CRO",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                },
+                {
+                  "id": "dnb",
+                  "label": "DNB",
+                  "code": "DNB",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                }
+              ]
+            },
+
+
+
+
+
+
+            {
+              "id": "lane2",
+              "label": "Lane",
+              "type": "lane",
+              "children": [
+                {
+                  "id": "bankview",
+                  "label": "Bankview",
+                  "code": "BNV",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                },
+                {
+                  "id": "matrix",
+                  "label": "Matrix",
+                  "code": "MTX",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                },
+                {
+                  "id": "fidor",
+                  "label": "Fidor",
+                  "code": "FDR",
+                  "type": "adapter",
+                  "layout": {
+                    "mode": "full",
+                    "displayMode": "role",
+                    "arrangement": 1
+                  }
+                }
+              ]
+            }
+
+          ]
+        },
+        {
+          "label": "ODS",
+          "state": "Ready",
+          "id": "pbdwh_ods",
+          "description": "Database : ODS",
+          "type": "node",
+          "category": "Database",
+          "link": "https://example.com/ODS"
+        },
+        {
+          "label": "DWH",
+          "state": "Ready",
+          "id": "pbdwh_dwh",
+          "description": "Database : DWH",
+          "type": "node",
+          "category": "Database",
+          "link": "https://example.com/DWH"
+        },
+        {
+          "id": "dms",
+          "label": "Data marts",
+          "type": "lane",
+          "children": [
+            {
+              "id": "em_payments",
+              "label": "Payments",
+              "code": "EMP",
+              "type": "node"
+            },
+            {
+              "id": "dm_via",
+              "label": "VIA",
+              "code": "EMP",
+              "type": "node"
+            },
+            {
+              "id": "em_dgs",
+              "label": "DGS",
+              "code": "EMP",
+              "type": "node"
+            }
+          ]
+        },
+        {
+          "id": "strada",
+          "label": "Strada Foundation",
+          "type": "lane",
+          "children": [
+            {
+              "id": "strada_em_payments",
+              "label": "Payments",
+              "code": "EMP",
+              "type": "foundation"
+            },
+            {
+              "id": "strada_dm_via",
+              "label": "VIA",
+              "code": "EMP",
+              "type": "foundation"
+            },
+            {
+              "id": "strada_em_dgs",
+              "label": "DGS",
+              "code": "EMP",
+              "type": "foundation"
+            }
+          ]
+        }
+
+      ]
     }
+  ],
+  "edges": [
+    {
+      "isActive": false,
+      "source": "trn_bankview",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "pbdwh_ods"
+    },
+    {
+      "isActive": false,
+      "source": "trn_matrix",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "pbdwh_ods"
+    },
+    {
+      "isActive": false,
+      "source": "trn_fidor",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "pbdwh_ods"
+    },
+
+
+    {
+      "isActive": false,
+      "source": "trn_exm_ren",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "pbdwh_ods"
+    },
+
+
+
+    {
+      "isActive": false,
+      "source": "pbdwh_ods",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "pbdwh_dwh"
+    },
+    {
+      "isActive": false,
+      "source": "pbdwh_dwh",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "em_payments"
+    },
+    {
+      "isActive": false,
+      "source": "pbdwh_dwh",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "dm_via"
+    },
+    {
+      "isActive": false,
+      "source": "pbdwh_dwh",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "em_dgs"
+    },
+    {
+      "isActive": false,
+      "source": "em_payments",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "raw_strada_em_payments"
+    },
+    {
+      "isActive": false,
+      "source": "dm_via",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "raw_strada_dm_via"
+    },
+    {
+      "isActive": false,
+      "source": "em_dgs",
+      "type": "SSIS",
+      "state": "Unknown",
+      "target": "raw_strada_em_dgs"
+    }
+
   ]
 }

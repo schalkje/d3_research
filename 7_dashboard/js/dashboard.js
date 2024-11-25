@@ -358,7 +358,7 @@ export class Dashboard {
   }
 
   zoomToRoot() {
-    console.warn("zoomToRoot", this);
+    console.log("zoomToRoot", this);
     // set the viewport to the root node
     var width = this.main.root.data.width;
     var height = this.main.root.data.height;
@@ -755,7 +755,7 @@ function updateViewport(dashboard, transform) {
 }
 
 function dragEye(dashboard, dragEvent) {
-  console.warn("dragEye", dragEvent);
+  console.log("dragEye", dragEvent);
   // Calculate scaled movement for the eye rectangle
   const scaledDx = dragEvent.dx / dashboard.minimap.scale;
   const scaledDy = dragEvent.dy / dashboard.minimap.scale;
