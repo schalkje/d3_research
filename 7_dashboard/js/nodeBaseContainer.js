@@ -7,6 +7,8 @@ export default class BaseContainerNode extends BaseNode {
     nodeData.width ??= 0;
     nodeData.height ??= 0;
     nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
+    nodeData.minimumSize ??= { width: 0, height: 0 };
+
     super(nodeData, parentElement, settings, parentNode);
 
     this.createNode = createNode;
@@ -15,6 +17,7 @@ export default class BaseContainerNode extends BaseNode {
     this._container = null;
     this.edgesContainer = null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
+    this.nodeSpacing = { horizontal: 20, vertical: 10 };
     this.childNodes = [];
 
     // child edges contain the edges that are between nodes where this container
@@ -147,25 +150,22 @@ export default class BaseContainerNode extends BaseNode {
     // expand parent first when not expanded
     if (this.parentNode && this.parentNode.collapsed) {
       this.parentNode.collapsed = false;
+    } else {
+      // restore the expanded size if it was stored
+      if (this.data.expandedSize) {
+        this.resize(this.data.expandedSize, true);
+      }
+
+      this.initChildren();
+      this.initEdges();
     }
-    else {
-
-    // restore the expanded size if it was stored
-    if (this.data.expandedSize) {
-      this.resize(this.data.expandedSize, true);
-    } 
-
-    this.initChildren();
-
-    this.initEdges();
-  }
   }
 
   collapse() {
     console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
-    if (this.data.height > this.minimumSize.height+5 || this.data.width > this.minimumSize.width+5)
+    if (this.data.height > this.minimumSize.height + 5 || this.data.width > this.minimumSize.width + 5)
       // Js: + 5, because of a strange bug, where the size differs slightly between renders, depending on the zoom level
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 

@@ -356,3 +356,10 @@ svg.canvas {
   fill: #acace7;
   transition: fill 0.2s, transform 0.2s;
 }
+
+.editbox {
+  border: 1px grey solid;
+  background: lightblue;
+  margin: 0px 2px 0px 2px;
+  padding: 2px 2px 0px 2px;
+}

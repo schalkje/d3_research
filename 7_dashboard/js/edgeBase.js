@@ -135,7 +135,6 @@ export default class BaseEdge {
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_y;
-      // correction += this.parents.target[i].y;
     }
     return this.target ? this.target.y + correction : null;
   }

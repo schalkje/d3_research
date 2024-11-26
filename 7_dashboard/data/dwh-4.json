@@ -21,46 +21,13 @@
           "children": [
             {
               "id": "lane1",
-              "label": "Lane",
+              "label": "Lane 1",
               "type": "lane",
               "children": [
                 {
                   "id": "exm_ren",
                   "label": "Eximius",
                   "code": "EXM_REN",
-                  "type": "adapter",
-                  "layout": {
-                    "mode": "full",
-                    "displayMode": "role",
-                    "arrangement": 1
-                  }
-                },
-                {
-                  "id": "exm_exi",
-                  "label": "Eximius",
-                  "code": "EXM_EXI",
-                  "type": "adapter",
-                  "layout": {
-                    "mode": "full",
-                    "displayMode": "role",
-                    "arrangement": 1
-                  }
-                },
-                {
-                  "id": "cro",
-                  "label": "CRO",
-                  "code": "CRO",
-                  "type": "adapter",
-                  "layout": {
-                    "mode": "full",
-                    "displayMode": "role",
-                    "arrangement": 1
-                  }
-                },
-                {
-                  "id": "dnb",
-                  "label": "DNB",
-                  "code": "DNB",
                   "type": "adapter",
                   "layout": {
                     "mode": "full",
@@ -85,28 +52,6 @@
                   "id": "bankview",
                   "label": "Bankview",
                   "code": "BNV",
-                  "type": "adapter",
-                  "layout": {
-                    "mode": "full",
-                    "displayMode": "role",
-                    "arrangement": 1
-                  }
-                },
-                {
-                  "id": "matrix",
-                  "label": "Matrix",
-                  "code": "MTX",
-                  "type": "adapter",
-                  "layout": {
-                    "mode": "full",
-                    "displayMode": "role",
-                    "arrangement": 1
-                  }
-                },
-                {
-                  "id": "fidor",
-                  "label": "Fidor",
-                  "code": "FDR",
                   "type": "adapter",
                   "layout": {
                     "mode": "full",
@@ -195,20 +140,6 @@
     {
       "isActive": false,
       "source": "trn_bankview",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "pbdwh_ods"
-    },
-    {
-      "isActive": false,
-      "source": "trn_matrix",
-      "type": "SSIS",
-      "state": "Unknown",
-      "target": "pbdwh_ods"
-    },
-    {
-      "isActive": false,
-      "source": "trn_fidor",
       "type": "SSIS",
       "state": "Unknown",
       "target": "pbdwh_ods"

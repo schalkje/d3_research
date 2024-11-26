@@ -4,19 +4,14 @@ import { getComputedDimensions } from "./utils.js";
 export default class LaneNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     super(nodeData, parentElement, createNode, settings, parentNode);
-
-    this.nodeSpacing = { horizontal: 20, vertical: 10 };
   }
 
    initChildren() {
-    // console.log("    Rendering Children for Group:", this.id, this.data.children);
     if (!this.data.children || this.data.children.length === 0) {
       return;
     }
 
     console.log("      nodeLane - initChildren    Rendering Children for Group: ", this.data.label, this.container);
-
-
 
     for (const node of this.data.children) {
       // Create the childComponent instance based on node type
@@ -28,21 +23,15 @@ export default class LaneNode extends BaseContainerNode {
         console.log("      nodeLane - initChildren - Creating Node:", node.id, childComponent);
       }
 
-      
       childComponent.init(this.container);
     }
 
-
-
     this.updateChildren();
-
   }
 
   updateChildren() {
-    console.log("Layout for Lanes:", this.id, this.data.layout, this.childNodes.length);
+    console.log(`      nodeLane - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
     this.layoutLane();
-
-    // this.updateEdges();
   }
 
   layoutLane()

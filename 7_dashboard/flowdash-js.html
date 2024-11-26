@@ -14,25 +14,41 @@
 <body>
     <h1 id="pageTitle">Title to be replaced with filename</h1>
     
-    <label for="horizontalCheckbox">Horizontal</label>
-    <input type="checkbox" id="horizontalCheckbox">
     
     <label for="fileSelect">Select JSON file:</label>
     <select id="fileSelect"></select>
-    
+
+    <span class="editbox">
+        <input type="checkbox" id="horizontalCheckbox">
+        <label for="horizontalCheckbox">Horizontal</label>
+    </span>
+
+    <span class="editbox">
+        <input type="checkbox" id="curveCheckbox" checked>
     <label for="curveCheckbox">Curve</label>
-    <input type="checkbox" id="curveCheckbox" checked>
+</span>
 
-    <label for="showEdgesCheckbox">Show Edges</label>
+<span class="editbox">
+<label for="showEdgesCheckbox">Show Edges</label>
     <input type="checkbox" id="showEdgesCheckbox" checked>
-    
-    <label for="showGhostlinesCheckbox">Show Ghostlines</label>
-    <input type="checkbox" id="showGhostlinesCheckbox" checked>
-    
-    <label for="showBoundingBoxCheckbox">Show Bounding Box</label>
-    <input type="checkbox" id="showBoundingBoxCheckbox" checked>
+</span>
 
-      <label for="layoutMechanismSelect">Layout Mechanism:</label>
+<span class="editbox">
+<label for="showGhostlinesCheckbox">Show Ghostlines</label>
+    <input type="checkbox" id="showGhostlinesCheckbox" checked>
+</span>
+
+<span class="editbox">
+<label for="showBoundingBoxCheckbox">Show Bounding Box</label>
+    <input type="checkbox" id="showBoundingBoxCheckbox" checked>
+</span>
+
+<span class="editbox">
+<label for="zoomToRoot">Automatic Zoom</label>
+    <input type="checkbox" id="zoomToRoot" checked>
+</span>
+
+  <label for="layoutMechanismSelect">Layout Mechanism:</label>
     <select id="layoutMechanismSelect" value="force">
         <option value="force" selected>Force</option>
         <option value="sugiyama">Sugiyama</option>
@@ -132,6 +148,7 @@
             document.getElementById('showEdgesCheckbox').addEventListener('change', updateLayout);
             document.getElementById('showGhostlinesCheckbox').addEventListener('change', updateLayout);
             document.getElementById('showBoundingBoxCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('zoomToRoot').addEventListener('change', updateLayout);
 
                     }
 
@@ -141,6 +158,7 @@
         let showEdges = document.getElementById('showEdgesCheckbox').checked;
         let showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
         let showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
+        let zoomToRoot = document.getElementById('zoomToRoot').checked;
         let layoutMechanism = document.getElementById('layoutMechanismSelect').value;
         let selectedFile = document.getElementById('fileSelect').value;
 
@@ -167,6 +185,7 @@
         showEdges = document.getElementById('showEdgesCheckbox').checked;
         showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
         showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
+        zoomToRoot = document.getElementById('zoomToRoot').checked;
 
         renderDashboard();
     }
@@ -182,6 +201,7 @@
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
                 dashboardData.settings.showGhostlines = showGhostlines;
+                dashboardData.settings.zoomToRoot = zoomToRoot;
                 dashboardData.settings.showBoundingBox = showBoundingBox;
                 dashboardData.settings.showEdges = showEdges;
                 dashboardData.settings.horizontal = horizontal;

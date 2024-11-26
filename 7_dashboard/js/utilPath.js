@@ -24,12 +24,12 @@ export function computeLocalConnectionPoints(width, height) {
 }
 
 export function generateEdgePath(edge) {
-  // console.log(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
+  console.warn(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
 
   const sourceNode = edge.source;
   const targetNode = edge.target;
-  // console.log("    Source Node:", sourceNode);
-  // console.log("    Target Node:", targetNode);
+  console.warn("    Source Node:", sourceNode, edge.x1, edge.y1, sourceNode.data.width, sourceNode.data.height);
+  console.warn("    Target Node:", targetNode, edge.x2, edge.y2, targetNode.data.width, targetNode.data.height);
 
   const sourceConnectionPoints = sourceNode.computeConnectionPoints(
     edge.x1,
@@ -37,17 +37,16 @@ export function generateEdgePath(edge) {
     sourceNode.data.width,
     sourceNode.data.height
   );
+  console.log("    Source Connection Points:", sourceConnectionPoints);
   // correct the source connection points, if the drawing surface of the node is not the container
 
-
-  // console.log("    Source Connection Points:", sourceConnectionPoints);
   const targetConnectionPoints = targetNode.computeConnectionPoints(
     edge.x2,
     edge.y2,
     targetNode.data.width,
     targetNode.data.height
   );
-  // console.log("    Target Connection Points:", targetConnectionPoints);
+  console.log("    Target Connection Points:", targetConnectionPoints);
 
   let sourcePoint, targetPoint;
 
@@ -55,7 +54,10 @@ export function generateEdgePath(edge) {
   let minDistance = Number.MAX_VALUE;
   Object.values(sourceConnectionPoints).forEach((source) => {
     Object.values(targetConnectionPoints).forEach((target) => {
-      // console.log("    Checking Connection Points:", source, target);
+      console.log("    Checking Connection Points:", source, target);
+      // initialize source and target points; this fixes the nodeColumns object, when all collapsed, and one node is expanded
+      if (!sourcePoint) sourcePoint = source;
+      if (!targetPoint) targetPoint = target;
 
       // exclude wrong connections
       // Vertical constraints (top and bottom)
@@ -65,6 +67,7 @@ export function generateEdgePath(edge) {
         (source.side == ConnectorSide.TOP && source.y < target.y) ||
         (target.side == ConnectorSide.BOTTOM && source.y < target.y)
       ) {
+        console.log("                            wrong 1:", source.y, target.y);
         return;
       }
       // Horizontal constraints (left and right)
@@ -74,6 +77,7 @@ export function generateEdgePath(edge) {
         (target.side == ConnectorSide.RIGHT && source.x < target.x) ||
         (target.side == ConnectorSide.LEFT && source.x > target.x)
       ) {
+        console.log("                            wrong 2:", source.x, target.x);
         return;
       }
 
@@ -81,6 +85,7 @@ export function generateEdgePath(edge) {
       const distance = Math.sqrt((source.x - target.x) ** 2 + (source.y - target.y) ** 2);
       // store if it is smaller than the current minimum distance
       if (distance < minDistance) {
+        console.warn("    Found new minimum distance:", distance, source, target);
         minDistance = distance;
         sourcePoint = source;
         targetPoint = target;
@@ -91,6 +96,8 @@ export function generateEdgePath(edge) {
   // Calculate waypoints
   // there are different scenarios to consider:
   let waypoints = [];
+  console.log("    Source Point:", sourcePoint);
+  console.log("    Target Point:", targetPoint);
   const midX = (targetPoint.x - sourcePoint.x) / 2;
   var midY = (targetPoint.y - sourcePoint.y) / 2;
   const curveMargin = edge.settings.curveMargin || 0;

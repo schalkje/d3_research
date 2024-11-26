@@ -12,6 +12,7 @@ export class Dashboard {
     this.data.settings.selector.incomming ??= 1;
     this.data.settings.selector.outgoing ??= 1;
     this.data.settings.showBoundingBox ??= true;
+    this.data.settings.zoomToRoot ??= true;
 
     this.main = {
       svg: null,
@@ -79,7 +80,8 @@ export class Dashboard {
       this.onMainDisplayChange();
     };
 
-    this.zoomToRoot();
+    if (this.data.settings.zoomToRoot)
+      this.zoomToRoot();
     console.log("dashboard - initialize - finished", this);
   }
 
@@ -297,7 +299,8 @@ export class Dashboard {
       this.isMainAndMinimapSyncing = false;
     }
 
-    this.zoomToRoot();
+    if (this.data.settings.zoomToRoot)
+      this.zoomToRoot();
   }
 
   zoomMain(zoomEvent) {
@@ -358,7 +361,8 @@ export class Dashboard {
   }
 
   zoomToRoot() {
-    console.log("zoomToRoot", this);
+    console.log("zoomToRoot", this.data.settings.zoomToRoot, this);
+
     // set the viewport to the root node
     var width = this.main.root.data.width;
     var height = this.main.root.data.height;
