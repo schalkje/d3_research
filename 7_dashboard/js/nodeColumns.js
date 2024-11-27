@@ -4,7 +4,7 @@ export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     nodeData.layout ??= {};
     nodeData.layout.minimumColumnWidth ??= 0;
-    nodeData.minimumSize ??= { width: 100, height: 100 };
+    nodeData.layout.minimumSize ??= { height: 50, useRootRatio: false };
 
     super(nodeData, parentElement, createNode, settings, parentNode);    
   }

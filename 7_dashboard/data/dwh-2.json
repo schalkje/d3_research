@@ -11,7 +11,7 @@
     {
       "label": "PB DWH",
       "id": "pbdwh",
-      "description": "Van Lanschot Private Bank DWH",
+      "description": "Main Data Warehouse",
       "type": "columns",
       "children": [
         {

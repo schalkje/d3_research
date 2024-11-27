@@ -7,7 +7,11 @@ export default class BaseContainerNode extends BaseNode {
     nodeData.width ??= 0;
     nodeData.height ??= 0;
     nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
-    nodeData.minimumSize ??= { width: 0, height: 0 };
+    nodeData.layout ??= {};
+    nodeData.layout.minimumSize ??= { width: 0, height: 0 };
+    nodeData.layout.minimumSize.width ??= 0;
+    nodeData.layout.minimumSize.height ??= 0;
+    nodeData.layout.minimumSize.useRootRatio ??= false;
 
     super(nodeData, parentElement, settings, parentNode);
 
@@ -283,6 +287,10 @@ export default class BaseContainerNode extends BaseNode {
     this.minimumSize = getComputedDimensions(labelElement);
     this.minimumSize.width += 22;
     this.minimumSize.height += 4;
+    if (this.data.layout.minimumSize.width > this.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
+    if (this.data.layout.minimumSize.height > this.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
+    if ( this.data.layout.minimumSize.useRootRatio) this.applyMinimumSize();
+
     console.log(
       "    BaseContainerNode - init minimumSize",
       this.data.label,
@@ -432,5 +440,24 @@ export default class BaseContainerNode extends BaseNode {
     for (const childNode of this.childNodes) {
       if (childNode instanceof BaseContainerNode) childNode.cleanContainer(propagate);
     }
+  }
+
+  applyMinimumSize() {
+    console.error("    BaseContainerNode - applyRatioToMinimumSize", this.data.label, this.data.layout.minimumSize.useRootRatio, this);
+    if (this.minimumSize.width < this.data.layout.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
+    if (this.minimumSize.height < this.data.layout.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
+
+    if ( !this.data.layout.minimumSize.useRootRatio) return;
+
+
+    if (this.minimumSize.width / this.height > this.settings.divRatio)
+    {
+      this.minimumSize.height = this.minimumSize.width / this.settings.divRatio;
+    }
+    else
+    {
+        this.minimumSize.width = this.minimumSize.height * this.settings.divRatio;
+    }
+    console.log("    BaseContainerNode - applyRatioToMinimumSize", this.minimumSize.width, this.minimumSize.height);
   }
 }

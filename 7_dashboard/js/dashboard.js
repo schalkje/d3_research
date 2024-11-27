@@ -50,6 +50,7 @@ export class Dashboard {
     this.main.width = div.width;
     this.main.height = div.height;
     this.main.divRatio = this.main.width / this.main.height;
+    this.data.settings.divRatio ??= this.main.divRatio;
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root =  this.createDashboard(this.data, this.main.container);
@@ -790,4 +791,17 @@ export function createAndInitDashboard(dashboardData, mainDivSelector, minimapDi
   const dashboard = new Dashboard(dashboardData);
   dashboard.initialize(mainDivSelector, minimapDivSelector);
   return dashboard;
+}
+
+export function setDashboardProperty(dashboardObject, propertyPath, value) {
+  console.warn("setDashboardProperty", dashboardObject, propertyPath, value);
+  const properties = propertyPath.split('.');
+  let obj = dashboardObject;
+  for (let i = 0; i < properties.length - 1; i++) {
+    console.warn("                    - ", i, properties[i], obj[properties[i]]);
+    obj = obj[properties[i]];
+  }
+  console.warn("                    - before = ", obj[properties[properties.length - 1]]);
+  obj[properties[properties.length - 1]] = value;
+  console.warn("                    -  after = ", obj[properties[properties.length - 1]]);
 }

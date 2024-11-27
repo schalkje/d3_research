@@ -163,24 +163,24 @@
           ]
         },
         {
-          "id": "strada",
-          "label": "Strada Foundation",
+          "id": "foundation",
+          "label": "Cloud Data Foundation",
           "type": "lane",
           "children": [
             {
-              "id": "strada_em_payments",
+              "id": "foundation_em_payments",
               "label": "Payments",
               "code": "EMP",
               "type": "foundation"
             },
             {
-              "id": "strada_dm_via",
+              "id": "foundation_dm_via",
               "label": "VIA",
               "code": "EMP",
               "type": "foundation"
             },
             {
-              "id": "strada_em_dgs",
+              "id": "foundation_em_dgs",
               "label": "DGS",
               "code": "EMP",
               "type": "foundation"
@@ -258,21 +258,21 @@
       "source": "em_payments",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "raw_strada_em_payments"
+      "target": "raw_foundation_em_payments"
     },
     {
       "isActive": false,
       "source": "dm_via",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "raw_strada_dm_via"
+      "target": "raw_foundation_dm_via"
     },
     {
       "isActive": false,
       "source": "em_dgs",
       "type": "SSIS",
       "state": "Unknown",
-      "target": "raw_strada_em_dgs"
+      "target": "raw_foundation_em_dgs"
     }
 
   ]
