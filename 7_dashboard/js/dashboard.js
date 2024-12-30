@@ -247,7 +247,7 @@ export class Dashboard {
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
     }
-     root.init();
+    root.init();
 
     if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
 

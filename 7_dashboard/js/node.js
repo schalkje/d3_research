@@ -12,7 +12,8 @@ import EdgeDemoNode from "./nodeEdgeDemo.js";
 export function createNode(nodeData, container, settings, parentNode = null) {
   // console.log("Creating Node:", nodeData, settings, parentNode);
   var node = null;
-  switch (nodeData.type) {
+  const nodeType = nodeData.type.toLowerCase();
+  switch (nodeType) {
     case "group":
       node = new GroupNode(nodeData, container, createNode, settings, parentNode);
       break;
