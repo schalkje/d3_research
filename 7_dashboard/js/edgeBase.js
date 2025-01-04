@@ -39,7 +39,7 @@ export default class BaseEdge {
 
     // default settings
     if (!this.settings) this.settings = {};
-    this.settings.showGhostlines ??= true;
+    this.settings.showGhostlines ??= false;
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;

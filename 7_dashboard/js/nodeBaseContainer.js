@@ -203,6 +203,18 @@ export default class BaseContainerNode extends BaseNode {
     return null;
   }
 
+  getNodesByDatasetId(datasetId) {
+    // console.log("    nodeBaseContainer getNodesByDatasetId:", this.id, datasetId);
+    var nodes = [];
+    if (this.data.datasetId == datasetId) {
+      nodes.push(this);
+    }
+    for (const childNode of this.childNodes) {
+      nodes.push(...childNode.getNodesByDatasetId(datasetId));
+    }
+    return nodes;
+  }
+
   positionContainer() {
     // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
     var containerDimensions = getComputedDimensions(this.container);

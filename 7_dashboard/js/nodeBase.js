@@ -222,6 +222,15 @@ export default class BaseNode {
     return null;
   }
 
+  getNodesByDatasetId(datasetId) {
+    // console.log("    nodeBase getNodesByDatasetId:", this.id, datasetId, this.data.datasetId == datasetId);
+    if (this.data.datasetId == datasetId) {
+      // console.log("    nodeBase getNodesByDatasetId: return this", this);
+      return [this];
+    }
+    return [];
+  }
+
   // function to return all the nodes in the graph
   getAllNodes(onlySelected = false, onlyEndNodes = false) {
     if (onlySelected && !this.selected) return [];

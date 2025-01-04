@@ -214,6 +214,19 @@ export class Dashboard {
     }
   }
 
+  updateDatasetStatus(datasetId, status) {
+    console.log("updateDatasetStatus", datasetId, status);
+    const nodes = this.main.root.getNodesByDatasetId(datasetId);
+    if (nodes && nodes.length > 0) {
+        for (const node of nodes) {
+        node.status = status;
+        }
+      node.status = status;
+    } else {
+      console.error("updateDatasetStatus: No nodes found for dataset:", datasetId);
+    }
+  }
+
   createContainer(parentContainer, className) {
     // create background rect
     // create a container, to enable zooming and panning
