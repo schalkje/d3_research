@@ -24,28 +24,6 @@ export default class ColumnsNode extends BaseContainerNode {
     }
   }
 
-  initChildren() {
-    if (!this.data.children || this.data.children.length === 0) {
-      return;
-    }
-
-    console.log("      nodeColumns - initChildren    Rendering Children:", this.id, this.data.children);
-
-    for (const node of this.data.children) {
-      // Create the childComponent instance based on node type
-      var childComponent = this.getNode(node.id);
-      if (childComponent == null) {
-        childComponent = this.createNode(node, this.container, this.settings, this);
-        this.childNodes.push(childComponent);
-
-        console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
-      }
-
-      childComponent.init(this.container);
-    }
-
-    this.updateChildren();
-  }
 
   updateChildren() {
     console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);

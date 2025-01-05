@@ -23,31 +23,31 @@ export default class GroupNode extends BaseContainerNode {
      this.simulation.init();
   }
 
-   renderChildren() {
-    // console.log("    Rendering Children for Group:", this.id, this.data.children);
-    if (!this.data.children || this.data.children.length === 0) {
-      return;
-    }
+  //  renderChildren() {
+  //   // console.log("    Rendering Children for Group:", this.id, this.data.children);
+  //   if (!this.data.children || this.data.children.length === 0) {
+  //     return;
+  //   }
 
 
 
-    for (const node of this.data.children) {
-      // Create the childComponent instance based on node type
-      const childComponent = this.createNode(node, this.container, this.settings, this);
+  //   for (const node of this.data.children) {
+  //     // Create the childComponent instance based on node type
+  //     const childComponent = this.createNode(node, this.container, this.settings, this);
 
-      // console.log("Rendering Child:", childComponent);
-      // console.log("               :", this.x, this.data.y);
+  //     // console.log("Rendering Child:", childComponent);
+  //     // console.log("               :", this.x, this.data.y);
 
-      this.childNodes.push(childComponent);
-      childComponent.render();
-    }
+  //     this.childNodes.push(childComponent);
+  //     childComponent.render();
+  //   }
 
     
 
-     this.runSimulation();
+  //    this.runSimulation();
 
-    this.updateEdges();
-  }
+  //   this.updateEdges();
+  // }
 
    arrange() {
     console.log("Arranging GroupNode:", this.id);

@@ -7,6 +7,6 @@ npm install --save-dev
 # package:
 
 ```
-npm run build   
+npm run build
 ```
 

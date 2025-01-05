@@ -367,23 +367,44 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   initChildren() {
+    if (!this.data.children || this.data.children.length === 0) {
+      return;
+    }
+
     console.log("BaseContainer - initChildren", this.data.label, this.data.children);
 
-    // no default rendering of the children, but this renders a placeholder rect
-    const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
-    const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-    this.container
-      .append("rect")
-      .attr("class", (d) => `node placeholder`)
-      .attr("width", containerWidth)
-      .attr("height", containerHeight)
-      .attr("fill", "red")
-      .attr("stroke", "red")
-      .attr("stroke-width", 2)
-      .attr("x", -containerWidth / 2)
-      .attr("y", -containerHeight / 2);
+    if (this.data.children.length == 0) {
+      // no rendering of the children, but this renders a placeholder rect
+      const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
+      const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
+      this.container
+        .append("rect")
+        .attr("class", (d) => `node placeholder`)
+        .attr("width", containerWidth)
+        .attr("height", containerHeight)
+        .attr("fill", "red")
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("x", -containerWidth / 2)
+        .attr("y", -containerHeight / 2);
+    }
+    else
+    {
+      for (const node of this.data.children) {
+        // Create the childComponent instance based on node type
+        var childComponent = this.getNode(node.id);
+        if (childComponent == null) {
+          childComponent = this.createNode(node, this.container, this.settings, this);
+          this.childNodes.push(childComponent);
 
-    // this.updateChildren();
+          console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
+        }
+
+        childComponent.init(this.container);
+      }
+    }
+
+    this.updateChildren();
   }
 
   update() {
