@@ -43,70 +43,18 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
 
-   initChildren() {
+  initChildren() {
     this.suspenseDisplayChange = true;
+    console.log("    nodeFoundation - initChildren - Create Children for Foundation:", this.data.label, this.data.children);
 
-    // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
+    super.initChildren();
+
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
 
-    // render "raw" node
-    let rawChild = this.data.children.find((child) => child.role === "raw");
-    if (
-      !rawChild &&
-        this.data.layout.mode === FoundationMode.AUTO
-    ) {
-      rawChild = {
-        id: `raw_${this.data.id}`,
-        label: `raw ${this.data.label}`,
-        role: "raw",
-        type: "node",
-      };
-      this.data.children.push(rawChild);
-    }
-    if (rawChild) {
-      if (this.rawNode == null) {
-        const copyRawChild = JSON.parse(JSON.stringify(rawChild));
-        if (this.data.layout.displayMode == DisplayMode.ROLE) {
-          copyRawChild.label = copyRawChild.role;
-          copyRawChild.width = 50;
-        }
-        this.rawNode = new RectangularNode(copyRawChild, this.container, this.settings, this);
-        this.childNodes.push(this.rawNode);
-      }
-      
-      this.rawNode.init(this.container);
-    }
-
-    // render "base" node
-    let baseChild = this.data.children.find((child) => child.role === "base");
-    if (
-      !baseChild &&
-        this.data.layout.mode === FoundationMode.AUTO
-    ) {
-      baseChild = {
-        id: `base_${this.data.id}`,
-        label: `base ${this.data.label}`,
-        role: "base",
-        type: "node",
-      };
-      this.data.children.push(baseChild);
-    }
-    if (baseChild) {
-      // console.log("    Rendering Base Node:", baseChild, this);
-      if (this.baseNode == null) {
-        const copyBaseChild = JSON.parse(JSON.stringify(baseChild));
-        if (this.data.layout.displayMode == DisplayMode.ROLE) {
-          copyBaseChild.label = copyBaseChild.role;
-          copyBaseChild.width = 50;
-        }
-        this.baseNode = new RectangularNode(copyBaseChild, this.container, this.settings, this);
-        this.childNodes.push(this.baseNode);
-      }
-      
-      this.baseNode.init(this.container);
-    }
+    this.rawNode = this.initializeChildNode("raw", ["raw"]);
+    this.baseNode = this.initializeChildNode("base", ["base"]);
 
     createInternalEdge(
       {
@@ -118,12 +66,11 @@ export default class FoundationNode extends BaseContainerNode {
       },
       this.rawNode,
       this.baseNode,
-      this.settings,
+      this.settings
     );
 
-     this.initEdges();
+    this.initEdges();
 
-    // compute the size of the container
     this.data.expandedSize = {
       width:
         this.rawNode.data.width +
@@ -135,12 +82,54 @@ export default class FoundationNode extends BaseContainerNode {
     };
 
     this.resize(this.data.expandedSize, true);
-
-     this.update();
+    this.update();
     this.cascadeUpdate();
 
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
+  }
+
+  initializeChildNode(role, labels) {
+    let node = this.childNodes.find((child) => child.data.role === role);
+    if (!node) {
+      node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase())));
+    }
+    if (!node) {
+      let childData = this.data.children.find((child) => child.role === role);
+      if (!childData && this.shouldCreateChildNode(role)) {
+        childData = {
+          id: `${role}_${this.data.id}`,
+          label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
+          role: role,
+          type: "node",
+        };
+        this.data.children.push(childData);
+      }
+      node = this.initChildNode(childData, node);
+    }
+    return node;
+  }
+
+  shouldCreateChildNode(role) {
+    const mode = this.data.layout.mode;
+    return mode === FoundationMode.AUTO;
+  }
+
+  initChildNode(childData, childNode) {
+    if (childData) {
+      if (childNode == null) {
+        const copyChild = JSON.parse(JSON.stringify(childData));
+        if (this.data.layout.displayMode == DisplayMode.ROLE) {
+          copyChild.label = copyChild.role;
+          copyChild.width = 50;
+        }
+        childNode = new RectangularNode(copyChild, this.container, this.settings, this);
+        this.childNodes.push(childNode);
+      }
+
+      childNode.init(this.container);
+    }
+    return childNode;
   }
 
   updateChildren() {
