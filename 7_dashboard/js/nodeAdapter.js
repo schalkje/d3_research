@@ -68,86 +68,9 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children = [];
     }
 
-    if ( this.archiveNode == null )
-    {
-      this.archiveNode = this.childNodes.find((child) => child.data.role === "archive");
-      if ( this.archiveNode == null )
-        this.archiveNode = this.childNodes.find((child) => child.data.label.toLowerCase().includes("archive".toLowerCase()));
-      if ( this.archiveNode == null )
-        this.archiveNode = this.childNodes.find((child) => child.data.label.toLowerCase().includes("STG_ARCHIVE".toLowerCase()));      
-    }
-    if ( this.archiveNode == null )
-    {
-      // render "archive" node
-      let archiveChild = this.data.children.find((child) => child.role === "archive");
-      if (
-        !archiveChild &&
-        (this.data.layout.mode === AdapterMode.ARCHIVE_ONLY ||
-          this.data.layout.mode === AdapterMode.STAGING_ARCHIVE ||
-          this.data.layout.mode === AdapterMode.FULL)
-      ) {
-        archiveChild = {
-          id: `arc_${this.data.id}`,
-          label: `Archive ${this.data.label}`,
-          role: "archive",
-          type: "node",
-        };
-        this.data.children.push(archiveChild);
-      }
-      this.archiveNode = this.initChildNode(archiveChild, this.archiveNode);
-    }
-
-    if ( this.stagingNode == null )
-    {
-      this.stagingNode = this.childNodes.find((child) => child.data.role === "staging");
-      if ( this.stagingNode == null )
-        this.stagingNode = this.childNodes.find((child) => child.data.label.toLowerCase().includes("staging".toLowerCase()));
-    }
-    if ( this.stagingNode == null )
-    {
-      // render "staging" node
-      let stagingChild = this.data.children.find((child) => child.role === "staging");
-      if (
-        !stagingChild &&
-        (this.data.layout.mode == AdapterMode.STAGING_ARCHIVE ||
-          this.data.layout.mode == AdapterMode.STAGING_TRANSFORM ||
-          this.data.layout.mode == AdapterMode.FULL)
-      ) {
-        stagingChild = {
-          id: `stg_${this.data.id}`,
-          label: `Staging ${this.data.label}`,
-          role: "staging",
-          type: "node",
-        };
-        this.data.children.push(stagingChild);
-      }
-      this.stagingNode = this.initChildNode(stagingChild, this.stagingNode);
-    }
-
-    if ( this.transformNode == null )
-    {
-      this.transformNode = this.childNodes.find((child) => child.data.role === "transform");
-      if ( this.transformNode == null )
-        this.transformNode = this.childNodes.find((child) => child.data.label.toLowerCase().includes("transform".toLowerCase()));
-    }
-    if ( this.transformNode == null )
-    {
-      // render "transform" node
-      let transformChild = this.data.children.find((child) => child.role === "transform");
-      if (
-        !transformChild &&
-        (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
-      ) {
-        transformChild = {
-          id: `trn_${this.data.id}`,
-          label: `Transform ${this.data.label}`,
-          role: "transform",
-          type: "node",
-        };
-        this.data.children.push(transformChild);
-      }
-      this.transformNode = this.initChildNode(transformChild, this.transformNode);
-    }
+    this.archiveNode = this.initializeChildNode("archive", ["archive", "STG_ARCHIVE"]);
+    this.stagingNode = this.initializeChildNode("staging", ["staging"]);
+    this.transformNode = this.initializeChildNode("transform", ["transform"]);
 
     if (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
       createInternalEdge(
@@ -185,6 +108,36 @@ export default class AdapterNode extends BaseContainerNode {
     console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
+  }
+
+  initializeChildNode(role, labels) {
+    let node = this.childNodes.find((child) => child.data.role === role);
+    if (!node) {
+      node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase())));
+    }
+    if (!node) {
+      let childData = this.data.children.find((child) => child.role === role);
+      if (!childData && this.shouldCreateChildNode(role)) {
+        childData = {
+          id: `${role}_${this.data.id}`,
+          label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
+          role: role,
+          type: "node",
+        };
+        this.data.children.push(childData);
+      }
+      node = this.initChildNode(childData, node);
+    }
+    return node;
+  }
+
+  shouldCreateChildNode(role) {
+    const mode = this.data.layout.mode;
+    return (
+      (role === "archive" && (mode === AdapterMode.ARCHIVE_ONLY || mode === AdapterMode.STAGING_ARCHIVE || mode === AdapterMode.FULL)) ||
+      (role === "staging" && (mode === AdapterMode.STAGING_ARCHIVE || mode === AdapterMode.STAGING_TRANSFORM || mode === AdapterMode.FULL)) ||
+      (role === "transform" && (mode === AdapterMode.STAGING_TRANSFORM || mode === AdapterMode.FULL))
+    );
   }
 
   initChildNode(childData, childNode) {
