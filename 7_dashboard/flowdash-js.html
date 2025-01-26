@@ -201,11 +201,11 @@
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
                 // dashboardData.settings.showGhostlines = showGhostlines;
-                // dashboardData.settings.zoomToRoot = zoomToRoot;
-                // dashboardData.settings.showBoundingBox = showBoundingBox;
-                // // dashboardData.settings.showEdges = showEdges;
-                // dashboardData.settings.horizontal = horizontal;
-                // dashboardData.settings.curved = isEdgeCurved;
+                dashboardData.settings.zoomToRoot = zoomToRoot;
+                dashboardData.settings.showBoundingBox = showBoundingBox;
+                // dashboardData.settings.showEdges = showEdges;
+                dashboardData.settings.horizontal = horizontal;
+                dashboardData.settings.curved = isEdgeCurved;
 
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph', '#minimap');

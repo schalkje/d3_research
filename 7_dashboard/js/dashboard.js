@@ -45,6 +45,7 @@ export class Dashboard {
    initialize(mainDivSelector, minimapDivSelector = null) {
     console.log("dashboard - initialize", this);
     // initialize dashboard
+    this.mainDivSelector = mainDivSelector;
     const div = this.initializeSvg(mainDivSelector);
     this.main.svg = div.svg;
     this.main.width = div.width;
@@ -61,6 +62,7 @@ export class Dashboard {
 
     // initialize minimap
     if (minimapDivSelector) {
+      this.minimapDivSelector = minimapDivSelector;
       const div = this.initializeSvg(minimapDivSelector);
       this.minimap.active = true;
       this.minimap.svg = div.svg;
@@ -814,7 +816,7 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
     console.warn("                    - ", i, properties[i], obj[properties[i]]);
     obj = obj[properties[i]];
   }
-  console.warn("                    - before = ", obj[properties[properties.length - 1]]);
+  console.warn("                    - before = ", [properties[properties.length - 1]], obj[properties[properties.length - 1]]);
   obj[properties[properties.length - 1]] = value;
-  console.warn("                    -  after = ", obj[properties[properties.length - 1]]);
+  console.warn("                    -  after = ", [properties[properties.length - 1]], obj[properties[properties.length - 1]]);
 }
