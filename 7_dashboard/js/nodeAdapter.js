@@ -55,12 +55,12 @@ export default class AdapterNode extends BaseContainerNode {
 
    initChildren() {
     this.suspenseDisplayChange = true;
-    console.log(
-      "        nodeAdapter - initChildren - Create Children for Adapter:",
-      this.data.label,
-      this.data.children,
-      this.container
-    );
+    // console.log(
+    //   "        nodeAdapter - initChildren - Create Children for Adapter:",
+    //   this.data.label,
+    //   this.data.children,
+    //   this.container
+    // );
 
     super.initChildren();
 
@@ -105,7 +105,7 @@ export default class AdapterNode extends BaseContainerNode {
     // this.updateEdges();
     this.resize(this.data.expandedSize, true);
      this.update();
-    console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
+    // console.log("        nodeAdapter - *************** END ****** Rendering Children for Adapter:", this.data.label);
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
   }
@@ -158,11 +158,11 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log(
-      `        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`,
-      this.id,
-      this.data.layout
-    );
+    // console.log(
+    //   `        nodeAdapter - updateChildren - Layout=${this.data.layout.arrangement} for Adapter:`,
+    //   this.id,
+    //   this.data.layout
+    // );
     switch (this.data.layout.arrangement) {
       case 1:
         this.updateLayout1();

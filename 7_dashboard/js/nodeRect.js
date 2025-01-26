@@ -11,7 +11,7 @@ export default class RectangularNode extends BaseNode {
   // Method to render the node using D3
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    console.log("  nodeRect - init:", this.data.label, this.parentElement);
+    // console.log("  nodeRect - init:", this.data.label, this.parentElement);
     super.init(parentElement);
     // console.log("Rendering Rectangular Node:", this.id);
 
@@ -45,7 +45,7 @@ export default class RectangularNode extends BaseNode {
   }
 
   resize(size, forced = false) {
-    console.log("  nodeRect - size", this.data.label, size);
+    // console.log("  nodeRect - size", this.data.label, size);
     // const oldSize = {width: this.data.width, height: this.data.height};
 
     super.resize(size, forced);

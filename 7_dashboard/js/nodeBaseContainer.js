@@ -120,7 +120,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   resize(size, forced = false) {
-    console.log("    BaseContainerNode - resize", this.data.label, Math.round(size.width), Math.round(size.height));
+    // console.log("    BaseContainerNode - resize", this.data.label, Math.round(size.width), Math.round(size.height));
 
     // make sure the size of the element doesn't go below minimum size
     size.width = Math.max(size.width, this.minimumSize.width);
@@ -133,22 +133,22 @@ export default class BaseContainerNode extends BaseNode {
   resizeContainer(size, forced = false) {
     size.width += this.containerMargin.left + this.containerMargin.right;
     size.height += this.containerMargin.top + this.containerMargin.bottom;
-    console.log(
-      `    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(
-        this.data.height
-      )} --> ${Math.round(size.width)}x${Math.round(size.height)}`
-    );
+    // console.log(
+    //   `    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(
+    //     this.data.height
+    //   )} --> ${Math.round(size.width)}x${Math.round(size.height)}`
+    // );
 
     this.resize(size, forced);
   }
 
   expand() {
-    console.warn(
-      `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
-        this.data.expandedSize.width
-      )}x${Math.round(this.data.expandedSize.height)}`,
-      this.data.label
-    );
+    // console.warn(
+    //   `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
+    //     this.data.expandedSize.width
+    //   )}x${Math.round(this.data.expandedSize.height)}`,
+    //   this.data.label
+    // );
 
     // you can only expand a container if it's parent is already expanded
     // expand parent first when not expanded
@@ -166,7 +166,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   collapse() {
-    console.log("    BaseContainerNode - collapse", this.data.label);
+    // console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
     if (this.data.height > this.minimumSize.height + 5 || this.data.width > this.minimumSize.width + 5)
@@ -209,8 +209,10 @@ export default class BaseContainerNode extends BaseNode {
     if (this.data.datasetId == datasetId) {
       nodes.push(this);
     }
-    for (const childNode of this.childNodes) {
-      nodes.push(...childNode.getNodesByDatasetId(datasetId));
+    if (this.childNodes) {
+      for (const childNode of this.childNodes) {
+        nodes.push(...childNode.getNodesByDatasetId(datasetId));
+      }
     }
     return nodes;
   }
@@ -249,7 +251,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   updateEdges() {
-    console.log("    BaseContainerNode - updateEdges", this.id, this.childEdges.length);
+    // console.log("    BaseContainerNode - updateEdges", this.id, this.childEdges.length);
     if (!this.visible) return;
     if (this.collapsed) return;
 
@@ -284,7 +286,7 @@ export default class BaseContainerNode extends BaseNode {
 
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    console.log("    BaseContainerNode - init", this.id);
+    // console.log("    BaseContainerNode - init", this.id);
     super.init(parentElement);
 
     // Append text to the top left corner of the element
@@ -303,12 +305,12 @@ export default class BaseContainerNode extends BaseNode {
     if (this.data.layout.minimumSize.height > this.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
     if ( this.data.layout.minimumSize.useRootRatio) this.applyMinimumSize();
 
-    console.log(
-      "    BaseContainerNode - init minimumSize",
-      this.data.label,
-      this.minimumSize.width,
-      this.minimumSize.height
-    );
+    // console.log(
+    //   "    BaseContainerNode - init minimumSize",
+    //   this.data.label,
+    //   this.minimumSize.width,
+    //   this.minimumSize.height
+    // );
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
       // console.log(
       //   "Render Resizing BaseContainerNode:",
@@ -371,7 +373,7 @@ export default class BaseContainerNode extends BaseNode {
       return;
     }
 
-    console.log("BaseContainer - initChildren", this.data.label, this.data.children);
+    // console.log("BaseContainer - initChildren", this.data.label, this.data.children);
 
     if (this.data.children.length == 0) {
       // no rendering of the children, but this renders a placeholder rect
@@ -397,7 +399,7 @@ export default class BaseContainerNode extends BaseNode {
           childComponent = this.createNode(node, this.container, this.settings, this);
           this.childNodes.push(childComponent);
 
-          console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
+          // console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
         }
 
         childComponent.init(this.container);
@@ -408,7 +410,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   update() {
-    console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
+    // console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
     super.update();
 
     this.element
@@ -453,7 +455,7 @@ export default class BaseContainerNode extends BaseNode {
   // }
 
   updateChildren() {
-    console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
+    // console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
 
     this.container.attr(
       "transform",
@@ -466,7 +468,7 @@ export default class BaseContainerNode extends BaseNode {
 
   // Method to remove child nodes from the SVG
   cleanContainer(propagate = true) {
-    console.log("    Removing Children for:", this.data.label);
+    // console.log("    Removing Children for:", this.data.label);
     this.container.selectAll("*").remove();
     this.container.remove();
     this._container = null;
@@ -476,7 +478,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   applyMinimumSize() {
-    console.error("    BaseContainerNode - applyRatioToMinimumSize", this.data.label, this.data.layout.minimumSize.useRootRatio, this);
+    // console.error("    BaseContainerNode - applyRatioToMinimumSize", this.data.label, this.data.layout.minimumSize.useRootRatio, this);
     if (this.minimumSize.width < this.data.layout.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
     if (this.minimumSize.height < this.data.layout.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
 
@@ -491,6 +493,6 @@ export default class BaseContainerNode extends BaseNode {
     {
         this.minimumSize.width = this.minimumSize.height * this.settings.divRatio;
     }
-    console.log("    BaseContainerNode - applyRatioToMinimumSize", this.minimumSize.width, this.minimumSize.height);
+    // console.log("    BaseContainerNode - applyRatioToMinimumSize", this.minimumSize.width, this.minimumSize.height);
   }
 }

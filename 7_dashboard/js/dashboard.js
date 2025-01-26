@@ -215,16 +215,16 @@ export class Dashboard {
   }
 
   updateDatasetStatus(datasetId, status) {
-    console.log("updateDatasetStatus", datasetId, status);
+    // console.log("updateDatasetStatus", datasetId, status);
+    let stateUpdated = false;
     const nodes = this.main.root.getNodesByDatasetId(datasetId);
     if (nodes && nodes.length > 0) {
-        for (const node of nodes) {
+      for (const node of nodes) {
         node.status = status;
-        }
-      node.status = status;
-    } else {
-      console.error("updateDatasetStatus: No nodes found for dataset:", datasetId);
+        stateUpdated = true;
+      }
     }
+    return stateUpdated; 
   }
 
   createContainer(parentContainer, className) {

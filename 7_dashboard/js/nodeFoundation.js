@@ -45,7 +45,7 @@ export default class FoundationNode extends BaseContainerNode {
 
   initChildren() {
     this.suspenseDisplayChange = true;
-    console.log("    nodeFoundation - initChildren - Create Children for Foundation:", this.data.label, this.data.children);
+    // console.log("    nodeFoundation - initChildren - Create Children for Foundation:", this.data.label, this.data.children);
 
     super.initChildren();
 
@@ -133,7 +133,7 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log("    Layout for Adapter:", this.id, this.data.layout);
+    // console.log("    Layout for Adapter:", this.id, this.data.layout);
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
         this.updateFull();
@@ -169,7 +169,7 @@ export default class FoundationNode extends BaseContainerNode {
 
    updateRole() {
     // JS: TODO: use code as label; need rerendering of the children
-    console.log("    Layout Code for Adapter:", this.id);
+    // console.log("    Layout Code for Adapter:", this.id);
     if (this.rawNode) {
       const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;

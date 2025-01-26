@@ -24,7 +24,7 @@ export function computeBoundingBox(nodes, horizontal = false) {
       // console.log(`        node: ${node.id} = (${Math.round(x)},${Math.round(y)}) --> ${Math.round(width)}, ${Math.round(height)}:      (${Math.round(x - width / 2)},${Math.round(y - height / 2)}),(${Math.round(x + width / 2)},${Math.round(y + height / 2)})`, node);
       if (horizontal) {
         updateBounds(y, x, width, height);
-        console.log('        UNEXPECTED, shouldn\'t hit this line' );
+        console.warn('        UNEXPECTED, shouldn\'t hit this line' );
       } else {
         updateBounds(x, y, width, height);
       }

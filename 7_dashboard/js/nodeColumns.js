@@ -19,14 +19,14 @@ export default class ColumnsNode extends BaseContainerNode {
       // console.warn("       get nestedCorrection_x", this.x, this.data.width / 2,this.containerMargin.left);
     return this.x - this.data.width / 2 + this.containerMargin.left;
     } catch(e) {
-      console.log("Error in nestedCorrection_x", e);
+      console.error("Error in nestedCorrection_x", e);
       console.log("                           - ", this.x, this.data.width / 2,this.containerMargin.left);
     }
   }
 
 
   updateChildren() {
-    console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
+    // console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
     this.suspenseDisplayChange = true;
 
     // each child is a column

@@ -50,7 +50,7 @@ export default class GroupNode extends BaseContainerNode {
   // }
 
    arrange() {
-    console.log("Arranging GroupNode:", this.id);
+    // console.log("Arranging GroupNode:", this.id);
      this.runSimulation();
   }
 }

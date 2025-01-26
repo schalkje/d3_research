@@ -54,7 +54,7 @@ export default class BaseNode {
 
   set visible(value) {
     if (value === this._visible) return;
-    console.log("nodeBase - Setting visible", this.data.label, value);
+    // console.log("nodeBase - Setting visible", this.data.label, value);
     this._visible = value;    
   }
 
@@ -121,7 +121,7 @@ export default class BaseNode {
 
    init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    console.log("nodeBase - init", this.data.label);
+    // console.log("nodeBase - init", this.data.label);
 
     this.element = this.parentElement
       .append("g")
@@ -129,12 +129,12 @@ export default class BaseNode {
       .attr("id", this.id)
       .attr("status", this.status)
       .on("click", (event) => {
-        console.log("Clicked on Adapter Node [BASE]:", this.id, event);
+        // console.log("Clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
         this.handleClicked(event);
       })
       .on("dblclick", (event) => {
-        console.log("Double-clicked on Adapter Node [BASE]:", this.id, event);
+        // console.log("Double-clicked on Adapter Node [BASE]:", this.id, event);
         if (event) event.stopPropagation();
         this.handleDblClicked(event);
       });
@@ -164,7 +164,7 @@ export default class BaseNode {
 
   // function to put all the elements in the correct place
    update() {
-    console.log("nodeBase - update", this.data.label);
+    // console.log("nodeBase - update", this.data.label);
 
     if (this.settings.showConnectionPoints) {
       const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
@@ -202,7 +202,7 @@ export default class BaseNode {
     // node base has no elements of it's own, so just update the data
     if  (forced || this.data.width != size.width || this.data.height != size.height)
     {
-      console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
+      // console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
       this.data.width = size.width;
       this.data.height = size.height;
 
@@ -210,7 +210,7 @@ export default class BaseNode {
 
       this.handleDisplayChange();
     }
-    else console.log("SKIPPED - nodeBase - resize", this.data.label, size, this.data.width, this.data.height);   
+    // else console.log("SKIPPED - nodeBase - resize", this.data.label, size, this.data.width, this.data.height);   
   }
 
   getNode(nodeId) {
@@ -271,7 +271,7 @@ export default class BaseNode {
   }
 
   getNeighbors(selector = { incomming: 1, outgoing: 1 }) {
-    console.log("    getNeighbors:", this.id, selector);
+    // console.log("    getNeighbors:", this.id, selector);
     const neighbors = {nodes:[],edges:[]};
 
     // Add the incoming neighbors
@@ -318,11 +318,11 @@ export default class BaseNode {
 
   cascadeUpdate() {
     if (this.parentNode) {
-      console.log(`cascadeUpdate from "${this.data.label}" --> "${this.parentNode.data.label}"`);
+      // console.log(`cascadeUpdate from "${this.data.label}" --> "${this.parentNode.data.label}"`);
       this.parentNode.update();
       this.parentNode.cascadeUpdate();
     } else {
-      console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
+      // console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
     }
   }
 
@@ -333,9 +333,9 @@ export default class BaseNode {
   }
 
   cascadeRestartSimulation() {
-    console.log("cascadeRestartSimulation ", this.id);
+    // console.log("cascadeRestartSimulation ", this.id);
     if (this.simulation) {
-      console.log("                    simulaiton restart", this.id);
+      // console.log("                    simulaiton restart", this.id);
       this.simulation.simulation.alphaTarget(0.8).restart();
     }
     if (this.parentNode) {
@@ -344,9 +344,9 @@ export default class BaseNode {
   }
 
   cascadeStopSimulation() {
-    console.log("cascadeStopSimulation ", this.id);
+    // console.log("cascadeStopSimulation ", this.id);
     if (this.simulation) {
-      console.log("                    simulation stop", this.id);
+      // console.log("                    simulation stop", this.id);
       this.simulation.simulation.alphaTarget(0);
     }
     if (this.parentNode) {

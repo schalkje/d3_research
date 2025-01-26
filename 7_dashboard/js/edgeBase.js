@@ -26,10 +26,6 @@ export default class BaseEdge {
     this.onClick = null;
     this.onDblClick = null;
 
-    // console.log("Creating Base Edge - source", this.source, this.source.id);
-    // console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
-    this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
-
     this.element = null;
     this.ghostElement = null;
 
@@ -43,6 +39,10 @@ export default class BaseEdge {
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
+
+    // console.log("Creating Base Edge - source", this.source, this.source.id);
+    // console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
+    this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
   }
 
   get label() {
