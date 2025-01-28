@@ -94,6 +94,7 @@ export default class BaseContainerNode extends BaseNode {
   determineStatusBasedOnChildren() {
     // if the status of all children is Ready, then the status of the container is Ready
     // if the status of all children is Updated, then the status of the container is Updated
+    // if the status of one or more of the children is SKIPPED and the rest is UPDATED, then the status of the container is Skipped, unless the child is a container node, then it is Updated
     // if the status of all children is Disabled, then the status of the container is Disabled
     // if the status of all children is Unknown, then the status of the container is Unknown
     if (this.childNodes.length == 0) return;
@@ -101,22 +102,71 @@ export default class BaseContainerNode extends BaseNode {
     var firstStatus = this.childNodes[0].status;
     for (const childNode of this.childNodes) {
       if (childNode.status != firstStatus) {
-        // if the status of any child is Warning and the status of any other children is Warning or Updated, then the status of the container is Warning
-        if (firstStatus == NodeStatus.WARNING && childNode.status == NodeStatus.UPDATED) continue;
-        if (firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.WARNING) {
+        // error
+        // if there is an error, the status of the container is error
+        if (firstStatus == NodeStatus.ERROR) continue;
+        if (childNode.status == NodeStatus.ERROR) {
+          firstStatus = NodeStatus.ERROR;
+          continue;
+        }
+
+        // warning
+        // if there is a warning, the status of the container is warning
+        if (firstStatus == NodeStatus.WARNING) continue;
+        if (childNode.status == NodeStatus.WARNING) {
           firstStatus = NodeStatus.WARNING;
           continue;
         }
 
-        this.status = "Unknown";
-        return;
+        // delayed
+        // if there is a delayed, the status of the container is delayed
+        if (firstStatus == NodeStatus.DELAYED) continue;
+        if (childNode.status == NodeStatus.DELAYED) {
+          firstStatus = NodeStatus.DELAYED;
+          continue;
+        }
+
+
+        // unknown
+        // if there is at least one unknown, the status of the container is unknown
+        if (firstStatus == NodeStatus.UNKNOWN) continue;
+        if (childNode.status == NodeStatus.UNKNOWN) 
+        {
+          firstStatus = NodeStatus.UNKNOWN;
+          continue
+        }
+
+        // UPDATING: 'Udating',
+        // if one is updating, the status of the container is UNKNOWN
+        if (childNode.status == NodeStatus.UPDATING) {
+          firstStatus = NodeStatus.UNKNOWN;
+          continue;
+        }
+
+        // partial updated/skipped
+        if ((childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.SKIPPED ) && (firstStatus != NodeStatus.UPDATED && firstStatus != NodeStatus.SKIPPED)) {
+          firstStatus = NodeStatus.UNKNOWN;
+          continue;
+        }
+               
+        // skipped
+        // if there is at least one skipped and the rets are only skipped or updated, the status of the container is skipped
+        if ((firstStatus == NodeStatus.UPDATED || firstStatus == NodeStatus.SKIPPED) && (childNode.status != NodeStatus.UPDATED && childNode.status != NodeStatus.SKIPPED))
+        {
+          firstStatus = NodeStatus.UNKNOWN;
+          continue;
+        }
+        if (firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.SKIPPED && !(childNode instanceof BaseContainerNode)) {
+          firstStatus = NodeStatus.SKIPPED;
+          continue;
+        }
+
+        // ready, only if all children are ready
+        // disabled, does not influence the status of the container, unless everything is disabled
       }
     }
-    if (firstStatus == "Ready") this.status = "Ready";
-    if (firstStatus == "Updated") this.status = "Updated";
-    if (firstStatus == "Disabled") this.status = "Disabled";
-    if (firstStatus == "Unknown") this.status = "Unknown";
-    if (firstStatus == "Warning") this.status = "Warning";
+    
+    this.status = firstStatus;
   }
 
   resize(size, forced = false) {

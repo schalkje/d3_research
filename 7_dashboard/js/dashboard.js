@@ -7,12 +7,20 @@ export class Dashboard {
   constructor(dashboardData) {
     this.data = dashboardData;
 
+    // log all attributes from data.settings to the console log
+    console.log("Dashboard - constructor", this.data.settings);
+    for (const [key, value] of Object.entries(this.data.settings)) {
+      console.log("Dashboard - constructor - settings", key, value);
+    }
+
     this.data.settings ??= {};
     this.data.settings.selector ??= {};
     this.data.settings.selector.incomming ??= 1;
     this.data.settings.selector.outgoing ??= 1;
     this.data.settings.showBoundingBox ??= true;
     this.data.settings.zoomToRoot ??= true;
+    this.data.settings.toggleCollapseOnStatusChange ??= true;
+    
 
     this.main = {
       svg: null,
@@ -192,7 +200,7 @@ export class Dashboard {
   updateMinimapEye(x, y, width, height) {
     if (!this.minimap.active) return;
 
-    console.log("updateMinimapEye", this);
+    // console.log("updateMinimapEye", this);
     // Update minimap.eye properties
     this.minimap.eye.x = x;
     this.minimap.eye.y = y;
@@ -303,9 +311,9 @@ export class Dashboard {
   }
 
   onMainDisplayChange() {
-    console.log("#######################################");
-    console.log("##### onMainDisplayChange", this);
-    console.log("##### syncing=", this.isMainAndMinimapSyncing);
+    // console.log("#######################################");
+    // console.log("##### onMainDisplayChange", this);
+    // console.log("##### syncing=", this.isMainAndMinimapSyncing);
 
     if (this.minimap.svg) {
       if (this.isMainAndMinimapSyncing) return;
@@ -328,7 +336,7 @@ export class Dashboard {
     this.main.transform.y = zoomEvent.transform.y;
 
     // Apply transform to the main view
-    console.log("zoomMain", zoomEvent.transform, this.main.transform);
+    // console.log("zoomMain", zoomEvent.transform, this.main.transform);
     // this.main.container.attr("transform", zoomEvent.transform);
     const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
     this.main.container.attr("transform", transform );
@@ -347,7 +355,7 @@ export class Dashboard {
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
 
-    console.log("zoomMinimap", this, zoomEvent, zoomEvent.transform);
+    // console.log("zoomMinimap", this, zoomEvent, zoomEvent.transform);
 
     this.main.transform.x = zoomEvent.transform.x;
     this.main.transform.y = zoomEvent.transform.y;
@@ -377,7 +385,7 @@ export class Dashboard {
   }
 
   zoomToRoot() {
-    console.log("zoomToRoot", this.data.settings.zoomToRoot, this);
+    // console.log("zoomToRoot", this.data.settings.zoomToRoot, this);
 
     // set the viewport to the root node
     var width = this.main.root.data.width;
@@ -414,7 +422,7 @@ export class Dashboard {
   }
 
   zoomReset() {
-    console.log("zoomReset", this);
+    // console.log("zoomReset", this);
     // canvas.svg.selectAll(".boundingBox").remove();
     this.main.svg
       .transition()
@@ -565,10 +573,10 @@ export class Dashboard {
 
   
   zoomToNode(node) {
-    console.log("zoomToNode", node);
+    // console.log("zoomToNode", node);
     // 1. Identify the node's immediate neighbors
     const neighbors = node.getNeighbors(this.data.settings.selector);
-    console.log("zoomToNode: neighbors", neighbors);
+    // console.log("zoomToNode: neighbors", neighbors);
 
     // select the node and its neighbors
     this.deselectAll();
@@ -577,7 +585,7 @@ export class Dashboard {
 
     // 2. Compute the bounding box
     const boundingBox = computeBoundingBox(this, neighbors.nodes);
-    console.log("zoomToNode: boundingBox", boundingBox);
+    // console.log("zoomToNode: boundingBox", boundingBox);
 
     // 3. Calculate the zoom scale and translation
     // const { scale, translate } = calculateScaleAndTranslate(boundingBox, this);
@@ -668,13 +676,13 @@ export function computeBoundingBox(dashboard, nodes) {
   let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
 
   const updateBounds = (x, y, width, height) => {
-    console.log("computeBoundingBox updateBounds:", x, y, width, height);
+    // console.log("computeBoundingBox updateBounds:", x, y, width, height);
     minX = Math.min(minX, x - (width / 2));
     minY = Math.min(minY, y - height / 2);
     maxX = Math.max(maxX, x + width / 2);
     maxY = Math.max(maxY, y + height / 2);
   };
-  console.log(`                   bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
+  // console.log(`                   bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
 
   nodes.forEach((node) => {
     // const {
@@ -695,7 +703,7 @@ export function computeBoundingBox(dashboard, nodes) {
     maxX = Math.max(maxX, dimensions.x + dimensions.width);
     maxY = Math.max(maxY, dimensions.y + dimensions.height);
 
-    console.log("computeBoundingBox dimensions:", node.id, dimensions, node);
+    // console.log("computeBoundingBox dimensions:", node.id, dimensions, node);
     
 
     // updateBounds(x, y, width, height);
@@ -765,7 +773,7 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
 }
 
 function updateViewport(dashboard, transform) {
-  console.log("updateViewport", dashboard, transform);
+  // console.log("updateViewport", dashboard, transform);
   // js: is this the right function name?
   const x = (transform.x + dashboard.main.width / 2) / -transform.k;
   const y = (transform.y + dashboard.main.height / 2) / -transform.k;

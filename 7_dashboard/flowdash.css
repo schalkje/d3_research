@@ -173,6 +173,10 @@ svg.canvas {
   fill: green;
 }
 
+.node.shape[status="Skipped"] {
+  fill: yellowgreen;
+}
+
 
 .node.shape[status="Delayed"] {
   fill: orange;

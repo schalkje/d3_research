@@ -7,6 +7,7 @@ export const NodeStatus = Object.freeze({
   READY: 'Ready',
   UPDATING: 'Udating',
   UPDATED: 'Updated',
+  SKIPPED: 'Skipped',
   // error states
   DELAYED: 'Delayed',  
   WARNING: 'Warning',
@@ -19,13 +20,12 @@ export default class BaseNode {
     this.parentElement = parentElement;
     this.parentNode = parentNode;
     this.settings = settings;
-    this.settings.toggleCollapseOnStatusChange ??= true;
     this.computeConnectionPoints = computeConnectionPoints;
     this.onDisplayChange = null;
     this.onClick = null;
     this.onDblClick = null;
     this._selected = false;
-    this._status = NodeStatus.UNKNOWN;
+    this._status = nodeData.state ?? NodeStatus.UNKNOWN;
     this._visible = true; 
     this._collapsed = false; 
     this.suspenseDisplayChange = false;
@@ -80,7 +80,7 @@ export default class BaseNode {
 
     if (this.settings.toggleCollapseOnStatusChange) {
       // if status is ready, unknown, disabled or updated then collapse the node, otherwise expand it
-      this.collapsed = [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED].includes(value);
+      this.collapsed = [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED, NodeStatus.SKIPPED].includes(value);
     }
 
     this.cascadeStatusChange();

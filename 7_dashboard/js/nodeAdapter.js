@@ -110,14 +110,14 @@ export default class AdapterNode extends BaseContainerNode {
   initializeChildNode(role, labels) {
     let node = this.childNodes.find((child) => child.data.role === role);
     if (!node) {
-      console.log("        nodeAdapter - initializeChildNode - Role:", role, labels);
+      // console.log("        nodeAdapter - initializeChildNode - Role:", role, labels);
       node = this.childNodes.find((child) => labels.some((label) => child.data.label.toLowerCase().includes(label)));
 
       if (node != null) {
-        console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
+        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
         node.data.role = role;
         node.data.width = 80;
-        console.log("                                            Replaced role:", node.data.role);
+        // console.log("                                            Replaced role:", node.data.role);
         node.redrawText(node.data.role, node.data.width);
       }
     }
