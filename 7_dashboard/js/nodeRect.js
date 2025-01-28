@@ -25,6 +25,7 @@ export default class RectangularNode extends BaseNode {
         .attr("class", `node shape`)
         .attr("width", this.data.width)
         .attr("height", this.data.height)
+        .attr("status", this.status)
         .attr('x', -this.data.width / 2)
         .attr('y', -this.data.height / 2)
         .attr("rx", 5)

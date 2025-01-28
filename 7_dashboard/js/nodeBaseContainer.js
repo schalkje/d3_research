@@ -13,7 +13,9 @@ export default class BaseContainerNode extends BaseNode {
     nodeData.layout.minimumSize.height ??= 0;
     nodeData.layout.minimumSize.useRootRatio ??= false;
 
+
     super(nodeData, parentElement, settings, parentNode);
+    this.isContainer = true;
 
     this.createNode = createNode;
 
@@ -389,6 +391,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("class", (d) => `node shape ${this.data.type}`)
       .attr("width", this.data.width)
       .attr("height", this.data.height)
+      .attr("status", this.status)
       .attr("x", -this.data.width / 2)
       .attr("y", -this.data.height / 2)
       .attr("rx", 5)

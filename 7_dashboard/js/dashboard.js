@@ -270,12 +270,27 @@ export class Dashboard {
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
     }
+
     root.init();
+
+    this.initializeChildrenStatusses(root);
 
     if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
 
     console.log("dashboard - createDashboard - finish", dashboard, container);
     return root;
+  }
+
+  initializeChildrenStatusses(node) {
+    // apply status to all nodes withoud a status based on children status
+    var allNodes = node.getAllNodes();
+    // iterate over all nodes in reverse order
+    for (var i = allNodes.length - 1; i >= 0; i--) {
+      // if the containernode has no status, set the status based on the children status
+      if (allNodes[i].isContainer && (allNodes[i].status == null || allNodes[i].status == "" || allNodes[i].status == "Unknown")) {
+        allNodes[i].determineStatusBasedOnChildren();
+      } 
+    }
   }
 
   initializeZoom() {

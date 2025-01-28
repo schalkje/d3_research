@@ -16,6 +16,7 @@ export const NodeStatus = Object.freeze({
 
 export default class BaseNode {
   constructor(nodeData, parentElement, settings, parentNode = null) {
+    this.isContainer = false;
     this.data = nodeData;
     this.parentElement = parentElement;
     this.parentNode = parentNode;

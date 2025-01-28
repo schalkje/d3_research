@@ -24,6 +24,7 @@ import BaseNode from "./nodeBase.js";
       .append("circle")
       .attr("class", "node shape" )
       .attr("r", this.data.radius)
+      .attr("status", this.status)
       .attr("stroke", "#000")
       .attr("stroke-width", 1.5);
 
