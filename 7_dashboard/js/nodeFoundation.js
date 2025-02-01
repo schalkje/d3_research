@@ -3,6 +3,8 @@ import RectangularNode from "./nodeRect.js";
 import { createInternalEdge } from "./edge.js";
 import { getComputedDimensions } from "./utils.js";
 
+const roleWidth = 80;
+
 const DisplayMode = Object.freeze({
   FULL: 'full',
   ROLE: 'role'  
@@ -29,7 +31,11 @@ export default class FoundationNode extends BaseContainerNode {
     if (!nodeData.layout) nodeData.layout = {};
     if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.ROLE;
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
-    if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, full
+    if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, auto
+
+    if (nodeData.layout.displayMode == DisplayMode.ROLE) {
+      nodeData.width = roleWidth + roleWidth + 20 + 8 + 8;
+    }
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
@@ -92,6 +98,9 @@ export default class FoundationNode extends BaseContainerNode {
   initializeChildNode(role, labels) {
     let node = this.childNodes.find((child) => child.data.role === role);
     if (!node) {
+      node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase()+'.')));
+    }
+    if (!node) {
       node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase())));
     }
     if (!node) {
@@ -107,6 +116,17 @@ export default class FoundationNode extends BaseContainerNode {
       }
       node = this.initChildNode(childData, node);
     }
+    else
+    {
+      if (this.data.layout.displayMode == DisplayMode.ROLE) {
+        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
+        node.data.role = role;
+        node.data.width = roleWidth;
+        // console.log("                                            Replaced role:", node.data.role);
+        node.redrawText(node.data.role, node.data.width);
+      }
+
+    }
     return node;
   }
 
@@ -116,12 +136,13 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
   initChildNode(childData, childNode) {
+    console.log("    nodeFoundation - initChildNode:", childData, childNode);
     if (childData) {
       if (childNode == null) {
         const copyChild = JSON.parse(JSON.stringify(childData));
         if (this.data.layout.displayMode == DisplayMode.ROLE) {
           copyChild.label = copyChild.role;
-          copyChild.width = 50;
+          copyChild.width = roleWidth;
         }
         childNode = new RectangularNode(copyChild, this.container, this.settings, this);
         this.childNodes.push(childNode);

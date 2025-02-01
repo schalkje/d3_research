@@ -2,6 +2,10 @@ import BaseEdge from "./edgeBase.js";
 
 export function createInternalEdge(edgeData, source, target, settings)
 {
+    if ( source === target) {
+      console.error("createInternalEdge - Source and Target are the same node", source);
+      return;
+    }
     // console.log("Creating Internal Edge:", edgeData, source, target);
     // console.log(`  Creating Internal Edge: ${source.data.label} -> ${target.data.label}`);
     

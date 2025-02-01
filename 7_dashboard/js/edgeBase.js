@@ -40,9 +40,13 @@ export default class BaseEdge {
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
 
-    // console.log("Creating Base Edge - source", this.source, this.source.id);
-    // console.log(`Creating Base Edge - target ${this.target.id}`, this.source, this.target.id);
+    // console.log(`Creating Base Edge `, this.source, this.target);
+    // console.log(`Creating Base Edge - source ${this.source.id}`, this.source, this.source.id);
+    // console.log(`Creating Base Edge - target ${this.target.id}`, this.target, this.target.id);
+    // console.log(`Creating Base Edge - data ${this.data.type}`, this.data);
+    // console.log(`Creating Base Edge - id`, this.id);
     this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
+    // console.log(`Creating Base Edge - ->`, this.id);
   }
 
   get label() {

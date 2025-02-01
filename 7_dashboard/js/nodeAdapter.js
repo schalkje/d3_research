@@ -112,14 +112,6 @@ export default class AdapterNode extends BaseContainerNode {
     if (!node) {
       // console.log("        nodeAdapter - initializeChildNode - Role:", role, labels);
       node = this.childNodes.find((child) => labels.some((label) => child.data.label.toLowerCase().includes(label)));
-
-      if (node != null) {
-        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
-        node.data.role = role;
-        node.data.width = 80;
-        // console.log("                                            Replaced role:", node.data.role);
-        node.redrawText(node.data.role, node.data.width);
-      }
     }
     if (!node) {
       let childData = this.data.children.find((child) => child.role === role);
@@ -134,6 +126,17 @@ export default class AdapterNode extends BaseContainerNode {
       }
       node = this.initChildNode(childData, node);
     }
+    else 
+    {
+      if (this.data.layout.displayMode == DisplayMode.ROLE) {
+        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
+        node.data.role = role;
+        node.data.width = 80;
+        // console.log("                                            Replaced role:", node.data.role);
+        node.redrawText(node.data.role, node.data.width);
+      }
+  }
+
     return node;
   }
 
