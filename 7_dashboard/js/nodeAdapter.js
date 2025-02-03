@@ -65,8 +65,8 @@ export default class AdapterNode extends BaseContainerNode {
       this.data.children = [];
     }
 
-    this.archiveNode = this.initializeChildNode("archive", ["archive", "stg_archive"]);
-    this.stagingNode = this.initializeChildNode("staging", ["staging"]);
+    this.archiveNode = this.initializeChildNode("archive", ["archive", "stg_archive", "arc_"]);
+    this.stagingNode = this.initializeChildNode("staging", ["staging", "stg_"]);
     this.transformNode = this.initializeChildNode("transform", ["transform"]);
 
     if (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)

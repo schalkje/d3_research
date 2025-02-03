@@ -82,8 +82,8 @@ export const layoutsFull = {
       groupType: "dynamic",
       children: [
         {
-          id: "bankview",
-          label: "Bankview",
+          id: "full_full_1",
+          label: "full_full_1",
           code: "BNV",
           type: "adapter",
           layout: {
@@ -93,8 +93,8 @@ export const layoutsFull = {
           },
         },
         {
-          id: "matrix",
-          label: "Matrix",
+          id: "full_full_2",
+          label: "full_full_2",
           code: "MTX",
           type: "adapter",
           layout: {
@@ -105,7 +105,7 @@ export const layoutsFull = {
         },
         {
           id: "eximius",
-          label: "Eximius",
+          label: "full,full,3",
           code: "EXI",
           type: "adapter",
           layout: {
@@ -116,7 +116,7 @@ export const layoutsFull = {
         },
         {
           id: "stater",
-          label: "Stater",
+          label: "sa_full_3",
           code: "Str",
           type: "adapter",
           layout: {
@@ -126,8 +126,18 @@ export const layoutsFull = {
           },
         },
         {
-          id: "fidor",
-          label: "Fidor",
+          id: "sa_full",
+          label: "sa_full",
+          code: "Str",
+          type: "adapter",
+          layout: {
+            mode: "staging-archive",
+            displayMode: "full",
+          },
+        },
+        {
+          id: "st_full_3",
+          label: "st_full_3",
           code: "FDR",
           type: "adapter",
           layout: {
@@ -137,8 +147,8 @@ export const layoutsFull = {
           },
         },
         {
-          id: "mainframe",
-          label: "Mainframe",
+          id: "a_full_3",
+          label: "a_full_3",
           code: "MF",
           type: "adapter",
           layout: {
@@ -208,7 +218,7 @@ export const layoutsRole = {
         },
         {
           id: "stater",
-          label: "Stater",
+          label: "sa_role_3",
           code: "Str",
           type: "adapter",
           layout: {
@@ -218,8 +228,28 @@ export const layoutsRole = {
           },
         },
         {
+          id: "sa_role",
+          label: "sa_role",
+          code: "Str",
+          type: "adapter",
+          layout: {
+            mode: "staging-archive",
+            displayMode: "role",
+          },
+        },
+        {
+          id: "st_role",
+          label: "st_role",
+          code: "FDR",
+          type: "adapter",
+          layout: {
+            mode: "staging-transform",
+            displayMode: "role",
+          },
+        },
+        {
           id: "fidor",
-          label: "Fidor",
+          label: "st_role_3",
           code: "FDR",
           type: "adapter",
           layout: {
