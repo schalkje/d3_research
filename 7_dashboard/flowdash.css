@@ -165,8 +165,23 @@ svg.canvas {
   }
 }
 
-.node.shape[status="Updating"] {
+/* .node.shape[status="Updating"] {
   animation: running-process 1s infinite;
+} */
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
+
+.node.shape[status="Updating"] {
+  fill: lightgreen;
+  fill-opacity: 1;
+  stroke: darkgreen;
+  stroke-opacity: 1;
+  stroke-dasharray: 10;
+  animation: dash 30s forwards infinite;
 }
 
 .node.shape[status="Updated"] {

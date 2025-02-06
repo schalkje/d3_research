@@ -20,6 +20,7 @@ export class Dashboard {
     this.data.settings.showBoundingBox ??= true;
     this.data.settings.zoomToRoot ??= true;
     this.data.settings.toggleCollapseOnStatusChange ??= true;
+    this.data.settings.cascadeOnStatusChange ??= true;
     
 
     this.main = {
@@ -285,6 +286,7 @@ export class Dashboard {
     // apply status to all nodes withoud a status based on children status
     var allNodes = node.getAllNodes();
     // iterate over all nodes in reverse order
+
     for (var i = allNodes.length - 1; i >= 0; i--) {
       // if the containernode has no status, set the status based on the children status
       if (allNodes[i].isContainer && (allNodes[i].status == null || allNodes[i].status == "" || allNodes[i].status == "Unknown")) {

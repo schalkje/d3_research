@@ -100,6 +100,10 @@ export default class BaseContainerNode extends BaseNode {
     // if the status of all children is Disabled, then the status of the container is Disabled
     // if the status of all children is Unknown, then the status of the container is Unknown
     if (this.childNodes.length == 0) return;
+    if ( !this.settings.cascadeOnStatusChange )
+      {
+        return;
+      }  
 
     var firstStatus = this.childNodes[0].status;
     for (const childNode of this.childNodes) {

@@ -84,7 +84,9 @@ export default class BaseNode {
       this.collapsed = [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED, NodeStatus.SKIPPED].includes(value);
     }
 
-    this.cascadeStatusChange();
+    if (this.settings.cascadeOnStatusChange) {
+      this.cascadeStatusChange();
+    }
   }
 
   get selected() {
