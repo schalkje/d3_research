@@ -169,6 +169,7 @@ svg.canvas {
   animation: running-process 1s infinite;
 } */
 
+
 @keyframes dash {
   to {
     stroke-dashoffset: 1000;
@@ -178,10 +179,11 @@ svg.canvas {
 .node.shape[status="Updating"] {
   fill: lightgreen;
   fill-opacity: 1;
-  stroke: darkgreen;
-  stroke-opacity: 1;
+  stroke: green;
+  stroke-opacity: 100%;
+  opacity: 100%;
   stroke-dasharray: 10;
-  animation: dash 30s forwards infinite;
+  animation: dash 10s forwards linear infinite;
 }
 
 .node.shape[status="Updated"] {

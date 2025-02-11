@@ -67,7 +67,7 @@ export default class AdapterNode extends BaseContainerNode {
 
     this.archiveNode = this.initializeChildNode("archive", ["archive", "stg_archive", "arc_"]);
     this.stagingNode = this.initializeChildNode("staging", ["staging", "stg_"]);
-    this.transformNode = this.initializeChildNode("transform", ["transform"]);
+    this.transformNode = this.initializeChildNode("transform", ["transform", "tfm_"]);
 
     if (this.data.layout.mode == AdapterMode.STAGING_TRANSFORM || this.data.layout.mode == AdapterMode.FULL)
       createInternalEdge(
@@ -108,7 +108,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initializeChildNode(role, labels) {
-    let node = this.childNodes.find((child) => child.data.role === role);
+    let node = this.childNodes.find((child) => child.data.role != null && child.data.role.toLowerCase() === role.toLowerCase());
     if (!node) {
       // console.log("        nodeAdapter - initializeChildNode - Role:", role, labels);
       node = this.childNodes.find((child) => labels.some((label) => child.data.label.toLowerCase().includes(label)));

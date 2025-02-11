@@ -1,6 +1,7 @@
 import AdapterNode from "./nodeAdapter.js";
 import GroupNode from "./nodeGroup.js";
 import FoundationNode from "./nodeFoundation.js";
+import MartNode from "./nodeMart.js";
 import LaneNode from "./nodeLane.js";
 import ColumnsNode from "./nodeColumns.js";
 import RectangularNode from "./nodeRect.js";
@@ -30,11 +31,15 @@ export function createNode(nodeData, container, settings, parentNode = null) {
       node = new AdapterNode(nodeData, container, createNode, settings, parentNode);
       break;
 
-    case "foundation":
-      node = new FoundationNode(nodeData, container, createNode, settings, parentNode);
-      break;
-
-    case "node":
+      case "foundation":
+        node = new FoundationNode(nodeData, container, createNode, settings, parentNode);
+        break;
+  
+      case "mart":
+        node = new MartNode(nodeData, container, createNode, settings, parentNode);
+        break;
+    
+      case "node":
       node = new RectangularNode(nodeData, container, settings, parentNode);
       break;
 

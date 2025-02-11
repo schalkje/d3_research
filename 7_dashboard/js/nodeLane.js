@@ -3,6 +3,7 @@ import { getComputedDimensions } from "./utils.js";
 
 export default class LaneNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    console.log("LaneNode constructor", nodeData);
     super(nodeData, parentElement, createNode, settings, parentNode);
   }
 
