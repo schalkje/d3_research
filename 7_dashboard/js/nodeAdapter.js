@@ -108,13 +108,13 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initializeChildNode(role, labels) {
-    let node = this.childNodes.find((child) => child.data.role != null && child.data.role.toLowerCase() === role.toLowerCase());
+      let node = this.childNodes.find((child) => child.data.category != null && child.data.category.toLowerCase() === role.toLowerCase());
     if (!node) {
       // console.log("        nodeAdapter - initializeChildNode - Role:", role, labels);
       node = this.childNodes.find((child) => labels.some((label) => child.data.label.toLowerCase().includes(label)));
     }
     if (!node) {
-      let childData = this.data.children.find((child) => child.role === role);
+      let childData = this.data.children.find((child) => child.category === role);
       if (!childData && this.shouldCreateChildNode(role)) {
         childData = {
           id: `${role}_${this.data.id}`,

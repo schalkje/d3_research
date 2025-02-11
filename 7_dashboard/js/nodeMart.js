@@ -96,7 +96,7 @@ export default class MartNode extends BaseContainerNode {
   }
 
   initializeChildNode(role, labels) {
-    let node = this.childNodes.find((child) => child.data.role === role);
+    let node = this.childNodes.find((child) => child.data.category != null && child.data.category.toLowerCase() === role.toLowerCase());
     if (!node) {
       node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase()+'.')));
     }
@@ -104,7 +104,7 @@ export default class MartNode extends BaseContainerNode {
       node = this.childNodes.find((child) => labels.some(label => child.data.label.toLowerCase().includes(label.toLowerCase())));
     }
     if (!node) {
-      let childData = this.data.children.find((child) => child.role === role);
+      let childData = this.data.children.find((child) => child.category === role);
       if (!childData && this.shouldCreateChildNode(role)) {
         childData = {
           id: `${role}_${this.data.id}`,
