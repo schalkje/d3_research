@@ -22,7 +22,7 @@ import BaseNode from "./nodeBase.js";
     // Draw the node shape
     container
       .append("circle")
-      .attr("class", "node shape" )
+      .attr("class", "${this.data.type} shape" )
       .attr("r", this.data.radius)
       .attr("status", this.status)
       .attr("stroke", "#000")
@@ -31,7 +31,7 @@ import BaseNode from "./nodeBase.js";
     // Add node label
     container
       .append("text")
-      .attr("class", "node label")
+      .attr("class", "${this.data.type} label")
       .attr("x", 0)
       .attr("y", 0)      
       .text(this.data.label);

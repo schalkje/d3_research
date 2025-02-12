@@ -15,6 +15,8 @@ export default class BaseContainerNode extends BaseNode {
 
 
     super(nodeData, parentElement, settings, parentNode);
+    this.data.type ??= "container";
+
     this.isContainer = true;
 
     this.createNode = createNode;
@@ -105,65 +107,87 @@ export default class BaseContainerNode extends BaseNode {
         return;
       }  
 
-    var firstStatus = this.childNodes[0].status;
+      
+    var containerStatus = NodeStatus.UNDETERMINED;
     for (const childNode of this.childNodes) {
-      if (childNode.status != firstStatus) {
+    if (childNode.status != containerStatus) {
         // error
         // if there is an error, the status of the container is error
-        if (firstStatus == NodeStatus.ERROR) continue;
-        if (childNode.status == NodeStatus.ERROR) {
-          firstStatus = NodeStatus.ERROR;
+        if (containerStatus == NodeStatus.ERROR) continue;
+        if (childNode.status == NodeStatus.ERROR && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.ERROR;
           continue;
         }
 
         // warning
         // if there is a warning, the status of the container is warning
-        if (firstStatus == NodeStatus.WARNING) continue;
-        if (childNode.status == NodeStatus.WARNING) {
-          firstStatus = NodeStatus.WARNING;
+        if (containerStatus == NodeStatus.WARNING) continue;
+        if (childNode.status == NodeStatus.WARNING && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.WARNING;
           continue;
         }
 
         // delayed
         // if there is a delayed, the status of the container is delayed
-        if (firstStatus == NodeStatus.DELAYED) continue;
-        if (childNode.status == NodeStatus.DELAYED) {
-          firstStatus = NodeStatus.DELAYED;
+        if (containerStatus == NodeStatus.DELAYED) continue;
+        if (childNode.status == NodeStatus.DELAYED && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.DELAYED;
           continue;
         }
 
 
         // unknown
         // if there is at least one unknown, the status of the container is unknown
-        if (firstStatus == NodeStatus.UNKNOWN) continue;
+        if (containerStatus == NodeStatus.UNKNOWN) continue;
         if (childNode.status == NodeStatus.UNKNOWN) 
         {
-          firstStatus = NodeStatus.UNKNOWN;
+          containerStatus = NodeStatus.UNKNOWN;
           continue
         }
 
-        // UPDATING: 'Udating',
-        // if one is updating, the status of the container is UNKNOWN
+
+        if (containerStatus == NodeStatus.UNDETERMINED) {
+          if (childNode.status == NodeStatus.ERROR || childNode.status == NodeStatus.WARNING || childNode.status == NodeStatus.DELAYED)
+            containerStatus = NodeStatus.UNKNOWN;
+          else
+            containerStatus = childNode.status;
+          continue;
+        }
+
+
+        if (containerStatus == NodeStatus.UPDATING
+               && (childNode.status == NodeStatus.UPDATING || childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.Ready) 
+               && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.UPDATING;
+          continue;
+        }
+
+        if (containerStatus == NodeStatus.UPDATED
+            && (childNode.status == NodeStatus.UPDATING) 
+            && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.UPDATING;
+          continue;
+        }
         if (childNode.status == NodeStatus.UPDATING) {
-          firstStatus = NodeStatus.UNKNOWN;
+          containerStatus = NodeStatus.UNKNOWN;
           continue;
         }
 
         // partial updated/skipped
-        if ((childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.SKIPPED ) && (firstStatus != NodeStatus.UPDATED && firstStatus != NodeStatus.SKIPPED)) {
-          firstStatus = NodeStatus.UNKNOWN;
+        if ((childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.SKIPPED ) && (containerStatus != NodeStatus.UPDATED && containerStatus != NodeStatus.SKIPPED)) {
+          containerStatus = NodeStatus.UNKNOWN;
           continue;
         }
                
         // skipped
         // if there is at least one skipped and the rets are only skipped or updated, the status of the container is skipped
-        if ((firstStatus == NodeStatus.UPDATED || firstStatus == NodeStatus.SKIPPED) && (childNode.status != NodeStatus.UPDATED && childNode.status != NodeStatus.SKIPPED))
+        if ((containerStatus == NodeStatus.UPDATED || containerStatus == NodeStatus.SKIPPED) && (childNode.status != NodeStatus.UPDATED && childNode.status != NodeStatus.SKIPPED))
         {
-          firstStatus = NodeStatus.UNKNOWN;
+          containerStatus = NodeStatus.UNKNOWN;
           continue;
         }
-        if (firstStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.SKIPPED && !(childNode instanceof BaseContainerNode)) {
-          firstStatus = NodeStatus.SKIPPED;
+        if (containerStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.SKIPPED && !(childNode instanceof BaseContainerNode)) {
+          containerStatus = NodeStatus.SKIPPED;
           continue;
         }
 
@@ -172,7 +196,7 @@ export default class BaseContainerNode extends BaseNode {
       }
     }
     
-    this.status = firstStatus;
+    this.status = containerStatus;
   }
 
   resize(size, forced = false) {
@@ -351,7 +375,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4)
       .text(this.data.label)
-      .attr("class", `node label container ${this.data.type}`);
+      .attr("class", `container ${this.data.type} label`);
 
     // the size of the text label determines the minimum size of the node
     this.minimumSize = getComputedDimensions(labelElement);
@@ -392,7 +416,7 @@ export default class BaseContainerNode extends BaseNode {
     // if (!this.shape)
     this.shape = this.element
       .insert("rect", ":first-child")
-      .attr("class", (d) => `node shape ${this.data.type}`)
+      .attr("class", (d) => `${this.data.type} shape`)
       .attr("width", this.data.width)
       .attr("height", this.data.height)
       .attr("status", this.status)
@@ -438,7 +462,7 @@ export default class BaseContainerNode extends BaseNode {
       const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
       this.container
         .append("rect")
-        .attr("class", (d) => `node placeholder`)
+        .attr("class", (d) => `${this.data.type} placeholder`)
         .attr("width", containerWidth)
         .attr("height", containerHeight)
         .attr("fill", "red")

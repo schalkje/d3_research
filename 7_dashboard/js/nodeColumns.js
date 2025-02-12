@@ -6,7 +6,7 @@ export default class ColumnsNode extends BaseContainerNode {
     nodeData.layout.minimumColumnWidth ??= 0;
     nodeData.layout.minimumSize ??= { height: 50, useRootRatio: false };
 
-    super(nodeData, parentElement, createNode, settings, parentNode);    
+    super(nodeData, parentElement, createNode, settings, parentNode);  
   }
 
   get nestedCorrection_y() {

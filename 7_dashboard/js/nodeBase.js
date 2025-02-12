@@ -1,11 +1,12 @@
 import { computeConnectionPoints } from "./utilPath.js";
 
 export const NodeStatus = Object.freeze({
+  UNDETERMINED: 'Undetermined', // technically not a status, but used in the status determination logic
   UNKNOWN: 'Unknown',
   DISABLED: 'Disabled',
   // process states
   READY: 'Ready',
-  UPDATING: 'Udating',
+  UPDATING: 'Updating',
   UPDATED: 'Updated',
   SKIPPED: 'Skipped',
   // error states
@@ -128,7 +129,7 @@ export default class BaseNode {
 
     this.element = this.parentElement
       .append("g")
-      .attr("class", "node")
+      .attr("class", this.data.type)
       .attr("id", this.id)
       .attr("status", this.status)
       .on("click", (event) => {

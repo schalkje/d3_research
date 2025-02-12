@@ -233,7 +233,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
       id: `child_${id}`,
       label: `${id}`,
       category: "child",
-      type: "node",
+      type: "Node",
     };
     this.data.children.push(child);
 

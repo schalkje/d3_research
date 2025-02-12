@@ -40,6 +40,7 @@ export default class AdapterNode extends BaseContainerNode {
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
+
     this.stagingNode = null;
     this.transformNode = null;
     this.archiveNode = null;
@@ -120,7 +121,7 @@ export default class AdapterNode extends BaseContainerNode {
           id: `${role}_${this.data.id}`,
           label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
           role: role,
-          type: "node",
+          type: "Node",
         };
         this.data.children.push(childData);
       }

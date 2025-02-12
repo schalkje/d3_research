@@ -29,7 +29,7 @@ export default class RectangularNode extends BaseNode {
         // Draw the node shape
         this.shape = this.element
         .append("rect")
-        .attr("class", `node shape`)
+        .attr("class", `${this.data.type} shape`)
         .attr("width", this.data.width)
         .attr("height", this.data.height)
         .attr("status", this.status)
@@ -41,7 +41,7 @@ export default class RectangularNode extends BaseNode {
       // Append text for default type
       this.element
         .append("text")
-        .attr("class", "node label")
+        .attr("class", `${this.data.type} label`)
         .attr("x", 0)
         .attr("y", 0)
         .text(this.data.label);

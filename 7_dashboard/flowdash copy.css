@@ -2,8 +2,7 @@
   border: 1px solid black;
   width: 100%;
   height: 800px;
-  background-color: white;
-   /* rgba(200, 200, 200, 0.2); */
+  background-color: rgba(200, 200, 200, 0.2);
 }
 
 #graph rect.boundingBox {
@@ -20,12 +19,12 @@
   border: 1px solid darkblue;
   width: 1600px;
   height: 600px;
-  /* background-color: rgba(200, 200, 200, 0.2); */
-  background-color:rgba(255,255,255, 0.7);
+  background-color: rgba(200, 200, 200, 0.2);
+  /* background-color:rgba(255,255,255, 0.7); */
 }
 
 #minimap rect.background {
-  fill: rgb(190, 190, 190);
+  fill: white;
   stroke: rgb(136, 136, 136);
 }
 
@@ -53,14 +52,22 @@ body {
   font-family: Arial;
 }
 
+/* #graph-container {
+    background-color: red;
+  } */
+
+
+#graph .dashboard {
+  fill: green;
+}
+
 svg.container {
   border: 1px solid #000;
   background-color: red;
 }
 
 svg.canvas {
-  /* background-color: #e6e3e3; */
-  /* background-color: white; */
+  background-color: #e6e3e3;
   border-color: #d3d3d3;
   border-width: 2px;
   border-style: solid;
@@ -68,93 +75,72 @@ svg.canvas {
   -webkit-box-shadow: 4px 3px 8px 1px #969696;
 }
 
+.centermark {
+  fill: red;
+  stroke: white;
+  stroke-width: 1;
+}
+
+.connection-point {
+  fill: rgb(155, 155, 226);
+  stroke: none;
+}
+
+/* .connection-point {
+    fill: rgb(70, 130, 180, 0.8);
+    stroke: rgb(154, 169, 182);
+  } */
+
+/* 
+  line {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1px;
+  }
+  
+  text {
+    font-size: 12px;
+    text-anchor: middle;
+    stroke: none;
+  }
+  
+  rect {
+    fill: cadetblue;
+    opacity: 0.3;
+    stroke: white;
+  } */
+
+.lanelabel {
+  font-size: 16px;
+  fill: gray;
+  text-anchor: middle;
+}
+
+
+
 
 /*
 ------------------------------------------------------------------------------------------------------------------------------------------------
 */
 
-.collapsed .shape{
-  opacity: 1;
-  /* fill-opacity: 0.7 !important; */
-}
-.collapsed .label{
-  /* fill: white; */
-  font-weight: bold  !important;
-  opacity: 1;
-  fill-opacity: 1 !important;
-}
-
-.shape {
-  fill: rgb(65, 65, 151);
-  fill-opacity: 1;
+.node.shape {
+  fill: #9b9bfa;
+  fill-opacity: 0.95;
   stroke: rgb(65, 65, 151);
+  stroke-opacity: 0.4;
   stroke-width: 2;
   cursor: default;
-  stroke-opacity: 0.3;
+  opacity: 0.3;
 }
 
-.shape[status="Unknown"] {
-  fill: #ddc7ff;
-  fill-opacity: 0.1;
+/* status update */
+
+.node.shape[status="Unknown"] {
+  color: lightslategray;
 }
 
-.shape[status="Ready"] {
+.node.shape[status="Ready"] {
   fill: lightblue;
-  fill-opacity: 0.3;  
-}
-
-.shape[status="Updating"] {
-  stroke: green;
-  fill: lightgreen;
-  fill-opacity: 0.3;
-}
-
-.shape[status="Updated"] {
-  stroke: none;
-  fill: rgb(24, 196, 24);
-  fill-opacity: 0.1;
-}
-.collapsed[status="Updated"] .shape{
-  stroke: none;
-  fill: rgb(24, 196, 24);
-  fill-opacity: 1;
-}
-
-.shape[status="Skipped"] {
-  stroke: yellowgreen;
-  fill: rgb(255, 252, 208);
-  fill-opacity: 1;
-}
-
-
-.shape[status="Delayed"] {
-  stroke: orange;
-}
-
-.shape[status="Warning"] {
-  stroke: orangered;
-  fill: orangered;
-  fill-opacity: 0.3;
-}
-
-.shape[status="Error"] {
-  stroke: red;
-  fill: red;
-  fill-opacity: 0.3;
-}
-
-/*
-    Node shape statusses
-*/
-
-.Node.shape[status="Unknown"] {
-  fill: rgb(132, 139, 146);
-  fill-opacity: 1;
-}
-
-.Node.shape[status="Ready"] {
-  fill: lightblue;
-  fill-opacity: 1;
 }
 
 @keyframes running-process {
@@ -184,6 +170,10 @@ svg.canvas {
   }
 }
 
+/* .node.shape[status="Updating"] {
+  animation: running-process 1s infinite;
+} */
+
 
 @keyframes dash {
   to {
@@ -191,7 +181,7 @@ svg.canvas {
   }
 }
 
-.Node.shape[status="Updating"] {
+.node.shape[status="Updating"] {
   fill: lightgreen;
   fill-opacity: 1;
   stroke: green;
@@ -201,105 +191,43 @@ svg.canvas {
   animation: dash 10s forwards linear infinite;
 }
 
-.Node.shape[status="Updated"] {
-  fill: rgb(24, 196, 24);
-  fill-opacity: 1;
+.node.shape[status="Updated"] {
+  fill: green;
 }
 
-.Node.shape[status="Skipped"] {
-  fill: rgb(255, 252, 208);
-  fill-opacity: 1;
+.node.shape[status="Skipped"] {
+  fill: yellowgreen;
 }
 
 
-.Node.shape[status="Delayed"] {
+.node.shape[status="Delayed"] {
   fill: orange;
-  fill-opacity: 1;
 }
 
-.Node.shape[status="Warning"] {
+.node.shape[status="Warning"] {
   fill: orangered;
-  fill-opacity: 1;
 }
 
-.Node.shape[status="Error"] {
+.node.shape[status="Error"] {
   fill: red;
-  fill-opacity: 1;
 }
-
-
-/*
-    Labels
-*/
-
-text {
-  fill: black;
-}
-
-.label {
-  font-size: 12px;
-  font-weight: normal;
-  /* fill: rgb(216, 216, 241); */
-  fill: rgb(65, 65, 151);
-  fill-opacity: 0.8;
-  text-anchor: start;
-  dominant-baseline: hanging;
-}
-
-.Node.label {
-  stroke: none;
-  font-size: 14px;
-  font-weight: bold;
-  /* fill: rgb(216, 216, 241); */
-  fill: black;
-  fill-opacity: 0.8;
-  text-anchor: middle;
-  dominant-baseline: middle;
-}
-
-.placeholder {
-  stroke: red;
-  stroke-opacity: 1;
-  stroke-width: 2;
-}
-
-
-/*
-------------------------------------------------------------------------------------------------------------------------------------------------
-*/
-.centermark {
-  fill: red;
-  stroke: white;
-  stroke-width: 1;
-}
-
-.connection-point {
-  fill: rgb(155, 155, 226);
-  stroke: none;
-}
-
-
-/* .node.shape {
-  fill: #9b9bfa;
-  fill-opacity: 0.95;
-  stroke: rgb(65, 65, 151);
-  stroke-opacity: 0.4;
-  stroke-width: 2;
-  cursor: default;
-  opacity: 0.3;
-} */
-
 
 /* default styles */
 
 
 
-.selected .shape {
+.node.selected .node.shape {
   stroke: rgb(53, 53, 175);
   /* stroke-opacity: 0.95; */
   stroke-opacity: 1;
   stroke-width: 3;
   opacity: 0.8;
+}
+
+.node.placeholder {
+  stroke: red;
+  stroke-opacity: 1;
+  stroke-width: 2;
 }
 
 .node_grabbing {
@@ -311,6 +239,47 @@ text {
   cursor: grabbing;
 }
 
+.node.label {
+  stroke: none;
+  font-size: 14px;
+  font-weight: bold;
+  /* fill: rgb(216, 216, 241); */
+  fill: black;
+  fill-opacity: 0.8;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.node.label.container {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+
+.node.label.group {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+.node.label.adapter {
+  font-size: 12px;
+  font-weight: normal;
+  /* fill: rgb(216, 216, 241); */
+  fill: rgb(65, 65, 151);
+  fill-opacity: 0.8;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
 
 .edge .path {
   stroke-width: 2px;
@@ -353,12 +322,41 @@ text {
 
 
 
+
+.lane {
+  stroke: rgb(211, 211, 211);
+  stroke-opacity: 1;
+  stroke-width: 1;
+}
+
+.lane1 {
+  text-align: center;
+  fill: rgb(83, 142, 194);
+  fill-opacity: 0.1;
+}
+
+
+.lane2 {
+  text-align: center;
+  fill: #2fc792;
+  fill-opacity: 0.1;
+}
+
+
+.parent-node {
+  fill: #9b9bfa;
+}
+
+.parent-node text {
+  user-select: none;
+}
+
 .collapsed {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .expanded {
-
+  font-weight: bold;
 }
 
 
