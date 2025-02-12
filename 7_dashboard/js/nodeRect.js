@@ -1,9 +1,14 @@
 import BaseNode from "./nodeBase.js";
+import { getTextWidth } from "./utils.js";
 
 export default class RectangularNode extends BaseNode {
   constructor(nodeData, parentElement, settings, parentNode = null) {
     if ( !nodeData.height) nodeData.height = 20;
     if ( !nodeData.width) nodeData.width = 150;
+    const textWidth = getTextWidth(nodeData.label);
+    console.log("  nodeRect - constructor:", nodeData.label, textWidth, nodeData.width);
+    nodeData.width = Math.max(nodeData.width, textWidth);
+
 
     super(nodeData, parentElement, settings, parentNode);
   }
@@ -17,6 +22,8 @@ export default class RectangularNode extends BaseNode {
 
     this.draw();
   }
+
+  
 
   draw() {
         // Draw the node shape

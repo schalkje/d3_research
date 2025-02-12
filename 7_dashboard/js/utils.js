@@ -1,3 +1,25 @@
+// Function to compute the width of a text element
+export function getTextWidth(text) //, fontSize, fontFamily) {
+{
+  // Create a temporary SVG element
+  const svg = d3.select("body").append("svg").attr("class", "temp-svg");
+
+  // Append a text element to the SVG
+  const textElement = svg.append("text")
+      .attr("x", -9999) // Position it off-screen
+      .attr("y", -9999)
+      // .attr("font-size", fontSize)
+      // .attr("font-family", fontFamily)
+      .text(text);
+
+  // Get the width of the text element
+  const width = textElement.node().getBBox().width;
+
+  // Remove the temporary SVG element
+  svg.remove();
+
+  return width;
+}
 
 export function computeBoundingBox(nodes, horizontal = false) {
     const padding = 0; // Add some padding
