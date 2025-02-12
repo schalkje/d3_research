@@ -23,7 +23,7 @@ export default class BaseContainerNode extends BaseNode {
 
     this.simulation = null;
     this._container = null;
-    this.edgesContainer = null;
+    this.edgesContainer ??= null;
     this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
     this.nodeSpacing = { horizontal: 20, vertical: 10 };
     this.childNodes = [];
@@ -309,16 +309,28 @@ export default class BaseContainerNode extends BaseNode {
 
   initEdges(propagate = false) {
     // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
-    // if there are any edges, create edges container
     if (this.childEdges.length > 0) {
       // create container for child nodes
-      this.edgesContainer = this.container.append("g").attr("class", (d) => `edges`);
+      if (this.edgesContainer == null) 
+      {
+        this.edgesContainer = this.container.append("g").attr("class", (d) => `edges`);
+      }
+      else
+      {
+        this.edgesContainer.selectAll("*").remove();
+      }
 
       // create container for child nodes
-      this.ghostContainer = this.container
-        .append("g")
-        .attr("class", (d) => `ghostlines`)
-        .lower(); // move it to the background
+      if (this.settings.showGhostlines)
+      {
+            if (this.ghostContainer)
+              this.ghostContainer.selectAll("*").remove();
+            else
+              this.ghostContainer = this.container
+                .append("g")
+                .attr("class", (d) => `ghostlines`)
+                .lower(); // move it to the background
+      }
 
       this.childEdges.forEach((edge) => edge.init());
     }

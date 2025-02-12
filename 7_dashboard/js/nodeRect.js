@@ -6,7 +6,7 @@ export default class RectangularNode extends BaseNode {
     if ( !nodeData.height) nodeData.height = 20;
     if ( !nodeData.width) nodeData.width = 150;
     const textWidth = getTextWidth(nodeData.label);
-    console.log("  nodeRect - constructor:", nodeData.label, textWidth, nodeData.width);
+    // console.log("  nodeRect - constructor:", nodeData.label, textWidth, nodeData.width);
     nodeData.width = Math.max(nodeData.width, textWidth);
 
 

@@ -7,7 +7,7 @@
       "curved": false,
       "showBoundingBox": false,
       "zoomToRoot": true,
-      "toggleCollapseOnStatusChange": false
+      "toggleCollapseOnStatusChange": true
     },
     "nodes": [
       {

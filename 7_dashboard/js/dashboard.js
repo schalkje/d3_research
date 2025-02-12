@@ -800,7 +800,7 @@ function updateViewport(dashboard, transform) {
 }
 
 function dragEye(dashboard, dragEvent) {
-  console.log("dragEye", dragEvent);
+  // console.log("dragEye", dragEvent);
   // Calculate scaled movement for the eye rectangle
   const scaledDx = dragEvent.dx / dashboard.minimap.scale;
   const scaledDy = dragEvent.dy / dashboard.minimap.scale;
