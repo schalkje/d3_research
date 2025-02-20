@@ -97,10 +97,9 @@ export default class BaseContainerNode extends BaseNode {
 
   determineStatusBasedOnChildren() {
     if (this.childNodes.length == 0) return;
-    if ( !this.settings.cascadeOnStatusChange )
-      {
-        return;
-      }  
+    if ( !this.settings.cascadeOnStatusChange ) {
+      return;
+    }  
 
       
     var containerStatus = NodeStatus.UNDETERMINED;
@@ -303,6 +302,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   initEdges(propagate = false) {
+    if (this.collapsed) return;
     // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
     if (this.childEdges.length > 0) {
       // create container for child nodes

@@ -261,7 +261,7 @@ export class Dashboard {
     return { svg, width, height, onDragUpdate };
   }
 
-   createDashboard(dashboard, container) {
+  createDashboard(dashboard, container) {
     console.log("dashboard - createDashboard", dashboard, container);
     createMarkers(container);
 
@@ -283,7 +283,7 @@ export class Dashboard {
   }
 
   initializeChildrenStatusses(node) {
-    // apply status to all nodes withoud a status based on children status
+    // apply status to all nodes without a status based on children status
     var allNodes = node.getAllNodes();
     // iterate over all nodes in reverse order
 
