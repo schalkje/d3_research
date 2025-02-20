@@ -312,6 +312,7 @@ export default class BaseContainerNode extends BaseNode {
       }
       else
       {
+        // console.log("                   clean cont:", this.id, this.childEdges);
         this.edgesContainer.selectAll("*").remove();
       }
 
@@ -542,6 +543,7 @@ export default class BaseContainerNode extends BaseNode {
     // console.log("    Removing Children for:", this.data.label);
     this.container.selectAll("*").remove();
     this.container.remove();
+    this.edgesContainer = null
     this._container = null;
     for (const childNode of this.childNodes) {
       if (childNode instanceof BaseContainerNode) childNode.cleanContainer(propagate);
