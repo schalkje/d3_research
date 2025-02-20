@@ -179,16 +179,16 @@ export default class AdapterNode extends BaseContainerNode {
     // );
     switch (this.data.layout.arrangement) {
       case 1:
-        this.updateLayout1();
+        this.updateLayout1_full_archive();
         break;
       case 2:
-        this.updateLayout2();
+        this.updateLayout2_full_tranform();
         break;
       case 3:
-        this.updateLayout3();
+        this.updateLayout3_full_staging();
         break;
       case 4:
-        this.updateLayout4();
+        this.updateLayout4_line();
         break;
       case 5:
         this.updateLayout5();
@@ -196,7 +196,14 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  updateLayout1() {
+  updateLayout1_full_archive() {
+    if (this.stagingNode && this.archiveNode){
+      this.data.width = Math.max(
+        this.data.width,
+        this.stagingNode.data.width + this.archiveNode.data.width + this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
+      )
+    }
+
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
@@ -237,7 +244,14 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  updateLayout2() {
+  updateLayout2_full_tranform() {
+    if (this.stagingNode && this.transformNode){
+      this.data.width = Math.max(
+        this.data.width,
+        this.stagingNode.data.width + this.transformNode.data.width + this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
+      )
+    }
+
     if (this.stagingNode) {
       const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
       const y =
@@ -277,7 +291,14 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  updateLayout3() {
+  updateLayout3_full_staging() {
+    if (this.stagingNode && this.transformNode&& this.archiveNode){
+      this.data.width = Math.max(
+        this.data.width,
+        this.stagingNode.data.width + Math.max(this.transformNode.data.width,this.archiveNode.data.width) + this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
+      )
+    }
+
     if (this.stagingNode) {
       // first resize the staging node to fit the height of the other two nodes
       const width = this.stagingNode.data.width;
@@ -321,11 +342,19 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
 
-  updateLayout4() {
+  updateLayout4_line() {
     let otherNode = this.archiveNode;
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
       otherNode = this.transformNode;
     }
+
+    if (this.stagingNode && otherNode){
+      this.data.width = Math.max(
+        this.data.width,
+        this.stagingNode.data.width + otherNode.data.width + this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
+      )
+    }
+
     // console.log("        nodeAdapter - updateLayout4 - OtherNode:", otherNode);
 
     if (this.stagingNode) {
@@ -350,7 +379,12 @@ export default class AdapterNode extends BaseContainerNode {
   updateLayout5() {
     let onlyNode = this.archiveNode;
 
-    if (onlyNode) {
+    if (onlyNode){
+      this.data.width = Math.max(
+        this.data.width,
+        onlyNode.data.width + this.containerMargin.left + this.containerMargin.right
+      )
+
       const x = -this.data.width / 2 + onlyNode.data.width / 2 + this.containerMargin.left;
       const y = -this.data.height / 2 + onlyNode.data.height / 2 + this.containerMargin.top;
       onlyNode.move(x, y);

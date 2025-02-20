@@ -96,11 +96,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   determineStatusBasedOnChildren() {
-    // if the status of all children is Ready, then the status of the container is Ready
-    // if the status of all children is Updated, then the status of the container is Updated
-    // if the status of one or more of the children is SKIPPED and the rest is UPDATED, then the status of the container is Skipped, unless the child is a container node, then it is Updated
-    // if the status of all children is Disabled, then the status of the container is Disabled
-    // if the status of all children is Unknown, then the status of the container is Unknown
     if (this.childNodes.length == 0) return;
     if ( !this.settings.cascadeOnStatusChange )
       {
@@ -397,22 +392,7 @@ export default class BaseContainerNode extends BaseNode {
     if (this.data.layout.minimumSize.height > this.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
     if ( this.data.layout.minimumSize.useRootRatio) this.applyMinimumSize();
 
-    // console.log(
-    //   "    BaseContainerNode - init minimumSize",
-    //   this.data.label,
-    //   this.minimumSize.width,
-    //   this.minimumSize.height
-    // );
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
-      // console.log(
-      //   "Render Resizing BaseContainerNode:",
-      //   this.data.width,
-      //   this.minimumSize.width,
-      //   this.data.height,
-      //   this.minimumSize.height
-      // );
-      // this.data.width = Math.max(this.minimumSize.width, this.data.width);
-      // this.data.height = Math.max(this.minimumSize.height, this.data.height);
       this.resize(
         {
           width: Math.max(this.minimumSize.width, this.data.width),
@@ -425,7 +405,6 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // Draw the node shape
-    // if (!this.shape)
     this.shape = this.element
       .insert("rect", ":first-child")
       .attr("class", (d) => `${this.data.type} shape`)
@@ -445,7 +424,6 @@ export default class BaseContainerNode extends BaseNode {
         if (event) event.stopPropagation();
 
         this.collapsed = !this.collapsed;
-        // button.toggle(this.collapsed); // Toggle between plus and minus on click
       },
       14,
       this.collapsed
