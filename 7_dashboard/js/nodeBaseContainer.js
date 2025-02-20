@@ -391,7 +391,7 @@ export default class BaseContainerNode extends BaseNode {
 
     // the size of the text label determines the minimum size of the node
     this.minimumSize = getComputedDimensions(labelElement);
-    this.minimumSize.width += 22;
+    this.minimumSize.width += 36;
     this.minimumSize.height += 4;
     if (this.data.layout.minimumSize.width > this.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
     if (this.data.layout.minimumSize.height > this.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
