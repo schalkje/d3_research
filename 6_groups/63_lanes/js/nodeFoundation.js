@@ -53,7 +53,7 @@ export default class AdapterNode extends BaseContainerNode {
         id: `raw_${this.data.id}`,
         label: `raw ${this.data.label}`,
         role: "raw",
-        type: "node",
+        type: "Node",
       };
       this.data.children.push(rawChild);
     }
@@ -72,7 +72,7 @@ export default class AdapterNode extends BaseContainerNode {
         id: `base_${this.data.id}`,
         label: `base ${this.data.label}`,
         role: "base",
-        type: "node",
+        type: "Node",
       };
       this.data.children.push(baseChild);
     }

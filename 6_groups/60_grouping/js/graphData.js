@@ -15,21 +15,21 @@ export const simple = {
         {
           id: "node_1",
           label: "Node 1",
-          type: "node",
+          type: "Node",
           parentId: "root",
           children: [],
         },
         {
           id: "node_2",
           label: "Node 2",
-          type: "node",
+          type: "Node",
           parentId: "root",
           children: [],
         },
         {
           id: "node_3",
           label: "Node 3",
-          type: "node",
+          type: "Node",
           parentId: "root",
           children: [],
         },
@@ -64,7 +64,7 @@ const nested = [
               {
                 id: "node_1_1",
                 label: "Node 1.1",
-                type: "node",
+                type: "Node",
                 parentId: "node_1",
                 children: [],
               },
@@ -88,7 +88,7 @@ const nested = [
               {
                 id: "node_2_1",
                 label: "Node 2.1",
-                type: "node",
+                type: "Node",
                 parentId: "node_2",
                 children: [],
               },
@@ -97,7 +97,7 @@ const nested = [
           {
             id: "node_3",
             label: "Node 3",
-            type: "node",
+            type: "Node",
             parentId: "root2",
             children: [],
           },

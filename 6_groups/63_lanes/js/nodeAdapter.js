@@ -47,7 +47,7 @@ export default class AdapterNode extends BaseContainerNode {
         id: `arc_${this.data.id}`,
         label: `Archive ${this.data.label}`,
         role: "archive",
-        type: "node",
+        type: "Node",
       };
       this.data.children.push(archiveChild);
     }
@@ -68,7 +68,7 @@ export default class AdapterNode extends BaseContainerNode {
         id: `stg_${this.data.id}`,
         label: `Staging ${this.data.label}`,
         role: "staging",
-        type: "node",
+        type: "Node",
       };
       this.data.children.push(stagingChild);
     }
@@ -85,7 +85,7 @@ export default class AdapterNode extends BaseContainerNode {
         id: `trn_${this.data.id}`,
         label: `Transform ${this.data.label}`,
         role: "transform",
-        type: "node",
+        type: "Node",
       };
       this.data.children.push(transformChild);
     }

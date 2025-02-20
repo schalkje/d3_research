@@ -23,12 +23,12 @@ export const simple = {
         {
           id: "bankview",
           label: "Bankview",
-          type: "node",
+          type: "Node",
         },
         {
           id: "matrix",
           label: "Matrix",
-          type: "node",
+          type: "Node",
         },
       ],
     },
