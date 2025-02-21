@@ -111,7 +111,7 @@ export const edgeDemo = {
     {
       id: "group",
       label: "Edge Demo",
-      type: "lane",
+      type: "Lane",
       groupType: "fixed",
       layout: {
         displayMode: "code",
