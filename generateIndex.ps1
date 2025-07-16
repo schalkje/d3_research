@@ -1,7 +1,7 @@
 $scriptLocation = $PSScriptRoot
 Write-Output "Executing script from location: $scriptLocation"
 
-$files = Get-ChildItem -Path . -Recurse -Filter *.html | Where-Object { $_.FullName -notlike '*\node_modules\*' } | ForEach-Object { $_.FullName }
+$files = Get-ChildItem -Path . -Recurse -Filter *.html | Where-Object { $_.FullName -notlike '*\node_modules\*' -and $_.FullName -notlike '*\.archive\*' } | ForEach-Object { $_.FullName }
 
 $outputPath = 'index.html'
 
