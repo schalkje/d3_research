@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
     entry: './js/index.js', // Your main JavaScript file
@@ -7,6 +8,12 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'), // The output directory
         library: 'flowdash',
     },
+    plugins: [
+        new webpack.BannerPlugin({
+            banner: 'flowdash.min.js | (c) schalken.net | Licensed under the MIT License. See https://opensource.org/licenses/MIT',
+            entryOnly: true
+        })
+    ],
     module: {
         rules: [
             {
