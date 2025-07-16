@@ -9,7 +9,7 @@ $outputPath = 'index.html'
 $files = $files | Where-Object { $_ -notlike "*$outputPath" }
 $files = $files | ForEach-Object { $_.Replace($scriptLocation + "\", "") }
 
-$groups = $files | Group-Object { ($_ -split "\\" | Select-Object -First 1) }
+$groups = $files | Group-Object { ($_ -split "\\")[0] }
 
 $htmlContent = @"
 <!DOCTYPE html>
@@ -30,22 +30,40 @@ $htmlContent = @"
         <h1>Index of HTML Files</h1>
 "@
 
+$sectionDescriptions = @{
+    '1_d3_basics' = 'Introductory D3.js examples and learning modules.'
+    '4_edges' = 'Edge and curve rendering components and demos.'
+    '5_nodes' = 'Node rendering/layout components and demos.'
+    '6_groups' = 'Grouping, lanes, and columns components and demos.'
+    '7_dashboard' = 'Main product: Modular dashboard with real data and advanced features.'
+    '9_experiments' = 'Advanced and experimental D3/network visualizations.'
+}
+
 foreach ($group in $groups) {
-    # Replace underscores and hyphens with spaces in the group name
-    $groupName = $group.Name -replace "[_-]", " "
-    # Check if the first part is a number and surround it with a span
+    $groupKey = $group.Name
+    $groupName = $groupKey -replace "[_-]", " "
     if ($groupName -match "^(\d+)(.*)") {
         $groupName = "<span class='number'>$($matches[1])</span>$($matches[2])"
     }
-    $htmlContent += "<h2>$groupName</h2>`n"
-    $htmlContent += "<ul>`n"
+    $desc = $sectionDescriptions[$groupKey]
+    if ($desc) {
+        $descHtml = " <span class='desc' style='font-weight:normal;font-size:0.9em;color:#666;'>($desc)</span>"
+    } else {
+        $descHtml = ""
+    }
+    $htmlContent += "<h2 style='margin-top:2em;'>$groupName"
+    if ($desc) {
+        $htmlContent += "<div class='desc' style='font-weight:normal;margin-left: 40px;font-size:0.5em;color:#666;'>$desc</div>`n"
+    }
+    $htmlContent += "</h2>`n"
+    $htmlContent += "<ul style='margin-bottom:1.5em;'>`n"
     foreach ($file in $group.Group) {
         $relativePath = $file -replace '\\', '/'
         $fileParts = $file -split "\\"
         $folderName = $fileParts[1]
         $fileName = [System.IO.Path]::GetFileName($file)
         $displayName = if ($folderName) { "$folderName/$fileName" } else { $fileName }
-        $htmlContent += "    <li><span class='folder'>$folderName/</span><a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a> <a href='$relativePath' target='_blank' class='link-icon'>🔗</a></li>`n"
+        $htmlContent += "    <li><span class='folder' style='font-weight:bold;color:#2a4;'>$folderName/</span> <a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a> <a href='$relativePath' target='_blank' class='link-icon'>🔗</a></li>`n"
     }
     $htmlContent += "</ul>`n"
 }
