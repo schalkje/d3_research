@@ -56,14 +56,26 @@ foreach ($group in $groups) {
         $htmlContent += "<div class='desc' style='font-weight:normal;margin-left: 40px;font-size:0.5em;color:#666;'>$desc</div>`n"
     }
     $htmlContent += "</h2>`n"
+    # Group files by folder within the group
+    $folders = $group.Group | Group-Object { ($_ -split "\\")[1] }
     $htmlContent += "<ul style='margin-bottom:1.5em;'>`n"
-    foreach ($file in $group.Group) {
-        $relativePath = $file -replace '\\', '/'
-        $fileParts = $file -split "\\"
-        $folderName = $fileParts[1]
-        $fileName = [System.IO.Path]::GetFileName($file)
-        $displayName = if ($folderName) { "$folderName/$fileName" } else { $fileName }
-        $htmlContent += "    <li><span class='folder' style='font-weight:bold;color:#2a4;'>$folderName/</span> <a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a> <a href='$relativePath' target='_blank' class='link-icon'>🔗</a></li>`n"
+    foreach ($folder in $folders) {
+        $folderName = $folder.Name
+        $htmlContent += "  <li class='folder-li'><span class='folder'>$folderName/</span>"
+        $htmlContent += "<ul class='file-list'>"
+
+        foreach ($file in $folder.Group) {
+            $relativePath = $file -replace '\\', '/'
+            $fileParts = $file -split "\\"
+            $fileName = [System.IO.Path]::GetFileName($file)
+            $htmlContent += "<li class='file-li'>"
+            # $htmlContent += "<a href=\"#\" onclick=\"loadPage('$relativePath');\">$fileName</a> <a href='$relativePath' target='_blank' class='link-icon'>🔗</a>"
+            $htmlContent += "<a href='#' onclick='loadPage(""$relativePath"");'>$fileName</a> "
+            $htmlContent += "<a href='$relativePath' target='_blank' class='link-icon'>🔗</a>"
+            $htmlContent += "</li>"
+        }
+
+        $htmlContent += "</ul></li>"
     }
     $htmlContent += "</ul>`n"
 }
