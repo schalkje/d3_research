@@ -125,12 +125,17 @@ export class HeaderZone extends BaseZone {
     const width = this.size.width;
     const height = this.calculateTextHeight();
     
-    // Update background - center it
+    // Position header at the top of the node (0,0 relative to node center)
+    // The header should be positioned at the top edge of the container
+    const containerHeight = this.node.data.height;
+    const headerY = -containerHeight / 2; // Top of the container
+    
+    // Update background - position at top of container
     this.background
       .attr('width', width)
       .attr('height', height)
       .attr('x', -width / 2)
-      .attr('y', -height / 2);
+      .attr('y', headerY);
     
     // Update text position and content
     this.updateText();
@@ -190,11 +195,14 @@ export class HeaderZone extends BaseZone {
       this.textElement.text('');
     }
     
-    // Position text - center horizontally, align vertically
+    // Position text - align with header position at top of container
     const textHeight = this.calculateTextHeight();
+    const containerHeight = this.node.data.height;
+    const headerY = -containerHeight / 2; // Top of the container
+    
     this.textElement
       .attr('x', -this.size.width / 2 + this.padding)
-      .attr('y', -textHeight / 2 + textHeight / 2);
+      .attr('y', headerY + textHeight / 2); // Center text vertically within header
   }
 
   /**
@@ -222,10 +230,12 @@ export class HeaderZone extends BaseZone {
     
     const height = this.calculateTextHeight();
     const indicatorSize = 6; // Diameter of indicator
+    const containerHeight = this.node.data.height;
+    const headerY = -containerHeight / 2; // Top of the container
     
     this.statusIndicator
       .attr('cx', this.size.width / 2 - indicatorSize - this.padding)
-      .attr('cy', -height / 2 + height / 2);
+      .attr('cy', headerY + height / 2); // Center indicator vertically within header
   }
 
   /**
@@ -236,9 +246,11 @@ export class HeaderZone extends BaseZone {
     
     const height = this.calculateTextHeight();
     const buttonSize = 16; // Diameter of button
+    const containerHeight = this.node.data.height;
+    const headerY = -containerHeight / 2; // Top of the container
     
     this.zoomButton
-      .attr('transform', `translate(${this.size.width / 2 - buttonSize - this.padding}, ${-height / 2 + height / 2})`);
+      .attr('transform', `translate(${this.size.width / 2 - buttonSize - this.padding}, ${headerY + height / 2})`);
     
     // Update zoom button state
     this.updateZoomButtonState();
@@ -324,5 +336,30 @@ export class HeaderZone extends BaseZone {
    */
   getHeaderHeight() {
     return this.calculateTextHeight();
+  }
+
+  /**
+   * Update zone position - override to position header at top of node
+   */
+  updatePosition() {
+    if (this.element) {
+      // Position header at the top of the node (0,0 relative to node center)
+      // The header should be positioned at the top edge of the container
+      const containerHeight = this.node.data.height;
+      const headerY = -containerHeight / 2; // Top of the container
+      
+      // Position the header at the top of the container, centered horizontally
+      this.element.attr('transform', `translate(0, ${headerY})`);
+    }
+  }
+
+  /**
+   * Resize the zone - override to use container width
+   */
+  resize(width, height) {
+    // Header should span the full width of the container
+    this.size.width = width;
+    this.size.height = this.calculateTextHeight();
+    this.update();
   }
 } 

@@ -1,6 +1,6 @@
 import BaseNode, { NodeStatus } from "./nodeBase.js";
 import { getComputedDimensions } from "./utils.js";
-import ZoomButton from "./buttonZoom.js";
+// ZoomButton is now handled by HeaderZone in the zone system
 import { StatusManager } from "./statusManager.js";
 import { GeometryManager } from "./geometryManager.js";
 import { ConfigManager } from "./configManager.js";
@@ -11,6 +11,10 @@ export default class BaseContainerNode extends BaseNode {
     nodeData.width ??= 0;
     nodeData.height ??= 0;
     nodeData.expandedSize ??= { width: nodeData.width, height: nodeData.height };
+    // Ensure layout is an object, not a string
+    if (typeof nodeData.layout === 'string') {
+      nodeData.layout = { type: nodeData.layout };
+    }
     nodeData.layout ??= {};
     nodeData.layout.minimumSize ??= { width: 0, height: 0 };
     nodeData.layout.minimumSize.width ??= 0;
@@ -62,7 +66,7 @@ export default class BaseContainerNode extends BaseNode {
     if (value === this._collapsed) return;
     super.collapsed = value;
 
-    this.zoomButton.toggle(value); // Toggle between plus and minus on click
+    // Zoom button state is now handled by HeaderZone
 
     if (this.collapsed) {
       this.collapse();
@@ -305,9 +309,7 @@ export default class BaseContainerNode extends BaseNode {
     // console.log("    BaseContainerNode - init", this.id);
     super.init(parentElement);
 
-    // Initialize zone manager for container nodes
-    this.zoneManager = new ZoneManager(this);
-    this.zoneManager.init();
+    // Zone manager is already initialized in BaseNode.init()
 
     // Calculate minimum size based on label
     const labelText = this.data.label || '';
@@ -342,18 +344,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("rx", 5)
       .attr("ry", 5);
 
-    // Add zoom button (now handled by HeaderZone)
-    this.zoomButton = new ZoomButton(
-      this.element,
-      { x: 0, y: 0 },
-      (event, button) => {
-        if (event) event.stopPropagation();
-
-        this.collapsed = !this.collapsed;
-      },
-      14,
-      this.collapsed
-    );
+    // Zoom button is now handled by HeaderZone in the zone system
 
     if (this.collapsed) {
       this.collapse();
@@ -435,7 +426,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("x", -this.data.width / 2 + 4)
       .attr("y", -this.data.height / 2 + 4);
 
-    if (this.zoomButton) this.zoomButton.move(this.data.width / 2 - 16, -this.data.height / 2 + 2);
+    // Zoom button positioning is now handled by HeaderZone
 
     if (!this.collapsed) {
       this.updateChildren();

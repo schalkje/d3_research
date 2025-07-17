@@ -21,7 +21,11 @@ export default class EdgeDemoNode extends BaseContainerNode {
 
     super(nodeData, parentElement, createNode, settings, parentNode);
     
-    this.layout = this.data.layout || DemoMode.GRID;
+    // Ensure layout is an object, not a string
+    if (typeof this.data.layout === 'string') {
+      this.data.layout = { type: this.data.layout };
+    }
+    this.layout = this.data.layout?.type || DemoMode.GRID;
     this.shiftRatio = this.data.shiftRatio || 0.6;
     this.shift2Ratio = this.data.shift2Ratio || 0.8;
 
@@ -38,7 +42,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
     this.centerNode = this.createChild(null, "center", 0, 0);
 
     // grid layout
-    switch (this.data.layout) {
+    switch (this.layout) {
       case DemoMode.GRID:
         this.gridLayout();
         break;

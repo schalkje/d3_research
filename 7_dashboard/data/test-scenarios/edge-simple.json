@@ -1,0 +1,48 @@
+{
+  "_metadata": {
+    "name": "edge-simple",
+    "description": "Simple edge between two nodes",
+    "source": "../4_edges/40_edges/js/graphData.js",
+    "export": "testDashboard1",
+    "generated": "2024-01-15T10:15:00.000Z"
+  },
+  "settings": {
+    "showCenterMark": false,
+    "showGhostlines": false,
+    "showGrid": true,
+    "showGroupLabels": true,
+    "showGroupTitles": true
+  },
+  "nodes": [
+    {
+      "id": "group",
+      "label": "Group",
+      "type": "columns",
+      "groupType": "fixed",
+      "layout": {
+        "displayMode": "code"
+      },
+      "children": [
+        {
+          "id": "bankview",
+          "label": "Bankview",
+          "type": "Node"
+        },
+        {
+          "id": "matrix",
+          "label": "Matrix",
+          "type": "Node"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "isActive": true,
+      "source": "bankview",
+      "type": "SSIS",
+      "state": "Ready",
+      "target": "matrix"
+    }
+  ]
+} 
