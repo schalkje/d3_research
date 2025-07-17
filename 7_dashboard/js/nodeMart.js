@@ -170,9 +170,14 @@ export default class MartNode extends BaseContainerNode {
   }
 
    updateFull() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.loadNode) {
-      const x = -this.data.width / 2 + this.loadNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.loadNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.loadNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.loadNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.loadNode.move(x, y);
     }
 
@@ -182,8 +187,8 @@ export default class MartNode extends BaseContainerNode {
         this.reportNode.data.width / 2 +
         this.containerMargin.left +
         this.loadNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.reportNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.reportNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.reportNode.move(x, y);
     }    
   }
@@ -191,9 +196,15 @@ export default class MartNode extends BaseContainerNode {
    updateRole() {
     // JS: TODO: use code as label; need rerendering of the children
     // console.log("    Layout Code for Adapter:", this.id);
+    
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.loadNode) {
-      const x = -this.data.width / 2 + this.loadNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.loadNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.loadNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.loadNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.loadNode.move(x, y);
     }
 
@@ -203,8 +214,8 @@ export default class MartNode extends BaseContainerNode {
         this.reportNode.data.width / 2 +
         this.containerMargin.left +
         this.loadNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.reportNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.reportNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.reportNode.move(x, y);
     }
 

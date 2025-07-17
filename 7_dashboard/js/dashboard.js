@@ -2,6 +2,7 @@ import { createNode, createNodes } from "./node.js";
 import { getBoundingBoxRelativeToParent } from "./utils.js";
 import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
+import { ConfigManager } from "./configManager.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -13,14 +14,8 @@ export class Dashboard {
       console.log("Dashboard - constructor - settings", key, value);
     }
 
-    this.data.settings ??= {};
-    this.data.settings.selector ??= {};
-    this.data.settings.selector.incomming ??= 1;
-    this.data.settings.selector.outgoing ??= 1;
-    this.data.settings.showBoundingBox ??= true;
-    this.data.settings.zoomToRoot ??= true;
-    this.data.settings.toggleCollapseOnStatusChange ??= true;
-    this.data.settings.cascadeOnStatusChange ??= true;
+    // Use ConfigManager to merge with defaults
+    this.data.settings = ConfigManager.mergeWithDefaults(this.data.settings);
     
 
     this.main = {

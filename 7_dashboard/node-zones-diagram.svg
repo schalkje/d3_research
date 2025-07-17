@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    Node Zones and Layout Structure
+  </text>
+  
+  <!-- Main Container Node -->
+  <g transform="translate(100, 80)">
+    <!-- Container Zone (Outermost) -->
+    <rect x="0" y="0" width="300" height="200" fill="none" stroke="#34495e" stroke-width="3" stroke-dasharray="5,5"/>
+    <text x="150" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#34495e">
+      Container Zone (300×200)
+    </text>
+    
+    <!-- Header Zone -->
+    <rect x="8" y="8" width="284" height="25" fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+    <text x="150" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+      Header Zone (Title Space)
+    </text>
+    
+    <!-- Margin Zones -->
+    <!-- Top Margin -->
+    <rect x="8" y="33" width="284" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.6"/>
+    <text x="150" y="37" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Top Margin (4px)
+    </text>
+    
+    <!-- Left Margin -->
+    <rect x="8" y="37" width="8" height="155" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.6"/>
+    <text x="12" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" transform="rotate(-90, 12, 120)">
+      Left Margin (8px)
+    </text>
+    
+    <!-- Right Margin -->
+    <rect x="284" y="37" width="8" height="155" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.6"/>
+    <text x="288" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" transform="rotate(-90, 288, 120)">
+      Right Margin (8px)
+    </text>
+    
+    <!-- Bottom Margin -->
+    <rect x="16" y="182" width="268" height="8" fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.6"/>
+    <text x="150" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      Bottom Margin (8px)
+    </text>
+    
+    <!-- Inner Container Zone -->
+    <rect x="16" y="37" width="268" height="145" fill="#2ecc71" stroke="#27ae60" stroke-width="2" opacity="0.7"/>
+    <text x="150" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+      Inner Container Zone
+    </text>
+    <text x="150" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      (Child nodes positioned here)
+    </text>
+    
+    <!-- Child Node Examples -->
+    <rect x="30" y="70" width="60" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.8"/>
+    <text x="60" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">Child 1</text>
+    
+    <rect x="110" y="70" width="60" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.8"/>
+    <text x="140" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">Child 2</text>
+    
+    <rect x="190" y="70" width="60" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.8"/>
+    <text x="220" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">Child 3</text>
+    
+    <rect x="70" y="120" width="60" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.8"/>
+    <text x="100" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">Child 4</text>
+    
+    <rect x="150" y="120" width="60" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.8"/>
+    <text x="180" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">Child 5</text>
+    
+    <!-- Center Point Indicator -->
+    <circle cx="150" cy="100" r="3" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
+    <text x="160" y="105" font-family="Arial, sans-serif" font-size="10" fill="#e67e22">Center Point</text>
+  </g>
+  
+  <!-- Legend -->
+  <g transform="translate(450, 80)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Zone Legend
+    </text>
+    
+    <!-- Container Zone Legend -->
+    <rect x="0" y="20" width="20" height="15" fill="none" stroke="#34495e" stroke-width="2" stroke-dasharray="3,3"/>
+    <text x="30" y="32" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">Container Zone</text>
+    <text x="30" y="45" font-family="Arial, sans-serif" font-size="10" fill="#7f8c8d">Outermost boundary, total footprint</text>
+    
+    <!-- Header Zone Legend -->
+    <rect x="0" y="60" width="20" height="15" fill="#3498db" opacity="0.8"/>
+    <text x="30" y="72" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">Header Zone</text>
+    <text x="30" y="85" font-family="Arial, sans-serif" font-size="10" fill="#7f8c8d">Title space, node label</text>
+    
+    <!-- Margin Zone Legend -->
+    <rect x="0" y="100" width="20" height="15" fill="#e74c3c" opacity="0.6"/>
+    <text x="30" y="112" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">Margin Zones</text>
+    <text x="30" y="125" font-family="Arial, sans-serif" font-size="10" fill="#7f8c8d">Spacing areas (top, right, bottom, left)</text>
+    
+    <!-- Inner Container Legend -->
+    <rect x="0" y="140" width="20" height="15" fill="#2ecc71" opacity="0.7"/>
+    <text x="30" y="152" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">Inner Container Zone</text>
+    <text x="30" y="165" font-family="Arial, sans-serif" font-size="10" fill="#7f8c8d">Child node positioning area</text>
+    
+    <!-- Child Node Legend -->
+    <rect x="0" y="180" width="20" height="15" fill="#9b59b6" opacity="0.8"/>
+    <text x="30" y="192" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">Child Nodes</text>
+    <text x="30" y="205" font-family="Arial, sans-serif" font-size="10" fill="#7f8c8d">Positioned within inner container</text>
+  </g>
+  
+  <!-- Size Calculations -->
+  <g transform="translate(100, 320)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Size Calculations
+    </text>
+    
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Container Width = Inner Container Width + Left Margin + Right Margin
+    </text>
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Container Height = Header Height + Top Margin + Inner Container Height + Bottom Margin
+    </text>
+    <text x="0" y="55" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Inner Container Size = Child Content Size + Child Spacing
+    </text>
+    
+    <text x="0" y="80" font-family="Arial, sans-serif" font-size="12" fill="#e74c3c">
+      Example: 300 = 268 + 8 + 8 (width)
+    </text>
+    <text x="0" y="95" font-family="Arial, sans-serif" font-size="12" fill="#e74c3c">
+      Example: 200 = 25 + 4 + 145 + 8 (height)
+    </text>
+  </g>
+  
+  <!-- Positioning Logic -->
+  <g transform="translate(450, 320)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Positioning Logic
+    </text>
+    
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      • Container positioned by center point
+    </text>
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      • Header positioned at top of container
+    </text>
+    <text x="0" y="55" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      • Inner container positioned with margin offsets
+    </text>
+    <text x="0" y="70" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      • Child nodes positioned within inner container
+    </text>
+    <text x="0" y="85" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      • Top margin measured from header bottom
+    </text>
+  </g>
+  
+  <!-- Zone Behaviors -->
+  <g transform="translate(100, 450)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Zone-Specific Behaviors
+    </text>
+    
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="11" fill="#34495e">
+      <tspan x="0" dy="0">Container Zone: Drag/drop, selection, visual feedback</tspan>
+      <tspan x="0" dy="15">Header Zone: Node identification, status indicators</tspan>
+      <tspan x="0" dy="15">Margin Zones: Visual separation, consistent spacing</tspan>
+      <tspan x="0" dy="15">Inner Container: Child positioning, layout algorithms</tspan>
+    </text>
+  </g>
+  
+  <!-- Default Values -->
+  <g transform="translate(450, 450)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Default Margin Values
+    </text>
+    
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Top: 4px
+    </text>
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Right: 8px
+    </text>
+    <text x="0" y="55" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Bottom: 8px
+    </text>
+    <text x="0" y="70" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50">
+      Left: 8px
+    </text>
+  </g>
+</svg> 

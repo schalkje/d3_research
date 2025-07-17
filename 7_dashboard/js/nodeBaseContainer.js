@@ -1,6 +1,9 @@
 import BaseNode, { NodeStatus } from "./nodeBase.js";
 import { getComputedDimensions } from "./utils.js";
 import ZoomButton from "./buttonZoom.js";
+import { StatusManager } from "./statusManager.js";
+import { GeometryManager } from "./geometryManager.js";
+import { ConfigManager } from "./configManager.js";
 
 export default class BaseContainerNode extends BaseNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
@@ -13,7 +16,6 @@ export default class BaseContainerNode extends BaseNode {
     nodeData.layout.minimumSize.height ??= 0;
     nodeData.layout.minimumSize.useRootRatio ??= false;
 
-
     super(nodeData, parentElement, settings, parentNode);
     this.data.type ??= "container";
 
@@ -24,8 +26,8 @@ export default class BaseContainerNode extends BaseNode {
     this.simulation = null;
     this._container = null;
     this.edgesContainer ??= null;
-    this.containerMargin = { top: 18, right: 8, bottom: 8, left: 8 };
-    this.nodeSpacing = { horizontal: 20, vertical: 10 };
+    this.containerMargin = ConfigManager.getDefaultContainerMargin();
+    this.nodeSpacing = ConfigManager.getDefaultNodeSpacing();
     this.childNodes = [];
 
     // child edges contain the edges that are between nodes where this container
@@ -96,100 +98,12 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   determineStatusBasedOnChildren() {
-    if (this.childNodes.length == 0) return;
-    if ( !this.settings.cascadeOnStatusChange ) {
+    if (this.childNodes.length === 0) return;
+    if (!this.settings.cascadeOnStatusChange) {
       return;
-    }  
-
-      
-    var containerStatus = NodeStatus.UNDETERMINED;
-    for (const childNode of this.childNodes) {
-    if (childNode.status != containerStatus) {
-        // error
-        // if there is an error, the status of the container is error
-        if (containerStatus == NodeStatus.ERROR) continue;
-        if (childNode.status == NodeStatus.ERROR && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.ERROR;
-          continue;
-        }
-
-        // warning
-        // if there is a warning, the status of the container is warning
-        if (containerStatus == NodeStatus.WARNING) continue;
-        if (childNode.status == NodeStatus.WARNING && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.WARNING;
-          continue;
-        }
-
-        // delayed
-        // if there is a delayed, the status of the container is delayed
-        if (containerStatus == NodeStatus.DELAYED) continue;
-        if (childNode.status == NodeStatus.DELAYED && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.DELAYED;
-          continue;
-        }
-
-
-        // unknown
-        // if there is at least one unknown, the status of the container is unknown
-        if (containerStatus == NodeStatus.UNKNOWN) continue;
-        if (childNode.status == NodeStatus.UNKNOWN) 
-        {
-          containerStatus = NodeStatus.UNKNOWN;
-          continue
-        }
-
-
-        if (containerStatus == NodeStatus.UNDETERMINED) {
-          if (childNode.status == NodeStatus.ERROR || childNode.status == NodeStatus.WARNING || childNode.status == NodeStatus.DELAYED)
-            containerStatus = NodeStatus.UNKNOWN;
-          else
-            containerStatus = childNode.status;
-          continue;
-        }
-
-
-        if (containerStatus == NodeStatus.UPDATING
-               && (childNode.status == NodeStatus.UPDATING || childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.Ready) 
-               && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.UPDATING;
-          continue;
-        }
-
-        if (containerStatus == NodeStatus.UPDATED
-            && (childNode.status == NodeStatus.UPDATING) 
-            && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.UPDATING;
-          continue;
-        }
-        if (childNode.status == NodeStatus.UPDATING) {
-          containerStatus = NodeStatus.UNKNOWN;
-          continue;
-        }
-
-        // partial updated/skipped
-        if ((childNode.status == NodeStatus.UPDATED || childNode.status == NodeStatus.SKIPPED ) && (containerStatus != NodeStatus.UPDATED && containerStatus != NodeStatus.SKIPPED)) {
-          containerStatus = NodeStatus.UNKNOWN;
-          continue;
-        }
-               
-        // skipped
-        // if there is at least one skipped and the rets are only skipped or updated, the status of the container is skipped
-        if ((containerStatus == NodeStatus.UPDATED || containerStatus == NodeStatus.SKIPPED) && (childNode.status != NodeStatus.UPDATED && childNode.status != NodeStatus.SKIPPED))
-        {
-          containerStatus = NodeStatus.UNKNOWN;
-          continue;
-        }
-        if (containerStatus == NodeStatus.UPDATED && childNode.status == NodeStatus.SKIPPED && !(childNode instanceof BaseContainerNode)) {
-          containerStatus = NodeStatus.SKIPPED;
-          continue;
-        }
-
-        // ready, only if all children are ready
-        // disabled, does not influence the status of the container, unless everything is disabled
-      }
     }
-    
+
+    const containerStatus = StatusManager.calculateContainerStatus(this.childNodes, this.settings);
     this.status = containerStatus;
   }
 
@@ -386,12 +300,13 @@ export default class BaseContainerNode extends BaseNode {
       .attr("class", `container ${this.data.type} label`);
 
     // the size of the text label determines the minimum size of the node
-    this.minimumSize = getComputedDimensions(labelElement);
-    this.minimumSize.width += 36;
-    this.minimumSize.height += 4;
+    const labelDimensions = getComputedDimensions(labelElement);
+    const defaultSize = { width: labelDimensions.width + 36, height: labelDimensions.height + 4 };
+    this.minimumSize = GeometryManager.calculateMinimumSize([], defaultSize);
+    
     if (this.data.layout.minimumSize.width > this.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
     if (this.data.layout.minimumSize.height > this.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
-    if ( this.data.layout.minimumSize.useRootRatio) this.applyMinimumSize();
+    if (this.data.layout.minimumSize.useRootRatio) this.applyMinimumSize();
 
     if (this.data.width < this.minimumSize.width || this.data.height < this.minimumSize.height) {
       this.resize(

@@ -1,4 +1,7 @@
 import { computeConnectionPoints } from "./utilPath.js";
+import { EventManager } from "./eventManager.js";
+import { StatusManager } from "./statusManager.js";
+import { ConfigManager } from "./configManager.js";
 
 export const NodeStatus = Object.freeze({
   UNDETERMINED: 'Undetermined', // technically not a status, but used in the status determination logic
@@ -21,7 +24,7 @@ export default class BaseNode {
     this.data = nodeData;
     this.parentElement = parentElement;
     this.parentNode = parentNode;
-    this.settings = settings;
+    this.settings = ConfigManager.mergeWithDefaults(settings);
     this.computeConnectionPoints = computeConnectionPoints;
     this.onDisplayChange = null;
     this.onClick = null;
@@ -80,9 +83,8 @@ export default class BaseNode {
     this._status = value;
     this.element.attr("status", value);
 
-    if (this.settings.toggleCollapseOnStatusChange) {
-      // if status is ready, unknown, disabled or updated then collapse the node, otherwise expand it
-      this.collapsed = [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED, NodeStatus.SKIPPED].includes(value);
+    if (StatusManager.shouldCollapseOnStatus(value, this.settings)) {
+      this.collapsed = true;
     }
 
     if (this.settings.cascadeOnStatusChange) {
@@ -131,18 +133,10 @@ export default class BaseNode {
       .append("g")
       .attr("class", this.data.type)
       .attr("id", this.id)
-      .attr("status", this.status)
-      .on("click", (event) => {
-        // console.log("Clicked on Adapter Node [BASE]:", this.id, event);
-        if (event) event.stopPropagation();
-        this.handleClicked(event);
-      })
-      .on("dblclick", (event) => {
-        // console.log("Double-clicked on Adapter Node [BASE]:", this.id, event);
-        if (event) event.stopPropagation();
-        this.handleDblClicked(event);
-      });
+      .attr("status", this.status);
 
+    // Set up default events using EventManager
+    EventManager.setupDefaultNodeEvents(this);
       
     // Set expanded or collapsed state
     this.element.classed("collapsed", this.collapsed);
@@ -180,26 +174,12 @@ export default class BaseNode {
   
   handleClicked(event, node = this) {
     console.log("handleClicked:", this.id, event);
-
-    if (this.onClick) {
-      this.onClick(node);
-    } else if (this.parentNode) {
-      this.parentNode.handleClicked(event, node);
-    } else {
-      console.warn(`No onClicked handler, node ${node.id} clicked!`);
-    }
+    EventManager.handleNodeClick(this, event);
   }
 
   handleDblClicked(event, node = this) {
-    console.log("handleClicked:", this.id, event);
-
-    if (this.onDblClick) {
-      this.onDblClick(node);
-    } else if (this.parentNode) {
-      this.parentNode.handleDblClicked(event, node);
-    } else {
-      console.warn(`No onDblClick handler, node ${node.id} clicked!`);
-    }
+    console.log("handleDblClicked:", this.id, event);
+    EventManager.handleNodeDblClick(this, event);
   }
 
    resize(size, forced = false) {

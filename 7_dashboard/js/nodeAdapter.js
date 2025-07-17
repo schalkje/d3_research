@@ -197,6 +197,11 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateLayout1_full_archive() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.stagingNode && this.archiveNode){
       this.data.width = Math.max(
         this.data.width,
@@ -205,8 +210,8 @@ export default class AdapterNode extends BaseContainerNode {
     }
 
     if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.stagingNode.move(x, y);
     }
 
@@ -216,8 +221,8 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode.data.width / 2 +
         this.containerMargin.left +
         this.stagingNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       // console.log("        nodeAdapter - updateLayout1 - ArchiveNode:", x, y, this.archiveNode.data.width, this.archiveNode.data.height);
       this.archiveNode.move(x, y);
     }
@@ -232,19 +237,24 @@ export default class AdapterNode extends BaseContainerNode {
       const height = this.transformNode.data.height;
       this.transformNode.resize({ width: width, height: height });
 
-      const x = width / 2 - this.stagingNode.data.width * factor - this.nodeSpacing.horizontal / 2;
+      const x = width / 2 - this.stagingNode.data.width * factor - this.nodeSpacing.horizontal / 2 - containerOffsetX;
 
       const y =
         -this.data.height / 2 +
         this.transformNode.data.height / 2 +
         this.containerMargin.top +
         this.archiveNode.data.height +
-        this.nodeSpacing.vertical;
+        this.nodeSpacing.vertical - containerOffsetY;
       this.transformNode.move(x, y);
     }
   }
 
   updateLayout2_full_tranform() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.stagingNode && this.transformNode){
       this.data.width = Math.max(
         this.data.width,
@@ -253,13 +263,13 @@ export default class AdapterNode extends BaseContainerNode {
     }
 
     if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
       const y =
         -this.data.height / 2 +
         this.stagingNode.data.height / 2 +
         this.containerMargin.top +
         this.archiveNode.data.height +
-        this.nodeSpacing.vertical;
+        this.nodeSpacing.vertical - containerOffsetY;
       this.stagingNode.move(x, y);
     }
 
@@ -269,8 +279,8 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode.data.width / 2 +
         this.containerMargin.left +
         this.archiveNode.data.width / 2 +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.archiveNode.move(x, y);
     }
 
@@ -280,18 +290,23 @@ export default class AdapterNode extends BaseContainerNode {
         this.transformNode.data.width / 2 +
         this.containerMargin.left +
         this.stagingNode.data.width +
-        this.nodeSpacing.horizontal;
+        this.nodeSpacing.horizontal - containerOffsetX;
       const y =
         -this.data.height / 2 +
         this.transformNode.data.height / 2 +
         this.containerMargin.top +
         this.archiveNode.data.height +
-        this.nodeSpacing.vertical;
+        this.nodeSpacing.vertical - containerOffsetY;
       this.transformNode.move(x, y);
     }
   }
 
   updateLayout3_full_staging() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.stagingNode && this.transformNode&& this.archiveNode){
       this.data.width = Math.max(
         this.data.width,
@@ -309,8 +324,8 @@ export default class AdapterNode extends BaseContainerNode {
       this.stagingNode.resize({ width: width, height: height });
 
       // then position the staging node based on the new size
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.stagingNode.move(x, y);
     }
 
@@ -320,8 +335,8 @@ export default class AdapterNode extends BaseContainerNode {
         this.archiveNode.data.width / 2 +
         this.containerMargin.left +
         this.stagingNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.archiveNode.move(x, y);
     }
 
@@ -331,18 +346,23 @@ export default class AdapterNode extends BaseContainerNode {
         this.transformNode.data.width / 2 +
         this.containerMargin.left +
         this.stagingNode.data.width +
-        this.nodeSpacing.horizontal;
+        this.nodeSpacing.horizontal - containerOffsetX;
       const y =
         -this.data.height / 2 +
         this.transformNode.data.height / 2 +
         this.containerMargin.top +
         this.archiveNode.data.height +
-        this.nodeSpacing.vertical;
+        this.nodeSpacing.vertical - containerOffsetY;
       this.transformNode.move(x, y);
     }
   }
 
   updateLayout4_line() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     let otherNode = this.archiveNode;
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
       otherNode = this.transformNode;
@@ -358,8 +378,8 @@ export default class AdapterNode extends BaseContainerNode {
     // console.log("        nodeAdapter - updateLayout4 - OtherNode:", otherNode);
 
     if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.stagingNode.move(x, y);
     }
 
@@ -369,14 +389,19 @@ export default class AdapterNode extends BaseContainerNode {
         otherNode.data.width / 2 +
         this.containerMargin.left +
         this.stagingNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + otherNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + otherNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
 
       otherNode.move(x, y);
     }
   }
 
   updateLayout5() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     let onlyNode = this.archiveNode;
 
     if (onlyNode){
@@ -385,8 +410,8 @@ export default class AdapterNode extends BaseContainerNode {
         onlyNode.data.width + this.containerMargin.left + this.containerMargin.right
       )
 
-      const x = -this.data.width / 2 + onlyNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + onlyNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + onlyNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + onlyNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       onlyNode.move(x, y);
     }
   }

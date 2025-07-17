@@ -170,9 +170,14 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
    updateFull() {
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.rawNode) {
-      const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.rawNode.move(x, y);
     }
 
@@ -182,8 +187,8 @@ export default class FoundationNode extends BaseContainerNode {
         this.baseNode.data.width / 2 +
         this.containerMargin.left +
         this.rawNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.baseNode.move(x, y);
     }    
   }
@@ -191,9 +196,15 @@ export default class FoundationNode extends BaseContainerNode {
    updateRole() {
     // JS: TODO: use code as label; need rerendering of the children
     // console.log("    Layout Code for Adapter:", this.id);
+    
+    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
+    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
+    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
+    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    
     if (this.rawNode) {
-      const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left;
-      const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top;
+      const x = -this.data.width / 2 + this.rawNode.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      const y = -this.data.height / 2 + this.rawNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.rawNode.move(x, y);
     }
 
@@ -203,8 +214,8 @@ export default class FoundationNode extends BaseContainerNode {
         this.baseNode.data.width / 2 +
         this.containerMargin.left +
         this.rawNode.data.width +
-        this.nodeSpacing.horizontal;
-      const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top;
+        this.nodeSpacing.horizontal - containerOffsetX;
+      const y = -this.data.height / 2 + this.baseNode.data.height / 2 + this.containerMargin.top - containerOffsetY;
       this.baseNode.move(x, y);
     }
 
