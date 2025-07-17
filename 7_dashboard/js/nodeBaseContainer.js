@@ -4,6 +4,7 @@ import ZoomButton from "./buttonZoom.js";
 import { StatusManager } from "./statusManager.js";
 import { GeometryManager } from "./geometryManager.js";
 import { ConfigManager } from "./configManager.js";
+import { ZoneManager } from "./zones/index.js";
 
 export default class BaseContainerNode extends BaseNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
@@ -29,6 +30,7 @@ export default class BaseContainerNode extends BaseNode {
     this.containerMargin = ConfigManager.getDefaultContainerMargin();
     this.nodeSpacing = ConfigManager.getDefaultNodeSpacing();
     this.childNodes = [];
+    this.zoneManager = null;
 
     // child edges contain the edges that are between nodes where this container
     // is the first joined parent
@@ -105,6 +107,18 @@ export default class BaseContainerNode extends BaseNode {
 
     const containerStatus = StatusManager.calculateContainerStatus(this.childNodes, this.settings);
     this.status = containerStatus;
+  }
+
+  handleDisplayChange(node = this, propagate = true) {
+    if (this.suspenseDisplayChange) {
+      return;
+    }
+    
+    if (this.onDisplayChange) {
+      this.onDisplayChange();
+    } else if (propagate && this.parentNode && typeof this.parentNode.handleDisplayChange === 'function') {
+      this.parentNode.handleDisplayChange();
+    }
   }
 
   resize(size, forced = false) {
@@ -291,17 +305,15 @@ export default class BaseContainerNode extends BaseNode {
     // console.log("    BaseContainerNode - init", this.id);
     super.init(parentElement);
 
-    // Append text to the top left corner of the element
-    const labelElement = this.element
-      .append("text")
-      .attr("x", -this.data.width / 2 + 4)
-      .attr("y", -this.data.height / 2 + 4)
-      .text(this.data.label)
-      .attr("class", `container ${this.data.type} label`);
+    // Initialize zone manager for container nodes
+    this.zoneManager = new ZoneManager(this);
+    this.zoneManager.init();
 
-    // the size of the text label determines the minimum size of the node
-    const labelDimensions = getComputedDimensions(labelElement);
-    const defaultSize = { width: labelDimensions.width + 36, height: labelDimensions.height + 4 };
+    // Calculate minimum size based on label
+    const labelText = this.data.label || '';
+    const labelWidth = labelText.length * 8 + 36; // Approximate text width
+    const labelHeight = 20; // Approximate text height
+    const defaultSize = { width: labelWidth, height: labelHeight };
     this.minimumSize = GeometryManager.calculateMinimumSize([], defaultSize);
     
     if (this.data.layout.minimumSize.width > this.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
@@ -316,11 +328,9 @@ export default class BaseContainerNode extends BaseNode {
         },
         true
       );
-      // reposition the label based on the new size
-      labelElement.attr("x", -this.data.width / 2 + 4).attr("y", -this.data.height / 2 + 4);
     }
 
-    // Draw the node shape
+    // Draw the node shape (now handled by ContainerZone)
     this.shape = this.element
       .insert("rect", ":first-child")
       .attr("class", (d) => `${this.data.type} shape`)
@@ -332,7 +342,7 @@ export default class BaseContainerNode extends BaseNode {
       .attr("rx", 5)
       .attr("ry", 5);
 
-    // Add zoom button
+    // Add zoom button (now handled by HeaderZone)
     this.zoomButton = new ZoomButton(
       this.element,
       { x: 0, y: 0 },
@@ -379,17 +389,30 @@ export default class BaseContainerNode extends BaseNode {
     }
     else
     {
+      // Get child container from zone system
+      const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.container;
+      
       for (const node of this.data.children) {
         // Create the childComponent instance based on node type
         var childComponent = this.getNode(node.id);
         if (childComponent == null) {
-          childComponent = this.createNode(node, this.container, this.settings, this);
+          childComponent = this.createNode(node, childContainer, this.settings, this);
           this.childNodes.push(childComponent);
+
+          // Add child to zone system
+          if (this.zoneManager?.innerContainerZone) {
+            this.zoneManager.innerContainerZone.addChild(childComponent);
+          }
 
           // console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
         }
 
-        childComponent.init(this.container);
+        childComponent.init(childContainer);
+      }
+      
+      // Trigger child positioning after all children are initialized
+      if (this.zoneManager?.innerContainerZone) {
+        this.zoneManager.innerContainerZone.forceUpdateChildPositions();
       }
     }
 
@@ -444,6 +467,13 @@ export default class BaseContainerNode extends BaseNode {
   updateChildren() {
     // console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
 
+    // Use zone system for child positioning if available
+    if (this.zoneManager?.innerContainerZone) {
+      // Zone system handles positioning automatically
+      return;
+    }
+
+    // Fallback to legacy positioning
     this.container.attr(
       "transform",
       `translate(

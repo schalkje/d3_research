@@ -2,6 +2,7 @@ import { computeConnectionPoints } from "./utilPath.js";
 import { EventManager } from "./eventManager.js";
 import { StatusManager } from "./statusManager.js";
 import { ConfigManager } from "./configManager.js";
+import { ZoneManager } from "./zones/index.js";
 
 export const NodeStatus = Object.freeze({
   UNDETERMINED: 'Undetermined', // technically not a status, but used in the status determination logic
@@ -45,6 +46,7 @@ export default class BaseNode {
     this.element = null;
     this.simulation = null;
     this.layoutDebug = true;
+    this.zoneManager = null;
 
     // Set default values for x, y, width, and height
     this.x ??= 0;
@@ -112,7 +114,9 @@ export default class BaseNode {
       // console.log(`          > calling handleDisplayChange ${this.data.label}`);
       this.onDisplayChange();
     } else {
-      if (this.parentNode) this.parentNode.handleDisplayChange();
+      if (this.parentNode && typeof this.parentNode.handleDisplayChange === 'function') {
+        this.parentNode.handleDisplayChange();
+      }
     }
   }
 
@@ -120,9 +124,16 @@ export default class BaseNode {
     // console.log(`          > move ${this.id}, (x:${Math.round(this.x)},y:${Math.round(this.y)}) -> (x:${Math.round(x)},y:${Math.round(y)})`);
     this.x = x;
     this.y = y;
-    this.element.attr("transform", `translate(${this.x}, ${this.y})`);
-
-    this.handleDisplayChange();
+    
+    // Only update element if it exists (has been initialized)
+    if (this.element) {
+      this.element.attr("transform", `translate(${this.x}, ${this.y})`);
+      
+      // Only call handleDisplayChange if we're not in the middle of initialization
+      if (!this.suspenseDisplayChange) {
+        this.handleDisplayChange();
+      }
+    }
   }
 
    init(parentElement = null) {
@@ -134,6 +145,10 @@ export default class BaseNode {
       .attr("class", this.data.type)
       .attr("id", this.id)
       .attr("status", this.status);
+
+    // Initialize zone manager
+    this.zoneManager = new ZoneManager(this);
+    this.zoneManager.init();
 
     // Set up default events using EventManager
     EventManager.setupDefaultNodeEvents(this);
@@ -164,6 +179,11 @@ export default class BaseNode {
    update() {
     // console.log("nodeBase - update", this.data.label);
 
+    // Update zones
+    if (this.zoneManager) {
+      this.zoneManager.update();
+    }
+
     if (this.settings.showConnectionPoints) {
       const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
       Object.values(connectionPoints).forEach((point) => {
@@ -189,6 +209,11 @@ export default class BaseNode {
       // console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
       this.data.width = size.width;
       this.data.height = size.height;
+
+      // Resize zones
+      if (this.zoneManager) {
+        this.zoneManager.resize(size.width, size.height);
+      }
 
        this.update();
 

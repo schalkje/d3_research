@@ -17,14 +17,69 @@ export default class LaneNode extends BaseContainerNode {
     //   this.childNodes.length
     // );
     
-    // Don't call base method as it applies a transform that interferes with our positioning
-    // super.updateChildren();
-    
-    // Apply our layout logic
+    // Use zone-based layout system
     this.layoutLane();
   }
 
   layoutLane() {
+    if (this.childNodes.length === 0) {
+      return;
+    }
+
+    // Get zone manager and inner container zone
+    const innerContainerZone = this.zoneManager?.innerContainerZone;
+    if (!innerContainerZone) {
+      // Fallback to old layout if zone system not available
+      this.layoutLaneLegacy();
+      return;
+    }
+
+    // Set vertical stacking layout algorithm
+    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      if (childNodes.length === 0) return;
+
+      const spacing = this.nodeSpacing?.vertical || 10;
+      let currentY = 0;
+
+      childNodes.forEach(childNode => {
+        // Center horizontally within the inner container
+        const x = coordinateSystem.size.width / 2 - childNode.data.width / 2;
+        const y = currentY;
+
+        childNode.move(x, y);
+        currentY += childNode.data.height + spacing;
+      });
+    });
+
+    // Calculate required size for children
+    const totalChildHeight = this.childNodes.reduce((sum, node) => sum + node.data.height, 0);
+    const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.vertical : 0;
+    const maxChildWidth = Math.max(...this.childNodes.map(node => node.data.width));
+    
+    // Get margin zone for size calculations
+    const marginZone = this.zoneManager?.marginZone;
+    const headerZone = this.zoneManager?.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+
+    if (marginZone) {
+      const requiredSize = marginZone.calculateContainerSize(
+        maxChildWidth,
+        totalChildHeight + totalSpacing,
+        headerHeight
+      );
+
+      // Resize container to accommodate all children
+      this.resize({
+        width: Math.max(this.data.width, requiredSize.width),
+        height: Math.max(this.data.height, requiredSize.height)
+      });
+    }
+
+    // Update child positions using zone system
+    innerContainerZone.updateChildPositions();
+  }
+
+  layoutLaneLegacy() {
     if (this.childNodes.length === 0) {
       return;
     }
