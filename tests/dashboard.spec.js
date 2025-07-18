@@ -8,12 +8,71 @@ test.describe('Dashboard Header Zone Tests', () => {
     await page.waitForSelector('svg', { timeout: 10000 });
   });
 
+  test('debug - check what elements are rendered', async ({ page }) => {
+    // Wait for nodes to be rendered
+    await page.waitForTimeout(2000);
+    
+    // Check for different possible selectors
+    const allG = page.locator('svg g');
+    const allGCount = await allG.count();
+    console.log(`Found ${allGCount} g elements`);
+    
+    // Check for zone-container class (new zone system)
+    const zoneContainers = page.locator('g.zone-container');
+    const zoneContainerCount = await zoneContainers.count();
+    console.log(`Found ${zoneContainerCount} g.zone-container elements`);
+    
+    // Check for any elements with 'container' in the class
+    const anyContainer = page.locator('g[class*="container"]');
+    const anyContainerCount = await anyContainer.count();
+    console.log(`Found ${anyContainerCount} g elements with 'container' in class`);
+    
+    // Check for zoom buttons
+    const zoomButtons = page.locator('.zoom-button');
+    const zoomCount = await zoomButtons.count();
+    console.log(`Found ${zoomCount} zoom buttons`);
+    
+    // Check for header zones
+    const headerZones = page.locator('g.zone-header');
+    const headerCount = await headerZones.count();
+    console.log(`Found ${headerCount} header zones`);
+    
+    // List all unique classes
+    const allClasses = await page.evaluate(() => {
+      const elements = document.querySelectorAll('g');
+      const classes = new Set();
+      elements.forEach(el => {
+        if (el.className) {
+          el.className.baseVal?.split(' ').forEach(cls => classes.add(cls));
+        }
+      });
+      return Array.from(classes);
+    });
+    console.log('All g element classes:', allClasses);
+    
+    // Check if any data is loaded
+    const fileSelect = page.locator('#fileSelect');
+    const selectedValue = await fileSelect.inputValue();
+    console.log('Selected file:', selectedValue);
+    
+    // Try to select a file if none is selected
+    if (!selectedValue) {
+      await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
+      await page.waitForTimeout(1000);
+      
+      // Check again after loading data
+      const zoneContainersAfter = page.locator('g.zone-container');
+      const zoneContainerCountAfter = await zoneContainersAfter.count();
+      console.log(`After loading data: Found ${zoneContainerCountAfter} g.zone-container elements`);
+    }
+  });
+
   test('header zone should be positioned at top of container', async ({ page }) => {
     // Wait for nodes to be rendered
     await page.waitForTimeout(2000);
     
-    // Get all container nodes
-    const containerNodes = page.locator('g.node-container');
+    // Get all container nodes (using zone system selectors)
+    const containerNodes = page.locator('g.zone-container');
     const count = await containerNodes.count();
     
     console.log(`Found ${count} container nodes`);
@@ -50,7 +109,7 @@ test.describe('Dashboard Header Zone Tests', () => {
     
     // Count zoom buttons - should be one per container node
     const zoomButtons = page.locator('.zoom-button');
-    const containerNodes = page.locator('g.node-container');
+    const containerNodes = page.locator('g.zone-container');
     
     const zoomCount = await zoomButtons.count();
     const containerCount = await containerNodes.count();
@@ -65,7 +124,7 @@ test.describe('Dashboard Header Zone Tests', () => {
     await page.waitForTimeout(2000);
     
     // Get first container node
-    const containerNode = page.locator('g.node-container').first();
+    const containerNode = page.locator('g.zone-container').first();
     const headerZone = containerNode.locator('g.zone-header');
     
     // Get initial positions
@@ -126,7 +185,7 @@ test.describe('Dashboard Header Zone Tests', () => {
     await page.waitForTimeout(2000);
     
     // Get all container nodes and their headers
-    const containerNodes = page.locator('g.node-container');
+    const containerNodes = page.locator('g.zone-container');
     const count = await containerNodes.count();
     
     console.log(`Found ${count} container nodes`);

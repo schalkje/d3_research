@@ -1,0 +1,42 @@
+{
+  "name": "flowdash",
+  "version": "1.0.0",
+  "description": "Visualize data flow processes",
+  "homepage": "https://schalken.net",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "d3",
+    "dashboard",
+    "visualization",
+    "svg",
+    "etl",
+    "flow",
+    "lineage",
+    "canvas"
+  ],
+  "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack serve --open --mode development",
+    "test": "npx playwright test",
+    "test:adapter": "npx playwright test tests/adapter-nodes.spec.js",
+    "test:foundation": "npx playwright test tests/foundation-nodes.spec.js",
+    "test:single": "npx playwright test --grep",
+    "test:ui": "npx playwright test --ui",
+    "test:headed": "npx playwright test --headed"
+  },
+  "author": "Jeroen Schalken",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7",
+    "@babel/preset-env": "^7",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^24.0.14",
+    "babel-loader": "^9",
+    "webpack": "^5",
+    "webpack-cli": "^5"
+  },
+  "dependencies": {
+    "playwright": "^1.54.1"
+  }
+}

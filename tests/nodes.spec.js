@@ -4,14 +4,82 @@ test.describe('Node Rendering Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the main dashboard
     await page.goto('/7_dashboard/flowdash-js.html');
+    
+    // Wait for the page to load and basic elements to appear
     await page.waitForSelector('svg', { timeout: 10000 });
+    await page.waitForSelector('#fileSelect', { timeout: 10000 });
+    
+    // Wait for the dashboard to be initialized
+    await page.waitForFunction(() => {
+      return window.dashboard !== undefined;
+    }, { timeout: 15000 });
+    
+    // Wait a bit more for the dashboard to be fully ready
+    await page.waitForTimeout(2000);
+    
+    // Add error handling for console errors
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        console.log('Browser console error:', msg.text());
+      }
+    });
+    
+    page.on('pageerror', error => {
+      console.log('Page error:', error.message);
+    });
   });
+
+  // Helper function to wait for nodes to be rendered
+  async function waitForNodes(page, timeout = 30000) {
+    try {
+      // First wait for the dashboard to be ready
+      await page.waitForFunction(() => {
+        return window.dashboard && window.dashboard.getStructure;
+      }, { timeout: 10000 });
+      
+      // Wait for node-container elements to appear
+      await page.waitForSelector('g.node-container', { timeout });
+      
+      // Wait a bit more for the nodes to be fully rendered
+      await page.waitForTimeout(1000);
+      
+      return true;
+    } catch (error) {
+      console.log('Failed to find node-container elements:', error.message);
+      
+      // Debug: Check what elements are actually present
+      const svgContent = await page.locator('svg').innerHTML();
+      console.log('SVG content:', svgContent.substring(0, 500) + '...');
+      
+      // Check if dashboard is properly initialized
+      const dashboardStatus = await page.evaluate(() => {
+        if (window.dashboard) {
+          return {
+            initialized: true,
+            structure: window.dashboard.getStructure ? window.dashboard.getStructure() : null,
+            hasGetStructure: !!window.dashboard.getStructure
+          };
+        }
+        return { initialized: false };
+      });
+      console.log('Dashboard status:', dashboardStatus);
+      
+      // Check if there are any other elements in the SVG
+      const allElements = await page.locator('svg *').count();
+      console.log('Total elements in SVG:', allElements);
+      
+      return false;
+    }
+  }
 
   test.describe('Rectangle Node Tests', () => {
     test('should render basic rectangle nodes', async ({ page }) => {
       // Load test data with rectangle nodes
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      // Wait for nodes to be rendered with better error handling
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const nodes = page.locator('g.node-container');
       await expect(nodes).toHaveCount.greaterThan(0);
@@ -33,7 +101,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render rectangle nodes with different layouts', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-2.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const nodes = page.locator('g.node-container');
       const nodeCount = await nodes.count();
@@ -54,7 +124,9 @@ test.describe('Node Rendering Tests', () => {
   test.describe('Adapter Node Tests', () => {
     test('should render single adapter node', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-3.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
       await expect(adapterNodes).toHaveCount.greaterThan(0);
@@ -77,7 +149,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render adapter nodes with full layouts', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-4.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
       await expect(adapterNodes).toHaveCount.greaterThan(0);
@@ -95,7 +169,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render adapter nodes with long text', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-5.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
       await expect(adapterNodes).toHaveCount.greaterThan(0);
@@ -113,7 +189,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render adapter nodes with role layouts', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-6.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
       await expect(adapterNodes).toHaveCount.greaterThan(0);
@@ -129,7 +207,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render adapter nodes in columns', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-7.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const columnGroups = page.locator('g.node-container[data-type="columns"]');
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
@@ -147,7 +227,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render adapter nodes with curved edges', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-8.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const adapterNodes = page.locator('g.node-container[data-type="adapter"]');
       const curvedEdges = page.locator('path.edge[d*="C"]');
@@ -160,7 +242,9 @@ test.describe('Node Rendering Tests', () => {
   test.describe('Foundation Node Tests', () => {
     test('should render single foundation node', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'foundation-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
@@ -177,7 +261,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render multiple foundation nodes', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'foundation-2.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
       const nodeCount = await foundationNodes.count();
@@ -195,7 +281,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render foundation nodes in columns', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'foundation-3.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const columnGroups = page.locator('g.node-container[data-type="columns"]');
       const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
@@ -206,7 +294,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render foundation nodes with full layout', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'foundation-4.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
@@ -224,7 +314,9 @@ test.describe('Node Rendering Tests', () => {
   test.describe('Node Visual Properties', () => {
     test('should render nodes with correct styling', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const nodes = page.locator('g.node-container');
       
@@ -250,7 +342,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should render nodes with different states', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const activeNodes = page.locator('g.node-container.active');
       const inactiveNodes = page.locator('g.node-container:not(.active)');
@@ -267,7 +361,9 @@ test.describe('Node Rendering Tests', () => {
   test.describe('Node Interaction Tests', () => {
     test('should highlight nodes on hover', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const firstNode = page.locator('g.node-container').first();
       
@@ -282,7 +378,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should allow node dragging', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const firstNode = page.locator('g.node-container').first();
       const initialPosition = await firstNode.boundingBox();
@@ -306,7 +404,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should handle node clicks', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const firstNode = page.locator('g.node-container').first();
       
@@ -326,7 +426,9 @@ test.describe('Node Rendering Tests', () => {
     test('should render many nodes efficiently', async ({ page }) => {
       // Load a dataset with many nodes
       await page.selectOption('#fileSelect', { label: 'dwh-7.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const nodes = page.locator('g.node-container');
       const nodeCount = await nodes.count();
@@ -344,7 +446,9 @@ test.describe('Node Rendering Tests', () => {
 
     test('should maintain performance during interactions', async ({ page }) => {
       await page.selectOption('#fileSelect', { label: 'dwh-1.json' });
-      await page.waitForSelector('g.node-container');
+      
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
       
       const nodes = page.locator('g.node-container');
       const startTime = Date.now();
