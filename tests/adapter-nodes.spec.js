@@ -33,8 +33,11 @@ test.describe('Adapter Node Tests', () => {
       await page.waitForSelector('g.adapter rect.header-background', { timeout });
       await page.waitForSelector('g.adapter text.header-text', { timeout });
       
+      // Wait for child nodes to be rendered
+      await page.waitForSelector('g.node-container', { timeout });
+      
       // Wait for CSS transitions to complete (0.2s transitions + buffer)
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
       
       // Wait for any ongoing positioning calculations to complete
       await page.waitForFunction(() => {
@@ -43,8 +46,12 @@ test.describe('Adapter Node Tests', () => {
         
         const headerBackground = adapter.querySelector('rect.header-background');
         const mainRect = adapter.querySelector('rect.adapter.shape');
+        const childNodes = adapter.querySelectorAll('g.node-container');
         
         if (!headerBackground || !mainRect) return false;
+        
+        // Check if we have child nodes
+        if (childNodes.length === 0) return false;
         
         // Check if positioning is stable by comparing positions
         const headerBox = headerBackground.getBoundingClientRect();
@@ -232,6 +239,348 @@ test.describe('Adapter Node Tests', () => {
         const headerCenterY = svgPositions.headerY + svgPositions.headerH / 2;
         const textCenterY = svgPositions.textY; // SVG text y is usually already centered
         expect(Math.abs(headerCenterY - textCenterY)).toBeLessThan(2);
+      }
+    });
+
+    test('should render adapter child nodes with text inside their rectangles', async ({ page }) => {
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
+      
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // Debug: Log the structure of the adapter
+      const adapterStructure = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return 'No adapter found';
+        
+        const childContainers = adapter.querySelectorAll('g.node-container');
+        const allRects = adapter.querySelectorAll('rect');
+        const allTexts = adapter.querySelectorAll('text');
+        
+        return {
+          childContainers: childContainers.length,
+          allRects: allRects.length,
+          allTexts: allTexts.length,
+          childDetails: Array.from(childContainers).map((container, i) => {
+            const rects = container.querySelectorAll('rect');
+            const texts = container.querySelectorAll('text');
+            return {
+              index: i,
+              rects: rects.length,
+              texts: texts.length,
+              rectClasses: Array.from(rects).map(r => r.className.baseVal),
+              textClasses: Array.from(texts).map(t => t.className.baseVal),
+              textContent: Array.from(texts).map(t => t.textContent)
+            };
+          })
+        };
+      });
+      
+      console.log('Adapter structure:', JSON.stringify(adapterStructure, null, 2));
+      
+      // For each adapter node, check that child rectangular nodes have text inside them
+      for (const adapterNode of await adapterNodes.all()) {
+        // Find all child rectangular nodes within the adapter (excluding the main adapter shape)
+        const childRects = adapterNode.locator('g.node-container rect').filter({ hasNot: page.locator('.adapter.shape') });
+        const childTexts = adapterNode.locator('g.node-container text').filter({ hasNot: page.locator('.header-text') });
+        
+        // Check that we have both rectangles and texts
+        const rectCount = await childRects.count();
+        const textCount = await childTexts.count();
+        
+        console.log(`Found ${rectCount} child rectangles and ${textCount} child texts`);
+        
+        expect(rectCount).toBeGreaterThan(0);
+        expect(textCount).toBeGreaterThan(0);
+        
+        // For each child node, verify text is inside its rectangle
+        for (let i = 0; i < Math.min(rectCount, textCount); i++) {
+          const rect = childRects.nth(i);
+          const text = childTexts.nth(i);
+          
+          // Get positions and dimensions
+          const positions = await page.evaluate(({ rectIndex, textIndex }) => {
+            const rects = document.querySelectorAll('g.node-container rect');
+            const texts = document.querySelectorAll('g.node-container text');
+            
+            // Filter out main adapter shape and header text
+            const childRects = Array.from(rects).filter(rect => 
+              !rect.classList.contains('adapter') && !rect.classList.contains('shape')
+            );
+            const childTexts = Array.from(texts).filter(text => 
+              !text.classList.contains('header-text')
+            );
+            
+            const rect = childRects[rectIndex];
+            const text = childTexts[textIndex];
+            
+            if (!rect || !text) return null;
+            
+            // Get rectangle bounds
+            const rectX = parseFloat(rect.getAttribute('x') || 0);
+            const rectY = parseFloat(rect.getAttribute('y') || 0);
+            const rectW = parseFloat(rect.getAttribute('width') || 0);
+            const rectH = parseFloat(rect.getAttribute('height') || 0);
+            
+            // Get text position
+            const textX = parseFloat(text.getAttribute('x') || 0);
+            const textY = parseFloat(text.getAttribute('y') || 0);
+            
+            // Get text bounding box for width/height
+            const textBBox = text.getBBox ? text.getBBox() : { width: 0, height: 0 };
+            
+            return {
+              rectX, rectY, rectW, rectH,
+              textX, textY, textW: textBBox.width, textH: textBBox.height,
+              textContent: text.textContent,
+              rectClass: rect.className.baseVal,
+              textClass: text.className.baseVal
+            };
+          }, { rectIndex: i, textIndex: i });
+          
+          if (!positions) continue;
+          
+          console.log(`Child ${i}: rect(${positions.rectX}, ${positions.rectY}, ${positions.rectW}, ${positions.rectH}) [${positions.rectClass}], text("${positions.textContent}" at ${positions.textX}, ${positions.textY}, ${positions.textW}x${positions.textH}) [${positions.textClass}]`);
+          
+          // Text should be inside the rectangle bounds
+          // Allow for some padding (2px) around the text
+          const padding = 2;
+          
+          // Check horizontal containment
+          expect(positions.textX - positions.textW / 2).toBeGreaterThanOrEqual(positions.rectX + padding);
+          expect(positions.textX + positions.textW / 2).toBeLessThanOrEqual(positions.rectX + positions.rectW - padding);
+          
+          // Check vertical containment
+          expect(positions.textY - positions.textH / 2).toBeGreaterThanOrEqual(positions.rectY + padding);
+          expect(positions.textY + positions.textH / 2).toBeLessThanOrEqual(positions.rectY + positions.rectH - padding);
+        }
+      }
+    });
+
+    test('should render adapter child nodes with proper text content', async ({ page }) => {
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
+      
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // For each adapter node, check that child nodes have meaningful text content
+      for (const adapterNode of await adapterNodes.all()) {
+        const childTexts = adapterNode.locator('g.node-container text').filter({ hasNot: page.locator('.header-text') });
+        const textCount = await childTexts.count();
+        
+        console.log(`Found ${textCount} child text elements`);
+        
+        expect(textCount).toBeGreaterThan(0);
+        
+        // Check each text element has content
+        for (let i = 0; i < textCount; i++) {
+          const text = childTexts.nth(i);
+          const textContent = await text.textContent();
+          
+          console.log(`Child text ${i}: "${textContent}"`);
+          
+          expect(textContent).toBeTruthy();
+          expect(textContent.trim()).not.toBe('');
+          expect(textContent.trim().length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    test('should render adapter child nodes with consistent styling', async ({ page }) => {
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
+      
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // For each adapter node, check that child nodes have consistent styling
+      for (const adapterNode of await adapterNodes.all()) {
+        const childRects = adapterNode.locator('g.node-container rect');
+        const childTexts = adapterNode.locator('g.node-container text');
+        
+        const rectCount = await childRects.count();
+        const textCount = await childTexts.count();
+        
+        expect(rectCount).toBeGreaterThan(0);
+        expect(textCount).toBeGreaterThan(0);
+        
+        // Check that rectangles are visible
+        for (let i = 0; i < rectCount; i++) {
+          const rect = childRects.nth(i);
+          await expect(rect).toBeVisible();
+        }
+        
+        // Check that texts are visible
+        for (let i = 0; i < textCount; i++) {
+          const text = childTexts.nth(i);
+          await expect(text).toBeVisible();
+        }
+      }
+    });
+  });
+
+  test.describe('Multiple Adapter Layout Tests', () => {
+    test.beforeEach(async ({ page }) => {
+      // Navigate to the multiple adapter layouts test page
+      await page.goto('/5_nodes/10_adapter/02_layouts_full_.html');
+      
+      // Wait for the page to load and basic elements to appear
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait a bit more for the page to be fully ready
+      await page.waitForTimeout(2000);
+      
+      // Add error handling for console errors
+      page.on('console', msg => {
+        if (msg.type() === 'error') {
+          console.log('Browser console error:', msg.text());
+        }
+      });
+      
+      page.on('pageerror', error => {
+        console.log('Page error:', error.message);
+      });
+    });
+
+    test('should render multiple adapter nodes with different layouts', async ({ page }) => {
+      // Wait for adapter elements to appear
+      await page.waitForSelector('g.adapter', { timeout: 30000 });
+      await page.waitForTimeout(1000);
+      
+      const adapterNodes = page.locator('g.adapter');
+      const adapterCount = await adapterNodes.count();
+      
+      expect(adapterCount).toBeGreaterThan(1);
+      
+      // Verify each adapter has child nodes
+      for (const adapterNode of await adapterNodes.all()) {
+        const childRects = adapterNode.locator('g.node-container rect');
+        const childTexts = adapterNode.locator('g.node-container text');
+        
+        const rectCount = await childRects.count();
+        const textCount = await childTexts.count();
+        
+        expect(rectCount).toBeGreaterThan(0);
+        expect(textCount).toBeGreaterThan(0);
+      }
+    });
+
+    test('should ensure text is contained within rectangular nodes across all adapter layouts', async ({ page }) => {
+      // Wait for adapter elements to appear
+      await page.waitForSelector('g.adapter', { timeout: 30000 });
+      await page.waitForTimeout(1000);
+      
+      const adapterNodes = page.locator('g.adapter');
+      const adapterCount = await adapterNodes.count();
+      
+      expect(adapterCount).toBeGreaterThan(1);
+      
+      // Check each adapter node
+      for (const adapterNode of await adapterNodes.all()) {
+        const childRects = adapterNode.locator('g.node-container rect');
+        const childTexts = adapterNode.locator('g.node-container text');
+        
+        const rectCount = await childRects.count();
+        const textCount = await childTexts.count();
+        
+        // For each child node, verify text is inside its rectangle
+        for (let i = 0; i < Math.min(rectCount, textCount); i++) {
+          const rect = childRects.nth(i);
+          const text = childTexts.nth(i);
+          
+                     // Get positions and dimensions
+           const positions = await page.evaluate(({ rectIndex, textIndex }) => {
+             const rects = document.querySelectorAll('g.node-container rect');
+             const texts = document.querySelectorAll('g.node-container text');
+             
+             const rect = rects[rectIndex];
+             const text = texts[textIndex];
+             
+             if (!rect || !text) return null;
+             
+             // Get rectangle bounds
+             const rectX = parseFloat(rect.getAttribute('x') || 0);
+             const rectY = parseFloat(rect.getAttribute('y') || 0);
+             const rectW = parseFloat(rect.getAttribute('width') || 0);
+             const rectH = parseFloat(rect.getAttribute('height') || 0);
+             
+             // Get text position
+             const textX = parseFloat(text.getAttribute('x') || 0);
+             const textY = parseFloat(text.getAttribute('y') || 0);
+             
+             // Get text bounding box for width/height
+             const textBBox = text.getBBox ? text.getBBox() : { width: 0, height: 0 };
+             
+             return {
+               rectX, rectY, rectW, rectH,
+               textX, textY, textW: textBBox.width, textH: textBBox.height
+             };
+           }, { rectIndex: i, textIndex: i });
+           
+           if (!positions) continue;
+          
+          // Text should be inside the rectangle bounds
+          // Allow for some padding (2px) around the text
+          const padding = 2;
+          
+          // Check horizontal containment
+          expect(positions.textX - positions.textW / 2).toBeGreaterThanOrEqual(positions.rectX + padding);
+          expect(positions.textX + positions.textW / 2).toBeLessThanOrEqual(positions.rectX + positions.rectW - padding);
+          
+          // Check vertical containment
+          expect(positions.textY - positions.textH / 2).toBeGreaterThanOrEqual(positions.rectY + padding);
+          expect(positions.textY + positions.textH / 2).toBeLessThanOrEqual(positions.rectY + positions.rectH - padding);
+        }
+      }
+    });
+
+    test('should verify different adapter layout arrangements have proper text positioning', async ({ page }) => {
+      // Wait for adapter elements to appear
+      await page.waitForSelector('g.adapter', { timeout: 30000 });
+      await page.waitForTimeout(1000);
+      
+      const adapterNodes = page.locator('g.adapter');
+      const adapterCount = await adapterNodes.count();
+      
+      expect(adapterCount).toBeGreaterThan(1);
+      
+      // Check each adapter node for proper text positioning
+      for (const adapterNode of await adapterNodes.all()) {
+        const childRects = adapterNode.locator('g.node-container rect');
+        const childTexts = adapterNode.locator('g.node-container text');
+        
+        const rectCount = await childRects.count();
+        const textCount = await childTexts.count();
+        
+        expect(rectCount).toBeGreaterThan(0);
+        expect(textCount).toBeGreaterThan(0);
+        
+        // Verify each text element has content and is positioned within its rectangle
+        for (let i = 0; i < textCount; i++) {
+          const text = childTexts.nth(i);
+          const textContent = await text.textContent();
+          
+          expect(textContent).toBeTruthy();
+          expect(textContent.trim()).not.toBe('');
+          
+          // Check that text is visible
+          await expect(text).toBeVisible();
+        }
+        
+        // Verify each rectangle is visible and has proper dimensions
+        for (let i = 0; i < rectCount; i++) {
+          const rect = childRects.nth(i);
+          await expect(rect).toBeVisible();
+          
+          // Check rectangle has positive dimensions
+          const width = await rect.getAttribute('width');
+          const height = await rect.getAttribute('height');
+          
+          expect(parseFloat(width)).toBeGreaterThan(0);
+          expect(parseFloat(height)).toBeGreaterThan(0);
+        }
       }
     });
   });
