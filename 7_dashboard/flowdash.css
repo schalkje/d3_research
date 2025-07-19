@@ -73,6 +73,15 @@
   stroke-width: 8px;
 }
 
+/* Minimap Element Styles */
+.minimap-eyeball {
+  fill: white;
+}
+
+.minimap-pupil {
+  fill: black;
+}
+
 
 body {
   background-color: white;
@@ -304,18 +313,6 @@ text {
   stroke: none;
 }
 
-
-/* .node.shape {
-  fill: #9b9bfa;
-  fill-opacity: 0.95;
-  stroke: rgb(65, 65, 151);
-  stroke-opacity: 0.4;
-  stroke-width: 2;
-  cursor: default;
-  opacity: 0.3;
-} */
-
-
 /* default styles */
 
 
@@ -416,4 +413,289 @@ text {
   background: lightblue;
   margin: 0px 2px 0px 2px;
   padding: 2px 2px 0px 2px;
+}
+
+/* Zone System Styles */
+
+/* Container Zone Styles */
+.container-shape {
+  fill: #f8f9fa;
+  stroke: #dee2e6;
+  stroke-width: 1;
+  rx: 4;
+  ry: 4;
+}
+
+.container-border {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 2;
+  rx: 4;
+  ry: 4;
+}
+
+.container-border.selected {
+  stroke: #007bff;
+  stroke-width: 2;
+}
+
+.container-shape.hover {
+  stroke-width: 2;
+}
+
+/* Header Zone Styles */
+.header-background {
+  fill: #ffffff;
+  stroke: #dee2e6;
+  stroke-width: 1;
+  rx: 4;
+  ry: 4;
+}
+
+.header-text {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  fill: #333333;
+  text-anchor: start;
+}
+
+.header-text.hover {
+  fill: #007bff;
+}
+
+.status-indicator {
+  fill: transparent;
+}
+
+.status-indicator.unknown {
+  fill: #666666;
+}
+
+.status-indicator.ready {
+  fill: #28a745;
+}
+
+.status-indicator.updating {
+  fill: #ffc107;
+}
+
+.status-indicator.updated {
+  fill: #17a2b8;
+}
+
+.status-indicator.error {
+  fill: #dc3545;
+}
+
+.status-indicator.warning {
+  fill: #fd7e14;
+}
+
+/* Zoom Button Styles */
+.zoom-button {
+  cursor: pointer;
+}
+
+.zoom-button-bg {
+  fill: #ffffff;
+  stroke: #dee2e6;
+  stroke-width: 1;
+}
+
+.zoom-button-bg.hover {
+  fill: #f8f9fa;
+}
+
+.zoom-icon {
+  font-size: 12px;
+  font-weight: bold;
+  text-anchor: middle;
+  fill: #333333;
+}
+
+/* Node Styles (for type="Node") */
+.Node.shape {
+  fill: #f8f9fa;
+  stroke: #dee2e6;
+  stroke-width: 1;
+  rx: 5;
+  ry: 5;
+}
+
+.Node.label {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  fill: #333333;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Circle Node Styles */
+.circle.shape {
+  stroke: #000;
+  stroke-width: 1.5;
+}
+
+/* SSIS Node Styles */
+.SSIS.shape {
+  fill: #f8f9fa;
+  stroke: #dee2e6;
+  stroke-width: 1;
+  rx: 5;
+  ry: 5;
+}
+
+.SSIS.label {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  fill: #333333;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Adapter Node Styles */
+.adapter.shape {
+  fill: #f8f9fa;
+  stroke: #dee2e6;
+  stroke-width: 1;
+  rx: 5;
+  ry: 5;
+}
+
+.adapter.label {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  fill: #333333;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Placeholder Styles */
+.placeholder {
+  fill: red;
+  stroke: red;
+  stroke-width: 2;
+}
+
+/* Marker Styles */
+.marker-arrow {
+  stroke: context-stroke;
+  fill: context-stroke;
+  stroke-width: 2;
+}
+
+.marker-arrowhead {
+  stroke: context-stroke;
+  fill: none;
+  stroke-width: 2;
+}
+
+.marker-circle {
+  stroke: context-stroke;
+  stroke-width: 2;
+  fill: none;
+}
+
+.marker-diamond {
+  stroke: context-stroke;
+  fill: context-stroke;
+}
+
+.marker-square {
+  stroke: context-stroke;
+  fill: context-stroke;
+}
+
+/* Status-based styling for container shapes */
+.container-shape[status="Unknown"] {
+  fill: #ddc7ff;
+  fill-opacity: 0.1;
+}
+
+.container-shape[status="Ready"] {
+  fill: lightblue;
+  fill-opacity: 0.3;
+}
+
+.container-shape[status="Updating"] {
+  stroke: green;
+  fill: lightgreen;
+  fill-opacity: 0.3;
+}
+
+.container-shape[status="Updated"] {
+  stroke: none;
+  fill: rgb(24, 196, 24);
+  fill-opacity: 0.1;
+}
+
+.container-shape[status="Skipped"] {
+  stroke: yellowgreen;
+  fill: rgb(255, 252, 208);
+  fill-opacity: 1;
+}
+
+.container-shape[status="Delayed"] {
+  stroke: orange;
+}
+
+.container-shape[status="Warning"] {
+  stroke: orangered;
+  fill: orangered;
+  fill-opacity: 0.3;
+}
+
+.container-shape[status="Error"] {
+  stroke: red;
+  fill: red;
+  fill-opacity: 0.3;
+}
+
+/* Status-based styling for Node shapes */
+.Node.shape[status="Unknown"] {
+  fill: #ddc7ff;
+  fill-opacity: 0.1;
+}
+
+.Node.shape[status="Ready"] {
+  fill: lightblue;
+  fill-opacity: 0.3;
+}
+
+.Node.shape[status="Updating"] {
+  stroke: green;
+  fill: lightgreen;
+  fill-opacity: 0.3;
+}
+
+.Node.shape[status="Updated"] {
+  stroke: none;
+  fill: rgb(24, 196, 24);
+  fill-opacity: 0.1;
+}
+
+.Node.shape[status="Skipped"] {
+  stroke: yellowgreen;
+  fill: rgb(255, 252, 208);
+  fill-opacity: 1;
+}
+
+.Node.shape[status="Delayed"] {
+  stroke: orange;
+}
+
+.Node.shape[status="Warning"] {
+  stroke: orangered;
+  fill: orangered;
+  fill-opacity: 0.3;
+}
+
+.Node.shape[status="Error"] {
+  stroke: red;
+  fill: red;
+  fill-opacity: 0.3;
 }

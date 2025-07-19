@@ -43,7 +43,8 @@ export default class LaneNode extends BaseContainerNode {
 
       childNodes.forEach(childNode => {
         // Center horizontally within the inner container
-        const x = coordinateSystem.size.width / 2 - childNode.data.width / 2;
+        // The coordinate system origin is at the center of the inner container
+        const x = 0; // Center horizontally (relative to inner container center)
         const y = currentY;
 
         childNode.move(x, y);
@@ -101,16 +102,15 @@ export default class LaneNode extends BaseContainerNode {
       height: Math.max(this.data.height, contentHeight)
     });
     
-    // Position children vertically, starting just below the label
-    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
-    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+    // Simplified positioning: center children horizontally and stack vertically
+    let currentY = 0; // Start at the top of the inner container
     
-    let currentY = -this.data.height / 2 + this.containerMargin.top - this.containerMargin.bottom - containerOffsetY;
     this.childNodes.forEach((node) => {
-      const x = -this.data.width / 2 + node.data.width / 2 + this.containerMargin.left - containerOffsetX;
+      // Center horizontally (x = 0 means center of container)
+      const x = 0;
+      // Position vertically with proper spacing
       const y = currentY + node.data.height / 2;
+      
       node.move(x, y);
       currentY += node.data.height + this.nodeSpacing.vertical;
     });

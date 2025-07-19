@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Simple Lane Test</title>
+   <style>
+     body { font-family: Arial, sans-serif; margin: 20px; }
+     .container { border: 1px solid #ccc; padding: 20px; }
+     svg { border: 1px solid #ddd; }
+   </style>
+</head>
+<body>
+   <h1>Simple Lane Test</h1>
+   <div class="container">
+      <svg id="graph" width="600" height="400">
+      </svg>
+   </div>
+
+   <div id="status"></div>
+
+   <script type="module">
+      // Simple test data
+      const testData = {
+        settings: {
+          showCenterMark: true,
+          showGhostlines: false,
+          curved: false,
+          showGrid: true,
+          showGroupLabels: true,
+          showGroupTitles: true,
+        },
+        nodes: [
+          {
+            id: "root",
+            label: "Lane",
+            type: "lane",
+            groupType: "dynamic",
+            children: [
+              {
+                id: "simple",
+                label: "simple",
+                code: "S1",
+                type: "Node",
+              },
+              {
+                id: "longtext",
+                label: "this is a long text, going beyond the default width",
+                code: "S2",
+                type: "Node",
+              },
+              {
+                id: "very long",
+                label: "this is a very long text that will be cut off, because it is longer than the max width",
+                code: "S3",
+                type: "Node",
+              },
+            ],
+          },
+        ],
+        edges: [],
+      };
+
+      const statusDiv = document.getElementById('status');
+      
+      function updateStatus(message) {
+        statusDiv.innerHTML += '<p>' + message + '</p>';
+        console.log(message);
+      }
+
+      try {
+        updateStatus('Loading dashboard module...');
+        
+        import('./7_dashboard/js/index.js').then(flowDashboard => {
+          updateStatus('Dashboard module loaded successfully');
+          
+          const flowdash = new flowDashboard.default.Dashboard(testData);
+          updateStatus('Dashboard instance created');
+          
+          flowdash.initialize('#graph');
+          updateStatus('Dashboard initialized successfully');
+          
+          // Wait a bit and then check the results
+          setTimeout(() => {
+            const svg = document.querySelector('#graph');
+            const nodes = svg.querySelectorAll('g.Node');
+            updateStatus(`Found ${nodes.length} nodes`);
+            
+            // Check for specific issues
+            let longTextFound = false;
+            let veryLongTextFound = false;
+            
+            nodes.forEach(node => {
+              const text = node.querySelector('text');
+              const rect = node.querySelector('rect');
+              
+              if (text && text.textContent.includes('this is a long text')) {
+                longTextFound = true;
+                updateStatus('Long text node found');
+                
+                // Check if text is truncated
+                if (text.textContent.includes('...')) {
+                  updateStatus('✅ Long text is properly truncated with ellipses');
+                } else {
+                  updateStatus('❌ Long text is not truncated');
+                }
+              }
+              
+              if (text && text.textContent.includes('this is a very long text')) {
+                veryLongTextFound = true;
+                updateStatus('Very long text node found');
+                
+                // Check if text is truncated
+                if (text.textContent.includes('...')) {
+                  updateStatus('✅ Very long text is properly truncated with ellipses');
+                } else {
+                  updateStatus('❌ Very long text is not truncated');
+                }
+              }
+            });
+            
+            if (!longTextFound) updateStatus('❌ Long text node not found');
+            if (!veryLongTextFound) updateStatus('❌ Very long text node not found');
+            
+          }, 2000);
+          
+        }).catch(error => {
+          updateStatus('❌ Failed to load dashboard module: ' + error.message);
+          console.error('Failed to load dashboard module:', error);
+        });
+      } catch (error) {
+        updateStatus('❌ Error in script: ' + error.message);
+        console.error('Error in script:', error);
+      }
+   </script>
+</body>
+</html> 

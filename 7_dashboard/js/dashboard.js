@@ -137,15 +137,15 @@ export class Dashboard {
       .attr("y", -this.main.height / 2)
       .attr("width", "100%")
       .attr("height", "100%")
-      .attr("fill", "white");
+      .attr("class", "minimap-eyeball");
     eye
       .append("rect")
       .attr("id", "pupil")
+      .attr("class", "minimap-pupil")
       .attr("x", this.minimap.eye.x)
       .attr("y", this.minimap.eye.y)
       .attr("width", this.minimap.eye.width)
-      .attr("height", this.minimap.eye.height)
-      .attr("fill", "black");
+      .attr("height", this.minimap.eye.height);
 
     this.minimap.svg
       .insert("rect", ":first-child") // Insert as the first child

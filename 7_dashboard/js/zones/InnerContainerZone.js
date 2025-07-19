@@ -69,7 +69,8 @@ export class InnerContainerZone extends BaseZone {
       const marginSize = marginZone.getSize();
       
       // Calculate inner container position relative to node center
-      const innerX = -this.size.width / 2 + marginSize.left;
+      // The inner container should be centered horizontally within the node
+      const innerX = 0; // Center horizontally (relative to node center)
       const innerY = -this.size.height / 2 + headerHeight + marginSize.top;
       
       this.coordinateSystem = {
@@ -87,9 +88,9 @@ export class InnerContainerZone extends BaseZone {
       // Fallback if margin zone is not available
       const innerY = -this.size.height / 2 + headerHeight;
       this.coordinateSystem = {
-        origin: { x: -this.size.width / 2, y: innerY },
+        origin: { x: 0, y: innerY }, // Center horizontally
         size: { width: this.size.width, height: this.size.height - headerHeight },
-        transform: `translate(${-this.size.width / 2}, ${innerY})`
+        transform: `translate(0, ${innerY})` // Center horizontally
       };
     }
   }

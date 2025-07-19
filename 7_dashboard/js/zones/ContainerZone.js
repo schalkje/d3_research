@@ -21,19 +21,12 @@ export class ContainerZone extends BaseZone {
     // Create the main container shape
     this.shape = this.element.append('rect')
       .attr('class', 'container-shape')
-      .attr('rx', 4) // Rounded corners
-      .attr('ry', 4)
       .attr('x', 0)
       .attr('y', 0);
     
     // Create border for selection feedback
     this.border = this.element.append('rect')
       .attr('class', 'container-border')
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .attr('fill', 'none')
-      .attr('stroke-width', 2)
-      .attr('stroke', 'transparent')
       .attr('x', 0)
       .attr('y', 0);
   }
@@ -42,13 +35,20 @@ export class ContainerZone extends BaseZone {
    * Setup container styling
    */
   setupStyling() {
-    this.shape
-      .attr('fill', this.node.settings.containerFill || '#f8f9fa')
-      .attr('stroke', this.node.settings.containerStroke || '#dee2e6')
-      .attr('stroke-width', this.node.settings.containerStrokeWidth || 1);
+    // Apply custom settings if provided, otherwise use CSS defaults
+    if (this.node.settings.containerFill) {
+      this.shape.attr('fill', this.node.settings.containerFill);
+    }
+    if (this.node.settings.containerStroke) {
+      this.shape.attr('stroke', this.node.settings.containerStroke);
+    }
+    if (this.node.settings.containerStrokeWidth) {
+      this.shape.attr('stroke-width', this.node.settings.containerStrokeWidth);
+    }
     
-    this.border
-      .attr('stroke-width', this.node.settings.selectionBorderWidth || 2);
+    if (this.node.settings.selectionBorderWidth) {
+      this.border.attr('stroke-width', this.node.settings.selectionBorderWidth);
+    }
   }
 
   /**
@@ -102,12 +102,18 @@ export class ContainerZone extends BaseZone {
     if (!this.border) return;
     
     if (this.node.selected) {
-      this.border
-        .attr('stroke', this.node.settings.selectionColor || '#007bff')
-        .attr('stroke-width', this.node.settings.selectionBorderWidth || 2);
+      this.border.classed('selected', true);
+      // Apply custom selection color if provided
+      if (this.node.settings.selectionColor) {
+        this.border.attr('stroke', this.node.settings.selectionColor);
+      }
+      if (this.node.settings.selectionBorderWidth) {
+        this.border.attr('stroke-width', this.node.settings.selectionBorderWidth);
+      }
     } else {
-      this.border
-        .attr('stroke', 'transparent');
+      this.border.classed('selected', false);
+      this.border.attr('stroke', null); // Reset to CSS default
+      this.border.attr('stroke-width', null); // Reset to CSS default
     }
   }
 
@@ -122,10 +128,15 @@ export class ContainerZone extends BaseZone {
     const statusColors = this.node.settings.statusColors || {};
     
     if (statusColors[status]) {
-      this.shape
-        .attr('stroke', statusColors[status].border || this.node.settings.containerStroke)
-        .attr('fill', statusColors[status].fill || this.node.settings.containerFill);
+      // Apply custom status colors if provided
+      if (statusColors[status].border) {
+        this.shape.attr('stroke', statusColors[status].border);
+      }
+      if (statusColors[status].fill) {
+        this.shape.attr('fill', statusColors[status].fill);
+      }
     }
+    // CSS will handle default status styling via attribute selectors
   }
 
   /**
@@ -172,16 +183,14 @@ export class ContainerZone extends BaseZone {
    * Handle mouse enter events
    */
   handleMouseEnter(event) {
-    this.shape
-      .attr('stroke-width', (this.node.settings.containerStrokeWidth || 1) + 1);
+    this.shape.classed('hover', true);
   }
 
   /**
    * Handle mouse leave events
    */
   handleMouseLeave(event) {
-    this.shape
-      .attr('stroke-width', this.node.settings.containerStrokeWidth || 1);
+    this.shape.classed('hover', false);
   }
 
   /**

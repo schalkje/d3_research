@@ -26,23 +26,19 @@ export class HeaderZone extends BaseZone {
     
     // Create background rectangle
     this.background = this.element.append('rect')
-      .attr('class', 'header-background')
-      .attr('rx', 4)
-      .attr('ry', 4);
+      .attr('class', 'header-background');
     
     // Create text element
     this.textElement = this.element.append('text')
       .attr('class', 'header-text')
       .attr('x', this.padding)
       .attr('y', 0)
-      .attr('dy', '0.35em')
-      .attr('text-anchor', 'start');
+      .attr('dy', '0.35em');
     
     // Create status indicator
     this.statusIndicator = this.element.append('circle')
       .attr('class', 'status-indicator')
-      .attr('r', 3)
-      .attr('fill', 'transparent');
+      .attr('r', 3);
     
     // Create zoom button (for container nodes)
     if (this.node.isContainer) {
@@ -55,24 +51,17 @@ export class HeaderZone extends BaseZone {
    */
   createZoomButton() {
     this.zoomButton = this.element.append('g')
-      .attr('class', 'zoom-button')
-      .style('cursor', 'pointer');
+      .attr('class', 'zoom-button');
     
     // Button background
     this.zoomButton.append('circle')
       .attr('class', 'zoom-button-bg')
-      .attr('r', 8)
-      .attr('fill', '#ffffff')
-      .attr('stroke', '#dee2e6')
-      .attr('stroke-width', 1);
+      .attr('r', 8);
     
     // Plus/minus icon
     this.zoomButton.append('text')
       .attr('class', 'zoom-icon')
-      .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('font-size', '12px')
-      .attr('font-weight', 'bold')
       .text('−'); // Default to minus (expanded)
   }
 
@@ -80,18 +69,29 @@ export class HeaderZone extends BaseZone {
    * Setup header styling
    */
   setupStyling() {
-    // Background styling
-    this.background
-      .attr('fill', this.node.settings.headerFill || '#ffffff')
-      .attr('stroke', this.node.settings.headerStroke || '#dee2e6')
-      .attr('stroke-width', this.node.settings.headerStrokeWidth || 1);
+    // Apply custom settings if provided, otherwise use CSS defaults
+    if (this.node.settings.headerFill) {
+      this.background.attr('fill', this.node.settings.headerFill);
+    }
+    if (this.node.settings.headerStroke) {
+      this.background.attr('stroke', this.node.settings.headerStroke);
+    }
+    if (this.node.settings.headerStrokeWidth) {
+      this.background.attr('stroke-width', this.node.settings.headerStrokeWidth);
+    }
     
-    // Text styling
-    this.textElement
-      .attr('font-family', this.node.settings.fontFamily || 'Arial, sans-serif')
-      .attr('font-size', this.node.settings.fontSize || '12px')
-      .attr('font-weight', this.node.settings.fontWeight || 'normal')
-      .attr('fill', this.node.settings.textColor || '#333333');
+    if (this.node.settings.fontFamily) {
+      this.textElement.attr('font-family', this.node.settings.fontFamily);
+    }
+    if (this.node.settings.fontSize) {
+      this.textElement.attr('font-size', this.node.settings.fontSize);
+    }
+    if (this.node.settings.fontWeight) {
+      this.textElement.attr('font-weight', this.node.settings.fontWeight);
+    }
+    if (this.node.settings.textColor) {
+      this.textElement.attr('fill', this.node.settings.textColor);
+    }
     
     // Status indicator styling
     this.updateStatusIndicator();
@@ -207,11 +207,15 @@ export class HeaderZone extends BaseZone {
     const status = this.node.status;
     const statusColors = this.node.settings.statusColors || {};
     
-    if (statusColors[status]) {
-      this.statusIndicator
-        .attr('fill', statusColors[status].indicator || statusColors[status].border || '#666666');
+    // Remove all status classes
+    this.statusIndicator.classed('unknown ready updating updated error warning', false);
+    
+    if (statusColors[status] && statusColors[status].indicator) {
+      // Apply custom indicator color if provided
+      this.statusIndicator.attr('fill', statusColors[status].indicator);
     } else {
-      this.statusIndicator.attr('fill', 'transparent');
+      // Apply CSS status class
+      this.statusIndicator.classed(status.toLowerCase(), true);
     }
   }
 
@@ -283,7 +287,7 @@ export class HeaderZone extends BaseZone {
    */
   handleZoomMouseEnter(event) {
     this.zoomButton.select('.zoom-button-bg')
-      .attr('fill', '#f8f9fa');
+      .classed('hover', true);
   }
 
   /**
@@ -291,7 +295,7 @@ export class HeaderZone extends BaseZone {
    */
   handleZoomMouseLeave(event) {
     this.zoomButton.select('.zoom-button-bg')
-      .attr('fill', '#ffffff');
+      .classed('hover', false);
   }
 
   /**
@@ -308,16 +312,24 @@ export class HeaderZone extends BaseZone {
    * Handle text mouse enter
    */
   handleTextMouseEnter(event) {
-    this.textElement
-      .attr('fill', this.node.settings.textHoverColor || '#007bff');
+    this.textElement.classed('hover', true);
+    // Apply custom hover color if provided
+    if (this.node.settings.textHoverColor) {
+      this.textElement.attr('fill', this.node.settings.textHoverColor);
+    }
   }
 
   /**
    * Handle text mouse leave
    */
   handleTextMouseLeave(event) {
-    this.textElement
-      .attr('fill', this.node.settings.textColor || '#333333');
+    this.textElement.classed('hover', false);
+    // Reset to custom color if provided, otherwise use CSS default
+    if (this.node.settings.textColor) {
+      this.textElement.attr('fill', this.node.settings.textColor);
+    } else {
+      this.textElement.attr('fill', null); // Reset to CSS default
+    }
   }
 
   /**

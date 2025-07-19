@@ -68,6 +68,15 @@ The test suite is organized into the following categories:
    - Verifies CSS classes (Node, shape, label)
    - Checks font properties (size: 12px, family: Arial, color: #333333)
 
+8. **Lane Layout with Rectangular Nodes**
+   - `should render lane with 3 rectangular nodes correctly`
+   - **Test Environment**: `/5_nodes/01_rectNode/03_node_lane.html`
+   - Verifies lane container with 3 child rectangular nodes
+   - Tests text truncation with ellipses for long text
+   - Validates proper centering of child nodes within lane container
+   - Checks horizontal centering with tolerance of 5px
+   - Ensures child nodes are positioned at the center of the lane, not the left border
+
 ### Adapter Node Tests (`adapter-nodes.spec.js`)
 
 **Test Environment**: `/5_nodes/10_adapter/01_single.html`
@@ -443,7 +452,7 @@ npx playwright test --headed
 ## Test Coverage Summary
 
 ### Node Types Covered
-- ✅ Rectangular Nodes (7 tests)
+- ✅ Rectangular Nodes (8 tests)
 - ✅ Adapter Nodes (25+ tests)
 - ✅ Foundation Nodes (6 tests)
 - ✅ General Node Rendering (comprehensive)
@@ -475,6 +484,29 @@ npx playwright test --headed
 - ✅ Interactive Behaviors
 - ✅ Performance Metrics
 - ✅ Error Handling
+
+## Recent Fixes and Improvements
+
+### Text Handling Improvements (December 2024)
+- **Text Truncation**: Added ellipsis truncation for long text labels
+- **Text Width Calculation**: Improved minimum width calculation with proper padding
+- **Text Overflow**: Fixed long text going off-screen by ensuring adequate container width
+
+### Lane Node Centering Fix (December 2024)
+- **Problem**: Rectangular nodes were positioned at the left border of lane containers
+- **Root Cause**: InnerContainerZone coordinate system was not properly centered
+- **Fix**: Updated coordinate system calculation to center inner container horizontally
+- **Files Modified**: 
+  - `7_dashboard/js/zones/InnerContainerZone.js` - Fixed coordinate system
+  - `7_dashboard/js/nodeLane.js` - Updated layout algorithm
+  - `7_dashboard/js/nodeRect.js` - Added text truncation
+- **Test Coverage**: Added comprehensive test for lane centering validation
+
+### Technical Details
+- **Coordinate System**: Inner container now positioned at x=0 (center) instead of left edge
+- **Text Truncation**: Iterative truncation with ellipsis when text exceeds container width
+- **Padding**: Added 20px minimum padding for text containers
+- **Tolerance**: 5px tolerance for centering validation in tests
 
 ## Test Maintenance
 

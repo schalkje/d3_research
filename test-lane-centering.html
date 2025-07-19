@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Lane Centering Test</title>
+   <style>
+     body { font-family: Arial, sans-serif; margin: 20px; }
+     .container { border: 1px solid #ccc; padding: 20px; }
+     svg { border: 1px solid #ddd; }
+     #status { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+   </style>
+</head>
+<body>
+   <h1>Lane Centering Test</h1>
+   <div class="container">
+      <svg id="graph" width="600" height="400">
+      </svg>
+   </div>
+
+   <div id="status"></div>
+
+   <script type="module">
+      // Simple test data
+      const testData = {
+        settings: {
+          showCenterMark: true,
+          showGhostlines: false,
+          curved: false,
+          showGrid: true,
+          showGroupLabels: true,
+          showGroupTitles: true,
+        },
+        nodes: [
+          {
+            id: "root",
+            label: "Lane",
+            type: "lane",
+            groupType: "dynamic",
+            children: [
+              {
+                id: "simple",
+                label: "simple",
+                code: "S1",
+                type: "Node",
+              },
+              {
+                id: "longtext",
+                label: "this is a long text, going beyond the default width",
+                code: "S2",
+                type: "Node",
+              },
+              {
+                id: "very long",
+                label: "this is a very long text that will be cut off, because it is longer than the max width",
+                code: "S3",
+                type: "Node",
+              },
+            ],
+          },
+        ],
+        edges: [],
+      };
+
+      const statusDiv = document.getElementById('status');
+      
+      function updateStatus(message) {
+        statusDiv.innerHTML += '<p>' + message + '</p>';
+        console.log(message);
+      }
+
+      try {
+        updateStatus('Loading dashboard module...');
+        
+        import('./7_dashboard/js/index.js').then(flowDashboard => {
+          updateStatus('Dashboard module loaded successfully');
+          
+          const flowdash = new flowDashboard.default.Dashboard(testData);
+          updateStatus('Dashboard instance created');
+          
+          flowdash.initialize('#graph');
+          updateStatus('Dashboard initialized successfully');
+          
+          // Wait a bit and then check the results
+          setTimeout(() => {
+            const svg = document.querySelector('#graph');
+            const nodes = svg.querySelectorAll('g.Node');
+            updateStatus(`Found ${nodes.length} nodes`);
+            
+            // Find the lane node
+            let laneNode = null;
+            let childNodes = [];
+            
+            nodes.forEach(node => {
+              const text = node.querySelector('text');
+              if (text) {
+                if (text.textContent.includes('Lane')) {
+                  laneNode = node;
+                  updateStatus('Lane node found');
+                } else if (text.textContent.includes('simple') || 
+                          text.textContent.includes('longtext') || 
+                          text.textContent.includes('very long')) {
+                  childNodes.push(node);
+                  updateStatus(`Child node found: ${text.textContent}`);
+                }
+              }
+            });
+            
+            if (laneNode && childNodes.length > 0) {
+              // Check centering
+              const laneRect = laneNode.querySelector('rect');
+              if (laneRect) {
+                const laneX = parseFloat(laneRect.getAttribute('x') || 0);
+                const laneY = parseFloat(laneRect.getAttribute('y') || 0);
+                const laneW = parseFloat(laneRect.getAttribute('width') || 0);
+                const laneH = parseFloat(laneRect.getAttribute('height') || 0);
+                
+                const laneCenterX = laneX + laneW / 2;
+                const laneCenterY = laneY + laneH / 2;
+                
+                updateStatus(`Lane bounds: x=${laneX}, y=${laneY}, w=${laneW}, h=${laneH}`);
+                updateStatus(`Lane center: x=${laneCenterX}, y=${laneCenterY}`);
+                
+                // Check each child node
+                childNodes.forEach((childNode, index) => {
+                  const childRect = childNode.querySelector('rect');
+                  if (childRect) {
+                    const childX = parseFloat(childRect.getAttribute('x') || 0);
+                    const childY = parseFloat(childRect.getAttribute('y') || 0);
+                    const childW = parseFloat(childRect.getAttribute('width') || 0);
+                    const childH = parseFloat(childRect.getAttribute('height') || 0);
+                    
+                    const childCenterX = childX + childW / 2;
+                    const childCenterY = childY + childH / 2;
+                    
+                    const horizontalOffset = Math.abs(childCenterX - laneCenterX);
+                    const verticalOffset = Math.abs(childCenterY - laneCenterY);
+                    
+                    updateStatus(`Child ${index + 1}: center=(${childCenterX}, ${childCenterY}), offset=(${horizontalOffset}, ${verticalOffset})`);
+                    
+                    if (horizontalOffset < 5) {
+                      updateStatus(`✅ Child ${index + 1} is properly centered horizontally`);
+                    } else {
+                      updateStatus(`❌ Child ${index + 1} is NOT centered horizontally (offset: ${horizontalOffset}px)`);
+                    }
+                  }
+                });
+              }
+            } else {
+              updateStatus('❌ Could not find lane node or child nodes');
+            }
+            
+          }, 2000);
+          
+        }).catch(error => {
+          updateStatus('❌ Failed to load dashboard module: ' + error.message);
+          console.error('Failed to load dashboard module:', error);
+        });
+      } catch (error) {
+        updateStatus('❌ Error in script: ' + error.message);
+        console.error('Error in script:', error);
+      }
+   </script>
+</body>
+</html> 

@@ -347,12 +347,9 @@ export default class BaseContainerNode extends BaseNode {
       const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
       this.element
         .append("rect")
-        .attr("class", (d) => `${this.data.type} placeholder`)
+        .attr("class", `${this.data.type} placeholder`)
         .attr("width", containerWidth)
         .attr("height", containerHeight)
-        .attr("fill", "red")
-        .attr("stroke", "red")
-        .attr("stroke-width", 2)
         .attr("x", -containerWidth / 2)
         .attr("y", -containerHeight / 2);
     }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Lane Fix Test</title>
+   <link rel="stylesheet" href="7_dashboard/flowdash.css">
+   <script src="7_dashboard/libs/d3.min.js"></script>
+   <script src="7_dashboard/libs/d3-shape.min.js"></script>
+   <script src="7_dashboard/libs/d3-dag.iife.min.js"></script>
+</head>
+<body>
+   <h1>Lane Fix Test</h1>
+   <div class="container">
+      <svg id="graph" class="canvas" width="800" height="600">
+      </svg>
+   </div>
+
+   <script type="module">
+      const testData = {
+        settings: {
+          showCenterMark: true,
+          showGhostlines: false,
+          curved: false,
+          showGrid: true,
+          showGroupLabels: true,
+          showGroupTitles: true,
+        },
+        nodes: [
+          {
+            id: "root",
+            label: "Lane",
+            type: "lane",
+            groupType: "dynamic",
+            children: [
+              {
+                id: "simple",
+                label: "simple",
+                code: "S1",
+                type: "Node",
+              },
+              {
+                id: "longtext",
+                label: "this is a long text, going beyond the default width",
+                code: "S2",
+                type: "Node",
+              },
+              {
+                id: "very long",
+                label: "this is a very long text that will be cut off, because it is longer than the max width",
+                code: "S3",
+                type: "Node",
+              },
+            ],
+          },
+        ],
+        edges: [],
+      };
+
+      try {
+        import('./7_dashboard/js/index.js').then(flowDashboard => {
+          console.log('Dashboard module loaded:', flowDashboard);
+          const flowdash = new flowDashboard.default.Dashboard(testData);
+          flowdash.initialize('#graph');
+          console.log('Dashboard initialized successfully');
+        }).catch(error => {
+          console.error('Failed to load dashboard module:', error);
+        });
+      } catch (error) {
+        console.error('Error in script:', error);
+      }
+   </script>
+</body>
+</html> 

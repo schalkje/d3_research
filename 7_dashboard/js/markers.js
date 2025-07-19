@@ -13,9 +13,7 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
-    .attr("stroke", "context-stroke")
-    .attr("fill", "context-stroke")
-    .attr("stroke-width", 2)
+    .attr("class", "marker-arrow")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
     defs
@@ -30,9 +28,7 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
-    .attr("stroke", "context-stroke")
-    .attr("fill", "none")
-    .attr("stroke-width", 2)
+    .attr("class", "marker-arrowhead")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");
 
     defs
@@ -47,8 +43,7 @@ export function createMarkers(container) {
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("svg:path")
-    .attr("stroke", "context-stroke")
-    .attr("fill", "none")
+    .attr("class", "marker-arrowhead")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5");    
 
 // defs
@@ -74,9 +69,7 @@ defs
 .attr("markerHeight", 4)
 .attr("xoverflow", "visible")
 .append("circle")
-.attr("stroke", "context-stroke")
-.attr("stroke-width", 2)  
-.attr("fill", "none")
+.attr("class", "marker-circle")
 // https://www.w3.org/TR/SVG2/painting.html#LineJoin
 .attr("cx", 0)
 .attr("cy", 0)
@@ -94,8 +87,7 @@ defs
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("circle")
-    .attr("stroke", "context-stroke")
-    .attr("fill", "context-stroke")
+    .attr("class", "marker-diamond")
     .attr("cx", 0)
     .attr("cy", 0)
     .attr("r", 5);
@@ -112,8 +104,7 @@ defs
     .attr("markerHeight", 4)
     .attr("xoverflow", "visible")
     .append("circle")
-    .attr("stroke", "context-stroke")
-    .attr("fill", "context-stroke")
+    .attr("class", "marker-square")
     .attr("cx", 0)
     .attr("cy", 0)
     .attr("r", 5);
@@ -132,15 +123,13 @@ defs
 
     circle_arrow
       .append("circle")
+      .attr("class", "marker-diamond")
       .attr("cx", 0)
       .attr("cy", 0)
-      .attr("r", 7)
-      .attr("stroke", "context-stroke")
-      .attr("fill", "context-stroke");
+      .attr("r", 7);
 
     circle_arrow
       .append("svg:path")
-      .attr("d", "M 0,-5 L 20 ,0 L 0,5")
-      .attr("stroke", "context-stroke")
-      .attr("fill", "context-stroke");
+      .attr("class", "marker-arrow")
+      .attr("d", "M 0,-5 L 20 ,0 L 0,5");
 }
