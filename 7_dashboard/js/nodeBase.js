@@ -62,7 +62,16 @@ export default class BaseNode {
   set visible(value) {
     if (value === this._visible) return;
     // console.log("nodeBase - Setting visible", this.data.label, value);
-    this._visible = value;    
+    this._visible = value;
+    
+    // Actually hide/show the DOM element
+    if (this.element) {
+      if (value) {
+        this.element.style('display', null); // Show element
+      } else {
+        this.element.style('display', 'none'); // Hide element
+      }
+    }
   }
 
   get collapsed() {

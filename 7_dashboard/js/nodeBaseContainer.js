@@ -156,7 +156,16 @@ export default class BaseContainerNode extends BaseNode {
         this.resize(this.data.expandedSize, true);
       }
 
-      this.initChildren();
+      // Initialize children if they haven't been created yet
+      if (this.childNodes.length === 0) {
+        this.initChildren();
+      } else {
+        // Show child nodes if using zone system
+        if (this.zoneManager?.innerContainerZone) {
+          this.zoneManager.innerContainerZone.updateChildVisibility(true);
+        }
+      }
+      
       this.initEdges();
     }
   }
@@ -169,7 +178,13 @@ export default class BaseContainerNode extends BaseNode {
       // Js: + 5, because of a strange bug, where the size differs slightly between renders, depending on the zoom level
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
-    this.cleanContainer();
+    // Hide child nodes but keep zone system elements
+    if (this.zoneManager?.innerContainerZone) {
+      this.zoneManager.innerContainerZone.updateChildVisibility(false);
+    } else {
+      // Fallback to old behavior if zone system not available
+      this.cleanContainer();
+    }
 
     this.update();
 
@@ -301,10 +316,16 @@ export default class BaseContainerNode extends BaseNode {
 
     // Zone manager is already initialized in BaseNode.init()
 
-    // Calculate minimum size based on label
+    // Calculate minimum size based on label and zone system
     const labelText = this.data.label || '';
     const labelWidth = labelText.length * 8 + 36; // Approximate text width
-    const labelHeight = 20; // Approximate text height
+    
+    // Use zone system header height if available, otherwise fallback to default
+    let labelHeight = 20; // Default fallback
+    if (this.zoneManager?.headerZone) {
+      labelHeight = this.zoneManager.headerZone.getHeaderHeight();
+    }
+    
     const defaultSize = { width: labelWidth, height: labelHeight };
     this.minimumSize = GeometryManager.calculateMinimumSize([], defaultSize);
     

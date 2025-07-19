@@ -443,6 +443,18 @@ text {
   stroke-width: 2;
 }
 
+/* Collapsed Container Styles */
+.collapsed .container-shape {
+  fill: #f8f9fa;
+  stroke: #adb5bd;
+  stroke-width: 1;
+  opacity: 0.8;
+}
+
+.collapsed .container-border {
+  stroke: transparent;
+}
+
 /* Header Zone Styles */
 .header-background {
   fill: #ffffff;

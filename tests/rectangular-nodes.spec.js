@@ -261,7 +261,7 @@ test.describe('Rectangular Node Tests', () => {
     expect(nodesFound).toBe(true);
     
     // Check for the lane container and child nodes
-    const laneNode = page.locator('g.Node').filter({ hasText: 'Lane' });
+    const laneNode = page.locator('g.lane').filter({ hasText: 'Lane' });
     await expect(laneNode).toHaveCount(1);
     
     // Check for child rectangular nodes - use a more flexible selector
@@ -339,7 +339,7 @@ test.describe('Rectangular Node Tests', () => {
     
     // Test that child nodes are centered within the lane container
     const centeringTest = await page.evaluate(() => {
-      const laneNode = Array.from(document.querySelectorAll('g.Node')).find(node => {
+      const laneNode = Array.from(document.querySelectorAll('g.lane')).find(node => {
         const text = node.querySelector('text');
         return text && text.textContent.includes('Lane');
       });
