@@ -41,11 +41,11 @@ export class MarginZone extends BaseZone {
   }
 
   /**
-   * Create margin zone element (invisible, just for organization)
+   * Create margin zone element (no visual element needed)
    */
   createElement() {
-    super.createElement();
-    this.element.style('pointer-events', 'none');
+    // Margins are layout-only, no visual element needed
+    this.element = null;
   }
 
   /**
@@ -60,6 +60,16 @@ export class MarginZone extends BaseZone {
    */
   setupInteractions() {
     // Margins have no interactions
+  }
+
+  /**
+   * Update margin zone (no visual updates needed)
+   */
+  update() {
+    if (!this.initialized) return;
+    
+    // Margins are layout-only, no visual updates needed
+    this.updateSize();
   }
 
   /**

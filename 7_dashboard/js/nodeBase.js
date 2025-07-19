@@ -150,6 +150,11 @@ export default class BaseNode {
     this.zoneManager = new ZoneManager(this);
     this.zoneManager.init();
 
+    // Resize zones with actual node dimensions
+    if (this.zoneManager) {
+      this.zoneManager.resize(this.data.width, this.data.height);
+    }
+
     // Set up default events using EventManager
     EventManager.setupDefaultNodeEvents(this);
       

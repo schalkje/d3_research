@@ -17,8 +17,9 @@ const AdapterMode = Object.freeze({
 
 export default class AdapterNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
-    this.initializeNodeData(nodeData);
     super(nodeData, parentElement, createNode, settings, parentNode);
+    
+    this.initializeNodeData(nodeData);
 
     this.stagingNode = null;
     this.transformNode = null;
@@ -178,10 +179,10 @@ export default class AdapterNode extends BaseContainerNode {
           copyChild.label = copyChild.role;
           copyChild.width = 80;
         }
-        childNode = new RectangularNode(copyChild, this.container, this.settings, this);
+        childNode = new RectangularNode(copyChild, this.zoneManager?.innerContainerZone?.getChildContainer(), this.settings, this);
         this.childNodes.push(childNode);
       }
-      childNode.init(this.container);
+      childNode.init(this.zoneManager?.innerContainerZone?.getChildContainer());
     }
     return childNode;
   }

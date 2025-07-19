@@ -29,7 +29,6 @@ export default class BaseContainerNode extends BaseNode {
     this.createNode = createNode;
 
     this.simulation = null;
-    this._container = null;
     this.edgesContainer ??= null;
     this.containerMargin = ConfigManager.getDefaultContainerMargin();
     this.nodeSpacing = ConfigManager.getDefaultNodeSpacing();
@@ -47,14 +46,6 @@ export default class BaseContainerNode extends BaseNode {
 
   get nestedCorrection_x() {
     return this.x;
-  }
-
-  get container() {
-    if (this._container == null) {
-      // console.log("    BaseContainerNode - Creating container", this.data.label);
-      this._container = this.element.append("g").attr("class", (d) => `node-container`);
-    }
-    return this._container;
   }
 
   get collapsed() {
@@ -100,7 +91,6 @@ export default class BaseContainerNode extends BaseNode {
   }
   set status(value) {
     super.status = value;
-    this.shape.attr("status", value);
   }
 
   determineStatusBasedOnChildren() {
@@ -225,12 +215,12 @@ export default class BaseContainerNode extends BaseNode {
 
   positionContainer() {
     // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
-    var containerDimensions = getComputedDimensions(this.container);
+    var containerDimensions = getComputedDimensions(this.element);
     var elementDimensions = getComputedDimensions(this.element);
 
     const containerX = 0;
     var containerY = elementDimensions.y - containerDimensions.y + this.containerMargin.top;
-    this.container.attr("transform", `translate(${containerX}, ${containerY})`);
+    this.element.attr("transform", `translate(${containerX}, ${containerY})`);
   }
 
   initEdges(propagate = false) {
@@ -240,7 +230,7 @@ export default class BaseContainerNode extends BaseNode {
       // create container for child nodes
       if (this.edgesContainer == null) 
       {
-        this.edgesContainer = this.container.append("g").attr("class", (d) => `edges`);
+        this.edgesContainer = this.element.append("g").attr("class", (d) => `edges`);
       }
       else
       {
@@ -254,7 +244,7 @@ export default class BaseContainerNode extends BaseNode {
             if (this.ghostContainer)
               this.ghostContainer.selectAll("*").remove();
             else
-              this.ghostContainer = this.container
+              this.ghostContainer = this.element
                 .append("g")
                 .attr("class", (d) => `ghostlines`)
                 .lower(); // move it to the background
@@ -332,19 +322,7 @@ export default class BaseContainerNode extends BaseNode {
       );
     }
 
-    // Draw the node shape (now handled by ContainerZone)
-    this.shape = this.element
-      .insert("rect", ":first-child")
-      .attr("class", (d) => `${this.data.type} shape`)
-      .attr("width", this.data.width)
-      .attr("height", this.data.height)
-      .attr("status", this.status)
-      .attr("x", -this.data.width / 2)
-      .attr("y", -this.data.height / 2)
-      .attr("rx", 5)
-      .attr("ry", 5);
-
-    // Zoom button is now handled by HeaderZone in the zone system
+    // Shape drawing is now handled by ContainerZone in the zone system
 
     if (this.collapsed) {
       this.collapse();
@@ -367,7 +345,7 @@ export default class BaseContainerNode extends BaseNode {
       // no rendering of the children, but this renders a placeholder rect
       const containerWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
       const containerHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-      this.container
+      this.element
         .append("rect")
         .attr("class", (d) => `${this.data.type} placeholder`)
         .attr("width", containerWidth)
@@ -381,7 +359,7 @@ export default class BaseContainerNode extends BaseNode {
     else
     {
       // Get child container from zone system
-      const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.container;
+      const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.element;
       
       for (const node of this.data.children) {
         // Create the childComponent instance based on node type
@@ -414,19 +392,7 @@ export default class BaseContainerNode extends BaseNode {
     // console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
     super.update();
 
-    this.element
-      .select(".shape")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height)
-      .attr("x", -this.data.width / 2)
-      .attr("y", -this.data.height / 2);
-
-    this.element
-      .select(".label")
-      .attr("x", -this.data.width / 2 + 4)
-      .attr("y", -this.data.height / 2 + 4);
-
-    // Zoom button positioning is now handled by HeaderZone
+    // Shape drawing is now handled by ContainerZone in the zone system
 
     if (!this.collapsed) {
       this.updateChildren();
@@ -465,7 +431,7 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     // Fallback to legacy positioning
-    this.container.attr(
+    this.element.attr(
       "transform",
       `translate(
             ${this.containerMargin.left - this.containerMargin.right}, 
@@ -477,10 +443,8 @@ export default class BaseContainerNode extends BaseNode {
   // Method to remove child nodes from the SVG
   cleanContainer(propagate = true) {
     // console.log("    Removing Children for:", this.data.label);
-    this.container.selectAll("*").remove();
-    this.container.remove();
-    this.edgesContainer = null
-    this._container = null;
+    this.element.selectAll("*").remove();
+    this.edgesContainer = null;
     for (const childNode of this.childNodes) {
       if (childNode instanceof BaseContainerNode) childNode.cleanContainer(propagate);
     }

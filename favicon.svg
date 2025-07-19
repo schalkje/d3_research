@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Flow line 1 -->
+  <path d="M10 44 Q23 25, 54 34" stroke="#2879C7" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Flow line 2 -->
+  <path d="M10 32 Q23 13, 54 22" stroke="#50C878" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Flow line 3 (Accent) -->
+  <path d="M10 22 Q28 8, 54 14" stroke="#F39C12" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>
