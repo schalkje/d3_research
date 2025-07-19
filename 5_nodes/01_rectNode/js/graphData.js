@@ -3,6 +3,30 @@
 // Setup data
 //
 
+export const rectNode = {
+  settings: {
+    showCenterMark: false,
+
+    // edges
+    showGhostlines: false,
+    curved: false,
+
+    // ideas
+    showGrid: true,
+    showGroupLabels: true,
+    showGroupTitles: true,
+  },
+  nodes: [
+    {
+      id: "simple",
+      label: "Rectangular Node",
+      code: "S1",
+      type: "Node",
+    },
+  ],
+  edges: [],
+};
+
 export const nodeLane = {
   settings: {
     showCenterMark: false,

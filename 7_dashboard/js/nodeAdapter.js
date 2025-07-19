@@ -76,6 +76,12 @@ export default class AdapterNode extends BaseContainerNode {
 
     this.createInternalEdges();
     this.initEdges();
+    
+    // Trigger child positioning after all children are initialized
+    if (this.zoneManager?.innerContainerZone) {
+      this.zoneManager.innerContainerZone.forceUpdateChildPositions();
+    }
+    
     this.updateChildren();
     this.resize(this.data.expandedSize, true);
     this.update();
@@ -173,228 +179,208 @@ export default class AdapterNode extends BaseContainerNode {
 
   initChildNode(childData, childNode) {
     if (childData) {
+      // Always use the inner container zone's child container as the parent element
+      const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
       if (childNode == null) {
         const copyChild = JSON.parse(JSON.stringify(childData));
         if (this.data.layout.displayMode === DisplayMode.ROLE) {
           copyChild.label = copyChild.role;
           copyChild.width = 80;
         }
-        childNode = new RectangularNode(copyChild, this.zoneManager?.innerContainerZone?.getChildContainer(), this.settings, this);
+        childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
         this.childNodes.push(childNode);
+        // Add child to zone system
+        if (this.zoneManager?.innerContainerZone) {
+          this.zoneManager.innerContainerZone.addChild(childNode);
+        }
       }
-      childNode.init(this.zoneManager?.innerContainerZone?.getChildContainer());
+      // Always re-init with the correct parent element
+      childNode.init(parentElement);
     }
     return childNode;
   }
 
   updateChildren() {
+    // Always use zone system for child positioning
+    if (!this.zoneManager?.innerContainerZone) {
+      console.warn('Zone system not available for adapter node:', this.id);
+      return;
+    }
+    
+    // Set layout algorithm based on arrangement
+    const innerContainerZone = this.zoneManager.innerContainerZone;
+    
     switch (this.data.layout.arrangement) {
       case 1:
-        this.updateLayout1_full_archive();
+        innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+          this.layoutAlgorithm1_full_archive(childNodes, coordinateSystem);
+        });
         break;
       case 2:
-        this.updateLayout2_full_transform();
+        innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+          this.layoutAlgorithm2_full_transform(childNodes, coordinateSystem);
+        });
         break;
       case 3:
-        this.updateLayout3_full_staging();
+        innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+          this.layoutAlgorithm3_full_staging(childNodes, coordinateSystem);
+        });
         break;
       case 4:
-        this.updateLayout4_line();
+        innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+          this.layoutAlgorithm4_line(childNodes, coordinateSystem);
+        });
         break;
       case 5:
-        this.updateLayout5();
+        innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+          this.layoutAlgorithm5(childNodes, coordinateSystem);
+        });
         break;
     }
+    
+    // Update child positions using zone system
+    innerContainerZone.updateChildPositions();
+    
+    // Resize container to fit children
+    this.resizeToFitChildren();
   }
 
-  updateLayout1_full_archive() {
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+  // New layout algorithms that work with the zone system
+  layoutAlgorithm1_full_archive(childNodes, coordinateSystem) {
+    const stagingNode = childNodes.find(node => node.data.role === 'staging');
+    const archiveNode = childNodes.find(node => node.data.role === 'archive');
+    const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    if (this.stagingNode && this.archiveNode) {
-      this.data.width = Math.max(
-        this.data.width,
-        this.stagingNode.data.width + this.archiveNode.data.width + 
-        this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
-      );
-    }
-
-    if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + 
-                this.containerMargin.left - containerOffsetX;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.stagingNode.move(x, y);
-    }
-
-    if (this.archiveNode) {
-      const x = -this.data.width / 2 + this.archiveNode.data.width / 2 + 
-                this.containerMargin.left + this.stagingNode.data.width + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.archiveNode.move(x, y);
-    }
-
-    if (this.transformNode) {
-      const factor = 5 / 16;
-      const width = this.archiveNode.data.width + this.stagingNode.data.width * factor + 
-                   this.nodeSpacing.horizontal;
-      const height = this.transformNode.data.height;
-      this.transformNode.resize({ width: width, height: height });
-
-      const x = width / 2 - this.stagingNode.data.width * factor - 
-                this.nodeSpacing.horizontal / 2 - containerOffsetX;
-      const y = -this.data.height / 2 + this.transformNode.data.height / 2 + 
-                this.containerMargin.top + this.archiveNode.data.height + 
-                this.nodeSpacing.vertical - containerOffsetY;
-      this.transformNode.move(x, y);
+    if (stagingNode && archiveNode) {
+      // Position staging node on the left
+      stagingNode.move(0, 0);
+      
+      // Position archive node on the right
+      archiveNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
+      
+      // Position transform node below staging and archive
+      if (transformNode) {
+        const factor = 5 / 16;
+        const width = archiveNode.data.width + stagingNode.data.width * factor + this.nodeSpacing.horizontal;
+        const height = transformNode.data.height;
+        transformNode.resize({ width: width, height: height });
+        
+        const x = width / 2 - stagingNode.data.width * factor - this.nodeSpacing.horizontal / 2;
+        const y = Math.max(stagingNode.data.height, archiveNode.data.height) + this.nodeSpacing.vertical;
+        transformNode.move(x, y);
+      }
     }
   }
 
-  updateLayout2_full_transform() {
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+  layoutAlgorithm2_full_transform(childNodes, coordinateSystem) {
+    const stagingNode = childNodes.find(node => node.data.role === 'staging');
+    const archiveNode = childNodes.find(node => node.data.role === 'archive');
+    const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    if (this.stagingNode && this.transformNode) {
-      this.data.width = Math.max(
-        this.data.width,
-        this.stagingNode.data.width + this.transformNode.data.width + 
-        this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
-      );
-    }
-
-    if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + 
-                this.containerMargin.left - containerOffsetX;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + 
-                this.containerMargin.top + this.archiveNode.data.height + 
-                this.nodeSpacing.vertical - containerOffsetY;
-      this.stagingNode.move(x, y);
-    }
-
-    if (this.archiveNode) {
-      const x = -this.data.width / 2 + this.archiveNode.data.width / 2 + 
-                this.containerMargin.left + this.archiveNode.data.width / 2 + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.archiveNode.move(x, y);
-    }
-
-    if (this.transformNode) {
-      const x = -this.data.width / 2 + this.transformNode.data.width / 2 + 
-                this.containerMargin.left + this.stagingNode.data.width + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + this.transformNode.data.height / 2 + 
-                this.containerMargin.top + this.archiveNode.data.height + 
-                this.nodeSpacing.vertical - containerOffsetY;
-      this.transformNode.move(x, y);
+    if (stagingNode && transformNode) {
+      // Position archive node on the left
+      if (archiveNode) {
+        archiveNode.move(0, 0);
+      }
+      
+      // Position staging node above transform
+      stagingNode.move(0, archiveNode ? archiveNode.data.height + this.nodeSpacing.vertical : 0);
+      
+      // Position transform node to the right of staging
+      transformNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 
+                        archiveNode ? archiveNode.data.height + this.nodeSpacing.vertical : 0);
     }
   }
 
-  updateLayout3_full_staging() {
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+  layoutAlgorithm3_full_staging(childNodes, coordinateSystem) {
+    const stagingNode = childNodes.find(node => node.data.role === 'staging');
+    const archiveNode = childNodes.find(node => node.data.role === 'archive');
+    const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    if (this.stagingNode && this.transformNode && this.archiveNode) {
-      this.data.width = Math.max(
-        this.data.width,
-        this.stagingNode.data.width + Math.max(this.transformNode.data.width, this.archiveNode.data.width) + 
-        this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
-      );
-    }
-
-    if (this.stagingNode) {
-      const width = this.stagingNode.data.width;
+    if (stagingNode && transformNode && archiveNode) {
+      // Resize staging node to accommodate archive and transform
+      const width = stagingNode.data.width;
       let height = 44;
-      if (this.archiveNode) {
-        height = this.archiveNode.data.height;
+      if (archiveNode) {
+        height = archiveNode.data.height;
       }
-      if (this.transformNode) {
-        height += this.transformNode.data.height + this.nodeSpacing.vertical;
+      if (transformNode) {
+        height += transformNode.data.height + this.nodeSpacing.vertical;
       }
-      this.stagingNode.resize({ width: width, height: height });
-
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + 
-                this.containerMargin.left - containerOffsetX;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.stagingNode.move(x, y);
-    }
-
-    if (this.archiveNode) {
-      const x = -this.data.width / 2 + this.archiveNode.data.width / 2 + 
-                this.containerMargin.left + this.stagingNode.data.width + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + this.archiveNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.archiveNode.move(x, y);
-    }
-
-    if (this.transformNode) {
-      const x = -this.data.width / 2 + this.transformNode.data.width / 2 + 
-                this.containerMargin.left + this.stagingNode.data.width + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + this.transformNode.data.height / 2 + 
-                this.containerMargin.top + this.archiveNode.data.height + 
-                this.nodeSpacing.vertical - containerOffsetY;
-      this.transformNode.move(x, y);
+      stagingNode.resize({ width: width, height: height });
+      
+      // Position staging node on the left
+      stagingNode.move(0, 0);
+      
+      // Position archive node to the right of staging
+      archiveNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
+      
+      // Position transform node to the right of staging, below archive
+      transformNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 
+                        archiveNode.data.height + this.nodeSpacing.vertical);
     }
   }
 
-  updateLayout4_line() {
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+  layoutAlgorithm4_line(childNodes, coordinateSystem) {
+    const stagingNode = childNodes.find(node => node.data.role === 'staging');
+    const archiveNode = childNodes.find(node => node.data.role === 'archive');
+    const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    let otherNode = this.archiveNode;
+    let otherNode = archiveNode;
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM) {
-      otherNode = this.transformNode;
+      otherNode = transformNode;
     }
-
-    if (this.stagingNode && otherNode) {
-      this.data.width = Math.max(
-        this.data.width,
-        this.stagingNode.data.width + otherNode.data.width + 
-        this.nodeSpacing.horizontal + this.containerMargin.left + this.containerMargin.right
-      );
-    }
-
-    if (this.stagingNode) {
-      const x = -this.data.width / 2 + this.stagingNode.data.width / 2 + 
-                this.containerMargin.left - containerOffsetX;
-      const y = -this.data.height / 2 + this.stagingNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      this.stagingNode.move(x, y);
-    }
-
-    if (otherNode) {
-      const x = -this.data.width / 2 + otherNode.data.width / 2 + 
-                this.containerMargin.left + this.stagingNode.data.width + 
-                this.nodeSpacing.horizontal - containerOffsetX;
-      const y = -this.data.height / 2 + otherNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      otherNode.move(x, y);
+    
+    if (stagingNode && otherNode) {
+      // Position staging node on the left
+      stagingNode.move(0, 0);
+      
+      // Position other node to the right of staging
+      otherNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
     }
   }
 
-  updateLayout5() {
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
+  layoutAlgorithm5(childNodes, coordinateSystem) {
+    const archiveNode = childNodes.find(node => node.data.role === 'archive');
     
-    const onlyNode = this.archiveNode;
-
-    if (onlyNode) {
-      this.data.width = Math.max(
-        this.data.width,
-        onlyNode.data.width + this.containerMargin.left + this.containerMargin.right
-      );
-
-      const x = -this.data.width / 2 + onlyNode.data.width / 2 + 
-                this.containerMargin.left - containerOffsetX;
-      const y = -this.data.height / 2 + onlyNode.data.height / 2 + 
-                this.containerMargin.top - containerOffsetY;
-      onlyNode.move(x, y);
+    if (archiveNode) {
+      // Position archive node in the center
+      archiveNode.move(0, 0);
     }
+  }
+
+  // Method to resize container to fit children
+  resizeToFitChildren() {
+    if (!this.zoneManager?.innerContainerZone) return;
+    
+    const childNodes = this.zoneManager.innerContainerZone.getChildren();
+    if (childNodes.length === 0) return;
+    
+    // Calculate bounding box of all children
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    childNodes.forEach(node => {
+      const halfWidth = node.data.width / 2;
+      const halfHeight = node.data.height / 2;
+      
+      minX = Math.min(minX, node.x - halfWidth);
+      minY = Math.min(minY, node.y - halfHeight);
+      maxX = Math.max(maxX, node.x + halfWidth);
+      maxY = Math.max(maxY, node.y + halfHeight);
+    });
+    
+    // Calculate required container size
+    const contentWidth = maxX - minX + this.containerMargin.left + this.containerMargin.right;
+    const contentHeight = maxY - minY + this.containerMargin.top + this.containerMargin.bottom;
+    
+    // Get header height
+    const headerZone = this.zoneManager?.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+    
+    // Resize container to accommodate all children
+    this.resize({
+      width: Math.max(this.data.width, contentWidth),
+      height: Math.max(this.data.height, contentHeight + headerHeight)
+    });
   }
 }

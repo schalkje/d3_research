@@ -145,14 +145,19 @@ export default class BaseNode {
       .attr("class", this.data.type)
       .attr("id", this.id)
       .attr("status", this.status);
+      
+    // Attach the node instance to the DOM element for testing access
+    this.element.node().__node = this;
 
-    // Initialize zone manager
-    this.zoneManager = new ZoneManager(this);
-    this.zoneManager.init();
+    // Initialize zone manager only for container nodes
+    if (this.isContainer) {
+      this.zoneManager = new ZoneManager(this);
+      this.zoneManager.init();
 
-    // Resize zones with actual node dimensions
-    if (this.zoneManager) {
-      this.zoneManager.resize(this.data.width, this.data.height);
+      // Resize zones with actual node dimensions
+      if (this.zoneManager) {
+        this.zoneManager.resize(this.data.width, this.data.height);
+      }
     }
 
     // Set up default events using EventManager
@@ -184,8 +189,8 @@ export default class BaseNode {
    update() {
     // console.log("nodeBase - update", this.data.label);
 
-    // Update zones
-    if (this.zoneManager) {
+    // Update zones only for container nodes
+    if (this.isContainer && this.zoneManager) {
       this.zoneManager.update();
     }
 
@@ -209,14 +214,14 @@ export default class BaseNode {
 
    resize(size, forced = false) {
     // node base has no elements of it's own, so just update the data
-    if  (forced || this.data.width != size.width || this.data.height != size.height)
+    if  (forced || this.data.width !== size.width || this.data.height !== size.height)
     {
       // console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
       this.data.width = size.width;
       this.data.height = size.height;
 
-      // Resize zones
-      if (this.zoneManager) {
+      // Resize zones only for container nodes
+      if (this.isContainer && this.zoneManager) {
         this.zoneManager.resize(size.width, size.height);
       }
 
@@ -341,7 +346,7 @@ export default class BaseNode {
   }
 
   cascadeStatusChange() {
-    if (this.parentNode) {
+    if (this.parentNode && typeof this.parentNode.determineStatusBasedOnChildren === 'function') {
       this.parentNode.determineStatusBasedOnChildren();
     } 
   }
