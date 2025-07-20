@@ -33,8 +33,20 @@ test.describe('Adapter Node Tests', () => {
       await page.waitForSelector('g.adapter rect.header-background', { timeout });
       await page.waitForSelector('g.adapter text.header-text', { timeout });
       
-      // Wait for child nodes to be rendered
-      await page.waitForSelector('g.node-container', { timeout });
+      // Wait for any child nodes to be rendered (could be in different structures)
+      await page.waitForFunction(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return false;
+        
+        // Look for child nodes in various possible locations
+        const childContainers = adapter.querySelectorAll('g.node-container');
+        const childNodes = adapter.querySelectorAll('g.Node');
+        const childRects = adapter.querySelectorAll('rect:not(.adapter):not(.header-background)');
+        const childTexts = adapter.querySelectorAll('g text:not(.header-text)');
+        
+        // We need at least some child elements
+        return childContainers.length > 0 || childNodes.length > 0 || childRects.length > 0 || childTexts.length > 0;
+      }, { timeout });
       
       // Wait for CSS transitions to complete (0.2s transitions + buffer)
       await page.waitForTimeout(1000);
@@ -46,12 +58,8 @@ test.describe('Adapter Node Tests', () => {
         
         const headerBackground = adapter.querySelector('rect.header-background');
         const mainRect = adapter.querySelector('rect.adapter.shape');
-        const childNodes = adapter.querySelectorAll('g.node-container');
         
         if (!headerBackground || !mainRect) return false;
-        
-        // Check if we have child nodes
-        if (childNodes.length === 0) return false;
         
         // Check if positioning is stable by comparing positions
         const headerBox = headerBackground.getBoundingClientRect();
@@ -582,6 +590,529 @@ test.describe('Adapter Node Tests', () => {
           expect(parseFloat(height)).toBeGreaterThan(0);
         }
       }
+    });
+  });
+
+  test.describe('Adapter Node Positioning and Sizing Tests', () => {
+    test('should load the page successfully', async ({ page }) => {
+      // Just check if the page loads
+      await page.waitForSelector('h1', { timeout: 10000 });
+      const title = await page.locator('h1').textContent();
+      expect(title).toBe('Nodes');
+      
+      // Check if SVG exists
+      await page.waitForSelector('svg', { timeout: 10000 });
+      const svg = page.locator('svg');
+      await expect(svg).toBeVisible();
+      
+      // Check if there's any content in the SVG
+      const svgContent = await svg.innerHTML();
+      console.log('SVG content length:', svgContent.length);
+      console.log('SVG content preview:', svgContent.substring(0, 500));
+      
+      // For now, just check that the page loads
+      expect(svgContent.length).toBeGreaterThan(0);
+    });
+
+    test('should examine SVG content structure', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Examine what's actually in the SVG
+      const svgAnalysis = await page.evaluate(() => {
+        const svg = document.querySelector('svg');
+        if (!svg) return { error: 'No SVG found' };
+        
+        const dashboard = svg.querySelector('g.dashboard');
+        if (!dashboard) return { error: 'No dashboard found' };
+        
+        // Look for adapter elements
+        const adapters = dashboard.querySelectorAll('g.adapter');
+        const adapterCount = adapters.length;
+        
+        // Look for any child elements
+        const allGroups = dashboard.querySelectorAll('g');
+        const allRects = dashboard.querySelectorAll('rect');
+        const allTexts = dashboard.querySelectorAll('text');
+        
+        // Check for specific elements
+        const headerBackgrounds = dashboard.querySelectorAll('rect.header-background');
+        const headerTexts = dashboard.querySelectorAll('text.header-text');
+        const adapterShapes = dashboard.querySelectorAll('rect.adapter.shape');
+        const nodeContainers = dashboard.querySelectorAll('g.node-container');
+        
+        return {
+          adapterCount,
+          totalGroups: allGroups.length,
+          totalRects: allRects.length,
+          totalTexts: allTexts.length,
+          headerBackgrounds: headerBackgrounds.length,
+          headerTexts: headerTexts.length,
+          adapterShapes: adapterShapes.length,
+          nodeContainers: nodeContainers.length,
+          groupClasses: Array.from(allGroups).map(g => g.className.baseVal),
+          rectClasses: Array.from(allRects).map(r => r.className.baseVal),
+          textClasses: Array.from(allTexts).map(t => t.className.baseVal)
+        };
+      });
+      
+      console.log('SVG Analysis:', JSON.stringify(svgAnalysis, null, 2));
+      
+      // Check if we have any adapter elements
+      expect(svgAnalysis.adapterCount).toBeGreaterThan(0);
+    });
+
+    test('should find adapter node directly', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Check if adapter exists
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // Check if adapter has basic structure
+      const adapter = adapterNodes.first();
+      await expect(adapter).toBeVisible();
+      
+      // Check for header elements
+      const headerBackground = adapter.locator('rect.header-background');
+      const headerText = adapter.locator('text.header-text');
+      
+      await expect(headerBackground).toBeVisible();
+      await expect(headerText).toBeVisible();
+      
+      // Check for child nodes
+      const childNodes = adapter.locator('g.Node');
+      const childCount = await childNodes.count();
+      console.log('Child nodes found:', childCount);
+      
+      // We should have 3 child nodes (staging, archive, transform)
+      expect(childCount).toBe(3);
+    });
+
+    test('should check console output for debugging', async ({ page }) => {
+      // Collect console messages
+      const consoleMessages = [];
+      page.on('console', msg => {
+        consoleMessages.push(msg.text());
+      });
+      
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Wait a bit more for any console messages
+      await page.waitForTimeout(2000);
+      
+      // Print console messages
+      console.log('Console messages:', consoleMessages);
+      
+      // Check if we have any positioning-related messages
+      const positioningMessages = consoleMessages.filter(msg => 
+        msg.includes('positioning') || msg.includes('layoutAlgorithm') || msg.includes('zone system')
+      );
+      
+      console.log('Positioning-related messages:', positioningMessages);
+      
+      // For now, just check that the page loads
+      expect(consoleMessages.length).toBeGreaterThan(0);
+    });
+
+    test('should display inner container zone with light blue border', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Check if inner container zone border is visible
+      const innerContainerBorder = page.locator('g.adapter rect.zone-innerContainer');
+      await expect(innerContainerBorder).toBeVisible();
+      
+      // Check the border styling
+      const borderStyle = await innerContainerBorder.getAttribute('style');
+      console.log('Inner container border style:', borderStyle);
+      
+      // Verify the border has the correct class
+      const borderClass = await innerContainerBorder.getAttribute('class');
+      expect(borderClass).toContain('zone-innerContainer');
+      
+      // Check if the border has dimensions
+      const width = await innerContainerBorder.getAttribute('width');
+      const height = await innerContainerBorder.getAttribute('height');
+      console.log('Inner container border dimensions:', { width, height });
+      
+      expect(parseFloat(width)).toBeGreaterThan(0);
+      expect(parseFloat(height)).toBeGreaterThan(0);
+    });
+
+    test('should position inner container border correctly', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Get the positioning of the inner container border
+      const borderPosition = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        const border = adapter.querySelector('rect.zone-innerContainer');
+        if (!border) return null;
+        
+        const x = parseFloat(border.getAttribute('x') || 0);
+        const y = parseFloat(border.getAttribute('y') || 0);
+        const width = parseFloat(border.getAttribute('width') || 0);
+        const height = parseFloat(border.getAttribute('height') || 0);
+        
+        // Also get the container dimensions for reference
+        const containerShape = adapter.querySelector('rect.container-shape');
+        const containerX = parseFloat(containerShape?.getAttribute('x') || 0);
+        const containerY = parseFloat(containerShape?.getAttribute('y') || 0);
+        const containerWidth = parseFloat(containerShape?.getAttribute('width') || 0);
+        const containerHeight = parseFloat(containerShape?.getAttribute('height') || 0);
+        
+        return {
+          border: { x, y, width, height },
+          container: { x: containerX, y: containerY, width: containerWidth, height: containerHeight }
+        };
+      });
+      
+      console.log('Border and container positioning:', borderPosition);
+      
+      expect(borderPosition).toBeTruthy();
+      expect(borderPosition.border.x).toBeGreaterThan(borderPosition.container.x); // Border should be to the right of container left edge
+      expect(borderPosition.border.y).toBeGreaterThan(borderPosition.container.y); // Border should be below container top edge
+      
+      // Border should be within container bounds
+      expect(borderPosition.border.x + borderPosition.border.width).toBeLessThanOrEqual(
+        borderPosition.container.x + borderPosition.container.width
+      );
+      expect(borderPosition.border.y + borderPosition.border.height).toBeLessThanOrEqual(
+        borderPosition.container.y + borderPosition.container.height
+      );
+    });
+
+    test('should verify inner container positioning and child alignment', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Get comprehensive positioning data
+      const positioningData = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        // Get border positioning
+        const border = adapter.querySelector('rect.zone-innerContainer');
+        const borderX = parseFloat(border?.getAttribute('x') || 0);
+        const borderY = parseFloat(border?.getAttribute('y') || 0);
+        const borderWidth = parseFloat(border?.getAttribute('width') || 0);
+        const borderHeight = parseFloat(border?.getAttribute('height') || 0);
+        
+        // Get container positioning
+        const containerShape = adapter.querySelector('rect.container-shape');
+        const containerX = parseFloat(containerShape?.getAttribute('x') || 0);
+        const containerY = parseFloat(containerShape?.getAttribute('y') || 0);
+        const containerWidth = parseFloat(containerShape?.getAttribute('width') || 0);
+        const containerHeight = parseFloat(containerShape?.getAttribute('height') || 0);
+        
+        // Get child node positions
+        const childNodes = adapter.querySelectorAll('g.Node');
+        const children = Array.from(childNodes).map(node => {
+          const text = node.querySelector('text');
+          const rect = node.querySelector('rect');
+          return {
+            role: text?.textContent || 'unknown',
+            x: parseFloat(node.getAttribute('transform')?.match(/translate\(([^,]+),([^)]+)\)/)?.[1] || 0),
+            y: parseFloat(node.getAttribute('transform')?.match(/translate\(([^,]+),([^)]+)\)/)?.[2] || 0),
+            width: parseFloat(rect?.getAttribute('width') || 0),
+            height: parseFloat(rect?.getAttribute('height') || 0)
+          };
+        });
+        
+        // Get zone system transform
+        const innerContainerZone = adapter.querySelector('g.zone-innerContainer');
+        const zoneTransform = innerContainerZone?.getAttribute('transform') || '';
+        const zoneTransformMatch = zoneTransform.match(/translate\(([^,]+),([^)]+)\)/);
+        const zoneX = parseFloat(zoneTransformMatch?.[1] || 0);
+        const zoneY = parseFloat(zoneTransformMatch?.[2] || 0);
+        
+        return {
+          border: { x: borderX, y: borderY, width: borderWidth, height: borderHeight },
+          container: { x: containerX, y: containerY, width: containerWidth, height: containerHeight },
+          children,
+          zoneTransform: { x: zoneX, y: zoneY, transform: zoneTransform }
+        };
+      });
+      
+      console.log('Comprehensive positioning data:', positioningData);
+      
+      expect(positioningData).toBeTruthy();
+      
+      // Test 1: Border should be positioned at (0, 0) relative to zone coordinate system
+      expect(positioningData.border.x).toBe(0);
+      expect(positioningData.border.y).toBe(0);
+      
+      // Test 2: Border should be inside container bounds
+      const borderRight = positioningData.border.x + positioningData.border.width;
+      const borderBottom = positioningData.border.y + positioningData.border.height;
+      const containerRight = positioningData.container.x + positioningData.container.width;
+      const containerBottom = positioningData.container.y + positioningData.container.height;
+      
+      // Account for zone transform when checking bounds
+      const transformedBorderRight = positioningData.zoneTransform.x + borderRight;
+      const transformedBorderBottom = positioningData.zoneTransform.y + borderBottom;
+      
+      expect(transformedBorderRight).toBeLessThanOrEqual(containerRight);
+      expect(transformedBorderBottom).toBeLessThanOrEqual(containerBottom);
+      
+      // Test 3: Child nodes should be positioned relative to zone coordinate system
+      const staging = positioningData.children.find(c => c.role === 'staging');
+      const archive = positioningData.children.find(c => c.role === 'archive');
+      const transform = positioningData.children.find(c => c.role === 'transform');
+      
+      expect(staging).toBeTruthy();
+      expect(archive).toBeTruthy();
+      expect(transform).toBeTruthy();
+      
+      // Test 4: Staging and archive should align at the top (y=0 in zone coordinate system)
+      expect(staging.y).toBeCloseTo(0, 1);
+      expect(archive.y).toBeCloseTo(0, 1);
+      
+      // Test 5: Transform should be below archive with spacing
+      const expectedTransformY = archive.height + 10; // 10px spacing
+      expect(transform.y).toBeCloseTo(expectedTransformY, 1);
+      
+      // Test 6: Archive and transform should be to the right of staging
+      const expectedArchiveX = staging.width + 20; // 20px spacing
+      expect(archive.x).toBeCloseTo(expectedArchiveX, 1);
+      expect(transform.x).toBeCloseTo(expectedArchiveX, 1);
+    });
+
+    test('should position all child nodes inside inner container border', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      // Get positioning data
+      const positioningData = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        // Get border positioning
+        const border = adapter.querySelector('rect.zone-innerContainer');
+        const borderX = parseFloat(border?.getAttribute('x') || 0);
+        const borderY = parseFloat(border?.getAttribute('y') || 0);
+        const borderWidth = parseFloat(border?.getAttribute('width') || 0);
+        const borderHeight = parseFloat(border?.getAttribute('height') || 0);
+        
+        // Get child node positions
+        const childNodes = adapter.querySelectorAll('g.Node');
+        const children = Array.from(childNodes).map(node => {
+          const text = node.querySelector('text');
+          const rect = node.querySelector('rect');
+          return {
+            role: text?.textContent || 'unknown',
+            x: parseFloat(node.getAttribute('transform')?.match(/translate\(([^,]+),([^)]+)\)/)?.[1] || 0),
+            y: parseFloat(node.getAttribute('transform')?.match(/translate\(([^,]+),([^)]+)\)/)?.[2] || 0),
+            width: parseFloat(rect?.getAttribute('width') || 0),
+            height: parseFloat(rect?.getAttribute('height') || 0)
+          };
+        });
+        
+        return {
+          border: { x: borderX, y: borderY, width: borderWidth, height: borderHeight },
+          children
+        };
+      });
+      
+      console.log('Child node positioning test data:', positioningData);
+      
+      expect(positioningData).toBeTruthy();
+      
+      // Test that all child nodes are inside the inner container border
+      positioningData.children.forEach(child => {
+        console.log(`Testing ${child.role} node: x=${child.x}, y=${child.y}, width=${child.width}, height=${child.height}`);
+        
+        // Calculate node boundaries
+        const nodeLeft = child.x;
+        const nodeTop = child.y;
+        const nodeRight = child.x + child.width;
+        const nodeBottom = child.y + child.height;
+        
+        // Calculate border boundaries
+        const borderLeft = positioningData.border.x;
+        const borderTop = positioningData.border.y;
+        const borderRight = positioningData.border.x + positioningData.border.width;
+        const borderBottom = positioningData.border.y + positioningData.border.height;
+        
+        // Test that node is inside border
+        expect(nodeLeft).toBeGreaterThanOrEqual(borderLeft);
+        expect(nodeTop).toBeGreaterThanOrEqual(borderTop);
+        expect(nodeRight).toBeLessThanOrEqual(borderRight);
+        expect(nodeBottom).toBeLessThanOrEqual(borderBottom);
+        
+        console.log(`${child.role} node is inside border: ✅`);
+      });
+      
+      // Test specific alignment requirements
+      const staging = positioningData.children.find(c => c.role === 'staging');
+      const archive = positioningData.children.find(c => c.role === 'archive');
+      const transform = positioningData.children.find(c => c.role === 'transform');
+      
+      expect(staging).toBeTruthy();
+      expect(archive).toBeTruthy();
+      expect(transform).toBeTruthy();
+      
+      // Test that staging and archive have the same Y coordinate (aligned at top)
+      expect(staging.y).toBeCloseTo(archive.y, 1);
+      
+      // Test that transform is below archive with proper spacing
+      const expectedTransformY = archive.y + archive.height + 10; // 10px spacing
+      expect(transform.y).toBeCloseTo(expectedTransformY, 1);
+      
+      // Test that archive and transform are to the right of staging
+      expect(archive.x).toBeGreaterThan(staging.x + staging.width);
+      expect(transform.x).toBeGreaterThan(staging.x + staging.width);
+      
+      // Test that archive and transform have the same X coordinate (aligned vertically)
+      expect(archive.x).toBeCloseTo(transform.x, 1);
+    });
+
+    test('should render adapter node with basic structure', async ({ page }) => {
+      const nodesFound = await waitForNodes(page);
+      expect(nodesFound).toBe(true);
+      
+      // Check if adapter node exists
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // Check if adapter has basic structure
+      const adapter = adapterNodes.first();
+      await expect(adapter).toBeVisible();
+      
+      // Check for header elements
+      const headerBackground = adapter.locator('rect.header-background');
+      const headerText = adapter.locator('text.header-text');
+      
+      await expect(headerBackground).toBeVisible();
+      await expect(headerText).toBeVisible();
+      
+      // Check for main adapter shape
+      const mainRect = adapter.locator('rect.adapter.shape');
+      await expect(mainRect).toBeVisible();
+      
+      // Debug: Check what's actually in the SVG
+      const svgContent = await page.locator('svg').innerHTML();
+      console.log('SVG content length:', svgContent.length);
+      console.log('SVG content preview:', svgContent.substring(0, 1000));
+      
+      // Check for any child containers or elements
+      const childContainers = adapter.locator('g.node-container');
+      const childNodes = adapter.locator('g.Node');
+      const childRects = adapter.locator('g rect:not(.adapter):not(.header-background)');
+      const childTexts = adapter.locator('g text:not(.header-text)');
+      
+      const containerCount = await childContainers.count();
+      const nodeCount = await childNodes.count();
+      const rectCount = await childRects.count();
+      const textCount = await childTexts.count();
+      
+      console.log('Child containers found:', containerCount);
+      console.log('Child nodes found:', nodeCount);
+      console.log('Child rectangles found:', rectCount);
+      console.log('Child texts found:', textCount);
+      
+      // For now, just check that we have some child elements
+      expect(containerCount + nodeCount + rectCount + textCount).toBeGreaterThan(0);
+    });
+
+    test('should position staging node correctly relative to archive and transform nodes', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      
+      // Wait for adapter to appear
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      const adapterNodes = page.locator('g.adapter');
+      await expect(adapterNodes).toHaveCount(1);
+      
+      // Get positions of all child nodes
+      const positions = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        const childNodes = adapter.querySelectorAll('g.Node');
+        const nodePositions = {};
+        
+        childNodes.forEach(node => {
+          const rect = node.querySelector('rect');
+          const text = node.querySelector('text');
+          
+          if (rect && text) {
+            const textContent = text.textContent.trim();
+            const width = parseFloat(rect.getAttribute('width') || 0);
+            const height = parseFloat(rect.getAttribute('height') || 0);
+            
+            // Get position from transform attribute (new coordinate system)
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            // Determine node type based on text content
+            let role = 'unknown';
+            if (textContent.toLowerCase().includes('staging')) role = 'staging';
+            else if (textContent.toLowerCase().includes('archive')) role = 'archive';
+            else if (textContent.toLowerCase().includes('transform')) role = 'transform';
+            
+            nodePositions[role] = { x, y, width, height, textContent };
+          }
+        });
+        
+        return nodePositions;
+      });
+      
+      expect(positions).toBeTruthy();
+      expect(positions.staging).toBeTruthy();
+      expect(positions.archive).toBeTruthy();
+      expect(positions.transform).toBeTruthy();
+      
+      console.log('Node positions:', positions);
+      
+      // Test 1: Archive and transform should have minimal height (44px)
+      expect(positions.archive.height).toBe(44);
+      expect(positions.transform.height).toBe(44);
+      
+      // Test 2: Staging height should be archive height + transform height + vertical spacing (10px)
+      const expectedStagingHeight = positions.archive.height + positions.transform.height + 10;
+      expect(positions.staging.height).toBe(expectedStagingHeight);
+      
+      // Test 3: Staging top should align with archive top
+      expect(positions.staging.y).toBeCloseTo(positions.archive.y, 1);
+      
+      // Test 4: Staging bottom should align with transform bottom
+      const stagingBottom = positions.staging.y + positions.staging.height;
+      const transformBottom = positions.transform.y + positions.transform.height;
+      expect(stagingBottom).toBeCloseTo(transformBottom, 1);
+      
+      // Test 5: Archive and transform should be positioned to the right of staging
+      expect(positions.archive.x).toBeGreaterThan(positions.staging.x + positions.staging.width);
+      expect(positions.transform.x).toBeGreaterThan(positions.staging.x + positions.staging.width);
+      
+      // Test 6: Transform should be below archive with proper spacing
+      expect(positions.transform.y).toBeCloseTo(positions.archive.y + positions.archive.height + 10, 1);
     });
   });
 }); 

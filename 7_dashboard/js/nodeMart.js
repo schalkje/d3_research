@@ -138,33 +138,61 @@ export default class MartNode extends BaseContainerNode {
   initChildNode(childData, childNode) {
     console.log("    nodeMart - initChildNode:", childData, childNode);
     if (childData) {
+      // Always use zone system for parent element
+      const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+      if (!parentElement) {
+        console.error('Zone system not available for mart node:', this.id);
+        return null;
+      }
+      
       if (childNode == null) {
         const copyChild = JSON.parse(JSON.stringify(childData));
         if (this.data.layout.displayMode == DisplayMode.ROLE) {
           copyChild.label = copyChild.role;
           copyChild.width = roleWidth;
         }
-        childNode = new RectangularNode(copyChild, this.container, this.settings, this);
+        childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
         this.childNodes.push(childNode);
+        // Add child to zone system
+        this.zoneManager.innerContainerZone.addChild(childNode);
       }
-
-      childNode.init(this.container);
+      // Always re-init with the correct parent element
+      childNode.init(parentElement);
     }
     return childNode;
   }
 
   updateChildren() {
-    // console.log("    Layout for Adapter:", this.id, this.data.layout);
+    // Use zone system for child positioning if available
+    const innerContainerZone = this.zoneManager?.innerContainerZone;
+    if (!innerContainerZone) {
+      // Fallback to old layout if zone system not available
+      switch (this.data.layout.displayMode) {
+        case DisplayMode.FULL:
+          this.updateFull();
+          break;
+        case DisplayMode.ROLE:
+          this.updateRole();
+          break;
+        default:
+          console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
+          this.updateFull();
+          break;
+      }
+      return;
+    }
+
+    // Use zone system for layout
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
-        this.updateFull();
+        this.updateFullZone();
         break;
       case DisplayMode.ROLE:
-        this.updateRole();
+        this.updateRoleZone();
         break;
       default:
         console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
-        this.updateFull();
+        this.updateFullZone();
         break;
     }
   }
@@ -219,6 +247,45 @@ export default class MartNode extends BaseContainerNode {
       this.reportNode.move(x, y);
     }
 
+  }
+
+  // Zone-based layout methods
+  updateFullZone() {
+    const innerContainerZone = this.zoneManager.innerContainerZone;
+    
+    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      const loadNode = childNodes.find(node => node.data.role === 'load');
+      const reportNode = childNodes.find(node => node.data.role === 'report');
+      
+      if (loadNode && reportNode) {
+        // Position load node on the left
+        loadNode.move(0, 0);
+        
+        // Position report node to the right of load node
+        reportNode.move(loadNode.data.width + this.nodeSpacing.horizontal, 0);
+      }
+    });
+    
+    innerContainerZone.updateChildPositions();
+  }
+
+  updateRoleZone() {
+    const innerContainerZone = this.zoneManager.innerContainerZone;
+    
+    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      const loadNode = childNodes.find(node => node.data.role === 'load');
+      const reportNode = childNodes.find(node => node.data.role === 'report');
+      
+      if (loadNode && reportNode) {
+        // Position load node on the left
+        loadNode.move(0, 0);
+        
+        // Position report node to the right of load node
+        reportNode.move(loadNode.data.width + this.nodeSpacing.horizontal, 0);
+      }
+    });
+    
+    innerContainerZone.updateChildPositions();
   }
 
 }

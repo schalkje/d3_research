@@ -59,7 +59,8 @@ export default class ColumnsNode extends BaseContainerNode {
       childNodes.forEach(childNode => {
         const x = currentX;
         // Center vertically within the inner container
-        const y = coordinateSystem.size.height / 2 - childNode.data.height / 2;
+        const availableHeight = coordinateSystem.size.height;
+        const y = (availableHeight - childNode.data.height) / 2; // Center vertically
 
         childNode.move(x, y);
         currentX += childNode.data.width + spacing;

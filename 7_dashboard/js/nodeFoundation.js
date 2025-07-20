@@ -138,33 +138,61 @@ export default class FoundationNode extends BaseContainerNode {
   initChildNode(childData, childNode) {
     console.log("    nodeFoundation - initChildNode:", childData, childNode);
     if (childData) {
+      // Always use zone system for parent element
+      const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+      if (!parentElement) {
+        console.error('Zone system not available for foundation node:', this.id);
+        return null;
+      }
+      
       if (childNode == null) {
         const copyChild = JSON.parse(JSON.stringify(childData));
         if (this.data.layout.displayMode == DisplayMode.ROLE) {
           copyChild.label = copyChild.role;
           copyChild.width = roleWidth;
         }
-        childNode = new RectangularNode(copyChild, this.container, this.settings, this);
+        childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
         this.childNodes.push(childNode);
+        // Add child to zone system
+        this.zoneManager.innerContainerZone.addChild(childNode);
       }
-
-      childNode.init(this.container);
+      // Always re-init with the correct parent element
+      childNode.init(parentElement);
     }
     return childNode;
   }
 
   updateChildren() {
-    // console.log("    Layout for Adapter:", this.id, this.data.layout);
+    // Use zone system for child positioning if available
+    const innerContainerZone = this.zoneManager?.innerContainerZone;
+    if (!innerContainerZone) {
+      // Fallback to old layout if zone system not available
+      switch (this.data.layout.displayMode) {
+        case DisplayMode.FULL:
+          this.updateFull();
+          break;
+        case DisplayMode.ROLE:
+          this.updateRole();
+          break;
+        default:
+          console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
+          this.updateFull();
+          break;
+      }
+      return;
+    }
+
+    // Use zone system for layout
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
-        this.updateFull();
+        this.updateFullZone();
         break;
       case DisplayMode.ROLE:
-        this.updateRole();
+        this.updateRoleZone();
         break;
       default:
         console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
-        this.updateFull();
+        this.updateFullZone();
         break;
     }
   }
@@ -219,6 +247,45 @@ export default class FoundationNode extends BaseContainerNode {
       this.baseNode.move(x, y);
     }
 
+  }
+
+  // Zone-based layout methods
+  updateFullZone() {
+    const innerContainerZone = this.zoneManager.innerContainerZone;
+    
+    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      const rawNode = childNodes.find(node => node.data.role === 'raw');
+      const baseNode = childNodes.find(node => node.data.role === 'base');
+      
+      if (rawNode && baseNode) {
+        // Position raw node on the left
+        rawNode.move(0, 0);
+        
+        // Position base node to the right of raw node
+        baseNode.move(rawNode.data.width + this.nodeSpacing.horizontal, 0);
+      }
+    });
+    
+    innerContainerZone.updateChildPositions();
+  }
+
+  updateRoleZone() {
+    const innerContainerZone = this.zoneManager.innerContainerZone;
+    
+    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      const rawNode = childNodes.find(node => node.data.role === 'raw');
+      const baseNode = childNodes.find(node => node.data.role === 'base');
+      
+      if (rawNode && baseNode) {
+        // Position raw node on the left
+        rawNode.move(0, 0);
+        
+        // Position base node to the right of raw node
+        baseNode.move(rawNode.data.width + this.nodeSpacing.horizontal, 0);
+      }
+    });
+    
+    innerContainerZone.updateChildPositions();
   }
 
 }

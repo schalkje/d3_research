@@ -179,8 +179,13 @@ export default class AdapterNode extends BaseContainerNode {
 
   initChildNode(childData, childNode) {
     if (childData) {
-      // Always use the inner container zone's child container as the parent element
+      // Always use zone system for parent element
       const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+      if (!parentElement) {
+        console.error('Zone system not available for adapter node:', this.id);
+        return null;
+      }
+      
       if (childNode == null) {
         const copyChild = JSON.parse(JSON.stringify(childData));
         if (this.data.layout.displayMode === DisplayMode.ROLE) {
@@ -190,9 +195,7 @@ export default class AdapterNode extends BaseContainerNode {
         childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
         this.childNodes.push(childNode);
         // Add child to zone system
-        if (this.zoneManager?.innerContainerZone) {
-          this.zoneManager.innerContainerZone.addChild(childNode);
-        }
+        this.zoneManager.innerContainerZone.addChild(childNode);
       }
       // Always re-init with the correct parent element
       childNode.init(parentElement);
@@ -203,9 +206,11 @@ export default class AdapterNode extends BaseContainerNode {
   updateChildren() {
     // Always use zone system for child positioning
     if (!this.zoneManager?.innerContainerZone) {
-      console.warn('Zone system not available for adapter node:', this.id);
+      console.error('Zone system not available for adapter node:', this.id);
       return;
     }
+    
+    console.log('Using zone system for adapter node positioning:', this.id);
     
     // Set layout algorithm based on arrangement
     const innerContainerZone = this.zoneManager.innerContainerZone;
@@ -252,21 +257,44 @@ export default class AdapterNode extends BaseContainerNode {
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
     if (stagingNode && archiveNode) {
-      // Position staging node on the left
-      stagingNode.move(0, 0);
+      // Add margin from the inner container border
+      const margin = 8; // 8px margin from border
       
-      // Position archive node on the right
-      archiveNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
+      // Calculate available width for positioning
+      const availableWidth = coordinateSystem?.size?.width || 200;
+      
+      // Calculate maximum position for archive to fit within container
+      const maxArchiveX = availableWidth - margin - archiveNode.data.width;
+      const stagingRightX = margin + stagingNode.data.width;
+      const spacing = Math.max(5, maxArchiveX - stagingRightX);
+      
+      console.log('Layout algorithm 1 calculation:', {
+        availableWidth,
+        margin,
+        stagingWidth: stagingNode.data.width,
+        archiveWidth: archiveNode.data.width,
+        maxArchiveX,
+        stagingRightX,
+        spacing,
+        calculatedRightX: stagingRightX + spacing
+      });
+      
+      // Position staging node with margin from left and top
+      stagingNode.move(margin, margin);
+      
+      // Position archive node with calculated spacing
+      const rightX = stagingRightX + spacing;
+      archiveNode.move(rightX, margin);
       
       // Position transform node below staging and archive
       if (transformNode) {
         const factor = 5 / 16;
-        const width = archiveNode.data.width + stagingNode.data.width * factor + this.nodeSpacing.horizontal;
+        const width = archiveNode.data.width + stagingNode.data.width * factor + spacing;
         const height = transformNode.data.height;
         transformNode.resize({ width: width, height: height });
         
-        const x = width / 2 - stagingNode.data.width * factor - this.nodeSpacing.horizontal / 2;
-        const y = Math.max(stagingNode.data.height, archiveNode.data.height) + this.nodeSpacing.vertical;
+        const x = rightX + width / 2 - stagingNode.data.width * factor - spacing / 2;
+        const y = margin + Math.max(stagingNode.data.height, archiveNode.data.height) + this.nodeSpacing.vertical;
         transformNode.move(x, y);
       }
     }
@@ -293,31 +321,61 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   layoutAlgorithm3_full_staging(childNodes, coordinateSystem) {
+    console.log('layoutAlgorithm3_full_staging called with coordinateSystem:', coordinateSystem);
+    
     const stagingNode = childNodes.find(node => node.data.role === 'staging');
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
     if (stagingNode && transformNode && archiveNode) {
-      // Resize staging node to accommodate archive and transform
-      const width = stagingNode.data.width;
-      let height = 44;
-      if (archiveNode) {
-        height = archiveNode.data.height;
-      }
-      if (transformNode) {
-        height += transformNode.data.height + this.nodeSpacing.vertical;
-      }
-      stagingNode.resize({ width: width, height: height });
+      console.log('Found all three nodes, positioning them...');
       
-      // Position staging node on the left
-      stagingNode.move(0, 0);
+      // Archive and transform should have minimal height (44px)
+      archiveNode.resize({ width: archiveNode.data.width, height: 44 });
+      transformNode.resize({ width: transformNode.data.width, height: 44 });
       
-      // Position archive node to the right of staging
-      archiveNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
+      // Staging height should be archive height + transform height + vertical spacing
+      const stagingHeight = archiveNode.data.height + transformNode.data.height + this.nodeSpacing.vertical;
+      stagingNode.resize({ width: stagingNode.data.width, height: stagingHeight });
       
-      // Position transform node to the right of staging, below archive
-      transformNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 
-                        archiveNode.data.height + this.nodeSpacing.vertical);
+      // Add margin from the inner container border
+      const margin = 8; // 8px margin from border
+      
+      // Calculate available width for positioning
+      const availableWidth = coordinateSystem?.size?.width || 200;
+      const totalNodeWidth = stagingNode.data.width + archiveNode.data.width + this.nodeSpacing.horizontal;
+      
+      // Calculate maximum position for archive to fit within container
+      const maxArchiveX = availableWidth - margin - archiveNode.data.width;
+      const stagingRightX = margin + stagingNode.data.width;
+      const spacing = Math.max(5, maxArchiveX - stagingRightX);
+      
+      console.log('Layout calculation:', {
+        availableWidth,
+        margin,
+        stagingWidth: stagingNode.data.width,
+        archiveWidth: archiveNode.data.width,
+        maxArchiveX,
+        stagingRightX,
+        spacing,
+        calculatedRightX: stagingRightX + spacing
+      });
+      
+      // Position staging with margin from left and top
+      stagingNode.move(margin, margin);
+      
+      // Position archive and transform with calculated spacing
+      const rightX = stagingRightX + spacing;
+      
+      // Position archive at the top right with margin
+      archiveNode.move(rightX, margin);
+      
+      // Position transform below archive with spacing
+      transformNode.move(rightX, margin + archiveNode.data.height + this.nodeSpacing.vertical);
+      
+      console.log('Positioning complete. Staging at (margin, margin), archive at (rightX, margin)');
+      console.log('Coordinate system origin:', coordinateSystem?.origin);
+      console.log('Coordinate system size:', coordinateSystem?.size);
     }
   }
 

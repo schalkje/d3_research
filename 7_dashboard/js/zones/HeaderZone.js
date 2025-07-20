@@ -151,15 +151,22 @@ export class HeaderZone extends BaseZone {
     const text = this.node.data.label || this.node.data.name || '';
     if (!text) return this.minHeight;
     
-    // Create temporary element to measure text height
-    const tempElement = this.textElement.node().cloneNode(true);
-    tempElement.textContent = text;
-    document.body.appendChild(tempElement);
-    
-    const textHeight = tempElement.getBoundingClientRect().height;
-    document.body.removeChild(tempElement);
-    
-    return Math.max(textHeight, this.minHeight);
+    try {
+      // Try to create temporary element to measure text height
+      const tempElement = this.textElement.node().cloneNode(true);
+      tempElement.textContent = text;
+      document.body.appendChild(tempElement);
+      
+      const textHeight = tempElement.getBoundingClientRect().height;
+      document.body.removeChild(tempElement);
+      
+      return Math.max(textHeight, this.minHeight);
+    } catch (error) {
+      // Fallback to estimated height if DOM measurement fails
+      console.warn('Text height measurement failed, using fallback:', error);
+      const estimatedHeight = Math.max(text.length * 0.6 + 8, this.minHeight); // Rough estimate
+      return estimatedHeight;
+    }
   }
 
   /**
