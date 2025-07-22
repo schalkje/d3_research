@@ -282,8 +282,8 @@ Linear arrangement for staging-archive and staging-transform modes.
 </svg>
 
 **Layout Description:**
-- **Staging Component**: Positioned at left (30,50), 80x40px, light blue
-- **Archive Component**: Positioned at right (290,50), 80x40px, light green
+- **Staging Component**: Left side (30,50), 80x40px, light blue
+- **Archive Component**: Right side (290,50), 80x40px, light green
 - **Data Flow**: Simple horizontal flow from Staging to Archive
 - **Container**: 380x100px with 8px margins, components positioned with horizontal spacing
 - **Note**: For staging-transform mode, Archive is replaced with Transform component
@@ -448,23 +448,19 @@ Complete adapter with all three components in archive-focused layout:
 
 ### Arrangement 2: Full Transform Layout
 Complete adapter with all three components in transform-focused layout:
+**Use Case**: Complete data pipeline with transform emphasis
 
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Container -->
   <rect x="10" y="10" width="380" height="180" fill="#f9f9f9" stroke="#ccc" stroke-width="2" rx="6"/>
   <text x="200" y="30" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Adapter Container</text>
-  <!-- Archive Component (top) -->
-  <rect x="150" y="50" width="80" height="40" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="4"/>
-  <text x="190" y="75" text-anchor="middle" font-family="Arial" font-size="11" fill="#388e3c">Archive</text>
-  <!-- Staging Component (bottom left) -->
-  <rect x="30" y="120" width="80" height="40" fill="#e1f5fe" stroke="#2196f3" stroke-width="2" rx="4"/>
-  <text x="70" y="145" text-anchor="middle" font-family="Arial" font-size="11" fill="#1565c0">Staging</text>
-  <!-- Transform Component (bottom right) -->
-  <rect x="290" y="120" width="80" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
-  <text x="330" y="145" text-anchor="middle" font-family="Arial" font-size="11" fill="#7b1fa2">Transform</text>
-  <!-- Data Flow Arrow -->
-  <path d="M 110 140 L 290 140" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <!-- Arrow marker definition -->
+  <rect x="30" y="50" width="80" height="40" fill="#e1f5fe" stroke="#2196f3" stroke-width="2" rx="4"/>
+  <text x="70" y="75" text-anchor="middle" font-family="Arial" font-size="11" fill="#1565c0">Staging</text>
+  <rect x="290" y="50" width="80" height="40" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="4"/>
+  <text x="330" y="75" text-anchor="middle" font-family="Arial" font-size="11" fill="#388e3c">Archive</text>
+  <rect x="110" y="120" width="180" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
+  <text x="200" y="145" text-anchor="middle" font-family="Arial" font-size="11" fill="#7b1fa2">Transform</text>
+  <path d="M 110 70 L 290 70" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <polyline points="70,90 70,120 110,140" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
@@ -473,38 +469,30 @@ Complete adapter with all three components in transform-focused layout:
 </svg>
 
 **Layout Details:**
-- **Archive Component**: Top-center (150,50), 80x40px, light green
-- **Staging Component**: Bottom-left (30,120), 80x40px, light blue
-- **Transform Component**: Bottom-right (290,120), 80x40px, light purple
-- **Data Flow**: Staging feeds Transform horizontally, Archive positioned above
-- **Container**: 380x180px with 8px margins, vertical spacing between top and bottom rows
+- **Staging Component**: Top left, same height as transform
+- **Archive Component**: Top right, in line with staging, same height as staging
+- **Transform Component**: Bottom, left at 2/3 of staging, right at end of archive
+- **Data Flow**: 
+  - Staging feeds archive horizontally
+  - Staging feeds transform, from bottom-middle of staging, to left-middle of transform, with a cornered line
+- **Container**: margin between top and bottom rows
 
-- **Use Case**: Complete data pipeline with transform emphasis
-- **Components**: Staging, Transform, Archive
-- **Flow**: Staging feeds both transform and archive
 
 ### Arrangement 3: Full Staging Layout
 Complete adapter with all three components in staging-focused layout:
 **Use Case**: Complete data pipeline with staging emphasis
 
-
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Container -->
   <rect x="10" y="10" width="380" height="180" fill="#f9f9f9" stroke="#ccc" stroke-width="2" rx="6"/>
   <text x="200" y="30" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Adapter Container</text>
-  <!-- Staging Component (left side, tall) -->
-  <rect x="30" y="50" width="80" height="120" fill="#e1f5fe" stroke="#2196f3" stroke-width="2" rx="4"/>
-  <text x="70" y="110" text-anchor="middle" font-family="Arial" font-size="11" fill="#1565c0">Staging</text>
-  <!-- Archive Component (top right) -->
+  <rect x="30" y="50" width="80" height="100" fill="#e1f5fe" stroke="#2196f3" stroke-width="2" rx="4"/>
+  <text x="70" y="105" text-anchor="middle" font-family="Arial" font-size="11" fill="#1565c0">Staging</text>
   <rect x="290" y="50" width="80" height="40" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="4"/>
   <text x="330" y="75" text-anchor="middle" font-family="Arial" font-size="11" fill="#388e3c">Archive</text>
-  <!-- Transform Component (bottom right) -->
-  <rect x="290" y="130" width="80" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
-  <text x="330" y="155" text-anchor="middle" font-family="Arial" font-size="11" fill="#7b1fa2">Transform</text>
-  <!-- Data Flow Arrows -->
-  <path d="M 110 110 L 290 70" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <path d="M 110 110 L 290 150" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <!-- Arrow marker definition -->
+  <rect x="290" y="110" width="80" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
+  <text x="330" y="135" text-anchor="middle" font-family="Arial" font-size="11" fill="#7b1fa2">Transform</text>
+  <path d="M 110 100 L 290 70" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 110 100 L 290 130" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
@@ -512,20 +500,13 @@ Complete adapter with all three components in staging-focused layout:
   </defs>
 </svg>
 
-Legenda
-- **Staging Component**: light blue
-- **Archive Component**: light green
-- **Transform Component**: light purple
-
-
 **Layout Details:**
 - **Staging node** spans full height of the inner container
-- **Archive node** and transform are above to each other, and have the same size
-- top staging is top archive
-- bottom staging is bottom transform
+- **Archive and transform node**: above to each other, and have the same size
+  - top archive is top staging
+  - bottom transform is bottom staging
 - **Container**: height of the inner container is determined by heigh of archive + height transform + margin in between
 - **Data Flow**: Staging feeds both Archive and Transform horizontally
-
 
 
 ### Arrangement 4: Line Layout
