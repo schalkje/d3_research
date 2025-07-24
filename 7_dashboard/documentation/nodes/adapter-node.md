@@ -366,15 +366,15 @@ Linear arrangement for two-component modes:
 </svg>
 
 **Layout Details:**
-- **Staging Component**: Left side (30,50), 80x40px, light blue
-- **Archive Component**: Right side (290,50), 80x40px, light green
-- **Data Flow**: Simple horizontal flow from Staging to Archive
-- **Container**: 380x100px with 8px margins, components positioned with horizontal spacing
-- **Note**: For staging-transform mode, Archive is replaced with Transform component
+- **Staging Component**: Left side 
 
-- **Use Case**: Simple two-component data flows
-- **Components**: Two components based on mode
-- **Flow**: Direct flow from staging to target component
+Depending on the mode:
+- staging-archive
+  - **Archive Component**: Right side
+  - **Data Flow**: Simple horizontal flow from Staging to Archive
+- staging-transform
+  - **Transform Component**: Right side
+  - **Data Flow**: Simple horizontal flow from Staging to Transform
 
 ### Arrangement 5: Single Component Layout
 Single component layout for archive-only mode:
@@ -389,13 +389,9 @@ Single component layout for archive-only mode:
 </svg>
 
 **Layout Details:**
-- **Archive Component**: Centered (160,50), 80x40px, light green
+- **Archive Component**: Centered
 - **Data Flow**: No internal flow (single component)
-- **Container**: 380x100px with 8px margins, component centered horizontally and vertically
-
-- **Use Case**: Archive-only operations
-- **Components**: Archive only
-- **Flow**: No internal flow
+- **Container**: with margins
 
 ## Component Roles
 
