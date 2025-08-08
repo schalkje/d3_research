@@ -62,6 +62,14 @@
         window.updateDemo = function() {
             // Implementation for update functionality
             console.log('Update demo called');
+            // Toggle between different text lengths to show text centering
+            const node = flowdash.main.root.getNode('node1');
+            if (node) {
+                const currentText = node.data.label;
+                const newText = currentText === 'node Node' ? 'Very Long Text That Should Be Centered' : 'node Node';
+                node.data.label = newText;
+                node.update();
+            }
         };
         
         window.resetDemo = function() {

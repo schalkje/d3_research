@@ -146,6 +146,16 @@ export default class RectangularNode extends BaseNode {
     // CSS will handle default status styling via attribute selectors
   }
 
+  update() {
+    // Call parent update first
+    super.update();
+    
+    // Update text if label has changed
+    if (this.label && this.data.label !== this.label.text()) {
+      this.truncateTextIfNeeded();
+    }
+  }
+
   resize(size, forced = false) {
     // Update data properties first
     if (size.width !== undefined) this.data.width = size.width;

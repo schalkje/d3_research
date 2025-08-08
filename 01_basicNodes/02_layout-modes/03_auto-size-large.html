@@ -65,11 +65,8 @@
             const node = flowdash.main.root.getNode('node1');
             if (node) {
                 const currentText = node.data.label;
-                if (currentText.includes('Very Long Text')) {
-                    node.data.label = 'Short Text';
-                } else {
-                    node.data.label = 'Very Long Text That Should Expand The Node Size Significantly';
-                }
+                const newText = currentText.includes('Very Long Text') ? 'Short Text' : 'Very Long Text That Should Expand The Node Size Significantly';
+                node.data.label = newText;
                 node.update();
             }
         };

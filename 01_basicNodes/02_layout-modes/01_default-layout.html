@@ -65,7 +65,8 @@
             const node = flowdash.main.root.getNode('node1');
             if (node) {
                 const currentText = node.data.label;
-                node.data.label = currentText === 'Short Text' ? 'Very Long Text That Should Be Truncated' : 'Short Text';
+                const newText = currentText === 'Default Layout Node' ? 'Very Long Text That Should Be Truncated' : 'Default Layout Node';
+                node.data.label = newText;
                 node.update();
             }
         };

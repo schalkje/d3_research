@@ -65,11 +65,8 @@
             const node = flowdash.main.root.getNode('node1');
             if (node) {
                 const currentText = node.data.label;
-                if (currentText.includes('Very Long Text')) {
-                    node.data.label = 'Short Text';
-                } else {
-                    node.data.label = 'Very Long Text That Should Be Truncated Due To Fixed Size Constraints';
-                }
+                const newText = currentText.includes('Very Long Text') ? 'Short Text' : 'Very Long Text That Should Be Truncated Due To Fixed Size Constraints';
+                node.data.label = newText;
                 node.update();
             }
         };
