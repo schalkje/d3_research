@@ -1,4 +1,4 @@
-/* Demo-specific styles for basicNode */
+/* Demo-specific styles for layout modes */
 
 /* Ensure text centering for all node types */
 .node.label,
@@ -81,12 +81,4 @@
 .test-fail {
   color: #dc3545;
   font-weight: bold;
-}
-
-/* Canvas styling */
-.canvas {
-    background-color: #e6e3e3;
-    border: 2px solid #d3d3d3;
-    box-shadow: 4px 3px 8px 1px #969696;
-    margin: 0 auto;
 }

@@ -281,7 +281,17 @@ text {
   dominant-baseline: hanging;
 }
 
-.Node.label {
+/* Ensure all node labels are centered */
+.node.label,
+.Node.label,
+.rect.label,
+.adapter.label,
+.foundation.label,
+.mart.label,
+.group.label,
+.lane.label,
+.columns.label,
+.circle.label {
   stroke: none;
   font-size: 14px;
   font-weight: bold;
@@ -542,15 +552,6 @@ text {
   stroke-width: 1;
   rx: 5;
   ry: 5;
-}
-
-.Node.label {
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  font-weight: normal;
-  fill: #333333;
-  text-anchor: middle;
-  dominant-baseline: middle;
 }
 
 /* Circle Node Styles */
