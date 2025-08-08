@@ -17,7 +17,7 @@ export default class LaneNode extends BaseContainerNode {
     //   this.childNodes.length
     // );
     
-    // Use zone-based layout system
+    // Always call layoutLane to recalculate size and positioning
     this.layoutLane();
   }
 
@@ -29,8 +29,8 @@ export default class LaneNode extends BaseContainerNode {
     // Get zone manager and inner container zone
     const innerContainerZone = this.zoneManager?.innerContainerZone;
     if (!innerContainerZone) {
-      // Fallback to old layout if zone system not available
-      this.layoutLaneLegacy();
+      // Zone system is required for lane layout
+      console.warn('Zone system not available for lane node:', this.id);
       return;
     }
 
@@ -41,7 +41,10 @@ export default class LaneNode extends BaseContainerNode {
       const spacing = this.nodeSpacing?.vertical || 10;
       let currentY = 0;
 
-      childNodes.forEach(childNode => {
+      // Only position visible children
+      const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+
+      visibleChildNodes.forEach(childNode => {
         // Center horizontally within the inner container
         // Use center-based coordinate system for consistent positioning
         const x = 0; // Center horizontally (child nodes are now centered)
@@ -53,10 +56,11 @@ export default class LaneNode extends BaseContainerNode {
       });
     });
 
-    // Calculate required size for children
-    const totalChildHeight = this.childNodes.reduce((sum, node) => sum + node.data.height, 0);
-    const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.vertical : 0;
-    const maxChildWidth = Math.max(...this.childNodes.map(node => node.data.width));
+    // Calculate required size for visible children only
+    const visibleChildren = this.childNodes.filter(node => node.visible);
+    const totalChildHeight = visibleChildren.reduce((sum, node) => sum + node.data.height, 0);
+    const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.vertical : 0;
+    const maxChildWidth = visibleChildren.length > 0 ? Math.max(...visibleChildren.map(node => node.data.width)) : 0;
     
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
@@ -81,41 +85,7 @@ export default class LaneNode extends BaseContainerNode {
     innerContainerZone.updateChildPositions();
   }
 
-  layoutLaneLegacy() {
-    if (this.childNodes.length === 0) {
-      return;
-    }
 
-    // Calculate the total height needed for all children
-    const totalChildHeight = this.childNodes.reduce((sum, node) => sum + node.data.height, 0);
-    const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.vertical : 0;
-    
-    // Calculate the maximum width needed (max of all child widths)
-    const maxChildWidth = Math.max(...this.childNodes.map(node => node.data.width));
-    
-    // Calculate container size needed
-    const contentWidth = maxChildWidth + this.containerMargin.left + this.containerMargin.right;
-    const contentHeight = totalChildHeight + totalSpacing + this.containerMargin.top + this.containerMargin.bottom;
-    
-    // Resize container to accommodate all children
-    this.resize({
-      width: Math.max(this.data.width, contentWidth),
-      height: Math.max(this.data.height, contentHeight)
-    });
-    
-    // Simplified positioning: center children horizontally and stack vertically
-    let currentY = 0; // Start at the top of the inner container
-    
-    this.childNodes.forEach((node) => {
-      // Center horizontally (x = 0 means center of container)
-      const x = 0;
-      // Position vertically with proper spacing
-      const y = currentY + node.data.height / 2;
-      
-      node.move(x, y);
-      currentY += node.data.height + this.nodeSpacing.vertical;
-    });
-  }
 
   arrange() {
     console.log("Arranging LaneNode:", this.id);

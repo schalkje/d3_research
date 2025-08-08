@@ -421,9 +421,11 @@ export default class BaseContainerNode extends BaseNode {
 
     // Shape drawing is now handled by ContainerZone in the zone system
 
-    if (!this.collapsed) {
-      this.updateChildren();
+    // Always call updateChildren to recalculate size and positioning
+    // (even when collapsed, we need to recalculate based on child sizes)
+    this.updateChildren();
 
+    if (!this.collapsed) {
       this.updateEdges();
     }
   }

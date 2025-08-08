@@ -56,7 +56,10 @@ export default class ColumnsNode extends BaseContainerNode {
       const spacing = this.nodeSpacing?.horizontal || 20;
       let currentX = 0;
 
-      childNodes.forEach(childNode => {
+      // Only position visible children
+      const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+
+      visibleChildNodes.forEach(childNode => {
         const x = currentX;
         // Center vertically within the inner container
         const availableHeight = coordinateSystem.size.height;
@@ -67,11 +70,12 @@ export default class ColumnsNode extends BaseContainerNode {
       });
     });
 
-    // Calculate required size for children
-    const totalChildWidth = this.childNodes.reduce((sum, node) => sum + node.data.width, 0);
-    const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.horizontal : 0;
-    const maxChildHeight = this.childNodes.length > 0 
-      ? Math.max(...this.childNodes.map(node => node.data.height))
+    // Calculate required size for visible children only
+    const visibleChildren = this.childNodes.filter(node => node.visible);
+    const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
+    const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
+    const maxChildHeight = visibleChildren.length > 0 
+      ? Math.max(...visibleChildren.map(node => node.data.height))
       : 0;
     
     // Get margin zone for size calculations
@@ -102,13 +106,14 @@ export default class ColumnsNode extends BaseContainerNode {
       return;
     }
 
-    // Calculate total width needed
-    const totalChildWidth = this.childNodes.reduce((sum, node) => sum + node.data.width, 0);
-    const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.horizontal : 0;
+    // Calculate total width needed for visible children only
+    const visibleChildren = this.childNodes.filter(node => node.visible);
+    const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
+    const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
     
-    // Calculate max height needed
-    const maxChildHeight = this.childNodes.length > 0 
-      ? Math.max(...this.childNodes.map(node => node.data.height))
+    // Calculate max height needed for visible children
+    const maxChildHeight = visibleChildren.length > 0 
+      ? Math.max(...visibleChildren.map(node => node.data.height))
       : 0;
     
     // Calculate container size needed
@@ -121,14 +126,14 @@ export default class ColumnsNode extends BaseContainerNode {
       height: Math.max(this.data.height, contentHeight)
     });
     
-    // Position children relative to container center, starting just below the label
+    // Position visible children relative to container center, starting just below the label
     // Account for the container transform that's applied in BaseContainerNode.updateChildren()
     // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
     const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
     const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
     
     let currentX = -this.data.width / 2 + this.containerMargin.left - containerOffsetX;
-    this.childNodes.forEach((node) => {
+    visibleChildren.forEach((node) => {
       const x = currentX + node.data.width / 2;
       const y = -this.data.height / 2 + this.containerMargin.top - this.containerMargin.bottom - containerOffsetY + node.data.height / 2;
       node.move(x, y);

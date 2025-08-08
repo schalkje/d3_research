@@ -21,10 +21,11 @@ export default class GroupNode extends BaseContainerNode {
       return;
     }
 
-    // Calculate bounding box of all children
+    // Calculate bounding box of visible children only
+    const visibleChildren = this.childNodes.filter(node => node.visible);
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
-    this.childNodes.forEach(node => {
+    visibleChildren.forEach(node => {
       const halfWidth = node.data.width / 2;
       const halfHeight = node.data.height / 2;
       
@@ -44,11 +45,11 @@ export default class GroupNode extends BaseContainerNode {
       height: Math.max(this.data.height, contentHeight)
     });
 
-    // Position children relative to container center
+    // Position visible children relative to container center
     const containerCenterX = -this.data.width / 2 + this.containerMargin.left;
     const containerCenterY = -this.data.height / 2 + this.containerMargin.top;
     
-    this.childNodes.forEach(node => {
+    visibleChildren.forEach(node => {
       const x = containerCenterX + (node.x - minX) + node.data.width / 2;
       const y = containerCenterY + (node.y - minY) + node.data.height / 2;
       node.move(x, y);
