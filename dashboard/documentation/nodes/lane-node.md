@@ -2,12 +2,26 @@
 
 ## Overview
 
-`LaneNode` is a container node type that arranges child nodes in a vertical stack with horizontal centering. It's designed for organizing content in a single column layout, making it ideal for hierarchical data representation, process flows, and vertical organization of related elements.
+The `LaneNode` class is a specialized container node that arranges child nodes in a vertical stack with horizontal centering. It extends `BaseContainerNode` to provide a single-column layout ideal for hierarchical data representation, process flows, and vertical organization of related elements. The LaneNode fully integrates with the zone system for sophisticated layout management and automatic sizing.
 
-## Inheritance
+## Class Definition
 
-- **Parent**: [BaseContainerNode](base-container-node.md)
+```javascript
+export default class LaneNode extends BaseContainerNode {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null)
+}
+```
+
+## Inheritance Hierarchy
+
+- **Parent**: `BaseContainerNode` - Container functionality with zone system
 - **Children**: Any node type can be contained
+- **Siblings**: Other container node types
+  - `ColumnsNode` - Horizontal layout container
+  - `GroupNode` - Dynamic positioning container
+  - `AdapterNode` - Multi-arrangement specialist
+  - `FoundationNode` - Role-based specialist
+  - `MartNode` - Role-based specialist
 
 ## Key Features
 
@@ -23,7 +37,7 @@
 - **Margin Management**: Automatic margin application around content
 - **Child Lifecycle**: Complete child management and positioning
 
-## Properties
+## Core Properties
 
 ### Lane-Specific Properties
 ```javascript
@@ -33,7 +47,7 @@ this.nodeSpacing = {            // Spacing between child nodes
   vertical: 10                  // Vertical spacing between children
 };
 
-// Container margins
+// Container margins (inherited from BaseContainerNode)
 this.containerMargin = {        // Margins around container content
   top: 4,                       // Space from header bottom
   right: 8,                     // Space from right edge
@@ -41,87 +55,215 @@ this.containerMargin = {        // Margins around container content
   left: 8                       // Space from left edge
 };
 
-// Child management
+// Child management (inherited from BaseContainerNode)
 this.childNodes = [];           // Array of child node instances
 this.createNode = createNode;   // Node factory function
 ```
 
 ### Inherited Properties
-All properties from [BaseContainerNode](base-container-node.md) are inherited, including:
-- Container identification and state
-- Zone system management
+All properties from `BaseContainerNode` are inherited, including:
+- Container identification and state management
+- Zone system management (`zoneManager`, `zones`)
 - Event handling and configuration
 - DOM element references
+- Collapse/expand functionality
+
+## Constructor
+
+### Signature
+```javascript
+constructor(nodeData, parentElement, createNode, settings, parentNode = null)
+```
+
+### Parameters
+- `nodeData` (Object) - Node configuration object
+- `parentElement` (SVGElement) - Parent SVG container
+- `createNode` (Function) - Node factory function for creating children
+- `settings` (Object) - Global settings object
+- `parentNode` (BaseContainerNode, optional) - Parent node instance
+
+### Initialization Process
+1. Calls parent constructor with all parameters
+2. Inherits zone system initialization from BaseContainerNode
+3. Sets up vertical stacking layout configuration
+4. Initializes child management arrays
+5. Configures spacing and margin settings
+
+## Zone System Integration
+
+### Zone Hierarchy
+```
+Container Zone (outermost)
+├── Header Zone (top)
+│   ├── Title: "Process Lane"
+│   ├── Status indicator
+│   └── Zoom/collapse button
+├── Margin Zones (surrounding)
+│   ├── Top Margin (4px from header)
+│   ├── Right Margin (8px)
+│   ├── Bottom Margin (8px)
+│   └── Left Margin (8px)
+└── Inner Container Zone (content area)
+    └── Child Nodes (vertically stacked)
+```
+
+### Zone Responsibilities
+
+#### Header Zone
+**Purpose**: Display lane title and container controls
+**Positioning**: Top of container (y=0 relative to container)
+**Sizing**: Full width minus left/right margins, configurable height
+**Content**: 
+- Title text (left-aligned with 4px padding)
+- Status indicator (small circle)
+- Zoom button (for collapse/expand functionality)
+- Minimum height: 10px
+
+#### Margin Zones
+**Purpose**: Provide visual separation and breathing room
+**Positioning**: Around inner container zone
+**Sizing**: Configurable thickness (default: top=4px, sides=8px, bottom=8px)
+**Content**: Invisible spacing areas
+
+#### Inner Container Zone
+**Purpose**: Position and manage child nodes in vertical stack
+**Positioning**: Below header zone with top margin offset
+**Sizing**: Dynamic based on child content and spacing
+**Content**: Child nodes positioned by vertical stacking algorithm
+**Coordinate System**: Top-left origin for child positioning
+
+### Zone Coordinate Systems
+
+#### Container Zone Coordinate System
+- **Origin**: Container center point in parent coordinate system
+- **Positioning**: Container positioned by its center point
+- **Transform**: Applied to center point for movement
+
+#### Header Zone Coordinate System
+- **Origin**: Top-left of header zone (relative to container)
+- **Positioning**: Positioned at top of container (y=0)
+- **Sizing**: Full width minus margins, calculated height
+
+#### Inner Container Zone Coordinate System
+- **Origin**: Top-left of inner container zone
+- **Positioning**: Below header with top margin offset
+- **Sizing**: Available width/height minus margins
+- **Child Positioning**: Children positioned relative to this coordinate system
+
+## Layout System
+
+### Vertical Stacking Algorithm
+
+#### Algorithm Overview
+The LaneNode implements a sophisticated vertical stacking algorithm that:
+1. Centers each child horizontally within the container
+2. Stacks children vertically with configurable spacing
+3. Automatically calculates container size based on child content
+4. Integrates with zone system for precise positioning
+
+#### Layout Process
+```javascript
+// Set vertical stacking layout algorithm
+innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+  if (childNodes.length === 0) return;
+
+  const spacing = this.nodeSpacing?.vertical || 10;
+  let currentY = 0;
+
+  childNodes.forEach(childNode => {
+    // Center horizontally within the inner container
+    const availableWidth = coordinateSystem.size.width;
+    const x = (availableWidth - childNode.data.width) / 2;
+    const y = currentY;
+
+    childNode.move(x, y);
+    currentY += childNode.data.height + spacing;
+  });
+});
+```
+
+#### Positioning Logic
+1. **Horizontal Centering**: Each child is centered within available width
+   ```javascript
+   const x = (availableWidth - childNode.data.width) / 2;
+   ```
+
+2. **Vertical Stacking**: Children positioned sequentially with spacing
+   ```javascript
+   const y = currentY;
+   currentY += childNode.data.height + spacing;
+   ```
+
+3. **Spacing Management**: Configurable vertical spacing between children
+   - Default spacing: 10px
+   - No spacing before first child
+   - Spacing applied between each pair of children
+
+#### Size Calculation
+```javascript
+// Calculate required size for children
+const totalChildHeight = this.childNodes.reduce((sum, node) => sum + node.data.height, 0);
+const totalSpacing = this.childNodes.length > 1 ? (this.childNodes.length - 1) * this.nodeSpacing.vertical : 0;
+const maxChildWidth = Math.max(...this.childNodes.map(node => node.data.width));
+
+// Get margin zone for size calculations
+const marginZone = this.zoneManager?.marginZone;
+const headerZone = this.zoneManager?.headerZone;
+const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+
+if (marginZone) {
+  const requiredSize = marginZone.calculateContainerSize(
+    maxChildWidth,
+    totalChildHeight + totalSpacing,
+    headerHeight
+  );
+
+  // Resize container to accommodate all children
+  this.resize({
+    width: Math.max(this.data.width, requiredSize.width),
+    height: Math.max(this.data.height, requiredSize.height)
+  });
+}
+```
 
 ## Methods
 
 ### Core Methods
 
-#### `constructor(nodeData, parentElement, createNode, settings, parentNode = null)`
-Initializes the lane node with vertical stacking configuration.
-
-**Parameters:**
-- `nodeData` - Node configuration object
-- `parentElement` - Parent SVG container
-- `createNode` - Node factory function for creating children
-- `settings` - Global settings object
-- `parentNode` - Parent node instance (optional)
-
-**Initialization Steps:**
-- Sets up vertical stacking layout configuration
-- Initializes child management arrays
-- Configures spacing and margin settings
-- Calls parent constructor
-
-#### `initChildren()`
-Initializes all child nodes and positions them in vertical stack.
-
-**Process:**
-- Creates child nodes using factory function
-- Adds children to child nodes array
-- Initializes each child node
-- Positions children in vertical stack
-- Integrates with zone system
-
-### Layout Methods
-
 #### `updateChildren()`
-Updates child positioning and container sizing using vertical stacking algorithm.
-
-**Layout Algorithm:**
-```javascript
-// Calculate available space
-const availableWidth = this.data.width - this.containerMargin.left - this.containerMargin.right;
-const spacing = this.nodeSpacing.vertical;
-let currentY = 0;
-
-// Position each child
-this.childNodes.forEach(childNode => {
-  // Center child horizontally
-  const x = (availableWidth - childNode.data.width) / 2;
-  const y = currentY;
-  
-  // Move child to calculated position
-  childNode.move(x, y);
-  
-  // Update Y position for next child
-  currentY += childNode.data.height + spacing;
-});
-
-// Update container height
-const totalHeight = currentY - spacing + this.containerMargin.top + this.containerMargin.bottom;
-this.resize({ height: totalHeight });
-```
-
-#### `calculateLayout()`
-Calculates the optimal layout for all child nodes.
+Updates child positioning and container sizing using zone-based layout.
 
 **Process:**
-- Determines available width (container width minus margins)
-- Calculates vertical positions for each child
-- Centers each child horizontally within available width
-- Calculates required container height
-- Updates child positions and container size
+1. Calls `layoutLane()` for zone-based layout
+2. Integrates with zone system for precise positioning
+3. Calculates container size based on child content
+4. Updates child positions using zone coordinate system
+
+#### `layoutLane()`
+Implements the primary layout algorithm using zone system.
+
+**Features:**
+- Uses zone system for layout management
+- Falls back to legacy layout if zone system unavailable
+- Sets vertical stacking layout algorithm on inner container zone
+- Calculates required container size
+- Updates child positions using zone system
+
+#### `layoutLaneLegacy()`
+Legacy layout algorithm for backward compatibility.
+
+**Features:**
+- Manual positioning without zone system
+- Simplified vertical stacking
+- Basic size calculation
+- Direct child positioning
+
+#### `arrange()`
+Public method for triggering layout updates.
+
+**Process:**
+1. Logs arrangement operation
+2. Calls `updateChildren()` for layout update
 
 ### Child Management
 
@@ -145,6 +287,13 @@ Removes a child node from the lane and updates layout.
 - Updates container size
 - Removes from zone system
 
+### Child Positioning
+Children are positioned within the inner container zone using:
+- **Horizontal**: Centered within available width
+- **Vertical**: Stacked with configurable spacing
+- **Coordinate System**: Top-left origin of inner container zone
+- **Transform**: Applied through zone system
+
 ## Configuration
 
 ### Lane Node Settings
@@ -159,8 +308,8 @@ const laneSettings = {
     },
     alignment: "center",        // Horizontal alignment of children
     minimumSize: {              // Minimum container size
-      width: 0,
-      height: 50,
+      width: 100,
+      height: 60,
       useRootRatio: false
     }
   },
@@ -192,7 +341,7 @@ const laneNodeData = {
   y: 200,                       // Y coordinate
   width: 200,                   // Container width
   height: 0,                    // Height (auto-calculated)
-  state: "active",              // Status
+  state: "Ready",               // Status
   layout: {                     // Layout configuration
     type: "vertical-stack",
     spacing: { vertical: 10 }
@@ -204,6 +353,63 @@ const laneNodeData = {
   ]
 };
 ```
+
+## Zone System Implementation
+
+### Zone Manager Integration
+The LaneNode fully integrates with the zone system through `BaseContainerNode`:
+
+```javascript
+// Zone manager provides unified interface
+this.zoneManager = new ZoneManager(this);
+
+// Zone references for direct access
+this.zones = {
+  header: this.zoneManager.getZone('header'),
+  margin: this.zoneManager.getZone('margin'),
+  inner: this.zoneManager.getZone('innerContainer')
+};
+```
+
+### Zone-Specific Behaviors
+
+#### Header Zone Features
+- **Text Rendering**: Left-aligned text with configurable padding
+- **Height Calculation**: Text-based with minimum height constraint (10px)
+- **Status Indicators**: Visual status representation
+- **Zoom Controls**: Collapse/expand functionality
+- **Interaction Handling**: Click, hover, and focus events
+
+#### Margin Zone Features
+- **Margin Management**: Configurable spacing around content
+- **Size Calculation**: Automatic margin-aware sizing
+- **Position Constraints**: Boundary validation for child positioning
+- **Coordinate Transformation**: Margin-aware positioning utilities
+
+#### Inner Container Zone Features
+- **Child Positioning**: Vertical stacking with horizontal centering
+- **Layout Algorithm**: Custom vertical stacking algorithm
+- **Size Adaptation**: Dynamic sizing based on child content
+- **Coordinate System**: Top-left origin for child positioning
+- **Child Lifecycle**: Addition, removal, and update management
+
+### Coordinate System Management
+
+#### Zone Coordinate Relationships
+```
+Parent Coordinate System
+└── Container Zone (center-based)
+    ├── Header Zone (top-left origin)
+    ├── Margin Zones (layout-only)
+    └── Inner Container Zone (top-left origin)
+        └── Child Nodes (positioned here)
+```
+
+#### Transform Chain
+1. **Container Transform**: Applied to container center point
+2. **Header Transform**: Positioned at container top
+3. **Inner Container Transform**: Positioned below header with margin offset
+4. **Child Transform**: Positioned within inner container coordinate system
 
 ## Layout Algorithm Details
 
@@ -239,42 +445,77 @@ This ensures:
 - **Consistent Layout**: Uniform appearance across different child sizes
 - **Responsive Design**: Layout adapts to container width changes
 
-## Zone System Integration
-
-### Zone Hierarchy
-```
-Container Zone (outermost)
-├── Header Zone (top)
-│   ├── Title: "Process Lane"
-│   └── Zoom/collapse button
-├── Margin Zones (surrounding)
-│   ├── Top Margin (4px from header)
-│   ├── Right Margin (8px)
-│   ├── Bottom Margin (8px)
-│   └── Left Margin (8px)
-└── Inner Container Zone (content area)
-    └── Child Nodes (vertically stacked)
-```
-
-### Zone Management
-- **Header Zone**: Displays lane title and collapse/expand controls
-- **Inner Container Zone**: Manages child positioning and layout
-- **Margin Zones**: Provide consistent spacing around content
-- **Coordinate System**: Children positioned relative to inner container
-
 ## Performance Considerations
 
 ### Layout Optimization
-- **Incremental Updates**: Only changed children are repositioned
-- **Batch Operations**: Multiple child changes processed together
+- **Zone-Based Layout**: Efficient positioning through zone system
+- **Batch Updates**: Multiple child changes processed together
 - **Position Caching**: Child positions cached to avoid recalculation
-- **Efficient Algorithms**: Optimized positioning calculations
+- **Lazy Updates**: Layout only recalculated when needed
 
 ### Memory Management
 - **Child Cleanup**: Proper cleanup when children are removed
 - **Event Delegation**: Efficient event handling for child interactions
 - **Reference Management**: Avoiding circular references
 - **Zone Cleanup**: Zone system properly destroyed
+
+### Rendering Performance
+- **Efficient Algorithms**: Optimized positioning calculations
+- **Minimal DOM Updates**: Zone system minimizes DOM manipulation
+- **Transform Optimization**: Efficient coordinate transformations
+- **Size Calculation**: Cached size calculations where possible
+
+## Error Handling
+
+### Validation
+- **Child Constraints**: Validate child positioning within bounds
+- **Size Constraints**: Ensure minimum size requirements
+- **Zone System**: Validate zone system availability
+- **Layout Algorithm**: Validate layout algorithm execution
+
+### Error Recovery
+- **Fallback Layout**: Legacy layout if zone system unavailable
+- **Graceful Degradation**: Fallback behavior for errors
+- **State Recovery**: Automatic state restoration
+- **User Feedback**: Clear error messages
+
+## Testing Requirements
+
+### Unit Testing
+- **Constructor Tests**: Proper initialization with various parameters
+- **Layout Tests**: Vertical stacking algorithm accuracy
+- **Zone Integration Tests**: Zone system functionality
+- **Child Management Tests**: Child addition/removal behavior
+- **Size Calculation Tests**: Container sizing accuracy
+
+### Integration Testing
+- **Parent-Child Relationships**: Container-child interactions
+- **Zone System Integration**: Complete zone functionality
+- **Performance**: Large numbers of children
+- **Memory Leaks**: Proper cleanup and garbage collection
+
+### Test Scenarios
+1. **Basic Initialization**: Lane creation with minimal data
+2. **Child Addition**: Adding children to empty lane
+3. **Child Removal**: Removing children from lane
+4. **Layout Updates**: Layout recalculation scenarios
+5. **Zone System**: Zone-based layout functionality
+6. **Performance**: Large numbers of children
+7. **Error Conditions**: Invalid data and edge cases
+8. **Collapse/Expand**: Container collapse functionality
+
+## Dependencies
+
+### Required Dependencies
+- **BaseContainerNode** - Container functionality and zone system
+- **ZoneManager** - Zone system management
+- **LayoutManager** - Layout algorithm management
+- **ConfigManager** - Configuration management
+
+### Zone Dependencies
+- **HeaderZone** - Header zone functionality
+- **MarginZone** - Margin zone functionality
+- **InnerContainerZone** - Inner container zone functionality
 
 ## Use Cases
 
@@ -305,34 +546,6 @@ Lane nodes can contain any node type:
 - **CircleNode**: Alternative child representation
 - **Container Nodes**: Nested container structures
 - **Custom Nodes**: Any custom node implementation
-
-## Error Handling
-
-### Layout Errors
-- **Overflow Handling**: Children that exceed container width
-- **Size Constraints**: Minimum size enforcement
-- **Child Validation**: Invalid child node handling
-- **Position Errors**: Fallback positioning for layout failures
-
-### Recovery Mechanisms
-- **Graceful Degradation**: Fallback to simple layout
-- **Constraint Resolution**: Automatic constraint handling
-- **Error Logging**: Comprehensive error reporting
-- **State Recovery**: Automatic state restoration
-
-## Testing
-
-### Unit Testing
-- **Constructor Tests**: Proper initialization with various configurations
-- **Layout Tests**: Vertical stacking algorithm validation
-- **Child Management Tests**: Adding and removing children
-- **Size Calculation Tests**: Container sizing calculations
-
-### Integration Testing
-- **Parent-Child Relationships**: Container-child interactions
-- **Zone System**: Zone management and positioning
-- **Event Propagation**: Events flowing through hierarchy
-- **Performance**: Large numbers of children
 
 ## Navigation
 
