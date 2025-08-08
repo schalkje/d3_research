@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 /**
  * Demo Template Generator
  * 
  * This script generates demo pages following the established standard.
  * Usage: node generate-demo-template.js <nodeType> <demoName> [options]
  */
-
-const fs = require('fs');
-const path = require('path');
 
 // Template configurations
 const templates = {
@@ -284,11 +288,15 @@ export const demoDataComplex = {
 
     readme: `# {{nodeType}} Demos
 
-## Overview
+## Description
 
 This folder contains demonstrations for {{nodeType}} functionality, showcasing various features and use cases.
 
-## Demos
+## Features
+
+{{features}}
+
+## Usage
 
 ### {{demoName}}
 - **Purpose**: {{description}}
@@ -351,53 +359,65 @@ Run tests by clicking the "Run Tests" button in each demo.
 
 // Node type configurations
 const nodeTypeConfigs = {
-    BaseNode: {
-        category: "01_baseNodes",
+    node: {
+        category: "01_basicNodes",
         features: ["Basic rendering", "Text display", "Positioning"],
         childSupport: "No",
-        description: "Basic node rendering with minimal configuration"
+        description: "Basic rectangular node with text display"
     },
-    RectangularNode: {
-        category: "01_baseNodes", 
+    rect: {
+        category: "02_rectangularNodes", 
         features: ["Rectangular shape", "Text display", "Auto-sizing"],
         childSupport: "No",
         description: "Rectangular node with automatic text-based sizing"
     },
-    BaseContainerNode: {
-        category: "02_containerNodes",
-        features: ["Child management", "Margin handling", "Auto-sizing"],
-        childSupport: "Yes",
-        description: "Container node with child management capabilities"
+    circle: {
+        category: "03_circleNodes",
+        features: ["Circular shape", "Radius-based sizing"],
+        childSupport: "No",
+        description: "Circular node with radius-based sizing"
     },
-    LaneNode: {
-        category: "02_containerNodes",
+    lane: {
+        category: "04_laneNodes",
         features: ["Vertical stacking", "Child centering", "Auto-sizing"],
         childSupport: "Yes", 
         description: "Vertical lane layout with child stacking"
     },
-    ColumnsNode: {
-        category: "02_containerNodes",
+    columns: {
+        category: "05_columnsNodes",
         features: ["Horizontal layout", "Child alignment", "Auto-sizing"],
         childSupport: "Yes",
         description: "Horizontal columns layout with child alignment"
     },
-    AdapterNode: {
-        category: "03_specialistNodes",
+    adapter: {
+        category: "06_adapterNodes",
         features: ["Multi-arrangement", "Role modes", "Component layout"],
         childSupport: "Yes",
         description: "Specialist adapter node with multiple layout arrangements"
     },
-    FoundationNode: {
-        category: "03_specialistNodes",
+    foundation: {
+        category: "07_foundationNodes",
         features: ["Role-based layout", "Component positioning", "Auto-sizing"],
         childSupport: "Yes",
         description: "Foundation node with role-based component layout"
     },
-    MartNode: {
-        category: "03_specialistNodes", 
+    mart: {
+        category: "08_martNodes", 
         features: ["Role-based layout", "Component positioning", "Auto-sizing"],
         childSupport: "Yes",
         description: "Mart node with role-based component layout"
+    },
+    group: {
+        category: "09_groupNodes",
+        features: ["Dynamic grouping", "Force-directed layout"],
+        childSupport: "Yes",
+        description: "Dynamic group node with force-directed layout"
+    },
+    "edge-demo": {
+        category: "10_edgeDemoNodes",
+        features: ["Edge connection testing", "Demo purposes"],
+        childSupport: "No",
+        description: "Edge demo node for testing connections"
     }
 };
 
@@ -468,8 +488,12 @@ function generateDemo(nodeType, demoName, options = {}) {
 
     // Write files
     files.forEach(file => {
-        fs.writeFileSync(file.path, file.content);
-        console.log(`Created: ${file.path}`);
+        if (options.force || !fs.existsSync(file.path)) {
+            fs.writeFileSync(file.path, file.content);
+            console.log(`Created: ${file.path}`);
+        } else {
+            console.log(`Skipped (exists): ${file.path}`);
+        }
     });
 
     console.log(`\nDemo generated successfully in: ${demoPath}`);
@@ -481,7 +505,7 @@ function generateDemo(nodeType, demoName, options = {}) {
 }
 
 // CLI handling
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const args = process.argv.slice(2);
     
     if (args.length < 2) {
@@ -497,13 +521,36 @@ if (require.main === module) {
 
     const nodeType = args[0];
     const demoName = args[1];
+    
+    // Parse options
     const options = {
-        demoNumber: args[2] || '01',
-        description: args[3] || '',
-        features: args[4] ? args[4].split(',') : []
+        demoNumber: '01',
+        description: '',
+        features: [],
+        force: false
     };
+    
+    // Parse remaining arguments
+    for (let i = 2; i < args.length; i++) {
+        const arg = args[i];
+        if (arg === '--force') {
+            options.force = true;
+        } else if (arg.startsWith('--description=')) {
+            options.description = arg.split('=')[1];
+        } else if (arg.startsWith('--features=')) {
+            options.features = arg.split('=')[1].split(',');
+        } else if (arg.startsWith('--demoNumber=')) {
+            options.demoNumber = arg.split('=')[1];
+        } else if (!options.demoNumber || options.demoNumber === '01') {
+            options.demoNumber = arg;
+        } else if (!options.description) {
+            options.description = arg;
+        } else if (!options.features.length) {
+            options.features = arg.split(',');
+        }
+    }
 
     generateDemo(nodeType, demoName, options);
 }
 
-module.exports = { generateDemo, nodeTypeConfigs };
+export { generateDemo, nodeTypeConfigs };
