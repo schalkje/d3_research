@@ -267,6 +267,11 @@ export class Dashboard {
       console.log("Creating single node:", dashboard.nodes[0]);
       root = createNode(dashboard.nodes[0], container, dashboard.settings);
       console.log("Created node result:", root);
+      
+      // Center single nodes in the dashboard
+      if (root) {
+        root.move(0, 0); // Center the node at (0,0)
+      }
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
     }
