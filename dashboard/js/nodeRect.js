@@ -49,7 +49,6 @@ export default class RectangularNode extends BaseNode {
       .attr("class", `${this.data.type} label`)
       .attr("x", this.data.width / 2)
       .attr("y", this.data.height / 2)
-      .attr("dy", "0.35em")
       .text(this.data.label);
 
     // Apply custom styling if provided

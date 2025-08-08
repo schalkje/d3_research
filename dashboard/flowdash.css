@@ -277,8 +277,10 @@ text {
   /* fill: rgb(216, 216, 241); */
   fill: rgb(65, 65, 151);
   fill-opacity: 0.8;
-  text-anchor: start;
-  dominant-baseline: hanging;
+  /* text-anchor: start; */
+  /* dominant-baseline: hanging; */
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 /* Ensure all node labels are centered */
@@ -298,8 +300,6 @@ text {
   /* fill: rgb(216, 216, 241); */
   fill: black;
   fill-opacity: 0.8;
-  text-anchor: middle;
-  dominant-baseline: middle;
 }
 
 .placeholder {
