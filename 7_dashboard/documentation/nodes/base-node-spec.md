@@ -16,7 +16,7 @@ export default class BaseNode {
 
 - **Parent**: None (Root class)
 - **Children**: All node types extend this class
-  - `BaseContainerNode` - Container functionality
+  - `BaseContainerNode` - Container functionality with zone system
   - `RectangularNode` - Rectangular shape implementation
   - `CircleNode` - Circular shape implementation
   - `LaneNode` - Vertical stacking container
@@ -54,7 +54,6 @@ this.suspenseDisplayChange = false; // Display change suspension
 // DOM elements
 this.element = null;            // SVG group element
 this.simulation = null;         // Force simulation reference
-this.zoneManager = null;        // Zone system manager (containers only)
 this.layoutDebug = true;        // Debug layout information
 
 // Edge management
@@ -124,7 +123,6 @@ Initializes the node's DOM elements and sets up event handling.
 **Features:**
 - Creates SVG group element
 - Sets up default event handlers
-- Initializes zone system (for containers)
 - Applies visual state classes
 - Shows debug elements (if enabled)
 
@@ -312,6 +310,64 @@ Calculates the node's bounding box for collision detection.
 #### `handleDisplayChange()`
 Handles display state changes and triggers callbacks.
 
+## Layout System
+
+### Basic Layout Properties
+
+#### Orientation
+BaseNode uses a **center-based coordinate system**:
+- **Origin**: Node center point (x, y)
+- **Positioning**: All coordinates relative to center
+- **Transform**: Applied to center point for movement
+
+#### Margins and Spacing
+```javascript
+// Default spacing configuration
+const defaultSpacing = {
+  nodeSpacing: {
+    horizontal: 20,  // Space between nodes horizontally
+    vertical: 10     // Space between nodes vertically
+  }
+};
+```
+
+#### Centering Behavior
+- **Self-Centering**: Node positions itself at its center point
+- **Child Positioning**: Children positioned relative to parent center
+- **Text Centering**: Text elements centered within node bounds
+- **Connection Points**: Calculated from center outward
+
+#### Layout Modes
+BaseNode supports basic layout modes:
+- **Default**: Standard positioning and sizing
+- **Auto-Size**: Automatically adjust size based on content
+- **Fixed-Size**: Maintain specific dimensions regardless of content
+
+### Layout Methods
+
+#### `calculateLayout()`
+Calculates the basic layout for the node.
+
+**Features:**
+- Determines node dimensions
+- Calculates center point
+- Sets up coordinate system
+- Prepares for rendering
+
+#### `updateLayout()`
+Updates the layout when properties change.
+
+**Features:**
+- Recalculates dimensions
+- Updates positioning
+- Adjusts child layouts
+- Triggers layout events
+
+#### `getLayoutBounds()`
+Returns the current layout bounds.
+
+**Returns:** Object with x, y, width, height
+
 ## Configuration
 
 ### Default Settings
@@ -335,12 +391,6 @@ const defaultSettings = {
   nodeSpacing: {                // Spacing between nodes
     horizontal: 20,
     vertical: 10
-  },
-  containerMargin: {            // Container margins
-    top: 4,
-    right: 8,
-    bottom: 8,
-    left: 8
   },
   
   // Demo settings
@@ -417,20 +467,6 @@ const nodeData = {
 - **visibilityChange**: Visibility state changed
 - **collapseChange**: Collapse state changed
 
-## Zone System Integration
-
-### Zone Manager
-Container nodes automatically initialize a `ZoneManager` that provides:
-- **Header Zone**: Title and control area
-- **Margin Zones**: Spacing around content
-- **Inner Container Zone**: Child node positioning area
-
-### Zone Features
-- **Automatic Positioning**: Children positioned by layout algorithms
-- **Dynamic Sizing**: Container adapts to content size
-- **Collapse/Expand**: Integrated support for hiding content
-- **Coordinate Systems**: Each zone has its own coordinate system
-
 ## Performance Considerations
 
 ### Optimization Features
@@ -472,7 +508,6 @@ Container nodes automatically initialize a `ZoneManager` that provides:
 ### Integration Testing
 - **Parent-Child Relationships**: Container-child interactions
 - **Event Propagation**: Event flow through hierarchy
-- **Zone System**: Zone management and positioning
 - **Performance**: Large dataset handling
 - **Memory Leaks**: Proper cleanup and garbage collection
 
@@ -491,7 +526,6 @@ Container nodes automatically initialize a `ZoneManager` that provides:
 - **ConfigManager** - Configuration management and defaults
 - **EventManager** - Event handling patterns
 - **StatusManager** - Status calculation and management
-- **ZoneManager** - Zone system management (containers only)
 - **computeConnectionPoints** - Connection point calculation utility
 
 ### Optional Dependencies
@@ -507,6 +541,7 @@ This specification replaces the existing `base-node.md` documentation with a mor
 - Comprehensive testing requirements
 - Performance considerations
 - Error handling strategies
+- Layout system documentation
 
 ### Breaking Changes
 - None - this is a specification document that describes existing functionality
@@ -514,7 +549,7 @@ This specification replaces the existing `base-node.md` documentation with a mor
 
 ## Related Documentation
 
-- **[BaseContainerNode Specification](base-container-node-spec.md)** - Container node base class
+- **[BaseContainerNode Specification](base-container-node-spec.md)** - Container node base class with zone system
 - **[RectangularNode Specification](rectangular-node-spec.md)** - Basic rectangular node
 - **[CircleNode Specification](circle-node-spec.md)** - Basic circular node
 - **[Implementation Details](../../implementation.md)** - Technical implementation
