@@ -57,12 +57,12 @@ export class InnerContainerZone extends BaseZone {
     this.updateCoordinateSystem();
     
     // Update border element dimensions
-    // The border should be positioned at (0, 0) relative to the inner container coordinate system
+    // The border should be centered within the inner container coordinate system
     if (this.borderElement) {
       this.borderElement
         .attr('width', this.coordinateSystem.size.width)
         .attr('height', this.coordinateSystem.size.height)
-        .attr('x', 0)  // Position at origin of inner container coordinate system
+        .attr('x', -this.coordinateSystem.size.width / 2)  // Center horizontally
         .attr('y', 0); // Position at origin of inner container coordinate system
     }
     
@@ -81,8 +81,8 @@ export class InnerContainerZone extends BaseZone {
       const marginSize = marginZone.getSize();
       
       // Calculate inner container position relative to node center
-      // The inner container should be positioned at the left margin, 4px below the header
-      const innerX = -this.size.width / 2 + marginSize.left; // Left margin from container edge
+      // The inner container should be centered horizontally, 4px below the header
+      const innerX = 0; // Center horizontally (no left margin offset)
       const innerY = -this.size.height / 2 + headerHeight + 4; // 4px below header
       
       // Ensure sizes are not negative

@@ -475,10 +475,10 @@ text {
 }
 
 /* Inner Container Zone Styles */
-.zone-innerContainer {
+rect.zone-innerContainer {
   fill: none;
-  stroke: rgba(135, 206, 250, 0.6); /* Light blue semi-transparent */
-  stroke-width: 2;
+  stroke: rgba(135, 206, 250, 0.2); /* Light blue semi-transparent */
+  stroke-width: 1;
   stroke-dasharray: 5,5; /* Dashed border for visual distinction */
   pointer-events: none; /* Don't interfere with interactions */
 }

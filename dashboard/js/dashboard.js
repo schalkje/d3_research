@@ -268,12 +268,27 @@ export class Dashboard {
       root = createNode(dashboard.nodes[0], container, dashboard.settings);
       console.log("Created node result:", root);
       
-      // Center single nodes in the dashboard
+      // For single nodes, ensure they are positioned at the center of the dashboard
       if (root) {
-        root.move(0, 0); // Center the node at (0,0)
+        if (root.isContainer) {
+          // For container nodes (like LaneNode), center at (0,0)
+          root.move(0, 0);
+        } else {
+          // For regular nodes (like RectNode), account for node width
+          const nodeWidth = root.data.width || 150;
+          const centerX = -nodeWidth / 2;
+          const centerY = 0; // Keep vertical centering as is
+          root.move(centerX, centerY);
+        }
       }
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
+      
+      // The dashboard is responsible for positioning the LaneNode at the center
+      if (root && root.isContainer) {
+        // Center the container node at (0,0) - this is the dashboard's responsibility
+        root.move(0, 0);
+      }
     }
 
     if (!root) {
@@ -286,6 +301,18 @@ export class Dashboard {
     this.initializeChildrenStatusses(root);
 
     if (dashboard.edges.length > 0) createEdges(root, dashboard.edges, dashboard.settings);
+
+    // Add debug circle in the middle of the dashboard (drawn last to appear on top)
+    if (this.data.settings.isDebug) {
+      container.append("circle")
+        .attr("class", "debug-center")
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("r", 5)
+        .attr("fill", "red")
+        .attr("stroke", "darkred")
+        .attr("stroke-width", 2);
+    }
 
     console.log("dashboard - createDashboard - finish", dashboard, container);
     return root;
@@ -416,6 +443,13 @@ export class Dashboard {
     // set the viewport to the root node
     var width = this.main.root.data.width;
     var height = this.main.root.data.height;
+
+    // For single nodes, ensure proper viewport size for good zoom
+    if (this.data.nodes.length === 1) {
+      const minViewportSize = 300; // Larger minimum for better zoom
+      width = Math.max(width, minViewportSize);
+      height = Math.max(height, minViewportSize);
+    }
 
     // keep aspect ratio
     if (width / height > this.main.divRatio) {

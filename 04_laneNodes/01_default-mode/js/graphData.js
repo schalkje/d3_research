@@ -34,7 +34,13 @@ export const demoData = {
         
         // Demo-specific settings
         demoMode: true,
-        enableTesting: true
+        enableTesting: true,
+        
+        // Debug settings
+        isDebug: true,
+        
+        // Zoom settings
+        zoomToRoot: true
     },
     
     // Node definitions

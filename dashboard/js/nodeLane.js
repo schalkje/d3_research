@@ -43,10 +43,9 @@ export default class LaneNode extends BaseContainerNode {
 
       childNodes.forEach(childNode => {
         // Center horizontally within the inner container
-        // The coordinate system origin is at the top-left of the inner container
-        const availableWidth = coordinateSystem.size.width;
-        const x = (availableWidth - childNode.data.width) / 2; // Center horizontally
-        const y = currentY;
+        // Use center-based coordinate system for consistent positioning
+        const x = 0; // Center horizontally (child nodes are now centered)
+        const y = currentY + childNode.data.height / 2; // Position by center, not top
 
         // Position children relative to the inner container's coordinate system
         childNode.move(x, y);
