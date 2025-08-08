@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>basic - node Demo</title>
+    <title>Default Layout - BaseNode Demo</title>
     
     <!-- Standard CSS -->
     <link rel="stylesheet" href="../../dashboard/flowdash.css">
     
-    <!-- Optional demo-specific CSS -->
-    <link rel="stylesheet" href="css/demo.css" if-exists>
-    
     <!-- Required Libraries -->
     <script src="../../dashboard/libs/d3.min.js"></script>
-<script src="../../dashboard/libs/d3-shape.min.js"></script>
-<script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 <body>
     <!-- Demo Header -->
     <header class="demo-header">
-        <h1>node Demos</h1>
-        <h2>basic</h2>
-        <p class="demo-description">Basic rectangular node with text display</p>
+        <h1>BaseNode Layout Modes</h1>
+        <h2>Default Layout</h2>
+        <p class="demo-description">Standard positioning and sizing with fixed dimensions</p>
         
         <!-- Demo Controls -->
         <div class="demo-controls">
@@ -39,8 +36,8 @@
     <!-- Demo Information -->
     <footer class="demo-info">
         <div class="demo-metadata">
-            <p><strong>Node Type:</strong> node</p>
-            <p><strong>Features:</strong> </p>
+            <p><strong>Layout Mode:</strong> Default</p>
+            <p><strong>Features:</strong> Fixed dimensions, standard positioning</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
@@ -60,17 +57,26 @@
         
         // Demo functions
         window.updateDemo = function() {
-            // Implementation for update functionality
             console.log('Update demo called');
+            // Toggle between different text lengths to show fixed sizing
+            const node = flowdash.main.root.getNode('node1');
+            if (node) {
+                const currentText = node.data.label;
+                node.data.label = currentText === 'Short Text' ? 'Very Long Text That Should Be Truncated' : 'Short Text';
+                node.update();
+            }
         };
         
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original state
+            const node = flowdash.main.root.getNode('node1');
+            if (node) {
+                node.data.label = 'Default Layout Node';
+                node.update();
+            }
         };
         
         window.runTests = function() {
-            // Implementation for running tests
             runDemoTests();
         };
         
@@ -79,13 +85,11 @@
             const testStatus = document.getElementById('testStatus');
             testStatus.textContent = 'Running...';
             
-            // Basic validation tests
             const tests = [
                 testDashboardInitialization,
                 testNodeRendering,
-                testDataStructure,
-                testTextCentering,
-                testNodePositioning
+                testDefaultLayout,
+                testFixedSizing
             ];
             
             let passed = 0;
@@ -113,27 +117,14 @@
             return nodes.length > 0;
         }
         
-        function testDataStructure() {
-            return demoData && demoData.nodes && Array.isArray(demoData.nodes);
+        function testDefaultLayout() {
+            const node = flowdash.main.root.getNode('node1');
+            return node && node.data.layout && node.data.layout.displayMode === 'full';
         }
         
-        function testTextCentering() {
+        function testFixedSizing() {
             const node = flowdash.main.root.getNode('node1');
-            if (!node) return false;
-            
-            // Check if text is properly centered
-            const textElement = document.querySelector('.node text');
-            if (!textElement) return false;
-            
-            const textAnchor = textElement.getAttribute('text-anchor');
-            const dominantBaseline = textElement.getAttribute('dominant-baseline');
-            
-            return textAnchor === 'middle' && dominantBaseline === 'middle';
-        }
-        
-        function testNodePositioning() {
-            const node = flowdash.main.root.getNode('node1');
-            return node && typeof node.x === 'number' && typeof node.y === 'number';
+            return node && node.data.width === 80 && node.data.height === 60;
         }
     </script>
 </body>

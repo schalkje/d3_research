@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: fixed-size-large
 // Node Type: node
-// Features: 
+// Features: Fixed-size layout mode with large text
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "fixed-size-large",
         nodeType: "node",
-        features: ["Basic rendering", "Text display", "Positioning"],
-        description: "Basic rectangular node with text display",
+        features: ["Fixed-size layout", "Fixed dimensions", "Large text example"],
+        description: "Fixed-size layout mode with large text - demonstrates fixed dimensions",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -41,26 +41,30 @@ export const demoData = {
     nodes: [
         {
             id: "node1",
-            label: "node Node",
+            label: "Very Long Text That Should Be Truncated Due To Fixed Size Constraints",
             type: "node",
             // Node-specific properties
             code: "N1",
             status: "Ready",
+            // Fixed dimensions for fixed-size layout
+            width: 80,
+            height: 60,
             // Layout properties
             layout: {
-                displayMode: "full", // or "role", "code"
-                arrangement: "default" // varies by node type
+                displayMode: "full",
+                arrangement: "default",
+                layoutMode: "fixed-size" // Fixed dimensions regardless of content
             },
             // Text configuration
             text: {
-                content: "node Node",
+                content: "Very Long Text That Should Be Truncated Due To Fixed Size Constraints",
                 fontSize: 12,
                 fontFamily: "Arial",
                 fontWeight: "normal",
                 textAnchor: "middle",
                 dominantBaseline: "middle",
                 color: "#333333",
-                maxLength: null
+                maxLength: 20 // Limit text length for fixed size
             },
             // Child nodes (for container nodes)
             children: [],
@@ -71,13 +75,4 @@ export const demoData = {
     
     // Edge definitions
     edges: []
-};
-
-// Additional demo data exports for different scenarios
-export const demoDataWithChildren = {
-    // ... similar structure with children
-};
-
-export const demoDataComplex = {
-    // ... complex scenario
 };

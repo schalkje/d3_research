@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: auto-size-small
 // Node Type: node
-// Features: 
+// Features: Auto-size layout mode with small text
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "auto-size-small",
         nodeType: "node",
-        features: ["Basic rendering", "Text display", "Positioning"],
-        description: "Basic rectangular node with text display",
+        features: ["Auto-size layout", "Dynamic sizing", "Small text example"],
+        description: "Auto-size layout mode with small text - demonstrates dynamic sizing",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -41,19 +41,23 @@ export const demoData = {
     nodes: [
         {
             id: "node1",
-            label: "node Node",
+            label: "Small Text",
             type: "node",
             // Node-specific properties
             code: "N1",
             status: "Ready",
+            // Auto-size dimensions (will be calculated based on content)
+            width: null, // Will be calculated
+            height: null, // Will be calculated
             // Layout properties
             layout: {
-                displayMode: "full", // or "role", "code"
-                arrangement: "default" // varies by node type
+                displayMode: "full",
+                arrangement: "default",
+                layoutMode: "auto-size" // Dynamic sizing based on content
             },
             // Text configuration
             text: {
-                content: "node Node",
+                content: "Small Text",
                 fontSize: 12,
                 fontFamily: "Arial",
                 fontWeight: "normal",
@@ -71,13 +75,4 @@ export const demoData = {
     
     // Edge definitions
     edges: []
-};
-
-// Additional demo data exports for different scenarios
-export const demoDataWithChildren = {
-    // ... similar structure with children
-};
-
-export const demoDataComplex = {
-    // ... complex scenario
 };

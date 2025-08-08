@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: default-layout
 // Node Type: node
-// Features: 
+// Features: Default layout mode with fixed dimensions
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "default-layout",
         nodeType: "node",
-        features: ["Basic rendering", "Text display", "Positioning"],
-        description: "Basic rectangular node with text display",
+        features: ["Default layout", "Fixed dimensions", "Standard positioning"],
+        description: "Default layout mode with standard positioning and fixed sizing",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -41,19 +41,23 @@ export const demoData = {
     nodes: [
         {
             id: "node1",
-            label: "node Node",
+            label: "Default Layout Node",
             type: "node",
             // Node-specific properties
             code: "N1",
             status: "Ready",
+            // Fixed dimensions for default layout
+            width: 80,
+            height: 60,
             // Layout properties
             layout: {
-                displayMode: "full", // or "role", "code"
-                arrangement: "default" // varies by node type
+                displayMode: "full",
+                arrangement: "default",
+                layoutMode: "default" // Fixed dimensions
             },
             // Text configuration
             text: {
-                content: "node Node",
+                content: "Default Layout Node",
                 fontSize: 12,
                 fontFamily: "Arial",
                 fontWeight: "normal",
@@ -71,13 +75,4 @@ export const demoData = {
     
     // Edge definitions
     edges: []
-};
-
-// Additional demo data exports for different scenarios
-export const demoDataWithChildren = {
-    // ... similar structure with children
-};
-
-export const demoDataComplex = {
-    // ... complex scenario
 };
