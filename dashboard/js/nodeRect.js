@@ -4,12 +4,23 @@ import { getTextWidth } from "./utils.js";
 export default class RectangularNode extends BaseNode {
   constructor(nodeData, parentElement, settings, parentNode = null) {
     if (!nodeData.height) nodeData.height = 20;
-    if (!nodeData.width) nodeData.width = 150;
     
-    // Calculate text width and ensure minimum width
-    const textWidth = getTextWidth(nodeData.label);
-    const minWidth = Math.max(nodeData.width, textWidth + 20); // Add padding
-    nodeData.width = minWidth;
+    // Check layout mode
+    const layoutMode = nodeData.layout?.layoutMode || 'default';
+    
+    if (layoutMode === 'auto-size') {
+      // For auto-size, calculate width based on text
+      const textWidth = getTextWidth(nodeData.label);
+      nodeData.width = Math.max(textWidth + 20, 60); // Minimum width of 60
+    } else {
+      // For default and fixed-size, use provided width or default
+      if (!nodeData.width) nodeData.width = 150;
+      
+      // Calculate text width and ensure minimum width
+      const textWidth = getTextWidth(nodeData.label);
+      const minWidth = Math.max(nodeData.width, textWidth + 20); // Add padding
+      nodeData.width = minWidth;
+    }
 
     super(nodeData, parentElement, settings, parentNode);
   }
@@ -107,19 +118,38 @@ export default class RectangularNode extends BaseNode {
     if (label !== undefined) this.data.label = label;
     if (width !== undefined) this.data.width = width;
     
-    // Recalculate width if text changed
-    if (label !== undefined) {
-      const textWidth = getTextWidth(label);
-      this.data.width = Math.max(this.data.width, textWidth + 20);
-    }
+    // Check layout mode
+    const layoutMode = this.data.layout?.layoutMode || 'default';
     
-    this.element
-      .select("rect")
-      .attr("width", this.data.width)
-      .attr("x", -this.data.width / 2);
+    if (layoutMode === 'auto-size' && label !== undefined) {
+      // For auto-size, recalculate width based on text
+      const textWidth = getTextWidth(label);
+      const newWidth = Math.max(textWidth + 20, 60); // Minimum width of 60
+      this.data.width = newWidth;
+      
+      // Update visual elements directly without triggering simulation
+      this.element
+        .select("rect")
+        .attr("width", this.data.width)
+        .attr("x", -this.data.width / 2);
+      
+      // Update text without truncation
+      this.label.text(label);
+    } else {
+      // For default and fixed-size, or when width is specified
+      if (label !== undefined) {
+        const textWidth = getTextWidth(label);
+        this.data.width = Math.max(this.data.width, textWidth + 20);
+      }
+      
+      this.element
+        .select("rect")
+        .attr("width", this.data.width)
+        .attr("x", -this.data.width / 2);
 
-    // Apply text truncation
-    this.truncateTextIfNeeded();
+      // Apply text truncation
+      this.truncateTextIfNeeded();
+    }
   }
 
   get status() {
@@ -152,6 +182,37 @@ export default class RectangularNode extends BaseNode {
     
     // Update text if label has changed
     if (this.label && this.data.label !== this.label.text()) {
+      this.handleTextUpdate();
+    }
+  }
+
+  handleTextUpdate() {
+    // Check layout mode
+    const layoutMode = this.data.layout?.layoutMode || 'default';
+    
+    if (layoutMode === 'auto-size') {
+      // For auto-size, recalculate width based on text
+      const textWidth = getTextWidth(this.data.label);
+      const newWidth = Math.max(textWidth + 20, 60); // Minimum width of 60
+      
+      if (newWidth !== this.data.width) {
+        // Update data width
+        this.data.width = newWidth;
+        
+        // Update visual elements directly without triggering simulation
+        this.element
+          .select("rect")
+          .attr("width", this.data.width)
+          .attr("x", -this.data.width / 2);
+        
+        // Update text without truncation
+        this.label.text(this.data.label);
+      } else {
+        // Just update the text without truncation
+        this.label.text(this.data.label);
+      }
+    } else {
+      // For default and fixed-size, use truncation
       this.truncateTextIfNeeded();
     }
   }
@@ -171,13 +232,17 @@ export default class RectangularNode extends BaseNode {
       .attr("x", -this.data.width / 2)
       .attr("y", -this.data.height / 2);
 
-    // Keep label centered and reapply truncation
+    // Keep label centered
     this.element
       .select("text")
       .attr("x", 0)
       .attr("y", 0);
     
-    // Reapply text truncation after resize
-    this.truncateTextIfNeeded();
+    // Check layout mode for text handling
+    const layoutMode = this.data.layout?.layoutMode || 'default';
+    if (layoutMode !== 'auto-size') {
+      // Only truncate for non-auto-size layouts
+      this.truncateTextIfNeeded();
+    }
   }
 }
