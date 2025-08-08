@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed-Size Large - Lane Demo</title>
+    <title>Fixed-Size Labels - Lane Demo</title>
     
     <!-- Standard CSS -->
     <link rel="stylesheet" href="../../../dashboard/flowdash.css">
@@ -20,11 +20,12 @@
     <!-- Demo Header -->
     <header class="demo-header">
         <h1>Lane Demos</h1>
-        <h2>Fixed-Size Large</h2>
-        <p class="demo-description">Lane with fixed-size large layout mode</p>
+        <h2>Fixed-Size Labels</h2>
+        <p class="demo-description">Lane with fixed-size labels and dynamic changes</p>
         
         <!-- Demo Controls -->
         <div class="demo-controls">
+            <button id="toggleLabelsBtn" onclick="toggleLabels()">Change Labels</button>
             <button id="updateBtn" onclick="updateDemo()">Update</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
@@ -40,14 +41,14 @@
     <footer class="demo-info">
         <div class="demo-metadata">
             <p><strong>Node Type:</strong> lane</p>
-            <p><strong>Features:</strong> Fixed-size large layout mode</p>
+            <p><strong>Features:</strong> Fixed-size labels with dynamic changes</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
 
     <script type="module">
         // Import demo data
-        import { demoData } from './js/graphData-fixed-size-large.js';
+        import { demoData, labelSets } from './js/graphData.js';
         import flowDashboard from '../../../dashboard/js/index.js';
 
         // Initialize dashboard
@@ -57,6 +58,25 @@
         // Attach to window for testing and debugging
         window.flowdash = flowdash;
         window.demoData = demoData;
+        
+        // Label change functionality
+        let currentLabelSet = 0;
+        
+        window.toggleLabels = function() {
+            currentLabelSet = (currentLabelSet + 1) % labelSets.length;
+            const newLabels = labelSets[currentLabelSet];
+            
+            // Update child node labels
+            const childNodes = flowdash.getNodes().filter(node => node.type === 'rect');
+            childNodes.forEach((node, index) => {
+                if (newLabels[index]) {
+                    node.updateLabel(newLabels[index]);
+                }
+            });
+            
+            // Force layout update
+            flowdash.updateLayout();
+        };
         
         // Demo functions
         window.updateDemo = function() {

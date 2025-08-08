@@ -9,7 +9,9 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
 - **Features**: Single lane node with no children
 - **Tests**: Basic rendering, data structure validation
 
-### 2. Default Mode Tests (`01_default-mode/`)
+### 2. Simple Tests (`01_simple-tests/`)
+
+#### 2.1 Default Mode Tests (`01_default-mode/`)
 - **Purpose**: Lane with 3 rectangles in default mode
 - **Features**: 
   - 3 child rectangle nodes
@@ -21,7 +23,7 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
   - Center child rectangles horizontally
   - Stack child rectangles vertically with proper spacing
 
-### 3. Collapsed Mode Tests (`02_collapsed-mode/`)
+#### 2.2 Collapsed Mode Tests (`02_collapsed-mode/`)
 - **Purpose**: Lane with 3 rectangles in collapsed mode
 - **Features**:
   - 3 child rectangle nodes (hidden)
@@ -32,7 +34,7 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
   - Show collapsed indicator
   - Expand lane when clicked
 
-### 4. Auto-Size Labels Tests (`03_auto-size-labels/`)
+#### 2.3 Auto-Size Labels Tests (`03_auto-size-labels/`)
 - **Purpose**: Lane with auto-size labels and dynamic changes
 - **Features**:
   - 3 child nodes with different label lengths
@@ -45,7 +47,7 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
   - Change labels when button is clicked
   - Maintain auto-sizing when labels change
 
-### 5. Fixed-Size Labels Tests (`04_fixed-size-labels/`)
+#### 2.4 Fixed-Size Labels Tests (`04_fixed-size-labels/`)
 - **Purpose**: Lane with fixed-size labels and dynamic changes
 - **Features**:
   - 3 child nodes with fixed sizes
@@ -58,7 +60,7 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
   - Change labels when button is clicked
   - Maintain fixed sizes when labels change
 
-### 6. Dynamic Addition Tests (`05_dynamic-addition/`)
+#### 2.5 Dynamic Addition Tests (`05_dynamic-addition/`)
 - **Purpose**: Lane with dynamic node addition functionality
 - **Features**:
   - 1 initial rectangle node
@@ -72,31 +74,44 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
   - Maintain proper vertical stacking when nodes are added
   - Center all nodes horizontally within lane
 
-### 7. Layout Mode Tests (`06_layout-modes/`)
+### 3. Nested Tests (`02_nested-tests/`)
 
-#### 7.1 Default Layout (`default-layout.html`)
-- **Purpose**: Default layout mode demonstration
-- **Features**: Standard lane layout with 3 rectangles
+#### 3.1 Nested Lane Tests (`07_nested-lanes/`)
+- **Purpose**: Lane with 2 nested lanes, each containing 3 elements
+- **Features**: 
+  - Main lane container with 2 sub-lanes
+  - Each sub-lane contains 3 rectangular child elements
+  - Proper hierarchical layout management
+  - Vertical stacking and horizontal centering
+- **Tests**:
+  - Render nested lane structure correctly
+  - Verify proper hierarchy and parent-child relationships
+  - Test layout consistency across nesting levels
 
-#### 7.2 Auto-Size Small (`auto-size-small.html`)
-- **Purpose**: Auto-size small layout mode
-- **Features**: Compact node sizing with auto-sizing behavior
-- **Tests**: Verify nodes have smaller sizes (< 150px width, < 80px height)
+#### 3.2 Nested Collapsed Lane Tests (`08_nested-collapsed/`)
+- **Purpose**: Lane with 2 nested lanes, one collapsed with hidden children
+- **Features**:
+  - Main lane container with 2 sub-lanes
+  - One expanded sub-lane with visible children
+  - One collapsed sub-lane with hidden children
+  - Mixed state management
+- **Tests**:
+  - Render nested structure with mixed expanded/collapsed states
+  - Verify collapsed state management in nested hierarchy
+  - Test layout consistency with mixed states
 
-#### 7.3 Auto-Size Large (`auto-size-large.html`)
-- **Purpose**: Auto-size large layout mode
-- **Features**: Expanded node sizing with auto-sizing behavior
-- **Tests**: Verify nodes have larger sizes (> 200px width, > 100px height)
-
-#### 7.4 Fixed-Size Small (`fixed-size-small.html`)
-- **Purpose**: Fixed-size small layout mode
-- **Features**: Uniform small sizing for all nodes
-- **Tests**: Verify all nodes have same small size
-
-#### 7.5 Fixed-Size Large (`fixed-size-large.html`)
-- **Purpose**: Fixed-size large layout mode
-- **Features**: Uniform large sizing for all nodes
-- **Tests**: Verify all nodes have same large size
+#### 3.3 Deep Nesting Tests (`09_deep-nesting/`)
+- **Purpose**: Lane with 3 levels of nesting, demonstrating deep hierarchical layout
+- **Features**:
+  - 3-level nested structure (Level 1 → Level 2 → Level 3)
+  - Multiple sub-lanes at each level
+  - Child elements at the deepest level
+  - Complex hierarchical layout management
+- **Tests**:
+  - Render deep nested structure correctly
+  - Verify proper hierarchy across 3 levels
+  - Test layout consistency in deep nesting
+  - Validate performance with complex hierarchy
 
 ## Test Coverage
 
@@ -113,12 +128,10 @@ This directory contains comprehensive tests and demos for the LaneNode class, wh
 3. **Layout Updates**: Test layout recalculation after changes
 4. **Size Mode Changes**: Test different size modes (auto-size vs fixed-size)
 
-### Layout Mode Tests
-1. **Default Mode**: Standard layout behavior
-2. **Auto-Size Small**: Compact sizing with auto-sizing
-3. **Auto-Size Large**: Expanded sizing with auto-sizing
-4. **Fixed-Size Small**: Uniform small sizing
-5. **Fixed-Size Large**: Uniform large sizing
+### Nested Structure Tests
+1. **Basic Nesting**: 2-level nested lane structure
+2. **Mixed States**: Nested lanes with expanded/collapsed combinations
+3. **Deep Nesting**: 3-level complex hierarchical structure
 
 ## Test Data Structure
 

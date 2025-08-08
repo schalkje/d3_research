@@ -91,7 +91,7 @@ test.describe('Lane Node Tests', () => {
   test.describe('Lane with 3 Rectangles - Default Mode', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the lane with 3 rectangles demo
-      await page.goto('/04_laneNodes/01_default-mode/default-mode.html');
+      await page.goto('/04_laneNodes/01_simple-tests/01_default-mode/default-mode.html');
       
       // Wait for the page to load and SVG to appear
       await page.waitForSelector('svg', { timeout: 10000 });
@@ -222,7 +222,7 @@ test.describe('Lane Node Tests', () => {
   test.describe('Lane with 3 Rectangles - Collapsed Mode', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the collapsed lane demo
-      await page.goto('/04_laneNodes/02_collapsed-mode/collapsed-mode.html');
+      await page.goto('/04_laneNodes/01_simple-tests/02_collapsed-mode/collapsed-mode.html');
       
       // Wait for the page to load and SVG to appear
       await page.waitForSelector('svg', { timeout: 10000 });
@@ -295,7 +295,7 @@ test.describe('Lane Node Tests', () => {
   test.describe('Lane with Auto-Size Labels - Dynamic Changes', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the auto-size lane demo
-      await page.goto('/04_laneNodes/03_auto-size-labels/auto-size-labels.html');
+      await page.goto('/04_laneNodes/01_simple-tests/03_auto-size-labels/auto-size-labels.html');
       
       // Wait for the page to load and SVG to appear
       await page.waitForSelector('svg', { timeout: 10000 });
@@ -435,7 +435,7 @@ test.describe('Lane Node Tests', () => {
   test.describe('Lane with Fixed Size Labels - Dynamic Changes', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the fixed-size lane demo
-      await page.goto('/04_laneNodes/04_fixed-size-labels/fixed-size-labels.html');
+      await page.goto('/04_laneNodes/01_simple-tests/04_fixed-size-labels/fixed-size-labels.html');
       
       // Wait for the page to load and SVG to appear
       await page.waitForSelector('svg', { timeout: 10000 });
@@ -570,7 +570,7 @@ test.describe('Lane Node Tests', () => {
   test.describe('Lane with Dynamic Node Addition', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the dynamic addition demo
-      await page.goto('/04_laneNodes/05_dynamic-addition/dynamic-addition.html');
+      await page.goto('/04_laneNodes/01_simple-tests/05_dynamic-addition/dynamic-addition.html');
       
       // Wait for the page to load and SVG to appear
       await page.waitForSelector('svg', { timeout: 10000 });
@@ -738,162 +738,101 @@ test.describe('Lane Node Tests', () => {
     });
   });
 
-  test.describe('Layout Mode Tests', () => {
-    test('should test default layout mode', async ({ page }) => {
-      await page.goto('/04_laneNodes/06_layout-modes/default-layout.html');
+
+
+  test.describe('Nested Lane Tests', () => {
+    test.beforeEach(async ({ page }) => {
+      // Add error handling for console errors
+      page.on('console', msg => {
+        if (msg.type() === 'error') {
+          console.log('Browser console error:', msg.text());
+        }
+      });
       
-      await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
-      
-      const nodesFound = await waitForLaneNodes(page);
-      expect(nodesFound).toBe(true);
-      
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
-      await expect(laneNodes).toHaveCount(1);
-      
-      const childNodes = page.locator('g.Node[data-type="rect"]');
-      await expect(childNodes).toHaveCount(3);
+      page.on('pageerror', error => {
+        console.log('Page error:', error.message);
+      });
     });
 
-    test('should test auto-size small layout mode', async ({ page }) => {
-      await page.goto('/04_laneNodes/06_layout-modes/auto-size-small.html');
+    test('should test nested lanes with 2 sub-lanes', async ({ page }) => {
+      await page.goto('/04_laneNodes/02_nested-tests/07_nested-lanes/nested-lanes.html');
       
       await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
       
+      // Wait for the dashboard to be initialized
+      await page.waitForFunction(() => {
+        return window.flowdash !== undefined;
+      }, { timeout: 15000 });
+      
+      // Wait for nodes to be rendered
       const nodesFound = await waitForLaneNodes(page);
       expect(nodesFound).toBe(true);
       
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
-      await expect(laneNodes).toHaveCount(1);
+      // Check for main lane node
+      const mainLaneNodes = page.locator('g.Node[data-type="lane"]');
+      await expect(mainLaneNodes).toHaveCount(3); // Main lane + 2 sub-lanes
       
-      const childNodes = page.locator('g.Node[data-type="rect"]');
-      await expect(childNodes).toHaveCount(3);
+      // Check for child rectangle nodes
+      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      await expect(rectNodes).toHaveCount(6); // 3 rectangles per sub-lane
       
-      // Verify auto-sizing behavior
-      const nodeSizes = [];
-      for (let i = 0; i < 3; i++) {
-        const childNode = childNodes.nth(i);
-        const rect = childNode.locator('rect').first();
-        const width = await rect.getAttribute('width');
-        const height = await rect.getAttribute('height');
-        nodeSizes.push({ width: parseFloat(width), height: parseFloat(height) });
-      }
-      
-      // In auto-size small mode, nodes should have smaller sizes
-      for (let i = 0; i < 3; i++) {
-        expect(nodeSizes[i].width).toBeLessThan(150);
-        expect(nodeSizes[i].height).toBeLessThan(80);
-      }
+      // Verify all nodes are visible
+      await expect(mainLaneNodes.first()).toBeVisible();
+      await expect(rectNodes.first()).toBeVisible();
     });
 
-    test('should test auto-size large layout mode', async ({ page }) => {
-      await page.goto('/04_laneNodes/06_layout-modes/auto-size-large.html');
+    test('should test nested lanes with one collapsed sub-lane', async ({ page }) => {
+      await page.goto('/04_laneNodes/02_nested-tests/08_nested-collapsed/nested-collapsed.html');
       
       await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
       
+      // Wait for the dashboard to be initialized
+      await page.waitForFunction(() => {
+        return window.flowdash !== undefined;
+      }, { timeout: 15000 });
+      
+      // Wait for nodes to be rendered
       const nodesFound = await waitForLaneNodes(page);
       expect(nodesFound).toBe(true);
       
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
-      await expect(laneNodes).toHaveCount(1);
+      // Check for main lane node
+      const mainLaneNodes = page.locator('g.Node[data-type="lane"]');
+      await expect(mainLaneNodes).toHaveCount(3); // Main lane + 2 sub-lanes
       
-      const childNodes = page.locator('g.Node[data-type="rect"]');
-      await expect(childNodes).toHaveCount(3);
+      // Check for child rectangle nodes (only from expanded sub-lane should be visible)
+      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      await expect(rectNodes).toHaveCount(3); // Only 3 rectangles from expanded sub-lane
       
-      // Verify auto-sizing behavior
-      const nodeSizes = [];
-      for (let i = 0; i < 3; i++) {
-        const childNode = childNodes.nth(i);
-        const rect = childNode.locator('rect').first();
-        const width = await rect.getAttribute('width');
-        const height = await rect.getAttribute('height');
-        nodeSizes.push({ width: parseFloat(width), height: parseFloat(height) });
-      }
-      
-      // In auto-size large mode, nodes should have larger sizes
-      for (let i = 0; i < 3; i++) {
-        expect(nodeSizes[i].width).toBeGreaterThan(200);
-        expect(nodeSizes[i].height).toBeGreaterThan(100);
-      }
+      // Verify main lane and expanded sub-lane are visible
+      await expect(mainLaneNodes.first()).toBeVisible();
+      await expect(rectNodes.first()).toBeVisible();
     });
 
-    test('should test fixed-size small layout mode', async ({ page }) => {
-      await page.goto('/04_laneNodes/06_layout-modes/fixed-size-small.html');
+    test('should test deep nesting with 3 levels', async ({ page }) => {
+      await page.goto('/04_laneNodes/02_nested-tests/09_deep-nesting/deep-nesting.html');
       
       await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
       
+      // Wait for the dashboard to be initialized
+      await page.waitForFunction(() => {
+        return window.flowdash !== undefined;
+      }, { timeout: 15000 });
+      
+      // Wait for nodes to be rendered
       const nodesFound = await waitForLaneNodes(page);
       expect(nodesFound).toBe(true);
       
+      // Check for lane nodes (1 level 1 + 2 level 2 + 3 level 3 = 6 lanes)
       const laneNodes = page.locator('g.Node[data-type="lane"]');
-      await expect(laneNodes).toHaveCount(1);
+      await expect(laneNodes).toHaveCount(6);
       
-      const childNodes = page.locator('g.Node[data-type="rect"]');
-      await expect(childNodes).toHaveCount(3);
+      // Check for child rectangle nodes
+      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      await expect(rectNodes).toHaveCount(4); // 4 rectangles total
       
-      // Verify fixed-size behavior
-      const nodeSizes = [];
-      for (let i = 0; i < 3; i++) {
-        const childNode = childNodes.nth(i);
-        const rect = childNode.locator('rect').first();
-        const width = await rect.getAttribute('width');
-        const height = await rect.getAttribute('height');
-        nodeSizes.push({ width: parseFloat(width), height: parseFloat(height) });
-      }
-      
-      // All nodes should have the same size in fixed-size mode
-      expect(nodeSizes[0].width).toBe(nodeSizes[1].width);
-      expect(nodeSizes[1].width).toBe(nodeSizes[2].width);
-      expect(nodeSizes[0].height).toBe(nodeSizes[1].height);
-      expect(nodeSizes[1].height).toBe(nodeSizes[2].height);
-      
-      // Should be small size
-      expect(nodeSizes[0].width).toBeLessThan(150);
-      expect(nodeSizes[0].height).toBeLessThan(80);
-    });
-
-    test('should test fixed-size large layout mode', async ({ page }) => {
-      await page.goto('/04_laneNodes/06_layout-modes/fixed-size-large.html');
-      
-      await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
-      
-      const nodesFound = await waitForLaneNodes(page);
-      expect(nodesFound).toBe(true);
-      
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
-      await expect(laneNodes).toHaveCount(1);
-      
-      const childNodes = page.locator('g.Node[data-type="rect"]');
-      await expect(childNodes).toHaveCount(3);
-      
-      // Verify fixed-size behavior
-      const nodeSizes = [];
-      for (let i = 0; i < 3; i++) {
-        const childNode = childNodes.nth(i);
-        const rect = childNode.locator('rect').first();
-        const width = await rect.getAttribute('width');
-        const height = await rect.getAttribute('height');
-        nodeSizes.push({ width: parseFloat(width), height: parseFloat(height) });
-      }
-      
-      // All nodes should have the same size in fixed-size mode
-      expect(nodeSizes[0].width).toBe(nodeSizes[1].width);
-      expect(nodeSizes[1].width).toBe(nodeSizes[2].width);
-      expect(nodeSizes[0].height).toBe(nodeSizes[1].height);
-      expect(nodeSizes[1].height).toBe(nodeSizes[2].height);
-      
-      // Should be large size
-      expect(nodeSizes[0].width).toBeGreaterThan(200);
-      expect(nodeSizes[0].height).toBeGreaterThan(100);
+      // Verify all nodes are visible
+      await expect(laneNodes.first()).toBeVisible();
+      await expect(rectNodes.first()).toBeVisible();
     });
   });
 });

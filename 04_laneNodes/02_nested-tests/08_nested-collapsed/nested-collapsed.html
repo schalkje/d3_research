@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collapsed Mode - Lane Demo</title>
+    <title>Nested Collapsed Lanes - Lane Demo</title>
     
     <!-- Standard CSS -->
-    <link rel="stylesheet" href="../../dashboard/flowdash.css">
+    <link rel="stylesheet" href="../../../dashboard/flowdash.css">
     
     <!-- Optional demo-specific CSS -->
     <link rel="stylesheet" href="css/demo.css">
     
     <!-- Required Libraries -->
-    <script src="../../dashboard/libs/d3.min.js"></script>
-    <script src="../../dashboard/libs/d3-shape.min.js"></script>
-    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../../dashboard/libs/d3.min.js"></script>
+    <script src="../../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 <body>
     <!-- Demo Header -->
     <header class="demo-header">
         <h1>Lane Demos</h1>
-        <h2>Collapsed Mode</h2>
-        <p class="demo-description">Lane with 3 rectangles in collapsed mode</p>
+        <h2>Nested Collapsed Lanes</h2>
+        <p class="demo-description">Lane with 2 nested lanes, one collapsed with hidden children</p>
         
         <!-- Demo Controls -->
         <div class="demo-controls">
@@ -40,7 +40,7 @@
     <footer class="demo-info">
         <div class="demo-metadata">
             <p><strong>Node Type:</strong> lane</p>
-            <p><strong>Features:</strong> Collapsed mode with 3 rectangles</p>
+            <p><strong>Features:</strong> Nested lanes with one collapsed sub-lane</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
@@ -48,7 +48,7 @@
     <script type="module">
         // Import demo data
         import { demoData } from './js/graphData.js';
-        import flowDashboard from '../../dashboard/js/index.js';
+        import flowDashboard from '../../../dashboard/js/index.js';
 
         // Initialize dashboard
         const flowdash = new flowDashboard.Dashboard(demoData);

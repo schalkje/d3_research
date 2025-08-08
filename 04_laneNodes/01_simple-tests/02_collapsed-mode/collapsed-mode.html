@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Addition - Lane Demo</title>
+    <title>Collapsed Mode - Lane Demo</title>
     
     <!-- Standard CSS -->
-    <link rel="stylesheet" href="../../dashboard/flowdash.css">
+    <link rel="stylesheet" href="../../../dashboard/flowdash.css">
     
     <!-- Optional demo-specific CSS -->
     <link rel="stylesheet" href="css/demo.css">
     
     <!-- Required Libraries -->
-    <script src="../../dashboard/libs/d3.min.js"></script>
-    <script src="../../dashboard/libs/d3-shape.min.js"></script>
-    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../../dashboard/libs/d3.min.js"></script>
+    <script src="../../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 <body>
     <!-- Demo Header -->
     <header class="demo-header">
         <h1>Lane Demos</h1>
-        <h2>Dynamic Addition</h2>
-        <p class="demo-description">Lane with dynamic node addition functionality</p>
+        <h2>Collapsed Mode</h2>
+        <p class="demo-description">Lane with 3 rectangles in collapsed mode</p>
         
         <!-- Demo Controls -->
         <div class="demo-controls">
-            <button id="addNodeBtn" onclick="addNode()">Add Node</button>
             <button id="updateBtn" onclick="updateDemo()">Update</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
@@ -41,7 +40,7 @@
     <footer class="demo-info">
         <div class="demo-metadata">
             <p><strong>Node Type:</strong> lane</p>
-            <p><strong>Features:</strong> Dynamic node addition</p>
+            <p><strong>Features:</strong> Collapsed mode with 3 rectangles</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
@@ -49,7 +48,7 @@
     <script type="module">
         // Import demo data
         import { demoData } from './js/graphData.js';
-        import flowDashboard from '../../dashboard/js/index.js';
+        import flowDashboard from '../../../dashboard/js/index.js';
 
         // Initialize dashboard
         const flowdash = new flowDashboard.Dashboard(demoData);
@@ -58,38 +57,6 @@
         // Attach to window for testing and debugging
         window.flowdash = flowdash;
         window.demoData = demoData;
-        
-        // Node counter for unique IDs
-        let nodeCounter = 1;
-        
-        window.addNode = function() {
-            nodeCounter++;
-            const newNodeId = `rect${nodeCounter}`;
-            const newLabel = `Step ${nodeCounter}`;
-            
-            // Create new node data
-            const newNodeData = {
-                id: newNodeId,
-                label: newLabel,
-                type: "rect",
-                code: `R${nodeCounter}`,
-                status: "Ready",
-                layout: {
-                    displayMode: "full",
-                    arrangement: "default"
-                },
-                parentId: "lane1"
-            };
-            
-            // Add node to the lane
-            const laneNode = flowdash.getNodes().find(node => node.id === 'lane1');
-            if (laneNode && laneNode.addChild) {
-                laneNode.addChild(newNodeData);
-            }
-            
-            // Force layout update
-            flowdash.updateLayout();
-        };
         
         // Demo functions
         window.updateDemo = function() {
@@ -100,7 +67,6 @@
         window.resetDemo = function() {
             // Implementation for reset functionality
             flowdash.reset();
-            nodeCounter = 1;
         };
         
         window.runTests = function() {
