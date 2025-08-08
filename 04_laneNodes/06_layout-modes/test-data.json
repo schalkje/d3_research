@@ -1,0 +1,60 @@
+{
+    "demoName": "06_layout-modes",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Default Layout",
+            "description": "Test default layout mode with standard sizing",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 4,
+                "nodeTypes": ["lane", "rect"],
+                "layoutMode": "default"
+            }
+        },
+        {
+            "name": "Auto-Size Small",
+            "description": "Test auto-size small layout mode",
+            "type": "layout",
+            "expected": {
+                "autoSizeEnabled": true,
+                "sizeMode": "small",
+                "dynamicSizing": true
+            }
+        },
+        {
+            "name": "Auto-Size Large",
+            "description": "Test auto-size large layout mode",
+            "type": "layout",
+            "expected": {
+                "autoSizeEnabled": true,
+                "sizeMode": "large",
+                "dynamicSizing": true
+            }
+        },
+        {
+            "name": "Fixed-Size Small",
+            "description": "Test fixed-size small layout mode",
+            "type": "layout",
+            "expected": {
+                "fixedSizeEnabled": true,
+                "sizeMode": "small",
+                "consistentSizing": true
+            }
+        },
+        {
+            "name": "Fixed-Size Large",
+            "description": "Test fixed-size large layout mode",
+            "type": "layout",
+            "expected": {
+                "fixedSizeEnabled": true,
+                "sizeMode": "large",
+                "consistentSizing": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

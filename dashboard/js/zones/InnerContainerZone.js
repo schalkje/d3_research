@@ -208,6 +208,8 @@ export class InnerContainerZone extends BaseZone {
       const x = (availableWidth - childNode.data.width) / 2; // Center horizontally
       const y = currentY;
       
+      // Position children relative to the inner container's coordinate system
+      // The inner container transform handles the offset from the lane node
       childNode.move(x, y);
       currentY += childNode.data.height + spacing;
     });
@@ -277,6 +279,7 @@ export class InnerContainerZone extends BaseZone {
       const x = (availableWidth - childNode.data.width) / 2; // Center horizontally
       const y = currentY;
       
+      // Position children relative to the inner container's coordinate system
       childNode.move(x, y);
       currentY += childNode.data.height + spacing;
     });
@@ -298,6 +301,7 @@ export class InnerContainerZone extends BaseZone {
       const availableHeight = this.coordinateSystem.size.height;
       const y = (availableHeight - childNode.data.height) / 2; // Center vertically
       
+      // Position children relative to the inner container's coordinate system
       childNode.move(x, y);
       currentX += childNode.data.width + spacing;
     });
@@ -321,6 +325,7 @@ export class InnerContainerZone extends BaseZone {
       const x = centerX - contentSize.width / 2 + childNode.x;
       const y = centerY - contentSize.height / 2 + childNode.y;
       
+      // Position children relative to the inner container's coordinate system
       childNode.move(x, y);
     });
   }

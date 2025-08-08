@@ -19,7 +19,7 @@ export function createNode(nodeData, container, settings, parentNode = null) {
   }
   
   console.log("Found constructor for node type:", nodeType);
-  return new NodeConstructor(nodeData, container, settings, parentNode);
+  return new NodeConstructor(nodeData, container, createNode, settings, parentNode);
 }
 
 export function getRegisteredNodeTypes() {

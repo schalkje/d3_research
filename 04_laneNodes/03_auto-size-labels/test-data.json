@@ -1,0 +1,41 @@
+{
+    "demoName": "03_auto-size-labels",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Auto-Size Rendering",
+            "description": "Test that auto-size nodes render correctly with dynamic labels",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 4,
+                "nodeTypes": ["lane", "rect"],
+                "autoSizeEnabled": true,
+                "dynamicLabels": true
+            }
+        },
+        {
+            "name": "Label Toggle Functionality",
+            "description": "Test that label toggle button changes node labels",
+            "type": "functional",
+            "expected": {
+                "toggleButtonExists": true,
+                "labelChanges": true,
+                "sizeAdjustment": true
+            }
+        },
+        {
+            "name": "Auto-Size Behavior",
+            "description": "Test that nodes automatically adjust size based on label length",
+            "type": "layout",
+            "expected": {
+                "dynamicSizing": true,
+                "labelFitting": true,
+                "properSpacing": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

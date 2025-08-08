@@ -1,20 +1,5 @@
 /* Demo-specific styles for layout modes */
 
-/* Ensure text centering for all node types */
-.node.label,
-.Node.label,
-.rect.label,
-.adapter.label,
-.foundation.label,
-.mart.label,
-.group.label,
-.lane.label,
-.columns.label,
-.circle.label {
-  text-anchor: middle !important;
-  dominant-baseline: middle !important;
-}
-
 /* Demo container styling */
 .demo-header {
   background: #f8f9fa;

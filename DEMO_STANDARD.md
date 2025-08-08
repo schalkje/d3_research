@@ -22,6 +22,10 @@ This document defines the standard structure and requirements for all demonstrat
 - **Category folders**: `{number}_{name}` (e.g., `01_baseNodes`, `02_containerNodes`)
 - **Demo folders**: `{number}_{name}` (e.g., `01_simple`, `02_withChildren`)
 
+### Template generator
+**Use template generator** `generate-demo-template.js` for creating new demos. This generated the base setup.
+Then **Update index.html** to include the new demo.
+
 ## HTML File Standard
 
 ### Required Structure

@@ -48,6 +48,7 @@ export default class LaneNode extends BaseContainerNode {
         const x = (availableWidth - childNode.data.width) / 2; // Center horizontally
         const y = currentY;
 
+        // Position children relative to the inner container's coordinate system
         childNode.move(x, y);
         currentY += childNode.data.height + spacing;
       });

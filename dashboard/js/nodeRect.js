@@ -40,15 +40,16 @@ export default class RectangularNode extends BaseNode {
       .attr("width", this.data.width)
       .attr("height", this.data.height)
       .attr("status", this.status)
-      .attr("x", -this.data.width / 2)
-      .attr("y", -this.data.height / 2);
+      .attr("x", 0)
+      .attr("y", 0);
 
     // Create label text element with proper truncation
     this.label = this.element
       .append("text")
       .attr("class", `${this.data.type} label`)
-      .attr("x", 0)
-      .attr("y", 0)
+      .attr("x", this.data.width / 2)
+      .attr("y", this.data.height / 2)
+      .attr("dy", "0.35em")
       .text(this.data.label);
 
     // Apply custom styling if provided

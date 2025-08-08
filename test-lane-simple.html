@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lane Node Positioning Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { border: 1px solid #ccc; padding: 20px; margin: 20px 0; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        #graph { width: 800px; height: 600px; border: 1px solid #ddd; margin: 20px 0; }
+    </style>
+    
+    <!-- Required Libraries -->
+    <script src="dashboard/libs/d3.min.js"></script>
+    <script src="dashboard/libs/d3-shape.min.js"></script>
+    <script src="dashboard/libs/d3-dag.iife.min.js"></script>
+</head>
+<body>
+    <h1>Lane Node Positioning Test</h1>
+    <p>Testing the fix for lane node child positioning</p>
+    
+    <div class="test-container">
+        <h3>Test Results:</h3>
+        <div id="results"></div>
+    </div>
+    
+    <div id="graph"></div>
+
+    <script type="module">
+        import flowDashboard from './dashboard/js/index.js';
+
+        // Test data with lane and rectangles
+        const testData = {
+            nodes: [
+                {
+                    id: "lane1",
+                    label: "Process Lane",
+                    type: "lane",
+                    code: "L1",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "full",
+                        arrangement: "default"
+                    },
+                    children: [
+                        {
+                            id: "rect1",
+                            label: "Step 1",
+                            type: "rect",
+                            code: "R1",
+                            status: "Ready",
+                            layout: {
+                                displayMode: "full",
+                                arrangement: "default"
+                            },
+                            parentId: "lane1"
+                        },
+                        {
+                            id: "rect2",
+                            label: "Step 2",
+                            type: "rect",
+                            code: "R2",
+                            status: "Ready",
+                            layout: {
+                                displayMode: "full",
+                                arrangement: "default"
+                            },
+                            parentId: "lane1"
+                        },
+                        {
+                            id: "rect3",
+                            label: "Step 3",
+                            type: "rect",
+                            code: "R3",
+                            status: "Ready",
+                            layout: {
+                                displayMode: "full",
+                                arrangement: "default"
+                            },
+                            parentId: "lane1"
+                        }
+                    ],
+                    parentId: null
+                }
+            ],
+            edges: []
+        };
+
+        function addResult(message, isSuccess = true) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Initialize dashboard
+        const flowdash = new flowDashboard.Dashboard(testData);
+        flowdash.initialize('#graph');
+        
+        // Wait for initialization
+        setTimeout(() => {
+            addResult('Dashboard initialized successfully');
+            
+            // Check the SVG structure
+            const svg = document.querySelector('#graph svg');
+            if (svg) {
+                addResult('SVG element found');
+                
+                // Check for lane node
+                const laneNode = svg.querySelector('g.lane');
+                if (laneNode) {
+                    addResult('Lane node found');
+                    
+                    // Check for inner container
+                    const innerContainer = laneNode.querySelector('g.zone-innerContainer');
+                    if (innerContainer) {
+                        addResult('Inner container found');
+                        
+                        // Check for rectangles
+                        const rectangles = innerContainer.querySelectorAll('g.rect');
+                        addResult(`Found ${rectangles.length} rectangles`);
+                        
+                        // Check positioning
+                        let allRectanglesInside = true;
+                        rectangles.forEach((rect, index) => {
+                            const rectElement = rect.querySelector('rect.shape');
+                            if (rectElement) {
+                                const x = parseFloat(rectElement.getAttribute('x'));
+                                const y = parseFloat(rectElement.getAttribute('y'));
+                                
+                                // Check if rectangle is positioned relative to inner container
+                                // The x should not be -75 (which was the old incorrect positioning)
+                                if (x === -75) {
+                                    allRectanglesInside = false;
+                                    addResult(`Rectangle ${index + 1} has incorrect x position: ${x}`, false);
+                                } else {
+                                    addResult(`Rectangle ${index + 1} positioned at (${x}, ${y})`);
+                                }
+                            }
+                        });
+                        
+                        if (allRectanglesInside) {
+                            addResult('All rectangles are positioned correctly within the inner container');
+                        } else {
+                            addResult('Some rectangles are positioned incorrectly', false);
+                        }
+                    } else {
+                        addResult('Inner container not found', false);
+                    }
+                } else {
+                    addResult('Lane node not found', false);
+                }
+            } else {
+                addResult('SVG element not found', false);
+            }
+        }, 1000);
+        
+        // Attach to window for debugging
+        window.flowdash = flowdash;
+        window.testData = testData;
+    </script>
+</body>
+</html>
