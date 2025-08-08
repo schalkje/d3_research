@@ -270,16 +270,9 @@ export class Dashboard {
       
       // For single nodes, ensure they are positioned at the center of the dashboard
       if (root) {
-        if (root.isContainer) {
-          // For container nodes (like LaneNode), center at (0,0)
-          root.move(0, 0);
-        } else {
-          // For regular nodes (like RectNode), account for node width
-          const nodeWidth = root.data.width || 150;
-          const centerX = -nodeWidth / 2;
-          const centerY = 0; // Keep vertical centering as is
-          root.move(centerX, centerY);
-        }
+        // All nodes (both container and regular) use center-based positioning
+        // so they can all be positioned at (0,0)
+        root.move(0, 0);
       }
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
