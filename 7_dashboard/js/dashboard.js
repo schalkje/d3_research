@@ -1,4 +1,5 @@
 import { createNode, createNodes } from "./node.js";
+import { getRegisteredNodeTypes } from "./nodeRegistry.js";
 import { getBoundingBoxRelativeToParent } from "./utils.js";
 import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
@@ -258,13 +259,21 @@ export class Dashboard {
 
   createDashboard(dashboard, container) {
     console.log("dashboard - createDashboard", dashboard, container);
+    console.log("Registered node types:", getRegisteredNodeTypes());
     createMarkers(container);
 
     var root;
     if (dashboard.nodes.length == 1) {
+      console.log("Creating single node:", dashboard.nodes[0]);
       root = createNode(dashboard.nodes[0], container, dashboard.settings);
+      console.log("Created node result:", root);
     } else {
       root = createNodes(dashboard.nodes, container, dashboard.settings);
+    }
+
+    if (!root) {
+      console.error("Failed to create node - root is null");
+      return null;
     }
 
     root.init();

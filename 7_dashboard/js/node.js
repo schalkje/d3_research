@@ -10,6 +10,7 @@ import CircleNode from "./nodeCircle.js";
 import EdgeDemoNode from "./nodeEdgeDemo.js";
 
 // Register all node types with the registry
+console.log('Registering node types...');
 registerNodeType('group', GroupNode);
 registerNodeType('lane', LaneNode);
 registerNodeType('columns', ColumnsNode);
@@ -20,6 +21,7 @@ registerNodeType('node', RectangularNode);
 registerNodeType('circle', CircleNode);
 registerNodeType('rect', RectangularNode);
 registerNodeType('edge-demo', EdgeDemoNode);
+console.log('Node types registered successfully');
 
 // Function to create nodes with positioning and drag behavior
 export function createNode(nodeData, container, settings, parentNode = null) {

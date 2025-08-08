@@ -7,14 +7,19 @@ export function registerNodeType(type, constructor) {
 
 export function createNode(nodeData, container, settings, parentNode = null) {
   const nodeType = nodeData.type.toLowerCase();
+  console.log("Creating node with type:", nodeType);
+  console.log("Available node types:", Array.from(nodeTypes.keys()));
+  
   const NodeConstructor = nodeTypes.get(nodeType);
   
   if (!NodeConstructor) {
     console.error(`Unknown node type "${nodeData.type}"`);
+    console.error("Available node types:", Array.from(nodeTypes.keys()));
     return null;
   }
   
-  return new NodeConstructor(nodeData, container, createNode, settings, parentNode);
+  console.log("Found constructor for node type:", nodeType);
+  return new NodeConstructor(nodeData, container, settings, parentNode);
 }
 
 export function getRegisteredNodeTypes() {

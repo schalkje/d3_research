@@ -16,29 +16,29 @@ import BaseNode from "./nodeBase.js";
   // Method to render the node using D3
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    const container = super.init(parentElement);
+    super.init(parentElement);
     console.log('nodeCircle - init - Rendering Circle Node:', this.id);
 
     // Draw the node shape
-    container
+    this.element
       .append("circle")
       .attr("class", `${this.data.type} shape`)
       .attr("r", this.data.radius)
       .attr("status", this.status);
 
     // Add node label
-    container
+    this.element
       .append("text")
-      .attr("class", "${this.data.type} label")
+      .attr("class", `${this.data.type} label`)
       .attr("x", 0)
       .attr("y", 0)      
       .text(this.data.label);
 
     // Set expanded or collapsed state
     if (this.collapsed) {
-      container.classed("collapsed", true);
+      this.element.classed("collapsed", true);
     } else {
-      container.classed("expanded", true);
+      this.element.classed("expanded", true);
     }
   }
 }
