@@ -35,7 +35,7 @@ $sectionDescriptions = @{
     '4_edges' = 'Edge and curve rendering components and demos.'
     '5_nodes' = 'Node rendering/layout components and demos.'
     '6_groups' = 'Grouping, lanes, and columns components and demos.'
-    '7_dashboard' = 'Main product: Modular dashboard with real data and advanced features.'
+    'dashboard' = 'Main product: Modular dashboard with real data and advanced features.'
     '9_experiments' = 'Advanced and experimental D3/network visualizations.'
 }
 

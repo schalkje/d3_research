@@ -1,4 +1,4 @@
-# 7_dashboard
+# dashboard
 
 ## Overview
 

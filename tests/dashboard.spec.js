@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard Header Zone Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Start the local server and navigate to the dashboard
-    await page.goto('/7_dashboard/flowdash-js.html');
+    await page.goto('/dashboard/flowdash-js.html');
     // Wait for the dashboard to load
     await page.waitForSelector('svg', { timeout: 10000 });
   });

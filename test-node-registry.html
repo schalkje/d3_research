@@ -10,7 +10,7 @@
     <div id="output"></div>
 
     <script type="module">
-        import flowDashboard from './7_dashboard/js/index.js';
+        import flowDashboard from './dashboard/js/index.js';
         
         console.log('Testing node registry...');
         
@@ -19,7 +19,7 @@
         
         // Try to access the node registry
         try {
-            const { getRegisteredNodeTypes } = await import('./7_dashboard/js/nodeRegistry.js');
+            const { getRegisteredNodeTypes } = await import('./dashboard/js/nodeRegistry.js');
             const nodeTypes = getRegisteredNodeTypes();
             console.log('Registered node types:', nodeTypes);
             

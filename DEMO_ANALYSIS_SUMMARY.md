@@ -34,8 +34,8 @@ The project currently has demonstration pages organized in three main categories
 <!DOCTYPE html>
 <html>
 <head>
-   <link rel="stylesheet" href="../../7_dashboard/flowdash.css">
-   <script src="../../7_dashboard/libs/d3.min.js"></script>
+   <link rel="stylesheet" href="../../dashboard/flowdash.css">
+   <script src="../../dashboard/libs/d3.min.js"></script>
    <!-- ... other scripts -->
 </head>
 <body>
@@ -47,7 +47,7 @@ The project currently has demonstration pages organized in three main categories
    </div>
    <script type="module">
       import { testDashboard1 as dashboard } from './js/graphData.js';
-      import flowDashboard from '../../7_dashboard/js/index.js';
+      import flowDashboard from '../../dashboard/js/index.js';
       const flowdash = new flowDashboard.Dashboard(dashboard);
       flowdash.initialize('#graph');
    </script>
@@ -61,7 +61,7 @@ The project currently has demonstration pages organized in three main categories
 <!DOCTYPE html>
 <html>
 <head>
-   <link rel="stylesheet" href="../../7_dashboard/flowdash.css">
+   <link rel="stylesheet" href="../../dashboard/flowdash.css">
    <!-- ... scripts -->
 </head>
 <body>
@@ -72,7 +72,7 @@ The project currently has demonstration pages organized in three main categories
    </div>
    <script type="module">
       import { rectNode as dashboard } from './js/graphData.js';
-      import flowDashboard from '../../7_dashboard/js/index.js';
+      import flowDashboard from '../../dashboard/js/index.js';
       const flowdash = new flowDashboard.Dashboard(dashboard);
       flowdash.initialize('#graph');
       window.flowdash = flowdash; // Testing hook
@@ -108,15 +108,15 @@ The project currently has demonstration pages organized in three main categories
     <title>{Demo Title} - {Node Type} Demo</title>
     
     <!-- Standard CSS -->
-    <link rel="stylesheet" href="../../7_dashboard/flowdash.css">
+    <link rel="stylesheet" href="../../dashboard/flowdash.css">
     
     <!-- Optional demo-specific CSS -->
     <link rel="stylesheet" href="css/demo.css" if-exists>
     
     <!-- Required Libraries -->
-    <script src="../../7_dashboard/libs/d3.min.js"></script>
-    <script src="../../7_dashboard/libs/d3-shape.min.js"></script>
-    <script src="../../7_dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../dashboard/libs/d3.min.js"></script>
+    <script src="../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 <body>
     <!-- Demo Header -->
@@ -150,7 +150,7 @@ The project currently has demonstration pages organized in three main categories
     <script type="module">
         // Standardized initialization and testing
         import { demoData } from './js/graphData.js';
-        import flowDashboard from '../../7_dashboard/js/index.js';
+        import flowDashboard from '../../dashboard/js/index.js';
 
         const flowdash = new flowDashboard.Dashboard(demoData);
         flowdash.initialize('#graph');

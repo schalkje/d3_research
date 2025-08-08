@@ -70,7 +70,7 @@
       try {
         updateStatus('Loading dashboard module...');
         
-        import('./7_dashboard/js/index.js').then(flowDashboard => {
+        import('./dashboard/js/index.js').then(flowDashboard => {
           updateStatus('Dashboard module loaded successfully');
           
           const flowdash = new flowDashboard.default.Dashboard(testData);

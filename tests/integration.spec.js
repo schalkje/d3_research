@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard Integration Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the main dashboard
-    await page.goto('/7_dashboard/flowdash-js.html');
+    await page.goto('/dashboard/flowdash-js.html');
     await page.waitForSelector('svg', { timeout: 10000 });
   });
 

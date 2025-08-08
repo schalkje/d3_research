@@ -35,15 +35,15 @@ This document defines the standard structure and requirements for all demonstrat
     <title>{Demo Title} - {Node Type} Demo</title>
     
     <!-- Standard CSS -->
-    <link rel="stylesheet" href="../../7_dashboard/flowdash.css">
+    <link rel="stylesheet" href="../../dashboard/flowdash.css">
     
     <!-- Optional demo-specific CSS -->
     <link rel="stylesheet" href="css/demo.css" if-exists>
     
     <!-- Required Libraries -->
-    <script src="../../7_dashboard/libs/d3.min.js"></script>
-    <script src="../../7_dashboard/libs/d3-shape.min.js"></script>
-    <script src="../../7_dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../dashboard/libs/d3.min.js"></script>
+<script src="../../dashboard/libs/d3-shape.min.js"></script>
+<script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
 <body>
     <!-- Demo Header -->
@@ -77,7 +77,7 @@ This document defines the standard structure and requirements for all demonstrat
     <script type="module">
         // Import demo data
         import { demoData } from './js/graphData.js';
-        import flowDashboard from '../../7_dashboard/js/index.js';
+        import flowDashboard from '../../dashboard/js/index.js';
 
         // Initialize dashboard
         const flowdash = new flowDashboard.Dashboard(demoData);
@@ -360,8 +360,8 @@ Run tests by clicking the "Run Tests" button in each demo.
 
 ## Related Documentation
 
-- [Node System Implementation](../7_dashboard/implementation-nodes.md)
-- [Dashboard Documentation](../7_dashboard/readme.md)
+- [Node System Implementation](../dashboard/implementation-nodes.md)
+- [Dashboard Documentation](../dashboard/readme.md)
 ```
 
 ## Test Data Standard

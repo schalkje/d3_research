@@ -20,7 +20,7 @@ I'm working on a windows system. The rootfolder of the project is: cd /repo/jero
     The /c comes from the drive, in windows this needs to be  c:
 
 Python server is already running on port 8000, so you don't need to start it
-The folders: 4_edges, 5_nodes, 6_groups; are used for demonstrating the capabilities of the dashboard library in 7_dashboard. Those demo pages are also the basis of all the tests.
+The folders: 4_edges, 5_nodes, 6_groups; are used for demonstrating the capabilities of the dashboard library in dashboard. Those demo pages are also the basis of all the tests.
 
 For testing use and improve the tests in /tests folder:
 - Can you create a new test for the simple adapter

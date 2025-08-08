@@ -37,7 +37,7 @@ This document outlines the testing strategy for the D3 dashboard project using [
 ## 3. Test Organization
 
 - **Test Directory:**
-  All Playwright tests are located in `7_dashboard/tests/`.
+  All Playwright tests are located in `dashboard/tests/`.
 - **Test Files:**
   Each major feature or component has its own test file:
   - `dashboard.spec.js` - Main dashboard functionality
@@ -54,7 +54,7 @@ This document outlines the testing strategy for the D3 dashboard project using [
 ## 4. Test Data and Initialization
 
 - **Local Data:**
-  All test data (JSON files) are stored in `7_dashboard/data/`.
+  All test data (JSON files) are stored in `dashboard/data/`.
 - **Test Pages:**
   Individual test scenarios are available as HTML pages in:
   - `4_edges/` - Edge rendering scenarios
@@ -152,7 +152,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Edge Rendering Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/7_dashboard/flowdash-js.html');
+    await page.goto('/dashboard/flowdash-js.html');
   });
 
   test.describe('Simple Edge Scenarios', () => {
@@ -180,7 +180,7 @@ test.describe('Edge Rendering Tests', () => {
 Create specific test data files for each scenario:
 
 ```js
-// 7_dashboard/data/test-scenarios/
+// dashboard/data/test-scenarios/
 // edge-simple.json
 // edge-curved.json
 // node-adapter-single.json
@@ -302,7 +302,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Component Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/7_dashboard/flowdash-js.html');
+    await page.goto('/dashboard/flowdash-js.html');
   });
 
   test.describe('Edge Scenarios', () => {

@@ -34,5 +34,5 @@ Run tests by clicking the "Run Tests" button in each demo.
 
 ## Related Documentation
 
-- [Node System Implementation](../7_dashboard/implementation-nodes.md)
-- [Dashboard Documentation](../7_dashboard/readme.md)
+- [Node System Implementation](../dashboard/implementation-nodes.md)
+- [Dashboard Documentation](../dashboard/readme.md)

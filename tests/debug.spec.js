@@ -4,7 +4,7 @@ test('Debug dashboard initialization', async ({ page }) => {
   console.log('Starting debug test...');
   
   // Navigate to the main dashboard
-  await page.goto('/7_dashboard/flowdash-js.html');
+  await page.goto('/dashboard/flowdash-js.html');
   console.log('Page loaded');
   
   // Wait for basic elements

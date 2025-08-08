@@ -182,7 +182,7 @@ The test suite is organized into the following categories:
 
 ### Dashboard Tests (`dashboard.spec.js`)
 
-**Test Environment**: `/7_dashboard/flowdash-js.html`
+**Test Environment**: `/dashboard/flowdash-js.html`
 
 #### Zone System Tests
 1. **Header Zone Positioning**
@@ -208,7 +208,7 @@ The test suite is organized into the following categories:
 
 ### Edge Tests (`edges.spec.js`)
 
-**Test Environment**: `/7_dashboard/flowdash-js.html`
+**Test Environment**: `/dashboard/flowdash-js.html`
 
 #### Simple Edge Scenarios
 1. **Basic Edge Rendering**
@@ -268,7 +268,7 @@ The test suite is organized into the following categories:
 
 ### Group Tests (`groups.spec.js`)
 
-**Test Environment**: `/7_dashboard/flowdash-js.html`
+**Test Environment**: `/dashboard/flowdash-js.html`
 
 #### Simple Group Tests
 1. **Basic Group Rendering**
@@ -330,7 +330,7 @@ The test suite is organized into the following categories:
 
 ### Integration Tests (`integration.spec.js`)
 
-**Test Environment**: `/7_dashboard/flowdash-js.html`
+**Test Environment**: `/dashboard/flowdash-js.html`
 
 #### Complex Layout Scenarios
 1. **Complex Data Warehouse Layout**
@@ -372,7 +372,7 @@ The test suite is organized into the following categories:
 
 ## Test Data Files
 
-The tests use various data files from `7_dashboard/data/`:
+The tests use various data files from `dashboard/data/`:
 
 ### Main Test Data
 - `dwh-1.json` - Simple edge scenarios
@@ -497,9 +497,9 @@ npx playwright test --headed
 - **Root Cause**: InnerContainerZone coordinate system was not properly centered
 - **Fix**: Updated coordinate system calculation to center inner container horizontally
 - **Files Modified**: 
-  - `7_dashboard/js/zones/InnerContainerZone.js` - Fixed coordinate system
-  - `7_dashboard/js/nodeLane.js` - Updated layout algorithm
-  - `7_dashboard/js/nodeRect.js` - Added text truncation
+  - `dashboard/js/zones/InnerContainerZone.js` - Fixed coordinate system
+  - `dashboard/js/nodeLane.js` - Updated layout algorithm
+  - `dashboard/js/nodeRect.js` - Added text truncation
 - **Test Coverage**: Added comprehensive test for lane centering validation
 
 ### Technical Details
@@ -517,7 +517,7 @@ npx playwright test --headed
 4. Update this test plan document with new test descriptions
 
 ### Test Data Management
-1. Create test data files in `7_dashboard/data/` for new scenarios
+1. Create test data files in `dashboard/data/` for new scenarios
 2. Use descriptive file names that indicate the test purpose
 3. Keep test data files small and focused on specific test cases
 4. Document new test data files in this test plan

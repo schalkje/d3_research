@@ -58,7 +58,7 @@ class DemoErrorDetector {
         this.log(`Testing node type registration: ${nodeType}`, 'info');
         
         // Check if the node type is registered in the dashboard
-        const nodeRegistryPath = path.join('7_dashboard', 'js', 'node.js');
+        const nodeRegistryPath = path.join('dashboard', 'js', 'node.js');
         
         if (!fs.existsSync(nodeRegistryPath)) {
             this.log(`Node registry not found: ${nodeRegistryPath}`, 'error');
@@ -238,7 +238,7 @@ class DemoErrorDetector {
         } else {
             this.log(`⚠️  ${failed} demo(s) need attention`, 'error');
             this.log('\nNext steps:', 'info');
-            this.log('1. Check the node registry in 7_dashboard/js/node.js', 'info');
+            this.log('1. Check the node registry in dashboard/js/node.js', 'info');
             this.log('2. Verify node type names match between data and registry', 'info');
             this.log('3. Test demos manually in browser at http://localhost:8000', 'info');
         }

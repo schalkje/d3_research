@@ -48,7 +48,7 @@ npx playwright test tests/adapter-nodes.spec.js --project=chromium
 
 ## Test Data
 
-Tests use data files from `7_dashboard/data/`:
+Tests use data files from `dashboard/data/`:
 - `dwh-3.json` - Adapter nodes  
 - `foundation-lane.json` - Foundation nodes
 - `test-scenarios/` - Simple test scenarios
