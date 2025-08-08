@@ -156,14 +156,9 @@ export default class BaseContainerNode extends BaseNode {
         this.resize(this.data.expandedSize, true);
       }
 
-      // Initialize children if they haven't been created yet
-      if (this.childNodes.length === 0) {
-        this.initChildren();
-      } else {
-        // Show child nodes if using zone system
-        if (this.zoneManager?.innerContainerZone) {
-          this.zoneManager.innerContainerZone.updateChildVisibility(true);
-        }
+      // Show child nodes if using zone system
+      if (this.zoneManager?.innerContainerZone) {
+        this.zoneManager.innerContainerZone.updateChildVisibility(true);
       }
       
       this.initEdges();
@@ -345,6 +340,12 @@ export default class BaseContainerNode extends BaseNode {
 
     // Shape drawing is now handled by ContainerZone in the zone system
 
+    // Always initialize children, regardless of collapsed state
+    if (this.data.children && this.data.children.length > 0) {
+      this.initChildren();
+    }
+    
+    // Apply collapsed state after children are initialized
     if (this.collapsed) {
       this.collapse();
     } else {

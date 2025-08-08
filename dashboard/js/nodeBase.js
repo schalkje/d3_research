@@ -32,8 +32,8 @@ export default class BaseNode {
     this.onDblClick = null;
     this._selected = false;
     this._status = nodeData.state ?? NodeStatus.UNKNOWN;
-    this._visible = true; 
-    this._collapsed = false; 
+    this._visible = nodeData.visible ?? true; 
+    this._collapsed = nodeData.collapsed ?? false; 
     this.suspenseDisplayChange = false;
 
     this.id = nodeData.id;

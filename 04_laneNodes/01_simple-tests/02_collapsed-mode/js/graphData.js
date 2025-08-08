@@ -65,8 +65,7 @@ export const demoData = {
                         displayMode: "full",
                         arrangement: "default"
                     },
-                    parentId: "lane1",
-                    visible: false // Hidden in collapsed mode
+                    parentId: "lane1"
                 },
                 {
                     id: "rect2",
@@ -78,8 +77,7 @@ export const demoData = {
                         displayMode: "full",
                         arrangement: "default"
                     },
-                    parentId: "lane1",
-                    visible: false // Hidden in collapsed mode
+                    parentId: "lane1"
                 },
                 {
                     id: "rect3",
@@ -91,8 +89,7 @@ export const demoData = {
                         displayMode: "full",
                         arrangement: "default"
                     },
-                    parentId: "lane1",
-                    visible: false // Hidden in collapsed mode
+                    parentId: "lane1"
                 }
             ],
             // Parent reference
