@@ -162,7 +162,7 @@ export class MarginZone extends BaseZone {
   calculateContainerSize(contentWidth, contentHeight, headerHeight = 0) {
     return {
       width: contentWidth + this.margins.left + this.margins.right,
-      height: headerHeight + this.margins.top + contentHeight + this.margins.bottom
+      height: this.margins.top + contentHeight + this.margins.bottom
     };
   }
 
