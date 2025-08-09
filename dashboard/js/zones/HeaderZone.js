@@ -162,10 +162,9 @@ export class HeaderZone extends BaseZone {
       
       return Math.max(textHeight, this.minHeight);
     } catch (error) {
-      // Fallback to estimated height if DOM measurement fails
-      console.warn('Text height measurement failed, using fallback:', error);
-      const estimatedHeight = Math.max(text.length * 0.6 + 8, this.minHeight); // Rough estimate
-      return estimatedHeight;
+      // Fallback to minimum height if DOM measurement fails
+      console.warn('Text height measurement failed, using minimum height fallback:', error);
+      return this.minHeight;
     }
   }
 

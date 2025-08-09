@@ -465,6 +465,125 @@ This ensures:
 - **Transform Optimization**: Efficient coordinate transformations
 - **Size Calculation**: Cached size calculations where possible
 
+## Collapsed Mode Behavior
+
+### Collapsed Height Calculation
+
+When a lane node is collapsed, its height is determined by a specific calculation process that ensures the container maintains a minimal viable size while hiding child content.
+
+#### Collapsed Height Components
+
+The collapsed height is calculated from several sources:
+
+1. **Header Height**: The primary component comes from the header zone
+   ```javascript
+   // Header height is calculated based on text content
+   const labelText = this.data.label || '';
+   const labelWidth = labelText.length * 8 + 36; // Approximate text width
+   let labelHeight = 20; // Default fallback
+   if (this.zoneManager?.headerZone) {
+     labelHeight = this.zoneManager.headerZone.getHeaderHeight();
+   }
+   ```
+
+2. **Minimum Size Constraints**: Applied through GeometryManager
+   ```javascript
+   const defaultSize = { width: labelWidth, height: labelHeight };
+   this.minimumSize = GeometryManager.calculateMinimumSize([], defaultSize);
+   ```
+
+3. **Configuration Overrides**: Applied from layout settings
+   ```javascript
+   if (this.data.layout.minimumSize.width > this.minimumSize.width) 
+     this.minimumSize.width = this.data.layout.minimumSize.width;
+   if (this.data.layout.minimumSize.height > this.minimumSize.height) 
+     this.minimumSize.height = this.data.layout.minimumSize.height;
+   ```
+
+#### Header Height Calculation Details
+
+The header height is determined by the `HeaderZone.calculateTextHeight()` method:
+
+1. **Text Content Analysis**: Measures actual text dimensions
+   ```javascript
+   calculateTextHeight() {
+     if (!this.textElement) return this.minHeight;
+     
+     const text = this.node.data.label || this.node.data.name || '';
+     if (!text) return this.minHeight;
+     
+     // Try to measure actual text height using DOM measurement
+     const tempElement = this.textElement.node().cloneNode(true);
+     tempElement.textContent = text;
+     document.body.appendChild(tempElement);
+     
+     const textHeight = tempElement.getBoundingClientRect().height;
+     document.body.removeChild(tempElement);
+     
+     return Math.max(textHeight, this.minHeight);
+   }
+   ```
+
+2. **Minimum Height Constraint**: Ensures minimum visual presence
+   - Default minimum height: **10px**
+   - Applied regardless of text content
+
+3. **Fallback Calculation**: Used when DOM measurement fails
+   ```javascript
+   const estimatedHeight = Math.max(text.length * 0.6 + 8, this.minHeight);
+   ```
+
+#### Collapse Process
+
+When `collapse()` is called on a lane node:
+
+1. **Store Expanded Size**: Preserves original dimensions for restoration
+   ```javascript
+   if (this.data.height > this.minimumSize.height + 5 || this.data.width > this.minimumSize.width + 5)
+     this.data.expandedSize = { height: this.data.height, width: this.data.width };
+   ```
+
+2. **Hide Child Content**: Uses zone system to hide children
+   ```javascript
+   if (this.zoneManager?.innerContainerZone) {
+     this.zoneManager.innerContainerZone.updateChildVisibility(false);
+   }
+   ```
+
+3. **Apply Collapsed Size**: Resizes to minimum dimensions
+   ```javascript
+   this.resize({ width: this.minimumSize.width, height: this.minimumSize.height });
+   ```
+
+#### Typical Collapsed Heights
+
+For standard lane nodes, collapsed heights typically range:
+
+- **Text-only header**: ~20-25px (default minimum + text height)
+- **Short labels**: ~15-20px (minimum height constraint)
+- **Long labels**: ~25-35px (text height determines size)
+- **Custom minimum**: Variable based on `layout.minimumSize.height` setting
+
+#### Visual Behavior in Collapsed State
+
+- **Header Remains Visible**: Contains label, status indicator, zoom button
+- **Children Hidden**: All child nodes become invisible but remain in data structure
+- **Zoom Button State**: Changes from "−" (minus) to "+" (plus) icon
+- **Container Shape**: Maintains rectangular shape at minimal height
+- **Position Preserved**: Container position and width typically unchanged
+
+#### Expansion Restoration
+
+When expanded, the lane node restores its previous size:
+```javascript
+// Size restoration during expand
+if (this.data.expandedSize) {
+  this.resize(this.data.expandedSize);
+}
+```
+
+This ensures consistent user experience when toggling between collapsed and expanded states.
+
 ## Error Handling
 
 ### Validation
