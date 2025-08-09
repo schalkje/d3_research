@@ -2,12 +2,26 @@
 
 ## Overview
 
-`ColumnsNode` is a container node type that arranges child nodes in a horizontal row with vertical centering. It's designed for organizing content in a single row layout, making it ideal for parallel processes, side-by-side comparisons, and horizontal organization of related elements.
+The `ColumnsNode` class is a specialized container node that arranges child nodes in a horizontal row with vertical centering. It extends `BaseContainerNode` to provide a single-row layout ideal for parallel processes, side-by-side comparisons, and horizontal organization of related elements. The ColumnsNode fully integrates with the zone system for sophisticated layout management and automatic sizing.
 
-## Inheritance
+## Class Definition
 
-- **Parent**: [BaseContainerNode](base-container-node.md)
+```javascript
+export default class ColumnsNode extends BaseContainerNode {
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null)
+}
+```
+
+## Inheritance Hierarchy
+
+- **Parent**: `BaseContainerNode` - Container functionality with zone system
 - **Children**: Any node type can be contained
+- **Siblings**: Other container node types
+  - `LaneNode` - Vertical layout container
+  - `GroupNode` - Dynamic positioning container
+  - `AdapterNode` - Multi-arrangement specialist
+  - `FoundationNode` - Role-based specialist
+  - `MartNode` - Role-based specialist
 
 ## Key Features
 
@@ -19,11 +33,11 @@
 
 ### Container Behavior
 - **Zone System**: Fully integrated with zone system for layout management
-- **Collapse/Expand**: Support for hiding/showing child content
+- **Collapse/Expand**: Support for hiding/showing child content (not implemented yet)
 - **Margin Management**: Automatic margin application around content
 - **Child Lifecycle**: Complete child management and positioning
 
-## Properties
+## Core Properties
 
 ### Columns-Specific Properties
 ```javascript
@@ -33,12 +47,12 @@ this.nodeSpacing = {            // Spacing between child nodes
   vertical: 10                  // Vertical spacing (not used in columns)
 };
 
-// Container margins
+// Container margins (inherited from BaseContainerNode)
 this.containerMargin = {        // Margins around container content
-  top: 4,                       // Space from header bottom
-  right: 8,                     // Space from right edge
-  bottom: 8,                    // Space from bottom edge
-  left: 8                       // Space from left edge
+  top: 20,                      // Space from header bottom
+  right: 10,                    // Space from right edge
+  bottom: 10,                   // Space from bottom edge
+  left: 10                      // Space from left edge
 };
 
 // Child management
@@ -53,6 +67,20 @@ this.data.layout = {
     useRootRatio: false
   }
 };
+
+// Zone system integration
+this.zoneManager = null;        // Zone system manager instance
+this.innerContainerZone = null; // Inner container zone reference
+```
+
+### Layout Algorithm Properties
+```javascript
+// Positioning calculation properties
+this.nestedCorrection_x = this.x - this.data.width / 2 + this.containerMargin.left;
+this.nestedCorrection_y = this.y + this.containerMargin.top / 2;
+
+// Container state
+this.suspenseDisplayChange = false;  // Layout update suspension flag
 ```
 
 ### Inherited Properties
@@ -62,9 +90,9 @@ All properties from [BaseContainerNode](base-container-node.md) are inherited, i
 - Event handling and configuration
 - DOM element references
 
-## Methods
+## Core Methods
 
-### Core Methods
+### Constructor and Initialization
 
 #### `constructor(nodeData, parentElement, createNode, settings, parentNode = null)`
 Initializes the columns node with horizontal row configuration.
@@ -77,61 +105,125 @@ Initializes the columns node with horizontal row configuration.
 - `parentNode` - Parent node instance (optional)
 
 **Initialization Steps:**
-- Sets up horizontal row layout configuration
-- Initializes child management arrays
-- Configures spacing and margin settings
-- Sets up layout constraints
-- Calls parent constructor
+- Sets up default layout configuration for minimum column width and size
+- Calls parent constructor to initialize base container functionality
+- Inherits zone system integration from BaseContainerNode
 
-#### `initChildren()`
-Initializes all child nodes and positions them in horizontal row.
+```javascript
+constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+  nodeData.layout ??= {};
+  nodeData.layout.minimumColumnWidth ??= 0;
+  nodeData.layout.minimumSize ??= { height: 50, useRootRatio: false };
 
-**Process:**
-- Creates child nodes using factory function
-- Adds children to child nodes array
-- Initializes each child node
-- Positions children in horizontal row
-- Integrates with zone system
+  super(nodeData, parentElement, createNode, settings, parentNode);
+}
+```
 
 ### Layout Methods
 
 #### `updateChildren()`
-Updates child positioning and container sizing using horizontal row algorithm.
-
-**Layout Algorithm:**
-```javascript
-// Calculate available space
-const availableHeight = this.data.height - this.containerMargin.top - this.containerMargin.bottom;
-const spacing = this.nodeSpacing.horizontal;
-let currentX = 0;
-
-// Position each child
-this.childNodes.forEach(childNode => {
-  // Center child vertically
-  const x = currentX;
-  const y = (availableHeight - childNode.data.height) / 2;
-  
-  // Move child to calculated position
-  childNode.move(x, y);
-  
-  // Update X position for next child
-  currentX += childNode.data.width + spacing;
-});
-
-// Update container width
-const totalWidth = currentX - spacing + this.containerMargin.left + this.containerMargin.right;
-this.resize({ width: totalWidth });
-```
-
-#### `calculateLayout()`
-Calculates the optimal layout for all child nodes.
+Main method for updating child positioning and container sizing using horizontal row algorithm.
 
 **Process:**
-- Determines available height (container height minus margins)
-- Calculates horizontal positions for each child
-- Centers each child vertically within available height
-- Calculates required container width
-- Updates child positions and container size
+1. Suspends display change notifications during layout
+2. Calls `layoutColumns()` to perform actual layout
+3. Resumes display change notifications
+4. Triggers display change handling
+
+```javascript
+updateChildren() {
+  this.suspenseDisplayChange = true;
+  this.layoutColumns();
+  this.suspenseDisplayChange = false;
+  this.handleDisplayChange();
+}
+```
+
+#### `updateChildrenWithZoneSystem()`
+Zone system specific update method for child positioning.
+
+**Process:**
+- Called by zone system when layout update is needed
+- Delegates to `layoutColumns()` for actual positioning
+
+#### `layoutColumns()`
+Core layout algorithm that handles both zone system and legacy layout modes.
+
+**Algorithm Flow:**
+1. Checks if children exist
+2. Attempts to use zone system layout if available
+3. Falls back to legacy layout if zone system not available
+4. Updates container size based on child requirements
+
+**Zone System Layout (Primary):**
+```javascript
+// Set horizontal row layout algorithm
+innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+  const spacing = this.nodeSpacing?.horizontal || 20;
+  let currentX = 0;
+
+  // Only position visible children
+  const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+
+  visibleChildNodes.forEach(childNode => {
+    const x = currentX;
+    // Center vertically within the inner container
+    const availableHeight = coordinateSystem.size.height;
+    const y = (availableHeight - childNode.data.height) / 2;
+
+    childNode.move(x, y);
+    currentX += childNode.data.width + spacing;
+  });
+});
+
+// Calculate required size for visible children only
+const visibleChildren = this.childNodes.filter(node => node.visible);
+const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
+const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
+const maxChildHeight = visibleChildren.length > 0 
+  ? Math.max(...visibleChildren.map(node => node.data.height))
+  : 0;
+```
+
+**Legacy Layout (Fallback):**
+```javascript
+// Calculate total width needed for visible children only
+const visibleChildren = this.childNodes.filter(node => node.visible);
+const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
+const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
+
+// Calculate max height needed for visible children
+const maxChildHeight = visibleChildren.length > 0 
+  ? Math.max(...visibleChildren.map(node => node.data.height))
+  : 0;
+
+// Calculate container size needed
+const contentWidth = totalChildWidth + totalSpacing + this.containerMargin.left + this.containerMargin.right;
+const contentHeight = maxChildHeight + this.containerMargin.top + this.containerMargin.bottom;
+
+// Resize container to accommodate all children
+this.resize({
+  width: Math.max(this.data.width, contentWidth),
+  height: Math.max(this.data.height, contentHeight)
+});
+```
+
+#### `layoutColumnsLegacy()`
+Legacy layout method for systems without zone system support.
+
+**Process:**
+- Calculates total width and maximum height of visible children
+- Determines container size requirements
+- Positions children manually with margin considerations
+- Handles container transformation offsets
+
+#### `arrange()`
+Public method to trigger layout arrangement.
+
+**Process:**
+- Called by external systems to request layout update
+- Simply delegates to `updateChildren()` for actual layout work
+- Provides clean API for layout operations
 
 ### Child Management
 
@@ -289,6 +381,177 @@ Container Zone (outermost)
 - **Reference Management**: Avoiding circular references
 - **Zone Cleanup**: Zone system properly destroyed
 
+## Demonstration Examples
+
+### Basic Horizontal Layout
+The most common use case - three rectangular children in a horizontal row:
+
+```javascript
+const basicColumnsData = {
+  id: "columns1",
+  label: "Process Columns",
+  type: "columns",
+  code: "C1",
+  status: "Ready",
+  layout: {
+    displayMode: "full",
+    arrangement: "default"
+  },
+  children: [
+    {
+      id: "rect1",
+      label: "Column 1",
+      type: "rect",
+      code: "C1",
+      status: "Ready",
+      parentId: "columns1"
+    },
+    {
+      id: "rect2", 
+      label: "Column 2",
+      type: "rect",
+      code: "C2",
+      status: "Ready",
+      parentId: "columns1"
+    },
+    {
+      id: "rect3",
+      label: "Column 3", 
+      type: "rect",
+      code: "C3",
+      status: "Ready",
+      parentId: "columns1"
+    }
+  ]
+};
+```
+
+### Variable Width Layout
+Children with different sizes that adapt automatically:
+
+```javascript
+const variableWidthData = {
+  id: "variable-columns",
+  label: "Variable Width Columns",
+  type: "columns",
+  code: "VAR1",
+  status: "Ready",
+  layout: {
+    displayMode: "full",
+    arrangement: "variable-width",
+    minimumColumnWidth: 80
+  },
+  children: [
+    {
+      id: "narrow-rect",
+      label: "Narrow",
+      type: "rect",
+      code: "NAR",
+      layout: {
+        displayMode: "code",
+        arrangement: "compact",
+        maxWidth: 100
+      }
+    },
+    {
+      id: "wide-rect", 
+      label: "Wide Content Area",
+      type: "rect",
+      code: "WIDE",
+      layout: {
+        displayMode: "full",
+        arrangement: "expanded",
+        minWidth: 200
+      }
+    }
+  ]
+};
+```
+
+### Nested Columns Layout
+Columns containing other columns for complex hierarchies:
+
+```javascript
+const nestedColumnsData = {
+  id: "parent-columns",
+  label: "Parent Columns",
+  type: "columns",
+  code: "PC1",
+  status: "Ready",
+  children: [
+    {
+      id: "left-section",
+      label: "Left Section", 
+      type: "columns",
+      code: "LS",
+      children: [
+        { id: "left-1", label: "L1", type: "rect", code: "L1" },
+        { id: "left-2", label: "L2", type: "rect", code: "L2" }
+      ]
+    },
+    {
+      id: "middle-rect",
+      label: "Middle Column",
+      type: "rect", 
+      code: "MID"
+    },
+    {
+      id: "right-section",
+      label: "Right Section",
+      type: "columns",
+      code: "RS", 
+      children: [
+        { id: "right-1", label: "R1", type: "rect", code: "R1" },
+        { id: "right-2", label: "R2", type: "rect", code: "R2" },
+        { id: "right-3", label: "R3", type: "rect", code: "R3" }
+      ]
+    }
+  ]
+};
+```
+
+### Mixed Child Types
+Columns containing different node types:
+
+```javascript
+const mixedChildrenData = {
+  id: "mixed-columns",
+  label: "Mixed Children Columns",
+  type: "columns", 
+  code: "MIX1",
+  children: [
+    {
+      id: "rect-child",
+      label: "Rectangle",
+      type: "rect",
+      code: "RECT"
+    },
+    {
+      id: "circle-child", 
+      label: "Circle",
+      type: "circle",
+      code: "CIRC"
+    },
+    {
+      id: "lane-child",
+      label: "Lane Container",
+      type: "lane",
+      code: "LANE",
+      children: [
+        { id: "nested-rect1", label: "Nested 1", type: "rect", code: "N1" },
+        { id: "nested-rect2", label: "Nested 2", type: "rect", code: "N2" }
+      ]
+    },
+    {
+      id: "adapter-child",
+      label: "Adapter", 
+      type: "adapter",
+      code: "ADPT"
+    }
+  ]
+};
+```
+
 ## Use Cases
 
 ### Common Applications
@@ -347,19 +610,65 @@ Columns nodes can contain any node type:
 - **Error Logging**: Comprehensive error reporting
 - **State Recovery**: Automatic state restoration
 
+## Available Demonstrations
+
+The ColumnsNode includes comprehensive demonstration pages showing various features and use cases:
+
+### Basic Demos
+- **Basic Layout**: Simple columns with three rectangular children
+- **[Demo Location]**: `05_columnsNodes/01_basic/basic.html`
+
+### Simple Tests (`05_columnsNodes/01_simple-tests/`)
+- **01_default-mode**: Columns with 3 rectangles in default mode
+- **02_auto-size-mode**: Auto-sizing with variable child sizes  
+- **03_fixed-size-mode**: Fixed-size children with consistent dimensions
+- **04_dynamic-addition**: Dynamic addition of children with responsive layout
+
+### Nested Tests (`05_columnsNodes/02_nested-tests/`)
+- **05_nested-columns**: Columns containing other columns for complex layouts
+- **06_mixed-children**: Columns containing different types of child nodes
+- **07_variable-width**: Variable and constrained child widths
+
+### Demo Features
+Each demo includes:
+- **Interactive Testing**: Built-in test runners
+- **Visual Examples**: Real-time layout demonstration
+- **Feature Showcase**: Specific functionality highlighting
+- **Debug Information**: Layout calculation visibility
+
+### Running Demos
+```bash
+# Open any demo HTML file in a browser
+open 05_columnsNodes/01_basic/basic.html
+
+# Run tests within demo
+# Click "Run Tests" button in demo interface
+```
+
 ## Testing
 
-### Unit Testing
+### Automated Testing
+The ColumnsNode includes comprehensive automated tests covering:
+
+#### Unit Testing
 - **Constructor Tests**: Proper initialization with various configurations
 - **Layout Tests**: Horizontal row algorithm validation
-- **Child Management Tests**: Adding and removing children
+- **Child Management Tests**: Adding and removing children  
 - **Size Calculation Tests**: Container sizing calculations
+- **Zone System Tests**: Zone integration and positioning
 
-### Integration Testing
+#### Integration Testing
 - **Parent-Child Relationships**: Container-child interactions
 - **Zone System**: Zone management and positioning
 - **Event Propagation**: Events flowing through hierarchy
 - **Performance**: Large numbers of children
+- **Cross-Browser**: Multiple browser compatibility
+
+#### Demo Testing
+- **Visual Regression**: Layout appearance validation
+- **Interactive Features**: User interaction testing
+- **Data Structure**: Demo data integrity  
+- **Performance Metrics**: Rendering speed validation
 
 ## Navigation
 

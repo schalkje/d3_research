@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: auto-size-mode
 // Node Type: columns
-// Features: Basic horizontal layout, 3 rectangles
+// Features: 
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "auto-size-mode",
         nodeType: "columns",
-        features: ["Horizontal layout", "Child alignment", "Auto-sizing", "3 rectangles"],
-        description: "Basic columns layout with horizontal child alignment",
+        features: ["Auto-sizing", "Variable child sizes", "Horizontal layout", "Adaptive width"],
+        description: "Columns with auto-sizing and different child sizes",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -47,35 +47,35 @@ export const demoData = {
     nodes: [
         {
             id: "columns1",
-            label: "Process Columns",
+            label: "Auto-Size Columns",
             type: "columns",
             // Node-specific properties
-            code: "C1",
+            code: "AC1",
             status: "Ready",
             // Layout properties
             layout: {
                 displayMode: "full",
-                arrangement: "default"
+                arrangement: "auto-size"
             },
-            // Child nodes (for container nodes)
+            // Child nodes with different sizes
             children: [
                 {
                     id: "rect1",
-                    label: "Column 1",
+                    label: "Small",
                     type: "rect",
-                    code: "C1",
+                    code: "SM",
                     status: "Ready",
                     layout: {
-                        displayMode: "full",
-                        arrangement: "default"
+                        displayMode: "code",
+                        arrangement: "compact"
                     },
                     parentId: "columns1"
                 },
                 {
                     id: "rect2",
-                    label: "Column 2",
+                    label: "Medium Width Column",
                     type: "rect",
-                    code: "C2",
+                    code: "MD",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
@@ -85,13 +85,25 @@ export const demoData = {
                 },
                 {
                     id: "rect3",
-                    label: "Column 3",
+                    label: "Extra Large Width Column Content",
                     type: "rect",
-                    code: "C3",
+                    code: "XL",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "expanded"
+                    },
+                    parentId: "columns1"
+                },
+                {
+                    id: "rect4",
+                    label: "Tiny",
+                    type: "rect",
+                    code: "T",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "code",
+                        arrangement: "minimal"
                     },
                     parentId: "columns1"
                 }

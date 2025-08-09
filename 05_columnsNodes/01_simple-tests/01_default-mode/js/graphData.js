@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: default-mode
 // Node Type: columns
-// Features: Basic horizontal layout, 3 rectangles
+// Features: 
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "default-mode",
         nodeType: "columns",
-        features: ["Horizontal layout", "Child alignment", "Auto-sizing", "3 rectangles"],
-        description: "Basic columns layout with horizontal child alignment",
+        features: ["Default mode", "3 rectangles", "Horizontal layout", "Vertical centering"],
+        description: "Columns with 3 rectangles in default mode",
         testStatus: "Not Tested",
         version: "1.0.0"
     },

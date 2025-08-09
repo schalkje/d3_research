@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: fixed-size-mode
 // Node Type: columns
-// Features: Basic horizontal layout, 3 rectangles
+// Features: 
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "fixed-size-mode",
         nodeType: "columns",
-        features: ["Horizontal layout", "Child alignment", "Auto-sizing", "3 rectangles"],
-        description: "Basic columns layout with horizontal child alignment",
+        features: ["Fixed sizing", "Uniform children", "Horizontal layout", "Consistent width"],
+        description: "Columns with fixed-size children and consistent dimensions",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -47,51 +47,72 @@ export const demoData = {
     nodes: [
         {
             id: "columns1",
-            label: "Process Columns",
+            label: "Fixed-Size Columns",
             type: "columns",
             // Node-specific properties
-            code: "C1",
+            code: "FS1",
             status: "Ready",
             // Layout properties
             layout: {
                 displayMode: "full",
-                arrangement: "default"
+                arrangement: "fixed-size",
+                minimumColumnWidth: 120
             },
-            // Child nodes (for container nodes)
+            // Child nodes with consistent sizing
             children: [
                 {
                     id: "rect1",
-                    label: "Column 1",
+                    label: "Column A",
                     type: "rect",
-                    code: "C1",
+                    code: "A",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "fixed",
+                        width: 120,
+                        height: 60
                     },
                     parentId: "columns1"
                 },
                 {
                     id: "rect2",
-                    label: "Column 2",
+                    label: "Column B",
                     type: "rect",
-                    code: "C2",
+                    code: "B",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "fixed",
+                        width: 120,
+                        height: 60
                     },
                     parentId: "columns1"
                 },
                 {
                     id: "rect3",
-                    label: "Column 3",
+                    label: "Column C",
                     type: "rect",
-                    code: "C3",
+                    code: "C",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "fixed",
+                        width: 120,
+                        height: 60
+                    },
+                    parentId: "columns1"
+                },
+                {
+                    id: "rect4",
+                    label: "Column D",
+                    type: "rect",
+                    code: "D",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "full",
+                        arrangement: "fixed",
+                        width: 120,
+                        height: 60
                     },
                     parentId: "columns1"
                 }

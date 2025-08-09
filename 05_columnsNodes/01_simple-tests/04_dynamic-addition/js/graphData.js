@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////
 //
-// Demo: basic
+// Demo: dynamic-addition
 // Node Type: columns
-// Features: Basic horizontal layout, 3 rectangles
+// Features: 
 // Test Status: Not Tested
 //
 
 export const demoData = {
     // Demo metadata
     metadata: {
-        name: "basic",
+        name: "dynamic-addition",
         nodeType: "columns",
-        features: ["Horizontal layout", "Child alignment", "Auto-sizing", "3 rectangles"],
-        description: "Basic columns layout with horizontal child alignment",
+        features: ["Dynamic adding", "Runtime updates", "Horizontal layout", "Responsive sizing"],
+        description: "Columns with dynamically added children and responsive layout",
         testStatus: "Not Tested",
         version: "1.0.0"
     },
@@ -47,23 +47,23 @@ export const demoData = {
     nodes: [
         {
             id: "columns1",
-            label: "Process Columns",
+            label: "Dynamic Columns",
             type: "columns",
             // Node-specific properties
-            code: "C1",
+            code: "DYN1",
             status: "Ready",
             // Layout properties
             layout: {
                 displayMode: "full",
-                arrangement: "default"
+                arrangement: "dynamic"
             },
-            // Child nodes (for container nodes)
+            // Starting with 2 children, more can be added dynamically
             children: [
                 {
                     id: "rect1",
-                    label: "Column 1",
+                    label: "Initial 1",
                     type: "rect",
-                    code: "C1",
+                    code: "I1",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
@@ -73,21 +73,9 @@ export const demoData = {
                 },
                 {
                     id: "rect2",
-                    label: "Column 2",
+                    label: "Initial 2",
                     type: "rect",
-                    code: "C2",
-                    status: "Ready",
-                    layout: {
-                        displayMode: "full",
-                        arrangement: "default"
-                    },
-                    parentId: "columns1"
-                },
-                {
-                    id: "rect3",
-                    label: "Column 3",
-                    type: "rect",
-                    code: "C3",
+                    code: "I2",
                     status: "Ready",
                     layout: {
                         displayMode: "full",
@@ -103,6 +91,59 @@ export const demoData = {
     
     // Edge definitions
     edges: []
+};
+
+// Additional demo data for dynamic scenarios
+export const demoDataWithMoreChildren = {
+    ...demoData,
+    metadata: {
+        ...demoData.metadata,
+        description: "Columns with more children added dynamically"
+    },
+    nodes: [
+        {
+            ...demoData.nodes[0],
+            children: [
+                ...demoData.nodes[0].children,
+                {
+                    id: "rect3",
+                    label: "Added 3",
+                    type: "rect",
+                    code: "A3",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "full",
+                        arrangement: "default"
+                    },
+                    parentId: "columns1"
+                },
+                {
+                    id: "rect4",
+                    label: "Added 4",
+                    type: "rect",
+                    code: "A4",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "full",
+                        arrangement: "default"
+                    },
+                    parentId: "columns1"
+                },
+                {
+                    id: "rect5",
+                    label: "Added 5",
+                    type: "rect",
+                    code: "A5",
+                    status: "Ready",
+                    layout: {
+                        displayMode: "full",
+                        arrangement: "default"
+                    },
+                    parentId: "columns1"
+                }
+            ]
+        }
+    ]
 };
 
 // Additional demo data exports for different scenarios

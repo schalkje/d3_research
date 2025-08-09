@@ -1,8 +1,10 @@
 import BaseContainerNode from "./nodeBaseContainer.js";
+import { getComputedDimensions } from "./utils.js";
 import { LayoutManager } from "./layoutManager.js";
 
 export default class ColumnsNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    // Set up default layout configuration for columns node
     nodeData.layout ??= {};
     nodeData.layout.minimumColumnWidth ??= 0;
     nodeData.layout.minimumSize ??= { height: 50, useRootRatio: false };
@@ -11,29 +13,24 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   get nestedCorrection_y() {
-    // return this.y;
-    return this.y  + this.containerMargin.top/2;
+    return this.y + this.containerMargin.top / 2;
   }
 
   get nestedCorrection_x() {
-    try{
-      // console.warn("       get nestedCorrection_x", this.x, this.data.width / 2,this.containerMargin.left);
-    return this.x - this.data.width / 2 + this.containerMargin.left;
+    try {
+      return this.x - this.data.width / 2 + this.containerMargin.left;
     } catch(e) {
       console.error("Error in nestedCorrection_x", e);
-      console.log("                           - ", this.x, this.data.width / 2,this.containerMargin.left);
+      console.log("Data:", this.x, this.data.width / 2, this.containerMargin.left);
+      return 0; // Fallback value
     }
   }
 
   updateChildren() {
-    // console.log(`      nodeColumns - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(this.data.height)}`, this.data.layout, this.childNodes.length);
-    this.suspenseDisplayChange = true;
-
-    // Use zone-based layout system
+    console.log(`ColumnsNode ${this.id} updateChildren called`);
+    
+    // Always call layoutColumns to recalculate size and positioning
     this.layoutColumns();
-
-    this.suspenseDisplayChange = false;
-    this.handleDisplayChange();
   }
 
   updateChildrenWithZoneSystem() {
@@ -51,10 +48,26 @@ export default class ColumnsNode extends BaseContainerNode {
     // Get zone manager and inner container zone
     const innerContainerZone = this.zoneManager?.innerContainerZone;
     if (!innerContainerZone) {
-      // Fallback to old layout if zone system not available
+      // Fallback to legacy layout if zone system not available
       this.layoutColumnsLegacy();
       return;
     }
+
+    // Debug: Log child visibility states
+    const debugVisibleChildren = this.childNodes.filter(node => node.visible);
+    console.log(`ColumnsNode ${this.id} layoutColumns:`, {
+      totalChildren: this.childNodes.length,
+      visibleChildren: debugVisibleChildren.length,
+      childStates: this.childNodes.map(node => ({
+        id: node.id,
+        visible: node.visible,
+        collapsed: node.collapsed,
+        width: node.data.width,
+        height: node.data.height,
+        minimumSize: node.minimumSize
+      })),
+      visibleChildIds: debugVisibleChildren.map(node => node.id)
+    });
 
     // Set horizontal row layout algorithm
     innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
@@ -72,6 +85,7 @@ export default class ColumnsNode extends BaseContainerNode {
         const availableHeight = coordinateSystem.size.height;
         const y = (availableHeight - childNode.data.height) / 2; // Center vertically
 
+        // Position children relative to the inner container's coordinate system
         childNode.move(x, y);
         currentX += childNode.data.width + spacing;
       });
@@ -85,6 +99,22 @@ export default class ColumnsNode extends BaseContainerNode {
       ? Math.max(...visibleChildren.map(node => node.data.height))
       : 0;
     
+    // Debug: Log size calculation
+    console.log(`ColumnsNode ${this.id} size calculation:`, {
+      visibleChildrenCount: visibleChildren.length,
+      totalChildWidth,
+      totalSpacing,
+      maxChildHeight,
+      currentSize: { width: this.data.width, height: this.data.height },
+      visibleChildrenDetails: visibleChildren.map(node => ({
+        id: node.id,
+        width: node.data.width,
+        height: node.data.height,
+        collapsed: node.collapsed,
+        minimumSize: node.minimumSize
+      }))
+    });
+    
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
     const headerZone = this.zoneManager?.headerZone;
@@ -97,10 +127,25 @@ export default class ColumnsNode extends BaseContainerNode {
         headerHeight
       );
 
-      // Resize container to accommodate all children
-      this.resize({
+      const newSize = {
         width: Math.max(this.data.width, requiredSize.width),
         height: Math.max(this.data.height, requiredSize.height)
+      };
+      
+      // Debug: Log resize operation
+      console.log(`ColumnsNode ${this.id} resize:`, {
+        oldSize: { width: this.data.width, height: this.data.height },
+        newSize,
+        headerHeight,
+        visibleChildrenCount: visibleChildren.length
+      });
+
+      // Resize container to accommodate all children
+      this.resize(newSize);
+      
+      // Debug: Log size after resize
+      console.log(`ColumnsNode ${this.id} after resize:`, {
+        newSize: { width: this.data.width, height: this.data.height }
       });
     }
 
@@ -149,7 +194,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   arrange() {
-    // console.log("      nodeColumns - arrange Arranging ColumnsNode:", this.id);
+    console.log("Arranging ColumnsNode:", this.id);
     this.updateChildren();
   }
 }
