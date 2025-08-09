@@ -365,8 +365,10 @@ export class InnerContainerZone extends BaseZone {
    * Update child visibility based on container state
    */
   updateChildVisibility(visible) {
+    console.log(`InnerContainerZone updateChildVisibility: setting ${this.childNodes.length} children to visible=${visible}`);
     this.childNodes.forEach(childNode => {
       childNode.visible = visible;
+      console.log(`  Child ${childNode.id}: visible = ${childNode.visible}`);
       if (childNode.isContainer) {
         childNode.propagateVisibility(visible);
       }

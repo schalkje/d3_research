@@ -9,15 +9,16 @@ export default class LaneNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    // console.log(
-    //   `      nodeLane - updateChildren - Layout for Columns: ${this.id}, ${Math.round(this.data.width)}x${Math.round(
-    //     this.data.height
-    //   )}`,
-    //   this.data.layout,
-    //   this.childNodes.length
-    // );
+    console.log(`LaneNode ${this.id} updateChildren called`);
     
     // Always call layoutLane to recalculate size and positioning
+    this.layoutLane();
+  }
+
+  updateChildrenWithZoneSystem() {
+    console.log(`LaneNode ${this.id} updateChildrenWithZoneSystem called`);
+    
+    // Call layoutLane to recalculate size and positioning when using zone system
     this.layoutLane();
   }
 
@@ -33,6 +34,21 @@ export default class LaneNode extends BaseContainerNode {
       console.warn('Zone system not available for lane node:', this.id);
       return;
     }
+
+    // Debug: Log child visibility states
+    const debugVisibleChildren = this.childNodes.filter(node => node.visible);
+    console.log(`LaneNode ${this.id} layoutLane:`, {
+      totalChildren: this.childNodes.length,
+      visibleChildren: debugVisibleChildren.length,
+      childStates: this.childNodes.map(node => ({
+        id: node.id,
+        visible: node.visible,
+        collapsed: node.collapsed,
+        height: node.data.height,
+        minimumSize: node.minimumSize
+      })),
+      visibleChildIds: debugVisibleChildren.map(node => node.id)
+    });
 
     // Set vertical stacking layout algorithm
     innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
@@ -62,6 +78,21 @@ export default class LaneNode extends BaseContainerNode {
     const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.vertical : 0;
     const maxChildWidth = visibleChildren.length > 0 ? Math.max(...visibleChildren.map(node => node.data.width)) : 0;
     
+    // Debug: Log size calculation
+    console.log(`LaneNode ${this.id} size calculation:`, {
+      visibleChildrenCount: visibleChildren.length,
+      totalChildHeight,
+      totalSpacing,
+      maxChildWidth,
+      currentSize: { width: this.data.width, height: this.data.height },
+      visibleChildrenDetails: visibleChildren.map(node => ({
+        id: node.id,
+        height: node.data.height,
+        collapsed: node.collapsed,
+        minimumSize: node.minimumSize
+      }))
+    });
+    
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
     const headerZone = this.zoneManager?.headerZone;
@@ -75,9 +106,23 @@ export default class LaneNode extends BaseContainerNode {
       );
 
       // Resize container to accommodate all children
-      this.resize({
+      const newSize = {
         width: Math.max(this.data.width, requiredSize.width),
-        height: Math.max(this.data.height, requiredSize.height)
+        height: requiredSize.height // Allow shrinking when children are collapsed
+      };
+      
+      // Debug: Log resize operation
+      console.log(`LaneNode ${this.id} resize:`, {
+        oldSize: { width: this.data.width, height: this.data.height },
+        newSize,
+        requiredSize
+      });
+      
+      this.resize(newSize);
+      
+      // Debug: Log size after resize
+      console.log(`LaneNode ${this.id} after resize:`, {
+        newSize: { width: this.data.width, height: this.data.height }
       });
     }
 

@@ -36,6 +36,13 @@ export default class ColumnsNode extends BaseContainerNode {
     this.handleDisplayChange();
   }
 
+  updateChildrenWithZoneSystem() {
+    console.log(`ColumnsNode ${this.id} updateChildrenWithZoneSystem called`);
+    
+    // Call layoutColumns to recalculate size and positioning when using zone system
+    this.layoutColumns();
+  }
+
   layoutColumns() {
     if (this.childNodes.length === 0) {
       return;
