@@ -81,13 +81,14 @@ export class InnerContainerZone extends BaseZone {
       const marginSize = marginZone.getSize();
       
       // Calculate inner container position relative to node center
-      // The inner container should be centered horizontally, 4px below the header
+      // Header zone is at container top, inner container should be header bottom + top margin
+      const containerTop = -this.node.data.height / 2;
       const innerX = 0; // Center horizontally (no left margin offset)
-      const innerY = -this.size.height / 2 + headerHeight + 4; // 4px below header
+      const innerY = containerTop + marginSize.top;
       
       // Ensure sizes are not negative
       const availableWidth = Math.max(0, this.size.width - marginSize.left - marginSize.right);
-      const availableHeight = Math.max(0, this.size.height - headerHeight - 4 - marginSize.bottom);
+      const availableHeight = Math.max(0, this.size.height - headerHeight - marginSize.top - marginSize.bottom);
       
       this.coordinateSystem = {
         origin: {
@@ -101,13 +102,14 @@ export class InnerContainerZone extends BaseZone {
         transform: `translate(${innerX}, ${innerY})`
       };
     } else {
-      // Fallback if margin zone is not available
+      // Fallback if margin zone is not available - use default margin values
+      const defaultTopMargin = 8; // Fallback to default top margin
       const innerX = -this.size.width / 2; // Left edge of container
-      const innerY = -this.size.height / 2 + headerHeight + 4; // 4px below header
+      const innerY = -this.node.data.height / 2 + headerHeight + defaultTopMargin;
       
       // Ensure sizes are not negative
       const availableWidth = Math.max(0, this.size.width);
-      const availableHeight = Math.max(0, this.size.height - headerHeight - 4);
+      const availableHeight = Math.max(0, this.size.height - headerHeight - defaultTopMargin);
       
       this.coordinateSystem = {
         origin: { x: innerX, y: innerY },
