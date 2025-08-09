@@ -126,6 +126,22 @@ export class InnerContainerZone extends BaseZone {
   }
 
   /**
+   * Get inner container size - returns zero height when collapsed
+   */
+  getSize() {
+    // When collapsed, inner container should have zero height
+    if (this.node.collapsed) {
+      return {
+        width: this.size.width,
+        height: 0
+      };
+    }
+    
+    // When expanded, return actual size
+    return super.getSize();
+  }
+
+  /**
    * Get coordinate system for child positioning
    */
   getCoordinateSystem() {

@@ -550,7 +550,31 @@ When `collapse()` is called on a lane node:
    }
    ```
 
-3. **Apply Collapsed Size**: Resizes to minimum dimensions
+3. **Zone System Adjustments**: Margins and inner container excluded from height
+   ```javascript
+   // LaneNode.layoutLane() when collapsed:
+   if (this.collapsed) {
+     newSize = {
+       width: Math.max(this.data.width, headerHeight * 8 + 36),
+       height: headerHeight // Only header height when collapsed
+     };
+   }
+   
+   // ZoneManager.calculateTotalSize() when collapsed:
+   if (this.node.collapsed) {
+     return {
+       width: Math.max(headerSize.width, innerContainerSize.width) + marginSize.left + marginSize.right,
+       height: headerSize.height // Only header height when collapsed
+     };
+   }
+   
+   // InnerContainerZone.getSize() when collapsed:
+   if (this.node.collapsed) {
+     return { width: this.size.width, height: 0 };
+   }
+   ```
+
+4. **Apply Collapsed Size**: Resizes to minimum dimensions
    ```javascript
    this.resize({ width: this.minimumSize.width, height: this.minimumSize.height });
    ```

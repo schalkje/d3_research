@@ -99,23 +99,35 @@ export default class LaneNode extends BaseContainerNode {
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
 
     if (marginZone) {
-      const requiredSize = marginZone.calculateContainerSize(
-        maxChildWidth,
-        totalChildHeight + totalSpacing,
-        headerHeight
-      );
+      let newSize;
+      
+      if (this.collapsed) {
+        // When collapsed, only use header height (no margins or content)
+        newSize = {
+          width: Math.max(this.data.width, headerHeight * 8 + 36), // Minimum width based on label
+          height: headerHeight // Only header height when collapsed
+        };
+      } else {
+        // When expanded, use full margin zone calculation
+        const requiredSize = marginZone.calculateContainerSize(
+          maxChildWidth,
+          totalChildHeight + totalSpacing,
+          headerHeight
+        );
 
-      // Resize container to accommodate all children
-      const newSize = {
-        width: Math.max(this.data.width, requiredSize.width),
-        height: requiredSize.height // Allow shrinking when children are collapsed
-      };
+        newSize = {
+          width: Math.max(this.data.width, requiredSize.width),
+          height: requiredSize.height // Full size when expanded
+        };
+      }
       
       // Debug: Log resize operation
       console.log(`LaneNode ${this.id} resize:`, {
+        collapsed: this.collapsed,
         oldSize: { width: this.data.width, height: this.data.height },
         newSize,
-        requiredSize
+        headerHeight,
+        visibleChildrenCount: visibleChildren.length
       });
       
       this.resize(newSize);
