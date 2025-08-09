@@ -151,14 +151,29 @@ export default class BaseContainerNode extends BaseNode {
     if (this.parentNode && this.parentNode.collapsed) {
       this.parentNode.collapsed = false;
     } else {
-      // restore the expanded size if it was stored
-      if (this.data.expandedSize) {
-        this.resize(this.data.expandedSize, true);
-      }
-
       // Show child nodes if using zone system
       if (this.zoneManager?.innerContainerZone) {
         this.zoneManager.innerContainerZone.updateChildVisibility(true);
+      }
+
+      // Store current collapsed size before expanding  
+      const collapsedSize = { width: this.data.width, height: this.data.height };
+
+      // Recalculate container size based on current child content
+      // This works for both:
+      // 1. Containers that were expanded before (recalculates current content)
+      // 2. Containers that started collapsed (calculates proper expanded size)
+      this.updateChildren();
+      
+      // Store the calculated expanded size for future collapse/expand cycles
+      // Only update if the new size is significantly larger than collapsed size
+      if (this.data.height > collapsedSize.height + 5 || this.data.width > collapsedSize.width + 5) {
+        this.data.expandedSize = { width: this.data.width, height: this.data.height };
+      }
+      
+      // Update parent container if this container's size changed
+      if (this.parentNode) {
+        this.parentNode.updateChildren();
       }
       
       this.initEdges();

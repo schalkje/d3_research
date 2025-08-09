@@ -598,15 +598,52 @@ For standard lane nodes, collapsed heights typically range:
 
 #### Expansion Restoration
 
-When expanded, the lane node restores its previous size:
+When expanded, the lane node recalculates its size based on current child content:
 ```javascript
-// Size restoration during expand
-if (this.data.expandedSize) {
-  this.resize(this.data.expandedSize);
+// Expansion process in BaseContainerNode.expand()
+// 1. Show child nodes
+if (this.zoneManager?.innerContainerZone) {
+  this.zoneManager.innerContainerZone.updateChildVisibility(true);
+}
+
+// 2. Recalculate container size based on current child content
+this.updateChildren(); // Calls layoutLane() for lane nodes
+
+// 3. Update parent container if this container's size changed
+if (this.parentNode) {
+  this.parentNode.updateChildren();
 }
 ```
 
-This ensures consistent user experience when toggling between collapsed and expanded states.
+This ensures the container properly resizes to accommodate:
+- **Children that changed size** while collapsed
+- **New children** that were added while collapsed  
+- **Current child arrangement** and spacing requirements
+- **Both width and height** adjustments as needed
+- **Containers that started collapsed** (calculates proper expanded size for first time)
+
+The expansion process prioritizes **current content** over stored sizes, ensuring accurate layout regardless of whether the container was previously expanded or started in collapsed state.
+
+#### Expanded Size Management
+
+The system intelligently manages the `expandedSize` property:
+
+```javascript
+// Store current collapsed size before expanding
+const collapsedSize = { width: this.data.width, height: this.data.height };
+
+// Recalculate container size based on children
+this.updateChildren();
+
+// Store calculated expanded size for future cycles
+if (this.data.height > collapsedSize.height + 5 || this.data.width > collapsedSize.width + 5) {
+  this.data.expandedSize = { width: this.data.width, height: this.data.height };
+}
+```
+
+This approach handles both scenarios:
+- **Previously expanded containers**: Recalculates based on current children
+- **Initially collapsed containers**: Calculates proper expanded size for the first time
 
 ## Error Handling
 
