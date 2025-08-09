@@ -72,7 +72,12 @@ export default class BaseContainerNode extends BaseNode {
   propagateVisibility(visible) {
     this.childNodes.forEach((childNode) => {
       childNode.visible = visible;
-      if (childNode instanceof BaseContainerNode) childNode.propagateVisibility(visible);
+      
+      // Only propagate to nested containers if they are not collapsed
+      // Collapsed containers should become visible themselves, but their children should remain hidden
+      if (childNode instanceof BaseContainerNode && !childNode.collapsed) {
+        childNode.propagateVisibility(visible);
+      }
     });
   }
 

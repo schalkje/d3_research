@@ -384,8 +384,14 @@ export class InnerContainerZone extends BaseZone {
     console.log(`InnerContainerZone updateChildVisibility: setting ${this.childNodes.length} children to visible=${visible}`);
     this.childNodes.forEach(childNode => {
       childNode.visible = visible;
-      console.log(`  Child ${childNode.id}: visible = ${childNode.visible}`);
-      if (childNode.isContainer) {
+      console.log(`  Child ${childNode.id}: visible = ${childNode.visible}, collapsed = ${childNode.collapsed}`);
+      
+      // For container children, only propagate visibility if the container is not collapsed
+      // When making containers visible, their children should only become visible if the container is expanded
+      if (childNode.isContainer && visible && !childNode.collapsed) {
+        childNode.propagateVisibility(visible);
+      } else if (childNode.isContainer && !visible) {
+        // When hiding containers, always propagate hide regardless of collapsed state
         childNode.propagateVisibility(visible);
       }
     });

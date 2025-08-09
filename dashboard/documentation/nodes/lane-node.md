@@ -624,6 +624,49 @@ This ensures the container properly resizes to accommodate:
 
 The expansion process prioritizes **current content** over stored sizes, ensuring accurate layout regardless of whether the container was previously expanded or started in collapsed state.
 
+#### Nested Container Visibility
+
+When expanding a container with nested containers, the system respects the collapsed state of nested containers at multiple levels:
+
+```javascript
+// InnerContainerZone.updateChildVisibility()
+updateChildVisibility(visible) {
+  this.childNodes.forEach(childNode => {
+    childNode.visible = visible; // Make the nested container visible
+    
+    // For container children, only propagate visibility if the container is not collapsed
+    if (childNode.isContainer && visible && !childNode.collapsed) {
+      childNode.propagateVisibility(visible);
+    } else if (childNode.isContainer && !visible) {
+      // When hiding containers, always propagate hide regardless of collapsed state
+      childNode.propagateVisibility(visible);
+    }
+  });
+}
+
+// BaseContainerNode.propagateVisibility() - secondary protection
+propagateVisibility(visible) {
+  this.childNodes.forEach((childNode) => {
+    childNode.visible = visible;
+    
+    // Only propagate to nested containers if they are not collapsed
+    if (childNode instanceof BaseContainerNode && !childNode.collapsed) {
+      childNode.propagateVisibility(visible);
+    }
+  });
+}
+```
+
+This ensures proper nested behavior:
+- **Expanded parent → Expanded nested**: Both container and nested children become visible
+- **Expanded parent → Collapsed nested**: Container becomes visible, nested children remain hidden
+- **Collapsed parent**: All children (including nested containers) become hidden
+
+**Example Scenario**: 
+1. Sub Process 2 is collapsed (children hidden)
+2. Main Process is collapsed (Sub Process 2 hidden) 
+3. Main Process is expanded → Sub Process 2 becomes visible but remains collapsed (its children stay hidden)
+
 #### Expanded Size Management
 
 The system intelligently manages the `expandedSize` property:
