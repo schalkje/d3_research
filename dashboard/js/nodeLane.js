@@ -125,8 +125,11 @@ export default class LaneNode extends BaseContainerNode {
       
       // Set flag to prevent infinite recursion
       this._isResizing = true;
-      this.resize(newSize);
-      this._isResizing = false;
+      try {
+        this.resize(newSize);
+      } finally {
+        this._isResizing = false;
+      }
     }
 
     // Update child positions using zone system
