@@ -6,6 +6,9 @@ export default class LaneNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
     // console.log("LaneNode constructor", nodeData);
     super(nodeData, parentElement, createNode, settings, parentNode);
+    
+    // Prevent infinite recursion during resize operations
+    this._isResizing = false;
   }
 
   updateChildren() {
@@ -98,7 +101,7 @@ export default class LaneNode extends BaseContainerNode {
     const headerZone = this.zoneManager?.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
 
-    if (marginZone) {
+    if (marginZone && !this._isResizing) {
       let newSize;
       
       if (this.collapsed) {
@@ -108,34 +111,22 @@ export default class LaneNode extends BaseContainerNode {
           height: headerHeight // Only header height when collapsed
         };
       } else {
-        // When expanded, use full margin zone calculation
-        const requiredSize = marginZone.calculateContainerSize(
-          maxChildWidth,
-          totalChildHeight + totalSpacing,
-          headerHeight
-        );
-
+        // When expanded, use margin zone calculation with correct margins
+        // This ensures proper sizing based on actual child content
+        const margins = marginZone.getMargins();
+        const contentWidth = maxChildWidth;
+        const contentHeight = totalChildHeight + totalSpacing;
+        
         newSize = {
-          width: Math.max(this.data.width, requiredSize.width),
-          height: requiredSize.height // Full size when expanded
+          width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+          height: headerHeight + margins.top + contentHeight + margins.bottom
         };
       }
       
-      // Debug: Log resize operation
-      console.log(`LaneNode ${this.id} resize:`, {
-        collapsed: this.collapsed,
-        oldSize: { width: this.data.width, height: this.data.height },
-        newSize,
-        headerHeight,
-        visibleChildrenCount: visibleChildren.length
-      });
-      
+      // Set flag to prevent infinite recursion
+      this._isResizing = true;
       this.resize(newSize);
-      
-      // Debug: Log size after resize
-      console.log(`LaneNode ${this.id} after resize:`, {
-        newSize: { width: this.data.width, height: this.data.height }
-      });
+      this._isResizing = false;
     }
 
     // Update child positions using zone system

@@ -84,21 +84,17 @@ export class InnerContainerZone extends BaseZone {
     const marginZone = this.manager.getZone('margin');
     
     if (marginZone) {
-      const marginSize = marginZone.getSize();
+      const margins = marginZone.getMargins();
       
       // Calculate inner container position relative to node center
       // Position below header zone + top margin for proper spacing
       const containerTop = -this.node.data.height / 2;
       const innerX = 0; // Center horizontally
-      // Use the correct top margin value (8) instead of the incorrect marginSize.top (18)
-      const correctTopMargin = 8;
-      const innerY = containerTop + headerHeight + correctTopMargin;
-      
-
+      const innerY = containerTop + headerHeight + margins.top;
       
       // Calculate available space for content
-      const availableWidth = Math.max(0, this.size.width - marginSize.left - marginSize.right);
-      const availableHeight = Math.max(0, this.size.height - headerHeight - marginSize.top - marginSize.bottom);
+      const availableWidth = Math.max(0, this.size.width - margins.left - margins.right);
+      const availableHeight = Math.max(0, this.size.height - headerHeight - margins.top - margins.bottom);
       
       this.coordinateSystem = {
         origin: {

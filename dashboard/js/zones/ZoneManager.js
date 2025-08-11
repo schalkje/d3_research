@@ -104,22 +104,22 @@ export class ZoneManager {
    */
   calculateTotalSize() {
     const headerSize = this.headerZone.getSize();
-    const marginSize = this.marginZone.getSize();
+    const margins = this.marginZone.getMargins();
     const innerContainerSize = this.innerContainerZone.getSize();
 
     // When collapsed, margins should not contribute to container height
     // Only header height and minimum size constraints should apply
     if (this.node.collapsed) {
       return {
-        width: Math.max(headerSize.width, innerContainerSize.width) + marginSize.left + marginSize.right,
+        width: Math.max(headerSize.width, innerContainerSize.width) + margins.left + margins.right,
         height: headerSize.height // Only header height when collapsed
       };
     }
 
     // When expanded, include all zone sizes
     return {
-      width: Math.max(headerSize.width, innerContainerSize.width) + marginSize.left + marginSize.right,
-      height: headerSize.height + marginSize.top + innerContainerSize.height + marginSize.bottom
+      width: Math.max(headerSize.width, innerContainerSize.width) + margins.left + margins.right,
+      height: headerSize.height + margins.top + innerContainerSize.height + margins.bottom
     };
   }
 

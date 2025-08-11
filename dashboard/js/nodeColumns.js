@@ -7,9 +7,13 @@ export default class ColumnsNode extends BaseContainerNode {
     // Set up default layout configuration for columns node
     nodeData.layout ??= {};
     nodeData.layout.minimumColumnWidth ??= 0;
-    nodeData.layout.minimumSize ??= { height: 50, useRootRatio: false };
+    const minHeight = 10; // header + top margin + min child + bottom margin
+    nodeData.layout.minimumSize ??= { height: minHeight, useRootRatio: false };
 
-    super(nodeData, parentElement, createNode, settings, parentNode);  
+    super(nodeData, parentElement, createNode, settings, parentNode);
+    
+    // Prevent infinite recursion during resize operations
+    this._isResizing = false;
   }
 
   get nestedCorrection_y() {
@@ -122,7 +126,7 @@ export default class ColumnsNode extends BaseContainerNode {
     const headerZone = this.zoneManager?.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
 
-    if (marginZone) {
+    if (marginZone && !this._isResizing) {
       let newSize;
       
       if (this.collapsed) {
@@ -132,34 +136,22 @@ export default class ColumnsNode extends BaseContainerNode {
           height: headerHeight // Only header height when collapsed
         };
       } else {
-        // When expanded, use margin zone calculation like lane node
-        const requiredSize = marginZone.calculateContainerSize(
-          totalChildWidth + totalSpacing,
-          maxChildHeight,
-          headerHeight
-        );
-
+        // When expanded, use margin zone calculation with correct margins
+        // This ensures proper sizing based on actual child content
+        const margins = marginZone.getMargins();
+        const contentWidth = totalChildWidth + totalSpacing;
+        const contentHeight = maxChildHeight;
+        
         newSize = {
-          width: Math.max(this.data.width, requiredSize.width),
-          height: requiredSize.height // Full size when expanded
+          width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+          height: headerHeight + margins.top + contentHeight + margins.bottom
         };
       }
       
-      // Debug: Log resize operation
-      console.log(`ColumnsNode ${this.id} resize:`, {
-        collapsed: this.collapsed,
-        oldSize: { width: this.data.width, height: this.data.height },
-        newSize,
-        headerHeight,
-        visibleChildrenCount: visibleChildren.length
-      });
-      
+      // Set flag to prevent infinite recursion
+      this._isResizing = true;
       this.resize(newSize);
-      
-      // Debug: Log size after resize
-      console.log(`ColumnsNode ${this.id} after resize:`, {
-        newSize: { width: this.data.width, height: this.data.height }
-      });
+      this._isResizing = false;
     }
 
     // Update child positions using zone system
