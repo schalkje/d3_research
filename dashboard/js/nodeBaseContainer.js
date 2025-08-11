@@ -159,6 +159,8 @@ export default class BaseContainerNode extends BaseNode {
       // Show child nodes if using zone system
       if (this.zoneManager?.innerContainerZone) {
         this.zoneManager.innerContainerZone.updateChildVisibility(true);
+        // Update zone visibility to show all zones
+        this.zoneManager.updateZoneVisibility();
       }
 
       // Store current collapsed size before expanding  
@@ -196,6 +198,8 @@ export default class BaseContainerNode extends BaseNode {
     // Hide child nodes but keep zone system elements
     if (this.zoneManager?.innerContainerZone) {
       this.zoneManager.innerContainerZone.updateChildVisibility(false);
+      // Update zone visibility to hide inner container and margin zones
+      this.zoneManager.updateZoneVisibility();
     } else {
       // Fallback to old behavior if zone system not available
       this.cleanContainer();

@@ -153,4 +153,29 @@ export class ZoneManager {
     this.zones.clear();
     this.initialized = false;
   }
+
+  /**
+   * Update zone visibility based on container collapse state
+   * When collapsed, hide the inner container zone and margin zones
+   * When expanded, show all zones
+   */
+  updateZoneVisibility() {
+    if (this.node.collapsed) {
+      // Hide inner container and margin zones when collapsed
+      if (this.innerContainerZone) {
+        this.innerContainerZone.setVisible(false);
+      }
+      if (this.marginZone) {
+        this.marginZone.setVisible(false);
+      }
+    } else {
+      // Show all zones when expanded
+      if (this.innerContainerZone) {
+        this.innerContainerZone.setVisible(true);
+      }
+      if (this.marginZone) {
+        this.marginZone.setVisible(true);
+      }
+    }
+  }
 } 
