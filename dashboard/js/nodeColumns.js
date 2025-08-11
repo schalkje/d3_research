@@ -74,16 +74,18 @@ export default class ColumnsNode extends BaseContainerNode {
       if (childNodes.length === 0) return;
 
       const spacing = this.nodeSpacing?.horizontal || 20;
-      let currentX = 0;
+      // Start with minimal padding from the left edge of the inner container
+      // The inner container already accounts for margins, so use minimal padding
+      const leftPadding = 0; // Minimal left padding
+      let currentX = -coordinateSystem.size.width / 2 + leftPadding;
 
       // Only position visible children
       const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
 
       visibleChildNodes.forEach(childNode => {
-        const x = currentX;
-        // Center vertically within the inner container
-        const availableHeight = coordinateSystem.size.height;
-        const y = (availableHeight - childNode.data.height) / 2; // Center vertically
+        const x = currentX + childNode.data.width / 2; // Position by center
+        // Position children at a consistent Y position (like lanes do)
+        const y = childNode.data.height / 2; // Position by center, starting from top
 
         // Position children relative to the inner container's coordinate system
         childNode.move(x, y);
@@ -121,26 +123,37 @@ export default class ColumnsNode extends BaseContainerNode {
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
 
     if (marginZone) {
-      const requiredSize = marginZone.calculateContainerSize(
-        totalChildWidth + totalSpacing,
-        maxChildHeight,
-        headerHeight
-      );
+      let newSize;
+      
+      if (this.collapsed) {
+        // When collapsed, only use header height (no margins or content)
+        newSize = {
+          width: Math.max(this.data.width, headerHeight * 8 + 36), // Minimum width based on label
+          height: headerHeight // Only header height when collapsed
+        };
+      } else {
+        // When expanded, use margin zone calculation like lane node
+        const requiredSize = marginZone.calculateContainerSize(
+          totalChildWidth + totalSpacing,
+          maxChildHeight,
+          headerHeight
+        );
 
-      const newSize = {
-        width: Math.max(this.data.width, requiredSize.width),
-        height: Math.max(this.data.height, requiredSize.height)
-      };
+        newSize = {
+          width: Math.max(this.data.width, requiredSize.width),
+          height: requiredSize.height // Full size when expanded
+        };
+      }
       
       // Debug: Log resize operation
       console.log(`ColumnsNode ${this.id} resize:`, {
+        collapsed: this.collapsed,
         oldSize: { width: this.data.width, height: this.data.height },
         newSize,
         headerHeight,
         visibleChildrenCount: visibleChildren.length
       });
-
-      // Resize container to accommodate all children
+      
       this.resize(newSize);
       
       // Debug: Log size after resize

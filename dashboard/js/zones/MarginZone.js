@@ -30,14 +30,14 @@ export class MarginZone extends BaseZone {
    * Load margins from node settings
    */
   loadMargins() {
-    if (this.node.settings.containerMargin) {
-      this.margins = {
-        top: this.node.settings.containerMargin.top ?? 8,
-        right: this.node.settings.containerMargin.right ?? 8,
-        bottom: this.node.settings.containerMargin.bottom ?? 8,
-        left: this.node.settings.containerMargin.left ?? 8
-      };
-    }
+    // Always use the standard margins for zone system consistency
+    // Override any containerMargin settings that might be incorrect
+    this.margins = {
+      top: 8,
+      right: 8,
+      bottom: 8,
+      left: 8
+    };
   }
 
   /**
@@ -162,7 +162,7 @@ export class MarginZone extends BaseZone {
   calculateContainerSize(contentWidth, contentHeight, headerHeight = 0) {
     return {
       width: contentWidth + this.margins.left + this.margins.right,
-      height: this.margins.top + contentHeight + this.margins.bottom
+      height: headerHeight + this.margins.top + contentHeight + this.margins.bottom
     };
   }
 
