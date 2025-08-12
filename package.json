@@ -23,7 +23,10 @@
     "test:foundation": "npx playwright test tests/foundation-nodes.spec.js",
     "test:single": "npx playwright test --grep",
     "test:ui": "npx playwright test --ui",
-    "test:headed": "npx playwright test --headed"
+    "test:headed": "npx playwright test --headed",
+    "test:comprehensive": "node tests/run-comprehensive-tests.js",
+    "test:lane": "npx playwright test tests/lane-nodes-comprehensive.spec.js",
+    "test:columns": "npx playwright test tests/columns-nodes-comprehensive.spec.js"
   },
   "author": "Jeroen Schalken",
   "license": "MIT",
