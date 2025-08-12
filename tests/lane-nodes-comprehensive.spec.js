@@ -94,9 +94,26 @@ test.describe('LaneNode Comprehensive Tests', () => {
         const width = await rect.getAttribute('width');
         const height = await rect.getAttribute('height');
         
+        // Get the transform attribute from the g element
+        const transform = await child.getAttribute('transform');
+        
+        // Parse transform to get actual position
+        let actualX = parseFloat(x);
+        let actualY = parseFloat(y);
+        
+        if (transform && transform.includes('translate(')) {
+          const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+          if (match) {
+            const translateX = parseFloat(match[1]);
+            const translateY = parseFloat(match[2]);
+            actualX += translateX;
+            actualY += translateY;
+          }
+        }
+        
         positions.push({
-          x: parseFloat(x),
-          y: parseFloat(y),
+          x: actualX,
+          y: actualY,
           width: parseFloat(width),
           height: parseFloat(height)
         });
@@ -395,6 +412,95 @@ test.describe('LaneNode Comprehensive Tests', () => {
       const dimensions = await getNodeDimensions(page, 'g.lane');
       expect(dimensions.width).toBeGreaterThan(0);
       expect(dimensions.height).toBeGreaterThan(0);
+    });
+  });
+
+  test.describe('Lane Inner Container Boundary Tests', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/04_laneNodes/01_simple-tests/01_default-mode/default-mode.html');
+      await page.waitForSelector('svg', { timeout: 10000 });
+      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
+      await page.waitForTimeout(2000);
+    });
+
+    test('should have inner container that encompasses all children', async ({ page }) => {
+      const nodesFound = await waitForLaneNodes(page);
+      expect(nodesFound).toBe(true);
+      
+      const laneNode = page.locator('g.lane').first();
+      
+      // Find the inner container rect
+      const innerContainer = laneNode.locator('rect.zone-innerContainer');
+      await expect(innerContainer).toHaveCount(1);
+      
+      // Get inner container dimensions and position
+      const containerX = parseFloat(await innerContainer.getAttribute('x'));
+      const containerY = parseFloat(await innerContainer.getAttribute('y'));
+      const containerWidth = parseFloat(await innerContainer.getAttribute('width'));
+      const containerHeight = parseFloat(await innerContainer.getAttribute('height'));
+      
+      // Get the transform from the inner container's parent g element
+      const innerContainerGroup = laneNode.locator('g.zone-innerContainer');
+      const containerTransform = await innerContainerGroup.getAttribute('transform');
+      
+      let actualContainerX = containerX;
+      let actualContainerY = containerY;
+      
+      if (containerTransform && containerTransform.includes('translate(')) {
+        const match = containerTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        if (match) {
+          const translateX = parseFloat(match[1]);
+          const translateY = parseFloat(match[2]);
+          actualContainerX += translateX;
+          actualContainerY += translateY;
+        }
+      }
+      
+      // Calculate container boundaries
+      const containerLeft = actualContainerX;
+      const containerRight = actualContainerX + containerWidth;
+      const containerTop = actualContainerY;
+      const containerBottom = actualContainerY + containerHeight;
+      
+      // Get all child rectangles with proper transform calculations
+      const positions = await getChildPositions(page, 'g.lane');
+      expect(positions.length).toBeGreaterThan(0);
+      
+      // Calculate child boundaries from the corrected positions
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+      
+      for (const pos of positions) {
+        minX = Math.min(minX, pos.x);
+        maxX = Math.max(maxX, pos.x + pos.width);
+        minY = Math.min(minY, pos.y);
+        maxY = Math.max(maxY, pos.y + pos.height);
+      }
+      
+      // Debug logging
+      console.log('Container boundaries:', {
+        left: containerLeft, right: containerRight, top: containerTop, bottom: containerBottom
+      });
+      console.log('Child boundaries:', {
+        left: minX, right: maxX, top: minY, bottom: maxY
+      });
+      
+      // Verify container exactly encompasses all children with no margin
+      // Container left should be exactly at the leftmost child
+      expect(containerLeft).toBe(minX);
+      
+      // Container right should be exactly at the rightmost child
+      expect(containerRight).toBe(maxX);
+      
+      // Container top should be exactly at the topmost child
+      expect(containerTop).toBe(minY);
+      
+      // Container bottom should be exactly at the bottommost child
+      expect(containerBottom).toBe(maxY);
+      
+      // Verify the container has the exact dimensions needed
+      expect(containerWidth).toBe(maxX - minX);
+      expect(containerHeight).toBe(maxY - minY);
     });
   });
 });
