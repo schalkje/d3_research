@@ -57,19 +57,42 @@ export class InnerContainerZone extends BaseZone {
     this.updateCoordinateSystem();
     
     // Update border element dimensions
-    // Position rect to align with child content area
+    // Calculate actual size needed for children
+    const childContentSize = this.calculateChildContentSize();
+    
     if (this.borderElement) {
-      // Children are positioned by their center at Y = childHeight/2 (= 10px)
-      // So child content spans from Y=0 to Y=20
-      const childHeight = 20;
-      const rectY = 0; // Start at top of child content area
-      const rectHeight = childHeight; // Match child height exactly
+      // Use actual child content size instead of hardcoded values
+      const rectWidth = Math.max(childContentSize.width, this.coordinateSystem.size.width);
+      const rectHeight = Math.max(childContentSize.height, 1); // Minimum height of 1 to ensure visibility
+      
+      // Position the rect to encompass all children
+      // The zone has a transform that positions it in the global coordinate system.
+      // Children are positioned relative to (0,0) in this zone's coordinate system.
+      // We need to position the rect so that after the zone transform is applied,
+      // it appears at the same global position as the children.
+      
+      // Calculate the zone transform offset to determine rect positioning
+      const headerHeight = this.getHeaderHeight();
+      const marginZone = this.manager.getZone('margin');
+      const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
+      
+      // The zone transform moves it down by: containerTop + headerHeight + margins.top
+      // where containerTop = -this.node.data.height / 2
+      const containerTop = -this.node.data.height / 2;
+      const zoneOffsetY = containerTop + headerHeight + margins.top;
+      
+      // Position the rect so that when the zone transform is applied,
+      // it appears at y=0 in the global coordinate system (where children start)
+      const rectX = -rectWidth / 2; // Center horizontally
+      const rectY = -zoneOffsetY; // Compensate for zone transform
+      
+
       
       this.borderElement
-        .attr('width', this.coordinateSystem.size.width)
+        .attr('width', rectWidth)
         .attr('height', rectHeight)
-        .attr('x', -this.coordinateSystem.size.width / 2)  // Center horizontally
-        .attr('y', rectY); // Position at top of child content area
+        .attr('x', rectX)
+        .attr('y', rectY);
     }
     
     // Apply transform to the zone element itself (which contains child nodes)
@@ -98,14 +121,14 @@ export class InnerContainerZone extends BaseZone {
       
       this.coordinateSystem = {
         origin: {
-          x: innerX,
-          y: innerY
+          x: 0, // Children are positioned relative to (0,0) in this zone
+          y: 0  // Children are positioned relative to (0,0) in this zone
         },
         size: {
           width: availableWidth,
           height: availableHeight
         },
-        transform: `translate(${innerX}, ${innerY})`
+        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position
       };
     } else {
       // Fallback if margin zone is not available
@@ -117,9 +140,9 @@ export class InnerContainerZone extends BaseZone {
       const availableHeight = Math.max(0, this.size.height - headerHeight - defaultMargin * 2);
       
       this.coordinateSystem = {
-        origin: { x: innerX, y: innerY },
+        origin: { x: 0, y: 0 }, // Children are positioned relative to (0,0) in this zone
         size: { width: availableWidth, height: availableHeight },
-        transform: `translate(${innerX}, ${innerY})`
+        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position
       };
     }
   }
@@ -265,19 +288,29 @@ export class InnerContainerZone extends BaseZone {
     const spacing = this.node.nodeSpacing || { horizontal: 20, vertical: 10 };
     
     // Calculate bounding box of all children
+    // Children are positioned relative to the inner container zone's coordinate system (0,0)
+    // We need to calculate the bounding box based on their relative positions
     let minX = Infinity, minY = Infinity;
     let maxX = -Infinity, maxY = -Infinity;
     
     initializedChildren.forEach(childNode => {
-      const childX = childNode.x;
-      const childY = childNode.y;
+      // Get the child's position relative to the inner container zone
+      // This should be the position set by the layout algorithm
+      const childX = childNode.x || 0;
+      const childY = childNode.y || 0;
       const childWidth = childNode.data.width;
       const childHeight = childNode.data.height;
       
-      minX = Math.min(minX, childX);
-      minY = Math.min(minY, childY);
-      maxX = Math.max(maxX, childX + childWidth);
-      maxY = Math.max(maxY, childY + childHeight);
+      // Calculate the bounding box
+      const childLeft = childX - childWidth / 2; // Children are positioned by center
+      const childRight = childX + childWidth / 2;
+      const childTop = childY - childHeight / 2; // Children are positioned by center
+      const childBottom = childY + childHeight / 2;
+      
+      minX = Math.min(minX, childLeft);
+      minY = Math.min(minY, childTop);
+      maxX = Math.max(maxX, childRight);
+      maxY = Math.max(maxY, childBottom);
     });
     
     return {
