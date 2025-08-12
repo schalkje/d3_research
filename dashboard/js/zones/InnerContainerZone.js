@@ -66,27 +66,20 @@ export class InnerContainerZone extends BaseZone {
       const rectHeight = Math.max(childContentSize.height, 1); // Minimum height of 1 to ensure visibility
       
       // Position the rect to encompass all children
-      // The zone has a transform that positions it in the global coordinate system.
-      // Children are positioned relative to (0,0) in this zone's coordinate system.
-      // We need to position the rect so that after the zone transform is applied,
-      // it appears at the same global position as the children.
-      
-      // Calculate the zone transform offset to determine rect positioning
-      const headerHeight = this.getHeaderHeight();
-      const marginZone = this.manager.getZone('margin');
-      const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
-      
-      // The zone transform moves it down by: containerTop + headerHeight + margins.top
-      // where containerTop = -this.node.data.height / 2
-      const containerTop = -this.node.data.height / 2;
-      const zoneOffsetY = containerTop + headerHeight + margins.top;
-      
-      // Position the rect so that when the zone transform is applied,
-      // it appears at y=0 in the global coordinate system (where children start)
+      // Since children are positioned relative to (0,0) in this zone's coordinate system,
+      // the rect should start at (0,0) and extend to cover all children
+      // The zone transform will move both the zone and the rect to the correct global position
       const rectX = -rectWidth / 2; // Center horizontally
-      const rectY = -zoneOffsetY; // Compensate for zone transform
+      const rectY = 0; // Start at top of child content area in zone coordinates
       
-
+      // Debug: Log the values used for positioning
+      console.log(`InnerContainerZone ${this.name} updateSize:`, {
+        nodeHeight: this.node.data.height,
+        headerHeight: this.getHeaderHeight(),
+        margins: this.manager.getZone('margin')?.getMargins() || { top: 8, bottom: 8, left: 8, right: 8 },
+        rectY,
+        childContentSize
+      });
       
       this.borderElement
         .attr('width', rectWidth)
