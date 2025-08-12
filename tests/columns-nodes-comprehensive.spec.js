@@ -367,30 +367,150 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       const nodesFound = await waitForColumnsNodes(page);
       expect(nodesFound).toBe(true);
       
-      // Find nested columns
-      const nestedColumns = page.locator('g.columns[data-parent]');
-      await expect(nestedColumns).toHaveCount(2); // Should have 2 nested columns (left-section, right-section)
+      // Find the parent columns node
+      const parentColumns = page.locator('g.columns[id="parent-columns"]');
       
-      // Test collapsing the left section
+      // Get the direct children: left-section (columns), middle-rect (rect), right-section (columns)
+      // These are the immediate children, not all nested g.rect elements
       const leftSection = page.locator('g.columns[id="left-section"]');
-      const initialWidth = await leftSection.locator('rect').first().getAttribute('width');
+      const middleRect = page.locator('g.rect[id="middle-rect"]');
+      const rightSection = page.locator('g.columns[id="right-section"]');
+      
+      // Verify we have the expected structure
+      await expect(leftSection).toHaveCount(1);
+      await expect(middleRect).toHaveCount(1);
+      await expect(rightSection).toHaveCount(1);
+      
+      // Get initial dimensions of parent columns
+      const initialParentWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      const initialParentHeight = await parentColumns.locator('rect').first().getAttribute('height');
+      
+      // Test 1: Collapse Left Section
+      console.log('Testing: Collapse Left Section');
+      const leftSectionInitialWidth = await leftSection.locator('rect').first().getAttribute('width');
       
       // Click zoom button on left section
-      const zoomButton = leftSection.locator('g.zoom-button');
-      await zoomButton.click();
+      const leftZoomButton = leftSection.locator('g.zoom-button');
+      await leftZoomButton.click();
       await page.waitForTimeout(1000);
       
       // Verify left section collapsed
-      const collapsedWidth = await leftSection.locator('rect').first().getAttribute('width');
-      expect(parseFloat(collapsedWidth)).toBeLessThan(parseFloat(initialWidth));
+      const leftSectionCollapsedWidth = await leftSection.locator('rect').first().getAttribute('width');
+      expect(parseFloat(leftSectionCollapsedWidth)).toBeLessThan(parseFloat(leftSectionInitialWidth));
       
-      // Verify parent columns adjusted width
-      const parentColumns = page.locator('g.columns[id="parent-columns"]');
-      const parentRect = parentColumns.locator('rect').first();
-      const parentWidth = await parentRect.getAttribute('width');
+      // Check collapsed state of left section children (nested g.rect elements)
+      const leftSectionChildren = leftSection.locator('g.rect');
+      for (let i = 0; i < await leftSectionChildren.count(); i++) {
+        const child = leftSectionChildren.nth(i);
+        const isVisible = await child.isVisible();
+        expect(isVisible).toBe(false);
+      }
       
-      // Parent should be smaller after left section collapse
-      expect(parseFloat(parentWidth)).toBeLessThan(parseFloat(initialWidth));
+      // Verify parent columns adjusted width (should be smaller)
+      const afterLeftCollapseWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      expect(parseFloat(afterLeftCollapseWidth)).toBeLessThan(parseFloat(initialParentWidth));
+      
+      // Test 2: Collapse Main, then Expand Main
+      console.log('Testing: Collapse Main, then Expand Main');
+      
+      // Get the zoom button that belongs directly to the parent columns node
+      // Use first() to get the first zoom button found within the parent (which should be the parent's own zoom button)
+      const mainZoomButton = parentColumns.locator('g.zoom-button').first();
+      
+      // Collapse main
+      await mainZoomButton.click();
+      await page.waitForTimeout(1000);
+      
+      // Check collapsed state of all direct children
+      await expect(leftSection).not.toBeVisible();
+      await expect(middleRect).not.toBeVisible();
+      await expect(rightSection).not.toBeVisible();
+      
+      // Check size of main (should be smaller)
+      const mainCollapsedWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      const mainCollapsedHeight = await parentColumns.locator('rect').first().getAttribute('height');
+      expect(parseFloat(mainCollapsedWidth)).toBeLessThan(parseFloat(afterLeftCollapseWidth));
+      expect(parseFloat(mainCollapsedHeight)).toBeLessThan(parseFloat(initialParentHeight));
+      
+      // Expand main
+      await mainZoomButton.click();
+      await page.waitForTimeout(1000);
+      
+      // Check expanded state of all direct children
+      await expect(leftSection).toBeVisible();
+      await expect(middleRect).toBeVisible();
+      await expect(rightSection).toBeVisible();
+      
+      // Check size of main (should be restored)
+      const mainExpandedWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      const mainExpandedHeight = await parentColumns.locator('rect').first().getAttribute('height');
+      expect(parseFloat(mainExpandedWidth)).toBeGreaterThan(parseFloat(mainCollapsedWidth));
+      expect(parseFloat(mainExpandedHeight)).toBeGreaterThan(parseFloat(mainCollapsedHeight));
+      
+      // Test 3: Collapse Right Section
+      console.log('Testing: Collapse Right Section');
+      const rightSectionInitialWidth = await rightSection.locator('rect').first().getAttribute('width');
+      
+      // Click zoom button on right section
+      const rightZoomButton = rightSection.locator('g.zoom-button');
+      await rightZoomButton.click();
+      await page.waitForTimeout(1000);
+      
+      // Verify right section collapsed
+      const rightSectionCollapsedWidth = await rightSection.locator('rect').first().getAttribute('width');
+      expect(parseFloat(rightSectionCollapsedWidth)).toBeLessThan(parseFloat(rightSectionInitialWidth));
+      
+      // Check collapsed state of right section children (nested g.rect elements)
+      const rightSectionChildren = rightSection.locator('g.rect');
+      for (let i = 0; i < await rightSectionChildren.count(); i++) {
+        const child = rightSectionChildren.nth(i);
+        const isVisible = await child.isVisible();
+        expect(isVisible).toBe(false);
+      }
+      
+      // Verify parent columns adjusted width again (should be even smaller)
+      const afterRightCollapseWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      expect(parseFloat(afterRightCollapseWidth)).toBeLessThan(parseFloat(mainExpandedWidth));
+      
+      // Test 4: Expand Right Section
+      console.log('Testing: Expand Right Section');
+      await rightZoomButton.click();
+      await page.waitForTimeout(1000);
+      
+      // Check expanded state of right section children
+      for (let i = 0; i < await rightSectionChildren.count(); i++) {
+        const child = rightSectionChildren.nth(i);
+        const isVisible = await child.isVisible();
+        expect(isVisible).toBe(true);
+      }
+      
+      // Verify parent columns width increased
+      const afterRightExpandWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      expect(parseFloat(afterRightExpandWidth)).toBeGreaterThan(parseFloat(afterRightCollapseWidth));
+      
+      // Test 5: Expand Left Section
+      console.log('Testing: Expand Left Section');
+      await leftZoomButton.click();
+      await page.waitForTimeout(1000);
+      
+      // Check expanded state of left section children
+      for (let i = 0; i < await leftSectionChildren.count(); i++) {
+        const child = leftSectionChildren.nth(i);
+        const isVisible = await child.isVisible();
+        expect(isVisible).toBe(true);
+      }
+      
+      // Verify parent columns width increased again
+      const finalParentWidth = await parentColumns.locator('rect').first().getAttribute('width');
+      expect(parseFloat(finalParentWidth)).toBeGreaterThan(parseFloat(afterRightExpandWidth));
+      
+      // Final verification: all direct children should be visible
+      await expect(leftSection).toBeVisible();
+      await expect(middleRect).toBeVisible();
+      await expect(rightSection).toBeVisible();
+      
+      // Parent should be close to original size (allowing for some tolerance)
+      expect(parseFloat(finalParentWidth)).toBeCloseTo(parseFloat(initialParentWidth), -1);
     });
 
     test('should maintain proper spacing in nested structure', async ({ page }) => {
