@@ -52,8 +52,8 @@ export default class ColumnsNode extends BaseContainerNode {
     // Get zone manager and inner container zone
     const innerContainerZone = this.zoneManager?.innerContainerZone;
     if (!innerContainerZone) {
-      // Fallback to legacy layout if zone system not available
-      this.layoutColumnsLegacy();
+      // Zone system is required for columns layout
+      console.warn('Zone system not available for columns node:', this.id);
       return;
     }
 
@@ -98,11 +98,29 @@ export default class ColumnsNode extends BaseContainerNode {
     });
 
     // Calculate required size for visible children only
+    // Children report their effective size (handling collapsed state internally)
     const visibleChildren = this.childNodes.filter(node => node.visible);
-    const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
+    const totalChildWidth = visibleChildren.reduce((sum, node) => {
+      // Let each child report its effective width
+      const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
+      console.log(`ColumnsNode ${this.id} child ${node.id} width calculation:`, {
+        nodeId: node.id,
+        dataWidth: node.data.width,
+        effectiveWidth: effectiveWidth,
+        collapsed: node.collapsed,
+        minimumSize: node.minimumSize
+      });
+      return sum + effectiveWidth;
+    }, 0);
+    // Calculate spacing between ALL visible children (including collapsed ones)
+    // This ensures proper spacing even when some children are collapsed
     const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
     const maxChildHeight = visibleChildren.length > 0 
-      ? Math.max(...visibleChildren.map(node => node.data.height))
+      ? Math.max(...visibleChildren.map(node => {
+          // Let each child report its effective height
+          const effectiveHeight = node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height;
+          return effectiveHeight;
+        }))
       : 0;
     
     // Debug: Log size calculation
@@ -116,6 +134,8 @@ export default class ColumnsNode extends BaseContainerNode {
         id: node.id,
         width: node.data.width,
         height: node.data.height,
+        effectiveWidth: node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width,
+        effectiveHeight: node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height,
         collapsed: node.collapsed,
         minimumSize: node.minimumSize
       }))
@@ -143,7 +163,7 @@ export default class ColumnsNode extends BaseContainerNode {
         const contentHeight = maxChildHeight;
         
         newSize = {
-          width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+          width: Math.max(this.minimumSize.width, contentWidth + margins.left + margins.right),
           height: headerHeight + margins.top + contentHeight + margins.bottom
         };
       }
@@ -152,6 +172,8 @@ export default class ColumnsNode extends BaseContainerNode {
       this._isResizing = true;
       try {
         this.resize(newSize);
+        // Notify parent nodes that this node's size has changed
+        this.handleDisplayChange();
       } finally {
         this._isResizing = false;
       }
@@ -161,45 +183,7 @@ export default class ColumnsNode extends BaseContainerNode {
     innerContainerZone.updateChildPositions();
   }
 
-  layoutColumnsLegacy() {
-    if (this.childNodes.length === 0) {
-      return;
-    }
 
-    // Calculate total width needed for visible children only
-    const visibleChildren = this.childNodes.filter(node => node.visible);
-    const totalChildWidth = visibleChildren.reduce((sum, node) => sum + node.data.width, 0);
-    const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
-    
-    // Calculate max height needed for visible children
-    const maxChildHeight = visibleChildren.length > 0 
-      ? Math.max(...visibleChildren.map(node => node.data.height))
-      : 0;
-    
-    // Calculate container size needed
-    const contentWidth = totalChildWidth + totalSpacing + this.containerMargin.left + this.containerMargin.right;
-    const contentHeight = maxChildHeight + this.containerMargin.top + this.containerMargin.bottom;
-    
-    // Resize container to accommodate all children
-    this.resize({
-      width: Math.max(this.data.width, contentWidth),
-      height: Math.max(this.data.height, contentHeight)
-    });
-    
-    // Position visible children relative to container center, starting just below the label
-    // Account for the container transform that's applied in BaseContainerNode.updateChildren()
-    // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)
-    const containerOffsetX = this.containerMargin.left - this.containerMargin.right;
-    const containerOffsetY = this.containerMargin.top - this.containerMargin.bottom;
-    
-    let currentX = -this.data.width / 2 + this.containerMargin.left - containerOffsetX;
-    visibleChildren.forEach((node) => {
-      const x = currentX + node.data.width / 2;
-      const y = -this.data.height / 2 + this.containerMargin.top - this.containerMargin.bottom - containerOffsetY + node.data.height / 2;
-      node.move(x, y);
-      currentX += node.data.width + this.nodeSpacing.horizontal;
-    });
-  }
 
   arrange() {
     console.log("Arranging ColumnsNode:", this.id);

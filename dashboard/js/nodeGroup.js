@@ -33,8 +33,11 @@ export default class GroupNode extends BaseContainerNode {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
     visibleChildren.forEach(node => {
-      const halfWidth = node.data.width / 2;
-      const halfHeight = node.data.height / 2;
+      // Let each child report its effective size (handling collapsed state internally)
+      const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
+      const effectiveHeight = node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height;
+      const halfWidth = effectiveWidth / 2;
+      const halfHeight = effectiveHeight / 2;
       
       minX = Math.min(minX, node.x - halfWidth);
       minY = Math.min(minY, node.y - halfHeight);
@@ -48,9 +51,12 @@ export default class GroupNode extends BaseContainerNode {
     
     // Resize container to accommodate all children
     this.resize({
-      width: Math.max(this.data.width, contentWidth),
-      height: Math.max(this.data.height, contentHeight)
+      width: Math.max(this.minimumSize.width, contentWidth),
+      height: Math.max(this.minimumSize.height, contentHeight)
     });
+    
+    // Notify parent nodes that this node's size has changed
+    this.handleDisplayChange();
 
     // Position visible children relative to container center
     const containerCenterX = -this.data.width / 2 + this.containerMargin.left;

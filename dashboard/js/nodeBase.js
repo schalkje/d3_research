@@ -404,4 +404,30 @@ export default class BaseNode {
 
     node.cascadeStopSimulation();
   }
+
+  /**
+   * Get the effective width of this node for layout calculations
+   * This method handles collapsed state internally
+   */
+  getEffectiveWidth() {
+    if (this.collapsed) {
+      // When collapsed, always use minimumSize, not data.width
+      // This ensures we get the correct collapsed size even if data.width hasn't been updated yet
+      return this.minimumSize?.width || 20; // Default minimum width
+    }
+    return this.data.width;
+  }
+
+  /**
+   * Get the effective height of this node for layout calculations
+   * This method handles collapsed state internally
+   */
+  getEffectiveHeight() {
+    if (this.collapsed) {
+      // When collapsed, always use minimumSize, not data.height
+      // This ensures we get the correct collapsed size even if data.height hasn't been updated yet
+      return this.minimumSize?.height || 20; // Default minimum height
+    }
+    return this.data.height;
+  }
 }

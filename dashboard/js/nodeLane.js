@@ -76,10 +76,21 @@ export default class LaneNode extends BaseContainerNode {
     });
 
     // Calculate required size for visible children only
+    // Children report their effective size (handling collapsed state internally)
     const visibleChildren = this.childNodes.filter(node => node.visible);
-    const totalChildHeight = visibleChildren.reduce((sum, node) => sum + node.data.height, 0);
+    const totalChildHeight = visibleChildren.reduce((sum, node) => {
+      // Let each child report its effective height
+      const effectiveHeight = node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height;
+      return sum + effectiveHeight;
+    }, 0);
+    // Calculate spacing between ALL visible children (including collapsed ones)
+    // This ensures proper spacing even when some children are collapsed
     const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.vertical : 0;
-    const maxChildWidth = visibleChildren.length > 0 ? Math.max(...visibleChildren.map(node => node.data.width)) : 0;
+    const maxChildWidth = visibleChildren.length > 0 ? Math.max(...visibleChildren.map(node => {
+      // Let each child report its effective width
+      const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
+      return effectiveWidth;
+    })) : 0;
     
     // Debug: Log size calculation
     console.log(`LaneNode ${this.id} size calculation:`, {
@@ -91,6 +102,7 @@ export default class LaneNode extends BaseContainerNode {
       visibleChildrenDetails: visibleChildren.map(node => ({
         id: node.id,
         height: node.data.height,
+        effectiveHeight: node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height,
         collapsed: node.collapsed,
         minimumSize: node.minimumSize
       }))
@@ -118,7 +130,7 @@ export default class LaneNode extends BaseContainerNode {
         const contentHeight = totalChildHeight + totalSpacing;
         
         newSize = {
-          width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+          width: Math.max(this.minimumSize.width, contentWidth + margins.left + margins.right),
           height: headerHeight + margins.top + contentHeight + margins.bottom
         };
       }
@@ -127,6 +139,8 @@ export default class LaneNode extends BaseContainerNode {
       this._isResizing = true;
       try {
         this.resize(newSize);
+        // Notify parent nodes that this node's size has changed
+        this.handleDisplayChange();
       } finally {
         this._isResizing = false;
       }
