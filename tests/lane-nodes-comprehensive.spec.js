@@ -497,53 +497,53 @@ test.describe('LaneNode Comprehensive Tests', () => {
       expect(containerBottom).toBe(maxY - expectedOffset);
     });
 
-    test('should hide inner container when no children and adjust zone container height', async ({ page }) => {
+    test('should handle lane node with no children correctly', async ({ page }) => {
+      // Navigate to the basic demo that has a lane node with no children
+      await page.goto('/04_laneNodes/01_basic/basic.html');
+      await page.waitForSelector('svg', { timeout: 10000 });
+      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
+      await page.waitForTimeout(2000);
+      
       const nodesFound = await waitForLaneNodes(page);
       expect(nodesFound).toBe(true);
       
       const laneNode = page.locator('g.lane').first();
       
-      // First, verify we have children initially
-      const initialChildren = laneNode.locator(getChildNodeSelector());
-      const initialCount = await initialChildren.count();
-      expect(initialCount).toBeGreaterThan(0);
+      // Verify there are no children
+      const children = laneNode.locator(getChildNodeSelector());
+      const childCount = await children.count();
+      expect(childCount).toBe(0);
       
       // Find the inner container rect and zone container
       const innerContainer = laneNode.locator('rect.zone-innerContainer');
       const zoneContainer = laneNode.locator('g.zone-container');
       const zoneContainerRect = zoneContainer.locator('rect.container-shape');
       
-      // Get initial dimensions
-      const initialZoneHeight = parseFloat(await zoneContainerRect.getAttribute('height'));
-      const initialInnerContainerVisible = await innerContainer.isVisible();
+      // Get dimensions
+      const zoneHeight = parseFloat(await zoneContainerRect.getAttribute('height'));
+      const innerContainerHeight = parseFloat(await innerContainer.getAttribute('height'));
       
-      // Now simulate removing all children (this would typically be done through the UI)
-      // For testing purposes, we'll check the current state and verify the logic
-      
-      // The inner container should be visible when there are children
-      expect(initialInnerContainerVisible).toBe(true);
-      
-      // When there are no children, the inner container should be invisible
-      // This would be tested by actually removing children through the application
-      // For now, we'll verify the current behavior and document the expected behavior
-      
-      // Get header height and margins from the lane node
+      // Get header height and margins
       const headerZone = laneNode.locator('g.zone-header');
       const headerBackground = headerZone.locator('rect.header-background');
       const headerHeight = parseFloat(await headerBackground.getAttribute('height'));
       
-      // Expected zone container height when no children: headerHeight + margins.top + margins.bottom
-      // Note: The actual margin values would need to be obtained from the lane node configuration
-      // For now, we'll verify the zone container has reasonable dimensions
-      expect(initialZoneHeight).toBeGreaterThan(headerHeight);
+      // When there are no children:
+      // 1. The inner container rect should have minimal height of 1
+      expect(innerContainerHeight).toBe(1);
       
-      // The zone container should be at least as tall as the header
-      expect(initialZoneHeight).toBeGreaterThanOrEqual(headerHeight);
-      
-      // TODO: When implementing the "no children" state:
-      // 1. The rect.zone-innerContainer should have style="display: none" or be removed
       // 2. The zone container height should be exactly: headerHeight + margins.top + margins.bottom
-      // 3. This test should be updated to actually trigger the no-children state
+      // Assuming default margins: top=8, bottom=8 (total = 16)
+      const expectedZoneHeight = headerHeight + 8 + 8; // Header + top margin + bottom margin
+      expect(zoneHeight).toBe(expectedZoneHeight);
+      
+      console.log('No children test results:', {
+        childCount,
+        zoneHeight,
+        innerContainerHeight,
+        headerHeight,
+        expectedZoneHeight
+      });
     });
   });
 });
