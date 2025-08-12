@@ -537,13 +537,7 @@ test.describe('LaneNode Comprehensive Tests', () => {
       const expectedZoneHeight = headerHeight + 8 + 8; // Header + top margin + bottom margin
       expect(zoneHeight).toBe(expectedZoneHeight);
       
-      console.log('No children test results:', {
-        childCount,
-        zoneHeight,
-        innerContainerHeight,
-        headerHeight,
-        expectedZoneHeight
-      });
+
     });
   });
 });

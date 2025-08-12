@@ -26,10 +26,6 @@ export default class LaneNode extends BaseContainerNode {
   }
 
   layoutLane() {
-    if (this.childNodes.length === 0) {
-      return;
-    }
-
     // Get zone manager and inner container zone
     const innerContainerZone = this.zoneManager?.innerContainerZone;
     if (!innerContainerZone) {
