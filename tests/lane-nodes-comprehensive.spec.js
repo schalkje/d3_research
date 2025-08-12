@@ -126,7 +126,7 @@ test.describe('LaneNode Comprehensive Tests', () => {
   // Helper function to click zoom button (collapse/expand)
   async function clickZoomButton(page, nodeSelector) {
     const node = page.locator(nodeSelector);
-    const zoomButton = node.locator('circle.zoom-button');
+    const zoomButton = node.locator('g.zoom-button');
     await zoomButton.click();
     await page.waitForTimeout(500); // Wait for animation
   }
