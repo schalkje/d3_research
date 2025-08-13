@@ -16,22 +16,48 @@ const AdapterMode = Object.freeze({
 });
 
 export default class AdapterNode extends BaseContainerNode {
+  static getRequiredChildrenForMode(mode) {
+    switch (mode) {
+      case AdapterMode.FULL:
+        return ["staging", "archive", "transform"];
+      case AdapterMode.STAGING_ARCHIVE:
+        return ["staging", "archive"];
+      case AdapterMode.STAGING_TRANSFORM:
+        return ["staging", "transform"];
+      case AdapterMode.ARCHIVE_ONLY:
+        return ["archive"];
+      default:
+        return ["staging", "archive", "transform"];
+    }
+  }
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
-    super(nodeData, parentElement, createNode, settings, parentNode);
+    console.log("AdapterNode constructor called for:", nodeData.id, nodeData.label);
     
-    this.initializeNodeData(nodeData);
+    try {
+      // Initialize node data before calling super (static method)
+      nodeData = AdapterNode.initializeNodeDataStatic(nodeData);
+      
+      super(nodeData, parentElement, createNode, settings, parentNode);
 
-    this.stagingNode = null;
-    this.transformNode = null;
-    this.archiveNode = null;
-    this.nodeSpacing = { horizontal: 20, vertical: 10 };
+      this.stagingNode = null;
+      this.transformNode = null;
+      this.archiveNode = null;
+      this.nodeSpacing = { horizontal: 20, vertical: 10 };
+      
+      console.log("AdapterNode constructor completed for:", this.id, "mode:", this.data.layout.mode, "arrangement:", this.data.layout.arrangement);
+    } catch (error) {
+      console.error("AdapterNode constructor failed:", error);
+      throw error;
+    }
   }
 
-  initializeNodeData(nodeData) {
+  static initializeNodeDataStatic(nodeData) {
+    console.log("Initializing adapter node data for:", nodeData.id);
+    
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
     if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.ROLE;
+    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.FULL; // Changed from ROLE to FULL for better visibility
     
     if (nodeData.layout.displayMode === DisplayMode.ROLE) {
       nodeData.width = 176; // 80 + 80 + 20 + 8 + 8
@@ -56,6 +82,42 @@ export default class AdapterNode extends BaseContainerNode {
     }
     
     if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1;
+    
+    // Ensure children array exists and pre-populate with child data
+    if (!nodeData.children) nodeData.children = [];
+    
+    // Pre-create child data based on adapter mode so initChildren gets called
+    if (nodeData.children.length === 0) {
+      const childrenToCreate = AdapterNode.getRequiredChildrenForMode(nodeData.layout.mode);
+      
+      childrenToCreate.forEach(role => {
+        const childData = {
+          id: `${role}_${nodeData.id}`,
+          label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
+          role: role,
+          type: "Node",
+          width: 150,
+          height: 44,
+        };
+        nodeData.children.push(childData);
+      });
+    }
+    
+    console.log("Adapter node data initialized:", {
+      id: nodeData.id,
+      mode: nodeData.layout.mode,
+      arrangement: nodeData.layout.arrangement,
+      displayMode: nodeData.layout.displayMode,
+      width: nodeData.width,
+      height: nodeData.height,
+      childrenCount: nodeData.children.length
+    });
+    
+    return nodeData;
+  }
+
+  initializeNodeData(nodeData) {
+    return AdapterNode.initializeNodeDataStatic(nodeData);
   }
 
   get nestedCorrection_y() {
@@ -63,23 +125,42 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initChildren() {
+    console.log("AdapterNode - initChildren called for:", this.id, this.data.label);
     this.suspenseDisplayChange = true;
-    super.initChildren();
 
+    // Ensure children array exists
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
+      console.log("AdapterNode - initialized empty children array");
     }
 
-    this.archiveNode = this.initializeChildNode("archive", ["archive", "stg_archive", "arc_"]);
-    this.stagingNode = this.initializeChildNode("staging", ["staging", "stg_"]);
-    this.transformNode = this.initializeChildNode("transform", ["transform", "tfm_"]);
+    console.log("AdapterNode - calling super.initChildren to process pre-created child data...");
+    
+    // First call super.initChildren to let BaseContainerNode handle the child data we pre-created
+    super.initChildren();
+    
+    // Now assign the created child nodes to our role-specific properties
+    this.archiveNode = this.childNodes.find(child => child.data.role === "archive");
+    this.stagingNode = this.childNodes.find(child => child.data.role === "staging");
+    this.transformNode = this.childNodes.find(child => child.data.role === "transform");
+
+    console.log("AdapterNode - child nodes assigned:", {
+      staging: !!this.stagingNode,
+      archive: !!this.archiveNode,
+      transform: !!this.transformNode,
+      totalChildren: this.childNodes.length,
+      dataChildren: this.data.children.length
+    });
 
     this.createInternalEdges();
     this.initEdges();
     
     // Trigger child positioning after all children are initialized
     if (this.zoneManager?.innerContainerZone) {
+      console.log("AdapterNode - triggering child positioning");
       this.zoneManager.innerContainerZone.forceUpdateChildPositions();
+    } else {
+      console.warn("AdapterNode - zone system not available for positioning");
     }
     
     this.updateChildren();
@@ -88,6 +169,8 @@ export default class AdapterNode extends BaseContainerNode {
     
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
+    
+    console.log("AdapterNode - initChildren completed for:", this.id, "with", this.childNodes.length, "children");
   }
 
   createInternalEdges() {
@@ -125,6 +208,8 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initializeChildNode(role, labels) {
+    console.log(`Initializing child node for role: ${role}`);
+    
     let node = this.childNodes.find(
       (child) => child.data.category != null && 
       child.data.category.toLowerCase() === role.toLowerCase()
@@ -132,29 +217,40 @@ export default class AdapterNode extends BaseContainerNode {
     
     if (!node) {
       node = this.childNodes.find(
-        (child) => labels.some((label) => child.data.label.toLowerCase().includes(label))
+        (child) => child.data.role === role ||
+        labels.some((label) => child.data.label && child.data.label.toLowerCase().includes(label))
       );
     }
     
     if (!node) {
-      let childData = this.data.children.find((child) => child.category === role);
+      let childData = this.data.children.find((child) => child.category === role || child.role === role);
       if (!childData && this.shouldCreateChildNode(role)) {
+        console.log(`Creating child data for role: ${role}`);
         childData = {
           id: `${role}_${this.data.id}`,
           label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
           role: role,
-          type: "Node",
-          width: 150,
+          category: role,
+          type: "node", // Use "node" type for rectangular nodes
+          width: this.data.layout.displayMode === DisplayMode.ROLE ? 80 : 150,
           height: 44,
         };
         this.data.children.push(childData);
+        console.log(`Added child data:`, childData);
       }
-      node = this.initChildNode(childData, node);
+      
+      if (childData) {
+        node = this.initChildNode(childData, null);
+        console.log(`Created node for role ${role}:`, node ? 'success' : 'failed');
+      }
     } else {
+      console.log(`Found existing node for role ${role}`);
       if (this.data.layout.displayMode === DisplayMode.ROLE) {
         node.data.role = role;
         node.data.width = 80;
-        node.redrawText(node.data.role, node.data.width);
+        if (node.redrawText) {
+          node.redrawText(node.data.role, node.data.width);
+        }
       }
     }
 
@@ -196,9 +292,15 @@ export default class AdapterNode extends BaseContainerNode {
         this.childNodes.push(childNode);
         // Add child to zone system
         this.zoneManager.innerContainerZone.addChild(childNode);
+        
+        // Initialize the child node immediately
+        childNode.init(parentElement);
+        console.log("Created and initialized child node:", copyChild.id, copyChild.label || copyChild.role);
+      } else {
+        // Re-init existing child node
+        childNode.init(parentElement);
+        console.log("Re-initialized existing child node:", childNode.id, childNode.data.label);
       }
-      // Always re-init with the correct parent element
-      childNode.init(parentElement);
     }
     return childNode;
   }
@@ -256,12 +358,19 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
+    console.log('Layout algorithm 1 - found nodes:', {
+      staging: !!stagingNode,
+      archive: !!archiveNode,
+      transform: !!transformNode,
+      coordinateSystem
+    });
+    
     if (stagingNode && archiveNode) {
       // Add margin from the inner container border
       const margin = 8; // 8px margin from border
       
-      // Calculate available width for positioning
-      const availableWidth = coordinateSystem?.size?.width || 200;
+      // Calculate available width for positioning (zone coordinate system)
+      const availableWidth = coordinateSystem?.size?.width || 318; // Default to expected container width
       
       // Calculate maximum position for archive to fit within container
       const maxArchiveX = availableWidth - margin - archiveNode.data.width;
@@ -279,7 +388,7 @@ export default class AdapterNode extends BaseContainerNode {
         calculatedRightX: stagingRightX + spacing
       });
       
-      // Position staging node with margin from left and top
+      // Position staging node with margin from left and top (zone coordinates start at 0,0)
       stagingNode.move(margin, margin);
       
       // Position archive node with calculated spacing
@@ -293,7 +402,7 @@ export default class AdapterNode extends BaseContainerNode {
         const height = transformNode.data.height;
         transformNode.resize({ width: width, height: height });
         
-        const x = rightX + width / 2 - stagingNode.data.width * factor - spacing / 2;
+        const x = margin; // Start from left margin
         const y = margin + Math.max(stagingNode.data.height, archiveNode.data.height) + this.nodeSpacing.vertical;
         transformNode.move(x, y);
       }
@@ -327,6 +436,12 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
+    console.log('Layout algorithm 3 - found nodes:', {
+      staging: !!stagingNode,
+      archive: !!archiveNode,
+      transform: !!transformNode
+    });
+    
     if (stagingNode && transformNode && archiveNode) {
       console.log('Found all three nodes, positioning them...');
       
@@ -338,30 +453,30 @@ export default class AdapterNode extends BaseContainerNode {
       const stagingHeight = archiveNode.data.height + transformNode.data.height + this.nodeSpacing.vertical;
       stagingNode.resize({ width: stagingNode.data.width, height: stagingHeight });
       
-      // Add margin from the inner container border
-      const margin = 8; // 8px margin from border
+      // Use 8px margin from the inner container border
+      const margin = 8;
       
-      // Calculate available width for positioning
-      const availableWidth = coordinateSystem?.size?.width || 200;
-      const totalNodeWidth = stagingNode.data.width + archiveNode.data.width + this.nodeSpacing.horizontal;
+      // Calculate available width for positioning (zone coordinate system)
+      const availableWidth = coordinateSystem?.size?.width || 318; // Default to expected container width
       
       // Calculate maximum position for archive to fit within container
       const maxArchiveX = availableWidth - margin - archiveNode.data.width;
       const stagingRightX = margin + stagingNode.data.width;
-      const spacing = Math.max(5, maxArchiveX - stagingRightX);
+      const spacing = Math.max(this.nodeSpacing.horizontal, maxArchiveX - stagingRightX);
       
       console.log('Layout calculation:', {
         availableWidth,
         margin,
         stagingWidth: stagingNode.data.width,
         archiveWidth: archiveNode.data.width,
+        stagingHeight,
         maxArchiveX,
         stagingRightX,
         spacing,
         calculatedRightX: stagingRightX + spacing
       });
       
-      // Position staging with margin from left and top
+      // Position staging with margin from left and top (zone coordinates start at 0,0)
       stagingNode.move(margin, margin);
       
       // Position archive and transform with calculated spacing
@@ -373,9 +488,11 @@ export default class AdapterNode extends BaseContainerNode {
       // Position transform below archive with spacing
       transformNode.move(rightX, margin + archiveNode.data.height + this.nodeSpacing.vertical);
       
-      console.log('Positioning complete. Staging at (margin, margin), archive at (rightX, margin)');
-      console.log('Coordinate system origin:', coordinateSystem?.origin);
-      console.log('Coordinate system size:', coordinateSystem?.size);
+      console.log('Positioning complete:', {
+        staging: { x: margin, y: margin },
+        archive: { x: rightX, y: margin },
+        transform: { x: rightX, y: margin + archiveNode.data.height + this.nodeSpacing.vertical }
+      });
     }
   }
 
@@ -389,21 +506,44 @@ export default class AdapterNode extends BaseContainerNode {
       otherNode = transformNode;
     }
     
+    console.log('Layout algorithm 4 - found nodes:', {
+      staging: !!stagingNode,
+      other: !!otherNode,
+      mode: this.data.layout.mode
+    });
+    
     if (stagingNode && otherNode) {
-      // Position staging node on the left
-      stagingNode.move(0, 0);
+      const margin = 8; // 8px margin from border
+      
+      // Position staging node with margin from left and top (zone coordinates start at 0,0)
+      stagingNode.move(margin, margin);
       
       // Position other node to the right of staging
-      otherNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 0);
+      otherNode.move(margin + stagingNode.data.width + this.nodeSpacing.horizontal, margin);
+      
+      console.log('Positioning complete:', {
+        staging: { x: margin, y: margin },
+        other: { x: margin + stagingNode.data.width + this.nodeSpacing.horizontal, y: margin }
+      });
     }
   }
 
   layoutAlgorithm5(childNodes, coordinateSystem) {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     
+    console.log('Layout algorithm 5 - found nodes:', {
+      archive: !!archiveNode
+    });
+    
     if (archiveNode) {
-      // Position archive node in the center
-      archiveNode.move(0, 0);
+      const margin = 8; // 8px margin from border
+      
+      // Position archive node with margin from left and top (zone coordinates start at 0,0)
+      archiveNode.move(margin, margin);
+      
+      console.log('Positioning complete:', {
+        archive: { x: margin, y: margin }
+      });
     }
   }
 
