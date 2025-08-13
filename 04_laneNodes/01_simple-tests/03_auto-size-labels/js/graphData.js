@@ -61,7 +61,8 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "auto-size"
                     },
                     parentId: "lane1"
                 },
@@ -73,7 +74,8 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "auto-size"
                     },
                     parentId: "lane1"
                 },
@@ -85,7 +87,8 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "auto-size"
                     },
                     parentId: "lane1"
                 }
