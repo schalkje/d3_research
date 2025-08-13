@@ -338,7 +338,24 @@ export default class BaseNode {
 
   getParents() {
     // console.log("    getParents:", this.id, this.parentNode);
-    return this.parentNode ? [this.parentNode, ...this.parentNode.getParents()] : [];
+    if (!this.parentNode) {
+      return [];
+    }
+    
+    // Defensive check: ensure parentNode has getParents method and it returns an array
+    if (typeof this.parentNode.getParents === 'function') {
+      const parentParents = this.parentNode.getParents();
+      // Ensure the result is an array before spreading
+      if (Array.isArray(parentParents)) {
+        return [this.parentNode, ...parentParents];
+      } else {
+        console.warn(`getParents: parentNode.getParents() returned non-array for node ${this.id}:`, parentParents);
+        return [this.parentNode];
+      }
+    } else {
+      console.warn(`getParents: parentNode does not have getParents method for node ${this.id}, parentNode:`, this.parentNode);
+      return [this.parentNode];
+    }
   }
   
 

@@ -17,6 +17,26 @@ export function createInternalEdge(edgeData, source, target, settings)
     // console.log("       Parents:", parents);
 
     const parent = parents.container;
+    
+    // Defensive check: ensure we have a valid parent container
+    if (!parent) {
+      console.error("createInternalEdge: No common parent container found for edge", {
+        source: source.data.label,
+        target: target.data.label,
+        sourceParents: parents.source?.map(p => p.data?.label || p.id) || [],
+        targetParents: parents.target?.map(p => p.data?.label || p.id) || []
+      });
+      return;
+    }
+    
+    if (!parent.childEdges) {
+      console.error("createInternalEdge: Parent container does not have childEdges array", {
+        parent: parent,
+        parentType: parent.constructor?.name,
+        parentId: parent.id
+      });
+      return;
+    }
 
     // check if edge already exists (no two edges between the same nodes)
     if (source.edges.outgoing.find((edge) => edge.target === target)) {

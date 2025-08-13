@@ -411,6 +411,14 @@ export default class BaseContainerNode extends BaseNode {
         var childComponent = this.getNode(node.id);
         if (childComponent == null) {
           console.log("Creating new child component for:", node.id);
+          console.log("  createNode parameters:", {
+            nodeData: node,
+            container: childContainer,
+            settings: this.settings,
+            parentNode: this,
+            parentNodeType: this.constructor.name,
+            parentNodeId: this.id
+          });
           childComponent = this.createNode(node, childContainer, this.settings, this);
           this.childNodes.push(childComponent);
 

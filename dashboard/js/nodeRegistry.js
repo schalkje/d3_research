@@ -8,6 +8,13 @@ export function registerNodeType(type, constructor) {
 export function createNode(nodeData, container, settings, parentNode = null) {
   const nodeType = nodeData.type.toLowerCase();
   console.log("Creating node with type:", nodeType);
+  console.log("Registry createNode received parameters:", {
+    nodeData: nodeData,
+    container: container,
+    settings: settings,
+    parentNode: parentNode,
+    parentNodeType: parentNode?.constructor?.name
+  });
   console.log("Available node types:", Array.from(nodeTypes.keys()));
   
   const NodeConstructor = nodeTypes.get(nodeType);
