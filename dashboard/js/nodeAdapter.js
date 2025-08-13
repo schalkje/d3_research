@@ -629,6 +629,14 @@ export default class AdapterNode extends BaseContainerNode {
         this._isResizing = true;
         try {
           this.resize(requiredSize);
+          // Force zones to update their coordinate systems after resizing
+          if (this.zoneManager) {
+            this.zoneManager.zones.forEach(zone => {
+              if (zone.updateCoordinateSystem) {
+                zone.updateCoordinateSystem();
+              }
+            });
+          }
         } finally {
           this._isResizing = false;
         }
