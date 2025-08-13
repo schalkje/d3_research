@@ -97,7 +97,7 @@ export const singleAdapterArrangement1 = {
 };
 
 export const singleAdapterArrangement2 = {
-    ...singleAdapterData,
+    ...singleAdapter,
     metadata: {
         ...singleAdapter.metadata,
         name: "single-adapter-arrangement-2", 
@@ -117,7 +117,7 @@ export const singleAdapterArrangement2 = {
 };
 
 export const singleAdapterStagingArchive = {
-    ...singleAdapterData,
+    ...singleAdapter,
     metadata: {
         ...singleAdapter.metadata,
         name: "single-adapter-staging-archive",
@@ -137,7 +137,7 @@ export const singleAdapterStagingArchive = {
 };
 
 export const singleAdapterStagingTransform = {
-    ...singleAdapterData,
+    ...singleAdapter,
     metadata: {
         ...singleAdapter.metadata,
         name: "single-adapter-staging-transform",
