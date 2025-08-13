@@ -102,6 +102,12 @@ npm test
 ### Individual tests
 ```PowerShell
 npx playwright test tests/columns-nodes-comprehensive.spec.js -g "should handle mixed children types correctly" --headed
+npx playwright test tests/adapter-nodes.spec.js --grep "staging-focused layout" --headed
+
+# focus on the first error
+npx playwright test tests/adapter-nodes.spec.js --grep "staging-focused layout" --max-failures=1y
+y
+
 ```
 
 ### Test Runner Options
