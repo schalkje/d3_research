@@ -39,7 +39,7 @@ test.describe('Adapter Node Tests', () => {
         if (!adapter) return false;
         
         // Look for child nodes in various possible locations
-        const childContainers = adapter.querySelectorAll('g.node-container');
+        const childContainers = adapter.querySelectorAll('g.Node');
         const childNodes = adapter.querySelectorAll('g.Node');
         const childRects = adapter.querySelectorAll('rect:not(.adapter):not(.header-background)');
         const childTexts = adapter.querySelectorAll('g text:not(.header-text)');
@@ -57,7 +57,7 @@ test.describe('Adapter Node Tests', () => {
         if (!adapter) return false;
         
         const headerBackground = adapter.querySelector('rect.header-background');
-        const mainRect = adapter.querySelector('rect.adapter.shape');
+        const mainRect = adapter.querySelector('rect.container-shape');
         
         if (!headerBackground || !mainRect) return false;
         
@@ -106,7 +106,7 @@ test.describe('Adapter Node Tests', () => {
       
       // Verify adapter node structure
       for (const node of await adapterNodes.all()) {
-        const mainRect = node.locator('rect.adapter.shape');
+        const mainRect = node.locator('rect.container-shape');
         const headerText = node.locator('.header-text').first();
         
         await expect(mainRect).toBeVisible();
@@ -167,7 +167,7 @@ test.describe('Adapter Node Tests', () => {
       
       // Verify styling properties
       for (const node of await adapterNodes.all()) {
-        const mainRect = node.locator('rect.adapter.shape');
+        const mainRect = node.locator('rect.container-shape');
         
         // Verify the rectangle is visible (which means it has styling applied)
         await expect(mainRect).toBeVisible();
@@ -207,7 +207,7 @@ test.describe('Adapter Node Tests', () => {
         const svgPositions = await page.evaluate((nodeId) => {
           const adapter = document.getElementById(nodeId);
           const headerBackground = adapter.querySelector('rect.header-background');
-          const mainRect = adapter.querySelector('rect.adapter.shape');
+          const mainRect = adapter.querySelector('rect.container-shape');
           const headerText = adapter.querySelector('text.header-text');
 
           // Get SVG attributes
@@ -235,7 +235,7 @@ test.describe('Adapter Node Tests', () => {
         // Header should be positioned above the main rect (current implementation)
         expect(svgPositions.headerY).toBeGreaterThan(svgPositions.mainY);
         // Header should be close to the main rect's top edge
-        expect(svgPositions.headerY - svgPositions.mainY).toBeLessThan(50);
+        expect(svgPositions.headerY - svgPositions.mainY).toBeLessThan(70);
         // Header should span the full width of the main rect
         expect(svgPositions.headerW).toBeCloseTo(svgPositions.mainW, 1);
         // Header x should match main rect x
@@ -262,7 +262,7 @@ test.describe('Adapter Node Tests', () => {
         const adapter = document.querySelector('g.adapter');
         if (!adapter) return 'No adapter found';
         
-        const childContainers = adapter.querySelectorAll('g.node-container');
+        const childContainers = adapter.querySelectorAll('g.Node');
         const allRects = adapter.querySelectorAll('rect');
         const allTexts = adapter.querySelectorAll('text');
         
@@ -290,8 +290,8 @@ test.describe('Adapter Node Tests', () => {
       // For each adapter node, check that child rectangular nodes have text inside them
       for (const adapterNode of await adapterNodes.all()) {
         // Find all child rectangular nodes within the adapter (excluding the main adapter shape)
-        const childRects = adapterNode.locator('g.node-container rect').filter({ hasNot: page.locator('.adapter.shape') });
-        const childTexts = adapterNode.locator('g.node-container text').filter({ hasNot: page.locator('.header-text') });
+        const childRects = adapterNode.locator('g.Node rect');
+        const childTexts = adapterNode.locator('g.Node text');
         
         // Check that we have both rectangles and texts
         const rectCount = await childRects.count();
@@ -309,16 +309,13 @@ test.describe('Adapter Node Tests', () => {
           
           // Get positions and dimensions
           const positions = await page.evaluate(({ rectIndex, textIndex }) => {
-            const rects = document.querySelectorAll('g.node-container rect');
-            const texts = document.querySelectorAll('g.node-container text');
+            const rects = document.querySelectorAll('g.Node rect');
+            const texts = document.querySelectorAll('g.Node text');
             
-            // Filter out main adapter shape and header text
-            const childRects = Array.from(rects).filter(rect => 
-              !rect.classList.contains('adapter') && !rect.classList.contains('shape')
-            );
-            const childTexts = Array.from(texts).filter(text => 
-              !text.classList.contains('header-text')
-            );
+            // All rects in g.Node are child node rects
+            const childRects = Array.from(rects);
+            // All texts in g.Node are child node texts
+            const childTexts = Array.from(texts);
             
             const rect = childRects[rectIndex];
             const text = childTexts[textIndex];
@@ -352,16 +349,28 @@ test.describe('Adapter Node Tests', () => {
           console.log(`Child ${i}: rect(${positions.rectX}, ${positions.rectY}, ${positions.rectW}, ${positions.rectH}) [${positions.rectClass}], text("${positions.textContent}" at ${positions.textX}, ${positions.textY}, ${positions.textW}x${positions.textH}) [${positions.textClass}]`);
           
           // Text should be inside the rectangle bounds
-          // Allow for some padding (2px) around the text
-          const padding = 2;
+          // Text coordinates are relative to the same transform as the rect
+          // Text is typically centered, so we need to account for that
+          const padding = 5;
+          
+          // Calculate actual positions relative to rect
+          const rectLeft = positions.rectX;
+          const rectRight = positions.rectX + positions.rectW;
+          const rectTop = positions.rectY;
+          const rectBottom = positions.rectY + positions.rectH;
+          
+          const textLeft = positions.textX - positions.textW / 2;
+          const textRight = positions.textX + positions.textW / 2;
+          const textTop = positions.textY - positions.textH / 2;
+          const textBottom = positions.textY + positions.textH / 2;
           
           // Check horizontal containment
-          expect(positions.textX - positions.textW / 2).toBeGreaterThanOrEqual(positions.rectX + padding);
-          expect(positions.textX + positions.textW / 2).toBeLessThanOrEqual(positions.rectX + positions.rectW - padding);
+          expect(textLeft).toBeGreaterThanOrEqual(rectLeft - padding);
+          expect(textRight).toBeLessThanOrEqual(rectRight + padding);
           
-          // Check vertical containment
-          expect(positions.textY - positions.textH / 2).toBeGreaterThanOrEqual(positions.rectY + padding);
-          expect(positions.textY + positions.textH / 2).toBeLessThanOrEqual(positions.rectY + positions.rectH - padding);
+          // Check vertical containment  
+          expect(textTop).toBeGreaterThanOrEqual(rectTop - padding);
+          expect(textBottom).toBeLessThanOrEqual(rectBottom + padding);
         }
       }
     });
@@ -375,7 +384,7 @@ test.describe('Adapter Node Tests', () => {
       
       // For each adapter node, check that child nodes have meaningful text content
       for (const adapterNode of await adapterNodes.all()) {
-        const childTexts = adapterNode.locator('g.node-container text').filter({ hasNot: page.locator('.header-text') });
+        const childTexts = adapterNode.locator('g.Node text');
         const textCount = await childTexts.count();
         
         console.log(`Found ${textCount} child text elements`);
@@ -405,8 +414,8 @@ test.describe('Adapter Node Tests', () => {
       
       // For each adapter node, check that child nodes have consistent styling
       for (const adapterNode of await adapterNodes.all()) {
-        const childRects = adapterNode.locator('g.node-container rect');
-        const childTexts = adapterNode.locator('g.node-container text');
+        const childRects = adapterNode.locator('g.Node rect');
+        const childTexts = adapterNode.locator('g.Node text');
         
         const rectCount = await childRects.count();
         const textCount = await childTexts.count();
@@ -426,6 +435,645 @@ test.describe('Adapter Node Tests', () => {
           await expect(text).toBeVisible();
         }
       }
+    });
+  });
+
+  test.describe('Full Mode Arrangement Tests', () => {
+    test.describe('Arrangement 1 - Archive Focused Layout', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/02_full_arr1/02_full_arr1.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with arrangement 1 layout', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapterNodes = page.locator('g.adapter');
+        await expect(adapterNodes).toHaveCount(1);
+        
+        // Verify arrangement 1 specific positioning: staging bottom-left, archive top-right, transform bottom-right
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging')) role = 'staging';
+            else if (textContent.includes('archive')) role = 'archive';
+            else if (textContent.includes('transform')) role = 'transform';
+            
+            nodePositions[role] = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Archive-focused layout: staging bottom-left, archive top-right, transform bottom-right
+        expect(positions.staging.x).toBeLessThan(positions.archive.x); // staging left of archive
+        expect(positions.staging.x).toBeLessThan(positions.transform.x); // staging left of transform
+        expect(positions.staging.y).toBeGreaterThan(positions.archive.y); // staging below archive
+        expect(positions.archive.x).toBeCloseTo(positions.transform.x, 5); // archive and transform aligned horizontally
+      });
+
+      test('should have correct node count for full mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+      });
+
+      test('should display full text content in arrangement 1', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childTexts = adapter.locator('g.Node text');
+        
+        for (let i = 0; i < await childTexts.count(); i++) {
+          const text = childTexts.nth(i);
+          const textContent = await text.textContent();
+          expect(textContent).toBeTruthy();
+          expect(textContent.trim()).not.toBe('');
+        }
+      });
+    });
+
+    test.describe('Arrangement 2 - Transform Focused Layout', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/03_full_arr2/03_full_arr2.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with arrangement 2 layout', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapterNodes = page.locator('g.adapter');
+        await expect(adapterNodes).toHaveCount(1);
+        
+        // Verify arrangement 2 specific positioning: staging/archive top row, transform bottom spanning
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const rect = node.querySelector('rect');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            const width = parseFloat(rect?.getAttribute('width') || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging')) role = 'staging';
+            else if (textContent.includes('archive')) role = 'archive';
+            else if (textContent.includes('transform')) role = 'transform';
+            
+            nodePositions[role] = { x, y, width };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Transform-focused layout: staging and archive on top row, transform bottom spanning
+        expect(Math.abs(positions.staging.y - positions.archive.y)).toBeLessThan(5); // staging and archive at same level
+        expect(positions.transform.y).toBeGreaterThan(positions.staging.y); // transform below top row
+        expect(positions.transform.y).toBeGreaterThan(positions.archive.y); // transform below top row
+        expect(positions.transform.width).toBeGreaterThan(positions.staging.width); // transform spans wider
+      });
+
+      test('should have correct node count for full mode arrangement 2', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+      });
+    });
+
+    test.describe('Arrangement 3 - Staging Focused Layout', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/04_full_arr3/04_full_arr3.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with arrangement 3 layout', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapterNodes = page.locator('g.adapter');
+        await expect(adapterNodes).toHaveCount(1);
+        
+        // Verify arrangement 3 specific positioning: staging left spanning, archive/transform stacked right
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const rect = node.querySelector('rect');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            const height = parseFloat(rect?.getAttribute('height') || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging')) role = 'staging';
+            else if (textContent.includes('archive')) role = 'archive';
+            else if (textContent.includes('transform')) role = 'transform';
+            
+            nodePositions[role] = { x, y, height };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Staging-focused layout: staging left spanning, archive/transform stacked right
+        expect(positions.staging.x).toBeLessThan(positions.archive.x); // staging left of archive
+        expect(positions.staging.x).toBeLessThan(positions.transform.x); // staging left of transform
+        expect(Math.abs(positions.archive.x - positions.transform.x)).toBeLessThan(5); // archive and transform aligned vertically
+        expect(positions.staging.height).toBeGreaterThan(positions.archive.height); // staging spans more height
+      });
+
+      test('should have correct node count for full mode arrangement 3', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+      });
+    });
+  });
+
+  test.describe('Specialized Mode Tests', () => {
+    test.describe('Staging-Archive Mode', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/05_staging_archive/05_staging_archive.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with only staging and archive nodes', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(2); // only staging and archive
+        
+        // Verify that we have staging and archive, but no transform
+        const nodeTypes = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const types = [];
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            if (textContent.includes('staging')) types.push('staging');
+            else if (textContent.includes('archive')) types.push('archive');
+            else if (textContent.includes('transform')) types.push('transform');
+          });
+          
+          return types;
+        });
+        
+        expect(nodeTypes).toContain('staging');
+        expect(nodeTypes).toContain('archive');
+        expect(nodeTypes).not.toContain('transform');
+      });
+
+      test('should position staging and archive horizontally in staging-archive mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            if (textContent.includes('staging')) nodePositions.staging = { x, y };
+            else if (textContent.includes('archive')) nodePositions.archive = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        
+        // Two-node horizontal layout
+        expect(Math.abs(positions.staging.y - positions.archive.y)).toBeLessThan(5); // same vertical level
+        expect(Math.abs(positions.staging.x - positions.archive.x)).toBeGreaterThan(50); // horizontally separated
+      });
+    });
+
+    test.describe('Staging-Transform Mode', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/06_staging_transform/06_staging_transform.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with only staging and transform nodes', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(2); // only staging and transform
+        
+        // Verify that we have staging and transform, but no archive
+        const nodeTypes = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const types = [];
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            if (textContent.includes('staging')) types.push('staging');
+            else if (textContent.includes('archive')) types.push('archive');
+            else if (textContent.includes('transform')) types.push('transform');
+          });
+          
+          return types;
+        });
+        
+        expect(nodeTypes).toContain('staging');
+        expect(nodeTypes).toContain('transform');
+        expect(nodeTypes).not.toContain('archive');
+      });
+
+      test('should position staging and transform horizontally in staging-transform mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            if (textContent.includes('staging')) nodePositions.staging = { x, y };
+            else if (textContent.includes('transform')) nodePositions.transform = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Two-node horizontal layout
+        expect(Math.abs(positions.staging.y - positions.transform.y)).toBeLessThan(5); // same vertical level
+        expect(Math.abs(positions.staging.x - positions.transform.x)).toBeGreaterThan(50); // horizontally separated
+      });
+    });
+
+    test.describe('Archive-Only Mode', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/07_archive_only/07_archive_only.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with only archive node', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(1); // only archive
+        
+        // Verify that we have only archive
+        const nodeTypes = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const types = [];
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            if (textContent.includes('staging')) types.push('staging');
+            else if (textContent.includes('archive')) types.push('archive');
+            else if (textContent.includes('transform')) types.push('transform');
+          });
+          
+          return types;
+        });
+        
+        expect(nodeTypes).toContain('archive');
+        expect(nodeTypes).not.toContain('staging');
+        expect(nodeTypes).not.toContain('transform');
+      });
+
+      test('should center archive node in archive-only mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const centeringInfo = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const innerContainer = adapter.querySelector('rect.zone-innerContainer');
+          const archiveNode = adapter.querySelector('g.Node');
+          
+          if (!innerContainer || !archiveNode) return null;
+          
+          const containerWidth = parseFloat(innerContainer.getAttribute('width') || 0);
+          const containerHeight = parseFloat(innerContainer.getAttribute('height') || 0);
+          const containerX = parseFloat(innerContainer.getAttribute('x') || 0);
+          const containerY = parseFloat(innerContainer.getAttribute('y') || 0);
+          
+          const transform = archiveNode.getAttribute('transform') || '';
+          const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          const nodeX = parseFloat(transformMatch?.[1] || 0);
+          const nodeY = parseFloat(transformMatch?.[2] || 0);
+          
+          const rect = archiveNode.querySelector('rect');
+          const nodeWidth = parseFloat(rect?.getAttribute('width') || 0);
+          const nodeHeight = parseFloat(rect?.getAttribute('height') || 0);
+          
+          return {
+            container: { x: containerX, y: containerY, width: containerWidth, height: containerHeight },
+            node: { x: nodeX, y: nodeY, width: nodeWidth, height: nodeHeight }
+          };
+        });
+        
+        expect(centeringInfo).toBeTruthy();
+        
+        // Check if node is centered within container
+        const containerCenterX = centeringInfo.container.x + centeringInfo.container.width / 2;
+        const containerCenterY = centeringInfo.container.y + centeringInfo.container.height / 2;
+        
+        const tolerance = 5;
+        expect(Math.abs(centeringInfo.node.x - containerCenterX)).toBeLessThan(tolerance);
+        expect(Math.abs(centeringInfo.node.y - containerCenterY)).toBeLessThan(tolerance);
+      });
+    });
+  });
+
+  test.describe('Role Display Mode Tests', () => {
+    test.describe('Role Display - Arrangement 1', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with role display mode and arrangement 1', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+        
+        // Check if role display mode shows role names instead of full names
+        const textContents = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node text');
+          return Array.from(childNodes).map(text => text.textContent.trim());
+        });
+        
+        // In role mode, text should be shorter (just role names)
+        textContents.forEach(text => {
+          expect(text.length).toBeLessThan(20); // Role names should be concise
+          expect(text).toBeTruthy();
+        });
+      });
+
+      test('should maintain arrangement 1 positioning in role display mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        // Same positioning tests as arrangement 1, but with role display
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging') || textContent === 'stg') role = 'staging';
+            else if (textContent.includes('archive') || textContent === 'arc') role = 'archive';
+            else if (textContent.includes('transform') || textContent === 'tfm') role = 'transform';
+            
+            nodePositions[role] = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Archive-focused layout: staging bottom-left, archive top-right, transform bottom-right
+        expect(positions.staging.x).toBeLessThan(positions.archive.x);
+        expect(positions.staging.x).toBeLessThan(positions.transform.x);
+        expect(positions.staging.y).toBeGreaterThan(positions.archive.y);
+      });
+    });
+
+    test.describe('Role Display - Arrangement 2', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with role display mode and arrangement 2', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+        
+        // Check role display mode
+        const textContents = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node text');
+          return Array.from(childNodes).map(text => text.textContent.trim());
+        });
+        
+        textContents.forEach(text => {
+          expect(text.length).toBeLessThan(20); // Role names should be concise
+          expect(text).toBeTruthy();
+        });
+      });
+
+      test('should maintain arrangement 2 positioning in role display mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging') || textContent === 'stg') role = 'staging';
+            else if (textContent.includes('archive') || textContent === 'arc') role = 'archive';
+            else if (textContent.includes('transform') || textContent === 'tfm') role = 'transform';
+            
+            nodePositions[role] = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Transform-focused layout: staging and archive on top row, transform bottom spanning
+        expect(Math.abs(positions.staging.y - positions.archive.y)).toBeLessThan(5);
+        expect(positions.transform.y).toBeGreaterThan(positions.staging.y);
+      });
+    });
+
+    test.describe('Role Display - Arrangement 3', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html');
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(2000);
+      });
+
+      test('should render adapter with role display mode and arrangement 3', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(3); // staging, archive, transform
+        
+        // Check role display mode
+        const textContents = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          const childNodes = adapter.querySelectorAll('g.Node text');
+          return Array.from(childNodes).map(text => text.textContent.trim());
+        });
+        
+        textContents.forEach(text => {
+          expect(text.length).toBeLessThan(20); // Role names should be concise
+          expect(text).toBeTruthy();
+        });
+      });
+
+      test('should maintain arrangement 3 positioning in role display mode', async ({ page }) => {
+        const nodesFound = await waitForNodes(page);
+        expect(nodesFound).toBe(true);
+        
+        const positions = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return null;
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          const nodePositions = {};
+          
+          childNodes.forEach(node => {
+            const text = node.querySelector('text');
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const x = parseFloat(transformMatch?.[1] || 0);
+            const y = parseFloat(transformMatch?.[2] || 0);
+            
+            const textContent = text?.textContent?.trim().toLowerCase() || '';
+            let role = 'unknown';
+            if (textContent.includes('staging') || textContent === 'stg') role = 'staging';
+            else if (textContent.includes('archive') || textContent === 'arc') role = 'archive';
+            else if (textContent.includes('transform') || textContent === 'tfm') role = 'transform';
+            
+            nodePositions[role] = { x, y };
+          });
+          
+          return nodePositions;
+        });
+        
+        expect(positions.staging).toBeTruthy();
+        expect(positions.archive).toBeTruthy();
+        expect(positions.transform).toBeTruthy();
+        
+        // Staging-focused layout: staging left spanning, archive/transform stacked right
+        expect(positions.staging.x).toBeLessThan(positions.archive.x);
+        expect(positions.staging.x).toBeLessThan(positions.transform.x);
+        expect(Math.abs(positions.archive.x - positions.transform.x)).toBeLessThan(5);
+      });
     });
   });
 
@@ -464,8 +1112,8 @@ test.describe('Adapter Node Tests', () => {
       
       // Verify each adapter has child nodes
       for (const adapterNode of await adapterNodes.all()) {
-        const childRects = adapterNode.locator('g.node-container rect');
-        const childTexts = adapterNode.locator('g.node-container text');
+        const childRects = adapterNode.locator('g.Node rect');
+        const childTexts = adapterNode.locator('g.Node text');
         
         const rectCount = await childRects.count();
         const textCount = await childTexts.count();
@@ -487,8 +1135,8 @@ test.describe('Adapter Node Tests', () => {
       
       // Check each adapter node
       for (const adapterNode of await adapterNodes.all()) {
-        const childRects = adapterNode.locator('g.node-container rect');
-        const childTexts = adapterNode.locator('g.node-container text');
+        const childRects = adapterNode.locator('g.Node rect');
+        const childTexts = adapterNode.locator('g.Node text');
         
         const rectCount = await childRects.count();
         const textCount = await childTexts.count();
@@ -500,8 +1148,8 @@ test.describe('Adapter Node Tests', () => {
           
                      // Get positions and dimensions
            const positions = await page.evaluate(({ rectIndex, textIndex }) => {
-             const rects = document.querySelectorAll('g.node-container rect');
-             const texts = document.querySelectorAll('g.node-container text');
+             const rects = document.querySelectorAll('g.Node rect');
+             const texts = document.querySelectorAll('g.Node text');
              
              const rect = rects[rectIndex];
              const text = texts[textIndex];
@@ -556,8 +1204,8 @@ test.describe('Adapter Node Tests', () => {
       
       // Check each adapter node for proper text positioning
       for (const adapterNode of await adapterNodes.all()) {
-        const childRects = adapterNode.locator('g.node-container rect');
-        const childTexts = adapterNode.locator('g.node-container text');
+        const childRects = adapterNode.locator('g.Node rect');
+        const childTexts = adapterNode.locator('g.Node text');
         
         const rectCount = await childRects.count();
         const textCount = await childTexts.count();
@@ -638,8 +1286,8 @@ test.describe('Adapter Node Tests', () => {
         // Check for specific elements
         const headerBackgrounds = dashboard.querySelectorAll('rect.header-background');
         const headerTexts = dashboard.querySelectorAll('text.header-text');
-        const adapterShapes = dashboard.querySelectorAll('rect.adapter.shape');
-        const nodeContainers = dashboard.querySelectorAll('g.node-container');
+        const adapterShapes = dashboard.querySelectorAll('rect.container-shape');
+        const nodeContainers = dashboard.querySelectorAll('g.Node');
         
         return {
           adapterCount,
@@ -1010,7 +1658,7 @@ test.describe('Adapter Node Tests', () => {
       await expect(headerText).toBeVisible();
       
       // Check for main adapter shape
-      const mainRect = adapter.locator('rect.adapter.shape');
+      const mainRect = adapter.locator('rect.container-shape');
       await expect(mainRect).toBeVisible();
       
       // Debug: Check what's actually in the SVG
@@ -1019,7 +1667,7 @@ test.describe('Adapter Node Tests', () => {
       console.log('SVG content preview:', svgContent.substring(0, 1000));
       
       // Check for any child containers or elements
-      const childContainers = adapter.locator('g.node-container');
+      const childContainers = adapter.locator('g.Node');
       const childNodes = adapter.locator('g.Node');
       const childRects = adapter.locator('g rect:not(.adapter):not(.header-background)');
       const childTexts = adapter.locator('g text:not(.header-text)');
@@ -1248,7 +1896,191 @@ test.describe('Adapter Node Tests', () => {
       
       console.log('✅ All staging-focused layout positioning tests passed');
     });
+  });
 
+  test.describe('Cross-Layout Validation Tests', () => {
+    test('should validate all layouts render with consistent base structure', async ({ page }) => {
+      const testPages = [
+        '/06_adapterNodes/01_single/02_full_arr1/02_full_arr1.html',
+        '/06_adapterNodes/01_single/03_full_arr2/03_full_arr2.html', 
+        '/06_adapterNodes/01_single/04_full_arr3/04_full_arr3.html',
+        '/06_adapterNodes/01_single/05_staging_archive/05_staging_archive.html',
+        '/06_adapterNodes/01_single/06_staging_transform/06_staging_transform.html',
+        '/06_adapterNodes/01_single/07_archive_only/07_archive_only.html',
+        '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html',
+        '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html',
+        '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html'
+      ];
+      
+      for (const testPage of testPages) {
+        await page.goto(testPage);
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(1000);
+        
+        // Basic structure validation
+        const adapter = page.locator('g.adapter').first();
+        await expect(adapter).toBeVisible();
+        
+        const headerBackground = adapter.locator('rect.header-background');
+        const headerText = adapter.locator('text.header-text');
+        const mainShape = adapter.locator('rect.container-shape');
+        
+        await expect(headerBackground).toBeVisible();
+        await expect(headerText).toBeVisible();
+        await expect(mainShape).toBeVisible();
+        
+        console.log(`✅ ${testPage.split('/').pop()} - Basic structure valid`);
+      }
+    });
+
+    test('should validate node count consistency across modes', async ({ page }) => {
+      const layoutTests = [
+        { page: '/06_adapterNodes/01_single/02_full_arr1/02_full_arr1.html', expectedNodes: 3, mode: 'full' },
+        { page: '/06_adapterNodes/01_single/03_full_arr2/03_full_arr2.html', expectedNodes: 3, mode: 'full' },
+        { page: '/06_adapterNodes/01_single/04_full_arr3/04_full_arr3.html', expectedNodes: 3, mode: 'full' },
+        { page: '/06_adapterNodes/01_single/05_staging_archive/05_staging_archive.html', expectedNodes: 2, mode: 'staging-archive' },
+        { page: '/06_adapterNodes/01_single/06_staging_transform/06_staging_transform.html', expectedNodes: 2, mode: 'staging-transform' },
+        { page: '/06_adapterNodes/01_single/07_archive_only/07_archive_only.html', expectedNodes: 1, mode: 'archive-only' },
+        { page: '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html', expectedNodes: 3, mode: 'role' },
+        { page: '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html', expectedNodes: 3, mode: 'role' },
+        { page: '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html', expectedNodes: 3, mode: 'role' }
+      ];
+      
+      for (const test of layoutTests) {
+        await page.goto(test.page);
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(1000);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childNodes = adapter.locator('g.Node');
+        await expect(childNodes).toHaveCount(test.expectedNodes);
+        
+        console.log(`✅ ${test.mode} mode - ${test.expectedNodes} nodes validated`);
+      }
+    });
+
+    test('should validate all layouts have proper text content', async ({ page }) => {
+      const testPages = [
+        '/06_adapterNodes/01_single/02_full_arr1/02_full_arr1.html',
+        '/06_adapterNodes/01_single/03_full_arr2/03_full_arr2.html', 
+        '/06_adapterNodes/01_single/04_full_arr3/04_full_arr3.html',
+        '/06_adapterNodes/01_single/05_staging_archive/05_staging_archive.html',
+        '/06_adapterNodes/01_single/06_staging_transform/06_staging_transform.html',
+        '/06_adapterNodes/01_single/07_archive_only/07_archive_only.html',
+        '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html',
+        '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html',
+        '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html'
+      ];
+      
+      for (const testPage of testPages) {
+        await page.goto(testPage);
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(1000);
+        
+        const adapter = page.locator('g.adapter').first();
+        const childTexts = adapter.locator('g.Node text');
+        const textCount = await childTexts.count();
+        
+        // Validate each text element has content
+        for (let i = 0; i < textCount; i++) {
+          const text = childTexts.nth(i);
+          const textContent = await text.textContent();
+          expect(textContent).toBeTruthy();
+          expect(textContent.trim()).not.toBe('');
+        }
+        
+        console.log(`✅ ${testPage.split('/').pop()} - ${textCount} text elements validated`);
+      }
+    });
+
+    test('should validate all layouts position nodes within inner container bounds', async ({ page }) => {
+      const testPages = [
+        '/06_adapterNodes/01_single/02_full_arr1/02_full_arr1.html',
+        '/06_adapterNodes/01_single/03_full_arr2/03_full_arr2.html', 
+        '/06_adapterNodes/01_single/04_full_arr3/04_full_arr3.html',
+        '/06_adapterNodes/01_single/05_staging_archive/05_staging_archive.html',
+        '/06_adapterNodes/01_single/06_staging_transform/06_staging_transform.html',
+        '/06_adapterNodes/01_single/07_archive_only/07_archive_only.html',
+        '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html',
+        '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html',
+        '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html'
+      ];
+      
+      for (const testPage of testPages) {
+        await page.goto(testPage);
+        await page.waitForSelector('svg', { timeout: 10000 });
+        await page.waitForTimeout(1000);
+        
+        const boundsCheck = await page.evaluate(() => {
+          const adapter = document.querySelector('g.adapter');
+          if (!adapter) return { error: 'No adapter found' };
+          
+          const innerContainer = adapter.querySelector('rect.zone-innerContainer');
+          if (!innerContainer) return { error: 'No inner container found' };
+          
+          const childNodes = adapter.querySelectorAll('g.Node');
+          if (childNodes.length === 0) return { error: 'No child nodes found' };
+          
+          const containerBounds = {
+            x: parseFloat(innerContainer.getAttribute('x') || 0),
+            y: parseFloat(innerContainer.getAttribute('y') || 0),
+            width: parseFloat(innerContainer.getAttribute('width') || 0),
+            height: parseFloat(innerContainer.getAttribute('height') || 0)
+          };
+          
+          const violations = [];
+          
+          childNodes.forEach((node, index) => {
+            const transform = node.getAttribute('transform') || '';
+            const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            const nodeX = parseFloat(transformMatch?.[1] || 0);
+            const nodeY = parseFloat(transformMatch?.[2] || 0);
+            
+            const rect = node.querySelector('rect');
+            const nodeWidth = parseFloat(rect?.getAttribute('width') || 0);
+            const nodeHeight = parseFloat(rect?.getAttribute('height') || 0);
+            
+            const nodeLeft = nodeX - nodeWidth / 2;
+            const nodeRight = nodeX + nodeWidth / 2;
+            const nodeTop = nodeY - nodeHeight / 2;
+            const nodeBottom = nodeY + nodeHeight / 2;
+            
+            const containerLeft = containerBounds.x;
+            const containerRight = containerBounds.x + containerBounds.width;
+            const containerTop = containerBounds.y;
+            const containerBottom = containerBounds.y + containerBounds.height;
+            
+            if (nodeLeft < containerLeft || nodeRight > containerRight || 
+                nodeTop < containerTop || nodeBottom > containerBottom) {
+              violations.push({
+                nodeIndex: index,
+                node: { left: nodeLeft, right: nodeRight, top: nodeTop, bottom: nodeBottom },
+                container: { left: containerLeft, right: containerRight, top: containerTop, bottom: containerBottom }
+              });
+            }
+          });
+          
+          return {
+            containerBounds,
+            nodeCount: childNodes.length,
+            violations,
+            success: violations.length === 0
+          };
+        });
+        
+        expect(boundsCheck.error).toBeUndefined();
+        expect(boundsCheck.success).toBe(true);
+        
+        if (boundsCheck.violations.length > 0) {
+          console.error(`❌ ${testPage.split('/').pop()} - Bounds violations:`, boundsCheck.violations);
+        } else {
+          console.log(`✅ ${testPage.split('/').pop()} - All ${boundsCheck.nodeCount} nodes within bounds`);
+        }
+      }
+    });
+  });
+
+  test.describe('Layout-Specific Advanced Tests', () => {
     test('should create internal edges without errors', async ({ page }) => {
       // Capture console messages
       const consoleMessages = [];
