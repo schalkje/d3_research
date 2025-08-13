@@ -2,7 +2,7 @@
   "_metadata": {
     "name": "node-adapter-single",
     "description": "Single adapter node",
-    "source": "../5_nodes/10_adapter/js/graphData.js",
+    "source": "../06_adapterNodes/01_single/js/graphData.js",
     "export": "singleAdapter",
     "generated": "2024-01-15T10:15:00.000Z"
   },

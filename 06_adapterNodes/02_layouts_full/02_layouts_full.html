@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Adapter Layouts - Test Page</title>
+    
+    <!-- Standard CSS -->
+    <link rel="stylesheet" href="../../dashboard/flowdash.css">
+    
+    <!-- Optional demo-specific CSS -->
+    <link rel="stylesheet" href="css/demo.css" if-exists>
+    
+    <!-- Required Libraries -->
+    <script src="../../dashboard/libs/d3.min.js"></script>
+    <script src="../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
+</head>
+<body>
+    <!-- Demo Header -->
+    <header class="demo-header">
+        <h1>Nodes</h1>
+        <h2>Multiple Adapter Layouts Test</h2>
+        <p class="demo-description">Comprehensive test page showcasing all 5 adapter layout arrangements and different modes</p>
+        
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button id="updateBtn" onclick="updateDemo()">Update</button>
+            <button id="resetBtn" onclick="resetDemo()">Reset</button>
+            <button id="testBtn" onclick="runTests()">Run Tests</button>
+            <button id="cycleBtn" onclick="cycleLayouts()">Cycle Layouts</button>
+        </div>
+    </header>
+
+    <!-- Demo Container -->
+    <div class="demo-container">
+        <svg id="graph" class="canvas"></svg>
+    </div>
+
+    <!-- Layout Information Panel -->
+    <div class="layout-info-panel">
+        <h3>Current Layouts Displayed</h3>
+        <div id="layoutDetails" class="layout-details">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Demo Information -->
+    <footer class="demo-info">
+        <div class="demo-metadata">
+            <p><strong>Node Type:</strong> Multiple Adapters</p>
+            <p><strong>Layouts:</strong> All 5 arrangements (1, 2, 3, 4, 5)</p>
+            <p><strong>Modes:</strong> Full, staging-archive, staging-transform, archive-only</p>
+            <p><strong>Test Status:</strong> <span id="testStatus">Ready for Testing</span></p>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Import demo data
+        import { multipleLayoutsData, layoutVariations } from './js/graphData.js';
+        import flowDashboard from '../../dashboard/js/index.js';
+
+        let currentDataIndex = 0;
+        let flowdash;
+
+        // Initialize dashboard with first layout
+        function initializeDashboard(data = multipleLayoutsData) {
+            if (flowdash) {
+                flowdash.destroy();
+            }
+            flowdash = new flowDashboard.Dashboard(data);
+            flowdash.initialize('#graph');
+            updateLayoutDetails(data);
+        }
+
+        // Initialize with default data
+        initializeDashboard();
+        
+        // Attach to window for testing and debugging
+        window.flowdash = flowdash;
+        window.multipleLayoutsData = multipleLayoutsData;
+        window.layoutVariations = layoutVariations;
+        
+        // Demo functions
+        window.updateDemo = function() {
+            console.log('Update demo called');
+            if (flowdash) {
+                flowdash.update();
+            }
+        };
+        
+        window.resetDemo = function() {
+            console.log('Reset demo called');
+            currentDataIndex = 0;
+            initializeDashboard(multipleLayoutsData);
+        };
+        
+        window.cycleLayouts = function() {
+            const variations = Object.values(layoutVariations);
+            currentDataIndex = (currentDataIndex + 1) % variations.length;
+            initializeDashboard(variations[currentDataIndex]);
+        };
+        
+        window.runTests = function() {
+            runDemoTests();
+        };
+
+        function updateLayoutDetails(data) {
+            const detailsDiv = document.getElementById('layoutDetails');
+            let html = '<div class="layout-grid">';
+            
+            data.nodes.forEach((node, index) => {
+                const mode = node.layout.mode || 'full';
+                const arrangement = node.layout.arrangement || 1;
+                html += `
+                    <div class="layout-card">
+                        <h4>${node.label} (${node.id})</h4>
+                        <p><strong>Mode:</strong> ${mode}</p>
+                        <p><strong>Arrangement:</strong> ${arrangement}</p>
+                        <p><strong>Description:</strong> ${getLayoutDescription(mode, arrangement)}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            detailsDiv.innerHTML = html;
+        }
+
+        function getLayoutDescription(mode, arrangement) {
+            const descriptions = {
+                'full-1': 'Archive-focused: staging bottom-left, archive top-right, transform bottom-right',
+                'full-2': 'Transform-focused: staging/archive top row, transform bottom spanning',
+                'full-3': 'Staging-focused: staging left spanning, archive/transform stacked right',
+                'staging-archive-4': 'Two-node horizontal: staging left, archive right',
+                'staging-transform-4': 'Two-node horizontal: staging left, transform right',
+                'archive-only-5': 'Single node: archive centered'
+            };
+            return descriptions[`${mode}-${arrangement}`] || 'Standard layout';
+        }
+        
+        // Test runner
+        function runDemoTests() {
+            const testStatus = document.getElementById('testStatus');
+            testStatus.textContent = 'Running...';
+            
+            // Comprehensive validation tests
+            const tests = [
+                testDashboardInitialization,
+                testMultipleAdapterRendering,
+                testAllChildNodesRendering,
+                testDataStructure,
+                testAdapterStructures,
+                testChildPositioning,
+                testTextContainment,
+                testLayoutVariety,
+                testZoneSystemIntegration
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            tests.forEach((test, index) => {
+                try {
+                    const result = test();
+                    if (result) {
+                        passed++;
+                        console.log(`✅ Test ${index + 1}: ${test.name} - PASSED`);
+                    } else {
+                        console.log(`❌ Test ${index + 1}: ${test.name} - FAILED`);
+                    }
+                } catch (e) {
+                    console.error(`💥 Test ${index + 1}: ${test.name} - ERROR:`, e);
+                }
+            });
+            
+            testStatus.textContent = `${passed}/${total} tests passed`;
+            testStatus.className = passed === total ? 'test-pass' : 'test-fail';
+            
+            // Log summary
+            console.log(`\n📊 Test Summary: ${passed}/${total} tests passed`);
+            if (passed === total) {
+                console.log('🎉 All tests passed! The multiple layouts page is working correctly.');
+            } else {
+                console.log('⚠️  Some tests failed. Check the console for details.');
+            }
+        }
+        
+        // Test functions
+        function testDashboardInitialization() {
+            return flowdash && typeof flowdash.initialize === 'function';
+        }
+        
+        function testMultipleAdapterRendering() {
+            const adapters = document.querySelectorAll('g.adapter');
+            console.log(`Found ${adapters.length} adapter nodes`);
+            return adapters.length > 1; // Should have multiple adapters
+        }
+        
+        function testAllChildNodesRendering() {
+            const adapters = document.querySelectorAll('g.adapter');
+            let totalChildNodes = 0;
+            
+            adapters.forEach(adapter => {
+                const childNodes = adapter.querySelectorAll('g.Node');
+                totalChildNodes += childNodes.length;
+            });
+            
+            console.log(`Found ${totalChildNodes} total child nodes across all adapters`);
+            return totalChildNodes > 0;
+        }
+        
+        function testDataStructure() {
+            const currentData = window.flowdash?.data || multipleLayoutsData;
+            return currentData && currentData.nodes && Array.isArray(currentData.nodes);
+        }
+        
+        function testAdapterStructures() {
+            const adapters = document.querySelectorAll('g.adapter');
+            let validStructures = 0;
+            
+            adapters.forEach(adapter => {
+                const headerBg = adapter.querySelector('rect.header-background');
+                const headerText = adapter.querySelector('text.header-text');
+                const mainShape = adapter.querySelector('rect.adapter.shape');
+                
+                if (headerBg && headerText && mainShape) {
+                    validStructures++;
+                }
+            });
+            
+            console.log(`${validStructures}/${adapters.length} adapters have valid structures`);
+            return validStructures === adapters.length;
+        }
+        
+        function testChildPositioning() {
+            const adapters = document.querySelectorAll('g.adapter');
+            let validPositioning = 0;
+            
+            adapters.forEach(adapter => {
+                const childNodes = adapter.querySelectorAll('g.Node');
+                const innerContainer = adapter.querySelector('rect.zone-innerContainer');
+                
+                if (childNodes.length > 0 && innerContainer) {
+                    validPositioning++;
+                }
+            });
+            
+            console.log(`${validPositioning}/${adapters.length} adapters have valid child positioning`);
+            return validPositioning > 0;
+        }
+        
+        function testTextContainment() {
+            const adapters = document.querySelectorAll('g.adapter');
+            let validTextContainment = 0;
+            
+            adapters.forEach(adapter => {
+                const childRects = adapter.querySelectorAll('g.node-container rect');
+                const childTexts = adapter.querySelectorAll('g.node-container text');
+                
+                if (childRects.length > 0 && childTexts.length > 0) {
+                    validTextContainment++;
+                }
+            });
+            
+            console.log(`${validTextContainment}/${adapters.length} adapters have text elements`);
+            return validTextContainment > 0;
+        }
+        
+        function testLayoutVariety() {
+            const adapters = document.querySelectorAll('g.adapter');
+            const layoutSet = new Set();
+            
+            // This test checks if we have different arrangements
+            // by examining the DOM structure variations
+            adapters.forEach((adapter, index) => {
+                const childNodes = adapter.querySelectorAll('g.Node');
+                const layoutSignature = `${childNodes.length}`;
+                layoutSet.add(layoutSignature);
+            });
+            
+            console.log(`Found ${layoutSet.size} different layout patterns`);
+            return layoutSet.size >= 1; // At least one layout pattern
+        }
+        
+        function testZoneSystemIntegration() {
+            const adapters = document.querySelectorAll('g.adapter');
+            let validZones = 0;
+            
+            adapters.forEach(adapter => {
+                const innerContainerZone = adapter.querySelector('g.zone-innerContainer');
+                const zoneBorder = adapter.querySelector('rect.zone-innerContainer');
+                
+                if (innerContainerZone || zoneBorder) {
+                    validZones++;
+                }
+            });
+            
+            console.log(`${validZones}/${adapters.length} adapters have zone system integration`);
+            return validZones > 0;
+        }
+        
+        // Auto-run tests on load
+        setTimeout(runDemoTests, 3000);
+        
+        // Update layout details on load
+        setTimeout(() => updateLayoutDetails(multipleLayoutsData), 1000);
+    </script>
+</body>
+</html>

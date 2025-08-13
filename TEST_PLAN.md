@@ -79,7 +79,7 @@ The test suite is organized into the following categories:
 
 ### Adapter Node Tests (`adapter-nodes.spec.js`)
 
-**Test Environment**: `/5_nodes/10_adapter/01_single.html`
+**Test Environment**: `/06_adapterNodes/01_single/01_single.html`
 
 #### Simple Adapter Tests
 1. **Basic Rendering**

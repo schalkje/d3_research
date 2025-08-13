@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Adapter Node Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the specific adapter node test page
-    await page.goto('/5_nodes/10_adapter/01_single.html');
+    await page.goto('/06_adapterNodes/01_single/01_single.html');
     
     // Wait for the page to load and basic elements to appear
     await page.waitForSelector('svg', { timeout: 10000 });
@@ -432,7 +432,7 @@ test.describe('Adapter Node Tests', () => {
   test.describe('Multiple Adapter Layout Tests', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to the multiple adapter layouts test page
-      await page.goto('/5_nodes/10_adapter/02_layouts_full_.html');
+      await page.goto('/06_adapterNodes/02_layouts_full/02_layouts_full.html');
       
       // Wait for the page to load and basic elements to appear
       await page.waitForSelector('svg', { timeout: 10000 });

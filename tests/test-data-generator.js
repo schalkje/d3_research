@@ -61,19 +61,19 @@ const testScenarios = [
   // Node scenarios
   {
     name: 'node-adapter-single',
-    source: '../5_nodes/10_adapter/js/graphData.js',
+    source: '../06_adapterNodes/01_single/js/graphData.js',
     export: 'singleAdapter',
     description: 'Single adapter node'
   },
   {
     name: 'node-adapter-layouts',
-    source: '../5_nodes/10_adapter/js/graphData.js',
-    export: 'layoutsFull',
+    source: '../06_adapterNodes/02_layouts_full/js/graphData.js',
+    export: 'multipleLayoutsData',
     description: 'Adapter nodes with full layouts'
   },
   {
     name: 'node-adapter-role',
-    source: '../5_nodes/10_adapter/js/graphData.js',
+    source: '../06_adapterNodes/01_single/js/graphData.js',
     export: 'layoutsRole',
     description: 'Adapter nodes with role layouts'
   },

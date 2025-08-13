@@ -27,7 +27,7 @@ For testing use and improve the tests in /tests folder:
 Run tests from the root of the project
 Please make sure you don't start the html report by default; I don't want to wait on:   Serving HTML report at http://localhost:56794. Press Ctrl+C to quit.
 
-http://localhost:8000/5_nodes/10_adapter/01_single.html
+http://localhost:8000/06_adapterNodes/01_single/01_single.html
 Looking at the single adapter.
 
 Some things I notice, can you command on it is that is right?
@@ -47,7 +47,7 @@ For testing use and improve the tests in /tests folder:
 Run tests from the root of the project
 
 
-I i look to the result in: http://localhost:8000/5_nodes/10_adapter/01_single.html
+I i look to the result in: http://localhost:8000/06_adapterNodes/01_single/01_single.html
 
 I notice the following problems:
 - the inner container; 

@@ -98,8 +98,8 @@ This document outlines the testing strategy for the D3 dashboard project using [
 |-----------|-------------|------------|---------|
 | **Rectangle Node Basic** | Basic rectangular node rendering | `5_nodes/01_rectNode/node.html` | ✅ |
 | **Rectangle Node Layout** | Rectangle node with different layouts | `5_nodes/01_rectNode/rectangleNode.html` | ✅ |
-| **Single Adapter Node** | Basic adapter node rendering | `5_nodes/10_adapter/01_single.html` | ✅ |
-| **Adapter Full Layouts** | All adapter layout variations | `5_nodes/10_adapter/02_layouts_full_.html` | ✅ |
+| **Single Adapter Node** | Basic adapter node rendering | `06_adapterNodes/01_single/01_single.html` | ✅ |
+| **Adapter Full Layouts** | All adapter layout variations | `06_adapterNodes/02_layouts_full/02_layouts_full.html` | ✅ |
 | **Adapter Long Text** | Adapter nodes with long text content | `5_nodes/10_adapter/02_layouts_full_long_text.html` | ✅ |
 | **Adapter Role Layouts** | Adapter nodes with role-based layouts | `5_nodes/10_adapter/03_layouts_role.html` | ✅ |
 | **Adapter in Columns** | Adapter nodes in column layouts | `5_nodes/10_adapter/04_columns.html` | ✅ |

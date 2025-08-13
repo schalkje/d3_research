@@ -6,7 +6,7 @@ async function testPositioning() {
   
   try {
     // Navigate to the test page (using relative path like Playwright tests)
-    await page.goto('/5_nodes/10_adapter/01_single.html');
+    await page.goto('/06_adapterNodes/01_single/01_single.html');
     
     // Wait for basic elements
     await page.waitForSelector('svg', { timeout: 10000 });

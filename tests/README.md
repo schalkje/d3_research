@@ -4,7 +4,7 @@ This directory contains Playwright tests for the D3 dashboard project.
 
 ## Test Files
 
-- `adapter-nodes.spec.js` - Tests for adapter node rendering (uses `/5_nodes/10_adapter/01_single.html`)
+- `adapter-nodes.spec.js` - Tests for adapter node rendering (uses `/06_adapterNodes/01_single/01_single.html`)
 - `foundation-nodes.spec.js` - Tests for foundation node rendering (uses `/5_nodes/11_foundation/01_single.html`)
 - `nodes.spec.js` - Original comprehensive node tests
 - `edges.spec.js` - Edge rendering tests
@@ -54,7 +54,7 @@ Tests use data files from `dashboard/data/`:
 - `test-scenarios/` - Simple test scenarios
 
 Standalone page tests:
-- Adapter node tests use `/5_nodes/10_adapter/01_single.html`
+- Adapter node tests use `/06_adapterNodes/01_single/01_single.html`
 - Foundation node tests use `/5_nodes/11_foundation/01_single.html`
 
 ## Test Structure
