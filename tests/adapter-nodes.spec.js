@@ -1170,6 +1170,70 @@ test.describe('Adapter Node Tests', () => {
         });
       }
       
+      // Test 9: Zone container should be tall enough to contain inner container
+      const zoneContainer = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        const containerShape = adapter.querySelector('rect.container-shape');
+        const innerContainer = adapter.querySelector('rect.zone-innerContainer');
+        
+        if (!containerShape || !innerContainer) {
+          return { error: 'Missing zone elements', found: { containerShape: !!containerShape, innerContainer: !!innerContainer } };
+        }
+        
+        const containerShapeInfo = {
+          x: parseFloat(containerShape.getAttribute('x')) || 0,
+          y: parseFloat(containerShape.getAttribute('y')) || 0,
+          width: parseFloat(containerShape.getAttribute('width')) || 0,
+          height: parseFloat(containerShape.getAttribute('height')) || 0
+        };
+        
+        const innerContainerInfo = {
+          x: parseFloat(innerContainer.getAttribute('x')) || 0,
+          y: parseFloat(innerContainer.getAttribute('y')) || 0,
+          width: parseFloat(innerContainer.getAttribute('width')) || 0,
+          height: parseFloat(innerContainer.getAttribute('height')) || 0
+        };
+        
+        return {
+          containerShape: containerShapeInfo,
+          innerContainer: innerContainerInfo,
+          containerContainsInner: {
+            left: containerShapeInfo.x <= innerContainerInfo.x,
+            right: (containerShapeInfo.x + containerShapeInfo.width) >= (innerContainerInfo.x + innerContainerInfo.width),
+            top: containerShapeInfo.y <= innerContainerInfo.y,
+            bottom: (containerShapeInfo.y + containerShapeInfo.height) >= (innerContainerInfo.y + innerContainerInfo.height)
+          }
+        };
+      });
+      
+      if (zoneContainer && !zoneContainer.error) {
+        console.log('Zone container analysis:', zoneContainer);
+        
+        // Container should be large enough to contain inner container
+        expect(zoneContainer.containerContainsInner.left).toBe(true);
+        expect(zoneContainer.containerContainsInner.right).toBe(true);
+        expect(zoneContainer.containerContainsInner.top).toBe(true);
+        expect(zoneContainer.containerContainsInner.bottom).toBe(true);
+        
+        // Log specific dimension issues if any
+        const containerShape = zoneContainer.containerShape;
+        const innerContainer = zoneContainer.innerContainer;
+        
+        console.log('Container dimensions check:', {
+          containerShape: { width: containerShape.width, height: containerShape.height, x: containerShape.x, y: containerShape.y },
+          innerContainer: { width: innerContainer.width, height: innerContainer.height, x: innerContainer.x, y: innerContainer.y },
+          heightDifference: containerShape.height - innerContainer.height,
+          widthDifference: containerShape.width - innerContainer.width,
+          innerContainerBottom: innerContainer.y + innerContainer.height,
+          containerShapeBottom: containerShape.y + containerShape.height,
+          bottomGap: (containerShape.y + containerShape.height) - (innerContainer.y + innerContainer.height)
+        });
+      } else {
+        console.warn('Zone container test skipped:', zoneContainer?.error || 'Unknown error');
+      }
+      
       console.log('✅ All staging-focused layout positioning tests passed');
     });
 

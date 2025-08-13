@@ -515,12 +515,15 @@ export default class AdapterNode extends BaseContainerNode {
       // Position transform with aligned bottom edge  
       transformNode.move(archiveCenterX, transformCenterY);
       
-      console.log('Positioning complete (arrangement 3):', {
-        staging: { x: stagingNode.x, y: stagingNode.y, bottomEdge: stagingNode.y + stagingHeight / 2 },
-        archive: { x: archiveNode.x, y: archiveNode.y },
-        transform: { x: transformNode.x, y: transformNode.y, bottomEdge: transformNode.y + transformNode.data.height / 2 },
-        margins: { top: margin, bottom: margin }
-      });
+              console.log('Positioning complete (arrangement 3):', {
+          staging: { x: stagingNode.x, y: stagingNode.y, bottomEdge: stagingNode.y + stagingHeight / 2 },
+          archive: { x: archiveNode.x, y: archiveNode.y },
+          transform: { x: transformNode.x, y: transformNode.y, bottomEdge: transformNode.y + transformNode.data.height / 2 },
+          margins: { top: margin, bottom: margin }
+        });
+        
+        // Calculate required container size and resize if needed
+        this.calculateAndResizeForArrangement3(stagingNode, archiveNode, transformNode);
     }
   }
 
@@ -572,6 +575,64 @@ export default class AdapterNode extends BaseContainerNode {
       console.log('Positioning complete:', {
         archive: { x: margin, y: margin }
       });
+    }
+  }
+
+  // Method to calculate and resize container for arrangement 3
+  calculateAndResizeForArrangement3(stagingNode, archiveNode, transformNode) {
+    if (!this._isResizing) {
+      // Calculate the required size based on positioned children
+      const childNodes = [stagingNode, archiveNode, transformNode];
+      
+      // Calculate bounding box of all children
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      
+      childNodes.forEach(node => {
+        const halfWidth = node.data.width / 2;
+        const halfHeight = node.data.height / 2;
+        
+        minX = Math.min(minX, node.x - halfWidth);
+        minY = Math.min(minY, node.y - halfHeight);
+        maxX = Math.max(maxX, node.x + halfWidth);
+        maxY = Math.max(maxY, node.y + halfHeight);
+      });
+      
+      // Add margin to the bounding box
+      const margin = this.containerMargin.top;
+      const contentWidth = maxX - minX;
+      const contentHeight = maxY - minY;
+      
+      // Get header height
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+      
+      // Get margins
+      const marginZone = this.zoneManager?.marginZone;
+      const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
+      
+      const requiredSize = {
+        width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+        height: Math.max(this.data.height, headerHeight + margins.top + contentHeight + margins.bottom)
+      };
+      
+      console.log('Arrangement 3 size calculation:', {
+        childBounds: { minX, minY, maxX, maxY },
+        contentSize: { width: contentWidth, height: contentHeight },
+        headerHeight,
+        margins,
+        requiredSize,
+        currentSize: { width: this.data.width, height: this.data.height }
+      });
+      
+      // Resize if needed
+      if (requiredSize.width !== this.data.width || requiredSize.height !== this.data.height) {
+        this._isResizing = true;
+        try {
+          this.resize(requiredSize);
+        } finally {
+          this._isResizing = false;
+        }
+      }
     }
   }
 
@@ -630,7 +691,17 @@ export default class AdapterNode extends BaseContainerNode {
     
     // Resize container to accommodate all children
     if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
-      this.resize(newSize);
+      // Set flag to prevent infinite recursion
+      this._isResizing = true;
+      try {
+        this.resize(newSize);
+        // Force zones to update after resizing
+        if (this.zoneManager) {
+          this.zoneManager.resize(newSize.width, newSize.height);
+        }
+      } finally {
+        this._isResizing = false;
+      }
     }
   }
 }
