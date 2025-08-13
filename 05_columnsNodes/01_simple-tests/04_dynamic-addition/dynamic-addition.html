@@ -25,7 +25,8 @@
         
         <!-- Demo Controls -->
         <div class="demo-controls">
-            <button id="updateBtn" onclick="updateDemo()">Update</button>
+            <button id="addNodeBtn" onclick="addNode()">Add Node</button>
+
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -40,7 +41,7 @@
     <footer class="demo-info">
         <div class="demo-metadata">
             <p><strong>Node Type:</strong> columns</p>
-            <p><strong>Features:</strong> </p>
+            <p><strong>Features:</strong> Dynamic node addition</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
@@ -58,15 +59,78 @@
         window.flowdash = flowdash;
         window.demoData = demoData;
         
-        // Demo functions
-        window.updateDemo = function() {
-            // Implementation for update functionality
-            console.log('Update demo called');
+        // Node counter for unique IDs
+        let nodeCounter = 2; // Start at 2 since we have rect1 and rect2 already
+        
+        window.addNode = function() {
+            nodeCounter++;
+            const newNodeId = `rect${nodeCounter}`;
+            const newLabel = `Column ${nodeCounter}`;
+            
+            // Create new node data
+            const newNodeData = {
+                id: newNodeId,
+                label: newLabel,
+                type: "rect",
+                code: `C${nodeCounter}`,
+                status: "Ready",
+                layout: {
+                    displayMode: "full",
+                    arrangement: "default"
+                },
+                parentId: "columns1"
+            };
+            
+            // Get the columns node from the current dashboard instance
+            const columnsNode = window.flowdash.main.root;
+            if (columnsNode && columnsNode.isContainer) {
+                // Add new node to the data structure
+                columnsNode.data.children.push(newNodeData);
+                
+                // Create only the new child node instead of reinitializing all children
+                const childContainer = columnsNode.zoneManager?.innerContainerZone?.getChildContainer() || columnsNode.element;
+                const newChildComponent = columnsNode.createNode(newNodeData, childContainer, columnsNode.settings, columnsNode);
+                columnsNode.childNodes.push(newChildComponent);
+                
+                // Add child to zone system
+                if (columnsNode.zoneManager?.innerContainerZone) {
+                    columnsNode.zoneManager.innerContainerZone.addChild(newChildComponent);
+                }
+                
+                // Initialize only the new child
+                newChildComponent.init(childContainer);
+                
+                // Update the layout
+                columnsNode.update();
+                
+                // Trigger display change to update minimap and zoom
+                if (columnsNode.onDisplayChange) {
+                    columnsNode.onDisplayChange();
+                }
+            }
         };
         
+        // Demo functions
+        
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original data structure
+            const originalData = {
+                ...demoData,
+                nodes: [{
+                    ...demoData.nodes[0],
+                    children: [...demoData.nodes[0].children.slice(0, 2)] // Keep only the first two children
+                }]
+            };
+            
+            // Recreate the dashboard with original data
+            flowdash.main.svg.selectAll("*").remove();
+            const newFlowdash = new flowDashboard.Dashboard(originalData);
+            newFlowdash.initialize('#graph');
+            
+            // Update global references
+            window.flowdash = newFlowdash;
+            window.demoData = originalData;
+            nodeCounter = 2;
         };
         
         window.runTests = function() {

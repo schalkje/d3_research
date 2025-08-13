@@ -26,7 +26,7 @@
         <!-- Demo Controls -->
         <div class="demo-controls">
             <button id="addNodeBtn" onclick="addNode()">Add Node</button>
-            <button id="updateBtn" onclick="updateDemo()">Update</button>
+
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -81,25 +81,55 @@
                 parentId: "lane1"
             };
             
-            // Add node to the lane
-            const laneNode = flowdash.getNodes().find(node => node.id === 'lane1');
-            if (laneNode && laneNode.addChild) {
-                laneNode.addChild(newNodeData);
+            // Get the lane node from the current dashboard instance
+            const laneNode = window.flowdash.main.root;
+            if (laneNode && laneNode.isContainer) {
+                // Add new node to the data structure
+                laneNode.data.children.push(newNodeData);
+                
+                // Create only the new child node instead of reinitializing all children
+                const childContainer = laneNode.zoneManager?.innerContainerZone?.getChildContainer() || laneNode.element;
+                const newChildComponent = laneNode.createNode(newNodeData, childContainer, laneNode.settings, laneNode);
+                laneNode.childNodes.push(newChildComponent);
+                
+                // Add child to zone system
+                if (laneNode.zoneManager?.innerContainerZone) {
+                    laneNode.zoneManager.innerContainerZone.addChild(newChildComponent);
+                }
+                
+                // Initialize only the new child
+                newChildComponent.init(childContainer);
+                
+                // Update the layout
+                laneNode.update();
+                
+                // Trigger display change to update minimap and zoom
+                if (laneNode.onDisplayChange) {
+                    laneNode.onDisplayChange();
+                }
             }
-            
-            // Force layout update
-            flowdash.updateLayout();
         };
         
         // Demo functions
-        window.updateDemo = function() {
-            // Implementation for update functionality
-            console.log('Update demo called');
-        };
         
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original data structure
+            const originalData = {
+                ...demoData,
+                nodes: [{
+                    ...demoData.nodes[0],
+                    children: [demoData.nodes[0].children[0]] // Keep only the first child
+                }]
+            };
+            
+            // Recreate the dashboard with original data
+            flowdash.main.svg.selectAll("*").remove();
+            const newFlowdash = new flowDashboard.Dashboard(originalData);
+            newFlowdash.initialize('#graph');
+            
+            // Update global references
+            window.flowdash = newFlowdash;
+            window.demoData = originalData;
             nodeCounter = 1;
         };
         

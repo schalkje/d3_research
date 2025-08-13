@@ -99,6 +99,11 @@ npm run test:columns
 npm test
 ```
 
+### Individual tests
+```PowerShell
+npx playwright test tests/columns-nodes-comprehensive.spec.js -g "should handle mixed children types correctly" --headed
+```
+
 ### Test Runner Options
 
 ```bash

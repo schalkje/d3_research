@@ -53,7 +53,9 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
 
   // Helper function to get all child nodes regardless of state
   function getAllChildNodes(parentLocator) {
-    return parentLocator.locator('g.rect');
+    // Select child nodes within the zone system structure
+    // Children are nested inside the parent's immediate zone-innerContainer only
+    return parentLocator.locator(':scope > g.zone-innerContainer > g[id]');
   }
 
   // Helper function to get columns node locator
@@ -556,17 +558,17 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       
       // Verify left section is columns type
       const leftSection = page.locator('g.columns[id="left-section"]');
-      const leftType = await leftSection.attr('class');
+      const leftType = await leftSection.getAttribute('class');
       expect(leftType).toContain('columns');
       
       // Verify middle is rect type
       const middleRect = page.locator('g.rect[id="middle-rect"]');
-      const middleType = await middleRect.attr('class');
+      const middleType = await middleRect.getAttribute('class');
       expect(middleType).toContain('rect');
       
       // Verify right section is columns type
       const rightSection = page.locator('g.columns[id="right-section"]');
-      const rightType = await rightSection.attr('class');
+      const rightType = await rightSection.getAttribute('class');
       expect(rightType).toContain('columns');
     });
   });
