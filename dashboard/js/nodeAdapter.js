@@ -174,6 +174,9 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   createInternalEdges() {
+
+
+    
     if (this.data.layout.mode === AdapterMode.STAGING_TRANSFORM || 
         this.data.layout.mode === AdapterMode.FULL) {
       createInternalEdge(

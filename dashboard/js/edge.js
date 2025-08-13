@@ -1,4 +1,5 @@
 import BaseEdge from "./edgeBase.js";
+import BaseContainerNode from "./nodeBaseContainer.js";
 
 export function createInternalEdge(edgeData, source, target, settings)
 {

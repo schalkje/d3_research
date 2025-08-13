@@ -7,15 +7,6 @@ export function registerNodeType(type, constructor) {
 
 export function createNode(nodeData, container, settings, parentNode = null) {
   const nodeType = nodeData.type.toLowerCase();
-  console.log("Creating node with type:", nodeType);
-  console.log("Registry createNode received parameters:", {
-    nodeData: nodeData,
-    container: container,
-    settings: settings,
-    parentNode: parentNode,
-    parentNodeType: parentNode?.constructor?.name
-  });
-  console.log("Available node types:", Array.from(nodeTypes.keys()));
   
   const NodeConstructor = nodeTypes.get(nodeType);
   
@@ -25,8 +16,18 @@ export function createNode(nodeData, container, settings, parentNode = null) {
     return null;
   }
   
-  console.log("Found constructor for node type:", nodeType);
-  return new NodeConstructor(nodeData, container, createNode, settings, parentNode);
+  // Check if this is a container node (needs createNode parameter) or simple node
+  // Container nodes: group, lane, columns, adapter, foundation, mart, edge-demo
+  const containerNodeTypes = ['group', 'lane', 'columns', 'adapter', 'foundation', 'mart', 'edge-demo'];
+  const isContainerNode = containerNodeTypes.includes(nodeType);
+  
+  if (isContainerNode) {
+    // Container nodes expect: (nodeData, parentElement, createNode, settings, parentNode)
+    return new NodeConstructor(nodeData, container, createNode, settings, parentNode);
+  } else {
+    // Simple nodes expect: (nodeData, parentElement, settings, parentNode)
+    return new NodeConstructor(nodeData, container, settings, parentNode);
+  }
 }
 
 export function getRegisteredNodeTypes() {
