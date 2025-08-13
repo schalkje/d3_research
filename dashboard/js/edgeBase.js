@@ -1,5 +1,5 @@
 // import { line } from "d3";
-import { generateDirectEdge, generateEdgePath } from "./utilPath.js";
+import { generateDirectEdge, generateEdgePath, generateGhostEdge, getZoneTransforms } from "./utilPath.js";
 
 // const EdgeType = Object.freeze({
 //     FULL: 'full',
@@ -111,36 +111,60 @@ export default class BaseEdge {
   }
 
   get x1() {
+    if (!this.source) return null;
+    
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].nestedCorrection_x;
     }
-    return this.source ? this.source.x + correction : null;
+    
+    // Apply zone transforms to get global coordinates
+    const zoneTransforms = getZoneTransforms(this.source);
+    
+    return this.source.x + correction + zoneTransforms.x;
   }
 
   get y1() {
+    if (!this.source) return null;
+    
     let correction = 0;
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       // console.log("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       correction += this.parents.source[i].nestedCorrection_y;
     }
-    return this.source ? this.source.y + correction : null;
+    
+    // Apply zone transforms to get global coordinates
+    const zoneTransforms = getZoneTransforms(this.source);
+    
+    return this.source.y + correction + zoneTransforms.y;
   }
 
   get x2() {
+    if (!this.target) return null;
+    
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_x;
     }
-    return this.target ? this.target.x + correction : null;
+    
+    // Apply zone transforms to get global coordinates
+    const zoneTransforms = getZoneTransforms(this.target);
+    
+    return this.target.x + correction + zoneTransforms.x;
   }
 
   get y2() {
+    if (!this.target) return null;
+    
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_y;
     }
-    return this.target ? this.target.y + correction : null;
+    
+    // Apply zone transforms to get global coordinates
+    const zoneTransforms = getZoneTransforms(this.target);
+    
+    return this.target.y + correction + zoneTransforms.y;
   }
 
   get sourcePoint() {
@@ -191,7 +215,7 @@ export default class BaseEdge {
     // console.log("--     Updating Render for EDGE BASE:", this.label);
 
     if (this.settings.showGhostlines) {
-      const ghostEdge = generateDirectEdge(this);
+      const ghostEdge = generateGhostEdge(this);
       const ghostLine = this.ghostlineGenerator();
 
       this.ghostElement.select(".path").attr("d", ghostLine(ghostEdge));

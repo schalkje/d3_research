@@ -261,7 +261,18 @@ export default class BaseContainerNode extends BaseNode {
     if (this.collapsed) return;
     // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
     if (this.childEdges.length > 0) {
-      // create container for child nodes
+      // create container for ghost lines first (so they appear behind edges)
+      if (this.settings.showGhostlines)
+      {
+            if (this.ghostContainer)
+              this.ghostContainer.selectAll("*").remove();
+            else
+              this.ghostContainer = this.element
+                .append("g")
+                .attr("class", (d) => `ghostlines`);
+      }
+
+      // create container for edges (after ghost lines, so edges appear on top)
       if (this.edgesContainer == null) 
       {
         this.edgesContainer = this.element.append("g").attr("class", (d) => `edges`);
@@ -270,18 +281,6 @@ export default class BaseContainerNode extends BaseNode {
       {
         // console.log("                   clean cont:", this.id, this.childEdges);
         this.edgesContainer.selectAll("*").remove();
-      }
-
-      // create container for child nodes
-      if (this.settings.showGhostlines)
-      {
-            if (this.ghostContainer)
-              this.ghostContainer.selectAll("*").remove();
-            else
-              this.ghostContainer = this.element
-                .append("g")
-                .attr("class", (d) => `ghostlines`)
-                .lower(); // move it to the background
       }
 
       this.childEdges.forEach((edge) => edge.init());

@@ -32,7 +32,7 @@ export const singleAdapter = {
         showGroupTitles: true,
         
         // Edge settings
-        showGhostlines: false,
+        showGhostlines: true,
         curved: false,
         
         // Node settings

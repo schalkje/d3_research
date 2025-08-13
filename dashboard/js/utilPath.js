@@ -178,3 +178,50 @@ function toPoint(point) {
 export function generateDirectEdge(edge) {
   return [edge.sourcePoint, edge.targetPoint];
 }
+
+export function generateGhostEdge(edge) {
+  // Calculate exact midpoints of source and target nodes
+  const sourceMidpoint = getNodeMidpoint(edge.source);
+  const targetMidpoint = getNodeMidpoint(edge.target);
+  
+  return [sourceMidpoint, targetMidpoint];
+}
+
+function getNodeMidpoint(node) {
+  if (!node) return [0, 0];
+  
+  // Get the node's position (which is already the center)
+  let centerX = node.x;
+  let centerY = node.y;
+  
+  // Apply zone transforms if the node is inside a zone system
+  const transforms = getZoneTransforms(node);
+  centerX += transforms.x;
+  centerY += transforms.y;
+  
+  return [centerX, centerY];
+}
+
+// Helper function to get zone transforms for a node
+export function getZoneTransforms(node) {
+  if (!node || !node.parentNode || !node.parentNode.zoneManager) {
+    return { x: 0, y: 0 };
+  }
+  
+  const innerContainerZone = node.parentNode.zoneManager.innerContainerZone;
+  if (!innerContainerZone || !innerContainerZone.coordinateSystem) {
+    return { x: 0, y: 0 };
+  }
+  
+  // Parse the transform to get the offset
+  const transform = innerContainerZone.coordinateSystem.transform;
+  const transformMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+  
+  if (transformMatch) {
+    const offsetX = parseFloat(transformMatch[1]);
+    const offsetY = parseFloat(transformMatch[2]);
+    return { x: offsetX, y: offsetY };
+  }
+  
+  return { x: 0, y: 0 };
+}

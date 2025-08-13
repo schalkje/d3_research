@@ -1,221 +1,121 @@
-# Single Adapter Node Test Page
+# Single Adapter Node Layouts - Complete Test Suite
 
 ## Overview
 
-This test page provides comprehensive testing for single adapter nodes with all configuration options and layout arrangements. It's specifically designed to support the Playwright test suite and demonstrate all adapter node capabilities.
+This directory contains a comprehensive collection of individual test pages for every possible adapter node layout combination. Each numbered subdirectory focuses on a specific layout configuration, allowing for isolated testing and validation.
 
-## Test Page Details
+## 📁 Directory Structure
 
-- **File**: `01_single.html`
-- **Purpose**: Single adapter node testing and validation
-- **Node Type**: Adapter Node (single instance)
-- **Test Framework**: Playwright compatible
-- **Layout**: Arrangement 3 (staging-focused) by default
-
-## Features Tested
-
-### Core Adapter Functionality
-- ✅ Single adapter node rendering
-- ✅ Header background and text rendering
-- ✅ Main adapter shape rendering
-- ✅ Zone system integration
-- ✅ Container positioning and sizing
-
-### Child Node Management
-- ✅ Automatic child node creation (staging, archive, transform)
-- ✅ Child node positioning within inner container
-- ✅ Text positioning within rectangular child nodes
-- ✅ Proper text content validation
-- ✅ Consistent styling across child nodes
-
-### Layout Arrangements
-- ✅ Arrangement 3 (staging-focused) - default
-- ✅ Support for all 5 arrangements via data variations
-- ✅ Zone-based coordinate system
-- ✅ Inner container border visualization
-
-### Positioning and Alignment
-- ✅ Header positioning relative to main container
-- ✅ Text centering within header
-- ✅ Child nodes positioned within inner container bounds
-- ✅ Staging height spanning archive + transform + spacing
-- ✅ Archive and transform alignment and positioning
-
-## Data Variations
-
-The test page includes multiple data configurations:
-
-### Main Configuration (`singleAdapterData`)
-- **Mode**: Full (staging, archive, transform)
-- **Arrangement**: 3 (staging-focused)
-- **Layout**: Staging spans full height, archive/transform stacked right
-
-### Additional Variations (`allSingleAdapterVariations`)
-- **Arrangement 1**: Archive-focused layout
-- **Arrangement 2**: Transform-focused layout  
-- **Staging-Archive**: Two-node horizontal layout
-- **Staging-Transform**: Two-node horizontal layout
-- **Archive-Only**: Single node centered layout
-
-## Test Structure
-
-### HTML Structure
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <!-- Standard dashboard CSS and JS libraries -->
-  </head>
-  <body>
-    <header class="demo-header">
-      <!-- Test page title and controls -->
-    </header>
-    <div class="demo-container">
-      <svg id="graph" class="canvas"></svg>
-    </div>
-    <footer class="demo-info">
-      <!-- Test metadata and status -->
-    </footer>
-  </body>
-</html>
+```
+01_single/
+├── 01_single.html           # Original single adapter demo (baseline)
+├── 02_full_arr1/            # Full mode, arrangement 1 (archive-focused)
+├── 03_full_arr2/            # Full mode, arrangement 2 (transform-focused)
+├── 04_full_arr3/            # Full mode, arrangement 3 (staging-focused)
+├── 05_staging_archive/      # Staging-archive mode, arrangement 4
+├── 06_staging_transform/    # Staging-transform mode, arrangement 4
+├── 07_archive_only/         # Archive-only mode, arrangement 5
+├── 08_role_arr1/            # Role display, arrangement 1
+├── 09_role_arr2/            # Role display, arrangement 2
+└── 10_role_arr3/            # Role display, arrangement 3
 ```
 
-### JavaScript Integration
-- Dashboard initialization with adapter data
-- Automatic test runner with validation functions
-- Window-accessible objects for Playwright testing
-- Real-time test status reporting
+## 🎯 Layout Combinations
 
-## Playwright Test Compatibility
+### Full Mode Layouts (3 Child Nodes)
+- **02_full_arr1**: Archive-focused - staging bottom-left, archive top-right, transform bottom-right
+- **03_full_arr2**: Transform-focused - staging/archive top row, transform bottom spanning
+- **04_full_arr3**: Staging-focused - staging left spanning, archive/transform stacked right
 
-### Test URLs
-- **Primary**: `/06_adapterNodes/01_single/01_single.html`
-- **Alternative paths** supported for backward compatibility
+### Specialized Modes (Reduced Child Nodes)
+- **05_staging_archive**: Two-node horizontal layout with staging and archive
+- **06_staging_transform**: Two-node horizontal layout with staging and transform
+- **07_archive_only**: Single-node centered layout with archive only
 
-### Test Selectors
+### Role Display Mode
+- **08_role_arr1**: Role display mode with arrangement 1 layout
+- **09_role_arr2**: Role display mode with arrangement 2 layout
+- **10_role_arr3**: Role display mode with arrangement 3 layout
+
+## 🚀 Quick Start
+
+1. **Browse All Layouts**: Open `../index.html` for a complete navigation interface
+2. **Test Individual Layout**: Navigate to any numbered subdirectory and open the HTML file
+3. **Compare Layouts**: Use multiple browser tabs to compare different arrangements side-by-side
+
+## 🧪 Testing Features
+
+Each layout demo includes:
+- ✅ Interactive demo controls (Update, Reset, Run Tests)
+- ✅ Automated test validation
+- ✅ Proper layout configuration validation
+- ✅ Visual rendering verification
+- ✅ Data structure integrity checks
+
+## 📋 Layout Configuration Details
+
+| Demo | Mode | Arrangement | Display | Child Nodes | Description |
+|------|------|-------------|---------|-------------|-------------|
+| 01 | full | 3 | full | staging, archive, transform | Original baseline |
+| 02 | full | 1 | full | staging, archive, transform | Archive-focused |
+| 03 | full | 2 | full | staging, archive, transform | Transform-focused |
+| 04 | full | 3 | full | staging, archive, transform | Staging-focused |
+| 05 | staging-archive | 4 | full | staging, archive | Two-node horizontal |
+| 06 | staging-transform | 4 | full | staging, transform | Two-node horizontal |
+| 07 | archive-only | 5 | full | archive | Single-node centered |
+| 08 | full | 1 | role | staging, archive, transform | Role display - arrangement 1 |
+| 09 | full | 2 | role | staging, archive, transform | Role display - arrangement 2 |
+| 10 | full | 3 | role | staging, archive, transform | Role display - arrangement 3 |
+
+## 🔧 Development Notes
+
+### File Structure Per Demo
+```
+XX_demo_name/
+├── XX_demo_name.html        # Main demo page
+├── css/
+│   └── demo.css            # Demo-specific styles
+├── js/
+│   └── graphData.js        # Layout configuration data
+├── README.md               # Demo-specific documentation
+└── test-data.json         # Test case definitions
+```
+
+### Key Configuration Properties
+- **mode**: `full`, `staging-archive`, `staging-transform`, `archive-only`
+- **arrangement**: `1`, `2`, `3`, `4`, `5` (specific to mode)
+- **displayMode**: `full`, `role` (affects text rendering)
+
+## 🎨 Customization
+
+Each demo can be customized by modifying:
+1. **Layout Settings**: Edit `js/graphData.js` to change layout configuration
+2. **Visual Styles**: Modify `css/demo.css` for demo-specific styling
+3. **Test Cases**: Update `test-data.json` for additional validation
+
+## 🔗 Related Documentation
+
+- [Adapter Node Implementation](../../dashboard/implementation-nodes.md)
+- [Dashboard System](../../dashboard/readme.md)
+- [Main Navigation](../index.html)
+
+## 📝 Usage Examples
+
 ```javascript
-// Main adapter element
-'g.adapter'
-
-// Header elements
-'g.adapter rect.header-background'
-'g.adapter text.header-text'
-
-// Main shape
-'g.adapter rect.adapter.shape'
-
-// Child nodes
-'g.adapter g.Node'
-'g.adapter g.node-container'
-
-// Inner container border
-'g.adapter rect.zone-innerContainer'
+// Example: Switching from arrangement 1 to arrangement 2
+const demoData = {
+    nodes: [{
+        id: "adapter-example",
+        type: "adapter",
+        layout: {
+            mode: "full",
+            arrangement: 2,  // Changed from 1 to 2
+            displayMode: "full"
+        }
+    }]
+};
 ```
 
-### Expected Behavior
-1. **Single adapter renders** with proper structure
-2. **Three child nodes** created (staging, archive, transform)
-3. **Header positioned** correctly relative to container
-4. **Text content** visible and properly positioned
-5. **Child nodes** contained within inner container bounds
-6. **Zone system** properly implemented with coordinate transforms
+---
 
-## Testing Instructions
-
-### Manual Testing
-1. Open `01_single.html` in browser
-2. Verify adapter node renders correctly
-3. Check child node positioning and text
-4. Use "Run Tests" button for automated validation
-5. Inspect console for detailed test results
-
-### Playwright Testing
-```bash
-# Run adapter node tests
-npm test -- tests/adapter-nodes.spec.js
-
-# Run specific test
-npx playwright test --grep "should render single adapter node"
-```
-
-### Visual Verification
-- Adapter container with header and main shape
-- Three child nodes: staging (left), archive (top-right), transform (bottom-right)
-- Staging height should equal archive height + transform height + spacing
-- All text should be contained within respective rectangles
-- Inner container border should be visible (light blue)
-
-## Configuration Options
-
-### Layout Modes
-```javascript
-layout: {
-  mode: "full",                // full, staging-archive, staging-transform, archive-only
-  arrangement: 3,              // 1-5 different layout arrangements
-  displayMode: "full"          // full, role, code
-}
-```
-
-### Node Spacing
-```javascript
-nodeSpacing: {
-  horizontal: 20,              // Space between horizontally adjacent nodes
-  vertical: 10                 // Space between vertically adjacent nodes
-}
-```
-
-### Container Margins
-```javascript
-containerMargin: {
-  top: 4,                      // Space from header bottom
-  right: 8,                    // Space from right edge
-  bottom: 8,                   // Space from bottom edge
-  left: 8                      // Space from left edge
-}
-```
-
-## Known Test Requirements
-
-Based on the Playwright test suite, this page must support:
-
-1. **Basic Rendering Tests**
-   - Adapter node visibility and structure
-   - Header background and text elements
-   - Main adapter shape presence
-
-2. **Child Node Tests**  
-   - Three child nodes present (staging, archive, transform)
-   - Text content validation for each child
-   - Rectangle containment for all text elements
-
-3. **Positioning Tests**
-   - Header positioned above main rectangle
-   - Text vertically centered in header
-   - Child nodes within inner container bounds
-   - Staging alignment with archive/transform positioning
-
-4. **Zone System Tests**
-   - Inner container border at (0,0) relative to zone
-   - Zone transform positioning
-   - Child nodes positioned in zone coordinate system
-
-## Troubleshooting
-
-### Common Issues
-- **No adapter visible**: Check data structure and node type
-- **Missing child nodes**: Verify adapter mode and arrangement
-- **Positioning errors**: Check zone system initialization
-- **Text overflow**: Verify rectangle dimensions and text sizing
-
-### Debug Features
-- Console logging for test results
-- Window-accessible dashboard object
-- Real-time test status display
-- Comprehensive error reporting
-
-## Related Files
-
-- `js/graphData.js` - Test data configurations
-- `css/demo.css` - Page styling and layout
-- `../../tests/adapter-nodes.spec.js` - Playwright test suite
-- `../../dashboard/js/nodeAdapter.js` - Adapter node implementation
+**💡 Tip**: Use the main navigation at `../index.html` for easy access to all demos with detailed descriptions and comparison tables.
