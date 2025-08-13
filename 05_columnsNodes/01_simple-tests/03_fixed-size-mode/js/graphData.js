@@ -69,9 +69,10 @@ export const demoData = {
                     layout: {
                         displayMode: "full",
                         arrangement: "fixed",
-                        width: 120,
-                        height: 60
+                        layoutMode: "fixed-size"
                     },
+                    width: 120,
+                    height: 60,
                     parentId: "columns1"
                 },
                 {
@@ -83,9 +84,10 @@ export const demoData = {
                     layout: {
                         displayMode: "full",
                         arrangement: "fixed",
-                        width: 120,
-                        height: 60
+                        layoutMode: "fixed-size"
                     },
+                    width: 120,
+                    height: 60,
                     parentId: "columns1"
                 },
                 {
@@ -97,9 +99,10 @@ export const demoData = {
                     layout: {
                         displayMode: "full",
                         arrangement: "fixed",
-                        width: 120,
-                        height: 60
+                        layoutMode: "fixed-size"
                     },
+                    width: 120,
+                    height: 60,
                     parentId: "columns1"
                 },
                 {
@@ -111,9 +114,10 @@ export const demoData = {
                     layout: {
                         displayMode: "full",
                         arrangement: "fixed",
-                        width: 120,
-                        height: 60
+                        layoutMode: "fixed-size"
                     },
+                    width: 120,
+                    height: 60,
                     parentId: "columns1"
                 }
             ],

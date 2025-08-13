@@ -26,7 +26,6 @@
         <!-- Demo Controls -->
         <div class="demo-controls">
             <button id="toggleLabelsBtn" onclick="toggleLabels()">Change Labels</button>
-            <button id="updateBtn" onclick="updateDemo()">Update</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -51,6 +50,9 @@
         import { demoData, labelSets } from './js/graphData.js';
         import flowDashboard from '../../../dashboard/js/index.js';
 
+        // Store a deep copy of the original data for reset functionality
+        const originalDemoData = JSON.parse(JSON.stringify(demoData));
+
         // Initialize dashboard
         const flowdash = new flowDashboard.Dashboard(demoData);
         flowdash.initialize('#graph');
@@ -58,35 +60,86 @@
         // Attach to window for testing and debugging
         window.flowdash = flowdash;
         window.demoData = demoData;
+        window.originalDemoData = originalDemoData;
         
         // Label change functionality
         let currentLabelSet = 0;
         
+        // Random label generation functionality
+        const randomLabelSets = [
+            ["A", "B", "C"], // Very short
+            ["Item One", "Item Two", "Item Three"], // Medium
+            ["Very Long Text That Should Be Truncated In Fixed Size", "Another Extremely Long Label For Testing", "Maximum Length Text That Exceeds Fixed Width"], // Very long
+            ["X", "Medium Length Label", "Z"], // Mixed lengths
+            ["Quick", "Q", "Extremely Long Label That Will Definitely Be Truncated"], // Random mix
+            ["Process Step Alpha", "Beta", "Gamma Process Step With Very Long Name"]
+        ];
+        
         window.toggleLabels = function() {
-            currentLabelSet = (currentLabelSet + 1) % labelSets.length;
-            const newLabels = labelSets[currentLabelSet];
+            // Pick a random label set
+            const randomIndex = Math.floor(Math.random() * randomLabelSets.length);
+            const newLabels = randomLabelSets[randomIndex];
             
-            // Update child node labels
-            const childNodes = flowdash.getNodes().filter(node => node.type === 'rect');
-            childNodes.forEach((node, index) => {
-                if (newLabels[index]) {
-                    node.updateLabel(newLabels[index]);
+            // Get the lane node from the current dashboard instance
+            const laneNode = window.flowdash.main.root;
+            if (laneNode && laneNode.isContainer && laneNode.childNodes) {
+                // Update child node labels (only in current instance, not original data)
+                laneNode.childNodes.forEach((childNode, index) => {
+                    if (newLabels[index] && childNode.data) {
+                        // Update only the current instance data structure
+                        childNode.data.label = newLabels[index];
+                        window.demoData.nodes[0].children[index].label = newLabels[index];
+                        
+                        // Use the proper redrawText method for rect nodes
+                        if (childNode.redrawText) {
+                            childNode.redrawText(newLabels[index]);
+                        } else {
+                            // Fallback: trigger update to refresh the visual representation
+                            childNode.update();
+                        }
+                    }
+                });
+                
+                // Force layout update (positioning only since size is fixed)
+                laneNode.updateChildren();
+                
+                // Trigger display change to update minimap and zoom
+                if (laneNode.onDisplayChange) {
+                    laneNode.onDisplayChange();
                 }
-            });
-            
-            // Force layout update
-            flowdash.updateLayout();
+                
+                console.log('Labels changed to:', newLabels);
+            }
         };
         
         // Demo functions
-        window.updateDemo = function() {
-            // Implementation for update functionality
-            console.log('Update demo called');
-        };
-        
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original data structure
+            currentLabelSet = 0;
+            
+            // Properly dispose of the current dashboard
+            if (window.flowdash && window.flowdash.main) {
+                // Clear all event listeners and clean up
+                window.flowdash.main.svg.selectAll("*").remove();
+                
+                // Clear any timers or intervals if they exist
+                if (window.flowdash.simulation) {
+                    window.flowdash.simulation.stop();
+                }
+            }
+            
+            // Create a fresh copy of the original data
+            const resetData = JSON.parse(JSON.stringify(window.originalDemoData));
+            
+            // Recreate the dashboard with original data
+            const newFlowdash = new flowDashboard.Dashboard(resetData);
+            newFlowdash.initialize('#graph');
+            
+            // Update global references
+            window.flowdash = newFlowdash;
+            window.demoData = resetData;
+            
+            console.log('Demo reset to original state');
         };
         
         window.runTests = function() {

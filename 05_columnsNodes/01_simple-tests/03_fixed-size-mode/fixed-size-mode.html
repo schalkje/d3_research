@@ -25,7 +25,7 @@
         
         <!-- Demo Controls -->
         <div class="demo-controls">
-            <button id="updateBtn" onclick="updateDemo()">Update</button>
+            <button id="changeLabelsBtn" onclick="changeLabels()">Change Labels</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -50,6 +50,9 @@
         import { demoData } from './js/graphData.js';
         import flowDashboard from '../../../dashboard/js/index.js';
 
+        // Store a deep copy of the original data for reset functionality
+        const originalDemoData = JSON.parse(JSON.stringify(demoData));
+
         // Initialize dashboard
         const flowdash = new flowDashboard.Dashboard(demoData);
         flowdash.initialize('#graph');
@@ -57,16 +60,87 @@
         // Attach to window for testing and debugging
         window.flowdash = flowdash;
         window.demoData = demoData;
+        window.originalDemoData = originalDemoData;
         
-        // Demo functions
-        window.updateDemo = function() {
-            // Implementation for update functionality
-            console.log('Update demo called');
+        // Label change functionality
+        const shortLabels = ["A", "B", "C", "D"];
+        const mediumLabels = ["Column A", "Column B", "Column C", "Column D"];
+        const longLabels = [
+            "Very Long Column Name A That Exceeds Normal Width",
+            "Extremely Long Column B That Tests Fixed Size Behavior", 
+            "Super Extended Column C With Maximum Text Length",
+            "Ultra Long Column D Name That Pushes Boundaries"
+        ];
+        const veryShortLabels = ["X", "Y", "Z", "W"];
+        
+        const allLabelSets = [mediumLabels, shortLabels, longLabels, veryShortLabels];
+        let currentLabelSet = 0;
+        
+        window.changeLabels = function() {
+            // Pick a random label set
+            const randomIndex = Math.floor(Math.random() * allLabelSets.length);
+            const newLabels = allLabelSets[randomIndex];
+            
+            // Get the columns node from the current dashboard instance
+            const columnsNode = window.flowdash.main.root;
+            if (columnsNode && columnsNode.isContainer && columnsNode.childNodes) {
+                // Update child node labels (only in current instance, not original data)
+                columnsNode.childNodes.forEach((childNode, index) => {
+                    if (newLabels[index] && childNode.data) {
+                        // Update only the current instance data structure
+                        childNode.data.label = newLabels[index];
+                        window.demoData.nodes[0].children[index].label = newLabels[index];
+                        
+                        // Use the proper redrawText method for rect nodes
+                        if (childNode.redrawText) {
+                            childNode.redrawText(newLabels[index]);
+                        } else {
+                            // Fallback: trigger update to refresh the visual representation
+                            childNode.update();
+                        }
+                    }
+                });
+                
+                // Force layout update to adjust positioning (not widths since it's fixed-size)
+                columnsNode.updateChildren();
+                
+                // Trigger display change to update minimap and zoom
+                if (columnsNode.onDisplayChange) {
+                    columnsNode.onDisplayChange();
+                }
+                
+                console.log('Labels changed to:', newLabels);
+            }
         };
         
+        // Demo functions
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original data structure
+            currentLabelSet = 0;
+            
+            // Properly dispose of the current dashboard
+            if (window.flowdash && window.flowdash.main) {
+                // Clear all event listeners and clean up
+                window.flowdash.main.svg.selectAll("*").remove();
+                
+                // Clear any timers or intervals if they exist
+                if (window.flowdash.simulation) {
+                    window.flowdash.simulation.stop();
+                }
+            }
+            
+            // Create a fresh copy of the original data
+            const resetData = JSON.parse(JSON.stringify(window.originalDemoData));
+            
+            // Recreate the dashboard with original data
+            const newFlowdash = new flowDashboard.Dashboard(resetData);
+            newFlowdash.initialize('#graph');
+            
+            // Update global references
+            window.flowdash = newFlowdash;
+            window.demoData = resetData;
+            
+            console.log('Demo reset to original state');
         };
         
         window.runTests = function() {

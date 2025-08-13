@@ -26,7 +26,6 @@
         <!-- Demo Controls -->
         <div class="demo-controls">
             <button id="toggleLabelsBtn" onclick="toggleLabels()">Change Labels</button>
-            <button id="updateBtn" onclick="updateDemo()">Update</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -66,27 +65,51 @@
             currentLabelSet = (currentLabelSet + 1) % labelSets.length;
             const newLabels = labelSets[currentLabelSet];
             
-            // Update child node labels
-            const childNodes = flowdash.getNodes().filter(node => node.type === 'rect');
-            childNodes.forEach((node, index) => {
-                if (newLabels[index]) {
-                    node.updateLabel(newLabels[index]);
+            // Get the lane node from the current dashboard instance
+            const laneNode = window.flowdash.main.root;
+            if (laneNode && laneNode.isContainer && laneNode.childNodes) {
+                // Update child node labels
+                laneNode.childNodes.forEach((childNode, index) => {
+                    if (newLabels[index] && childNode.data) {
+                        // Update the data structure
+                        childNode.data.label = newLabels[index];
+                        laneNode.data.children[index].label = newLabels[index];
+                        
+                        // Use the proper redrawText method for rect nodes
+                        if (childNode.redrawText) {
+                            childNode.redrawText(newLabels[index]);
+                        } else {
+                            // Fallback: trigger update to refresh the visual representation
+                            childNode.update();
+                        }
+                    }
+                });
+                
+                // Force layout update to adjust widths and positioning
+                laneNode.updateChildren();
+                
+                // Trigger display change to update minimap and zoom
+                if (laneNode.onDisplayChange) {
+                    laneNode.onDisplayChange();
                 }
-            });
-            
-            // Force layout update
-            flowdash.updateLayout();
+            }
         };
         
         // Demo functions
-        window.updateDemo = function() {
-            // Implementation for update functionality
-            console.log('Update demo called');
-        };
-        
         window.resetDemo = function() {
-            // Implementation for reset functionality
-            flowdash.reset();
+            // Reset to original data structure and label set
+            currentLabelSet = 0;
+            
+            // Create a deep copy of the original data to avoid modifying the original
+            const originalData = JSON.parse(JSON.stringify(demoData));
+            
+            // Recreate the dashboard with original data
+            flowdash.main.svg.selectAll("*").remove();
+            const newFlowdash = new flowDashboard.Dashboard(originalData);
+            newFlowdash.initialize('#graph');
+            
+            // Update global references
+            window.flowdash = newFlowdash;
         };
         
         window.runTests = function() {

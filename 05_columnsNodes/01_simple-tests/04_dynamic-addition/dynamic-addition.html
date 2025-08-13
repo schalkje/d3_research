@@ -21,12 +21,12 @@
     <header class="demo-header">
         <h1>columns Demos</h1>
         <h2>dynamic-addition</h2>
-        <p class="demo-description">Horizontal columns layout with child alignment</p>
+        <p class="demo-description">Horizontal columns layout with dynamic add/remove functionality</p>
         
         <!-- Demo Controls -->
         <div class="demo-controls">
             <button id="addNodeBtn" onclick="addNode()">Add Node</button>
-
+            <button id="removeBtn" onclick="removeNode()">Remove Node</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
         </div>
@@ -41,7 +41,7 @@
     <footer class="demo-info">
         <div class="demo-metadata">
             <p><strong>Node Type:</strong> columns</p>
-            <p><strong>Features:</strong> Dynamic node addition</p>
+            <p><strong>Features:</strong> Dynamic node addition and removal</p>
             <p><strong>Test Status:</strong> <span id="testStatus">Not Tested</span></p>
         </div>
     </footer>
@@ -106,6 +106,42 @@
                 // Trigger display change to update minimap and zoom
                 if (columnsNode.onDisplayChange) {
                     columnsNode.onDisplayChange();
+                }
+            }
+        };
+        
+        window.removeNode = function() {
+            // Get the columns node from the current dashboard instance
+            const columnsNode = window.flowdash.main.root;
+            if (columnsNode && columnsNode.isContainer && columnsNode.data.children.length > 0) {
+                // Remove the last child from the data structure
+                const removedChild = columnsNode.data.children.pop();
+                
+                // Find and remove the corresponding child component
+                const childIndex = columnsNode.childNodes.findIndex(child => child.id === removedChild.id);
+                if (childIndex >= 0) {
+                    const childComponent = columnsNode.childNodes[childIndex];
+                    
+                    // Remove from zone system
+                    if (columnsNode.zoneManager?.innerContainerZone) {
+                        columnsNode.zoneManager.innerContainerZone.removeChild(childComponent);
+                    }
+                    
+                    // Remove the DOM element
+                    if (childComponent.element) {
+                        childComponent.element.remove();
+                    }
+                    
+                    // Remove from childNodes array
+                    columnsNode.childNodes.splice(childIndex, 1);
+                    
+                    // Update the layout
+                    columnsNode.update();
+                    
+                    // Trigger display change to update minimap and zoom
+                    if (columnsNode.onDisplayChange) {
+                        columnsNode.onDisplayChange();
+                    }
                 }
             }
         };

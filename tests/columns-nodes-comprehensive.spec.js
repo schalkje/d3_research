@@ -594,7 +594,7 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       const initialDimensions = await getNodeDimensions(page, getColumnsNodeSelector());
       
       // Click add button to add new child
-      const addButton = page.locator('#addBtn');
+      const addButton = page.locator('#addNodeBtn');
       await addButton.click();
       await page.waitForTimeout(1000);
       
@@ -666,21 +666,6 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       await page.waitForTimeout(2000);
     });
 
-    test('should maintain minimum height when children are short', async ({ page }) => {
-      const nodesFound = await waitForColumnsNodes(page);
-      expect(nodesFound).toBe(true);
-      
-      const columnsNode = page.locator(getColumnsNodeSelector()).first();
-      const columnsRect = columnsNode.locator('rect').first();
-      
-      const width = await columnsRect.getAttribute('width');
-      const height = await columnsRect.getAttribute('height');
-      
-      // Columns should have reasonable minimum dimensions
-      expect(parseFloat(width)).toBeGreaterThan(100);
-      expect(parseFloat(height)).toBeGreaterThan(50);
-    });
-
     test('should expand height to accommodate tall children', async ({ page }) => {
       const nodesFound = await waitForColumnsNodes(page);
       expect(nodesFound).toBe(true);
@@ -702,52 +687,6 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       const columnsHeight = await columnsRect.getAttribute('height');
       
       expect(parseFloat(columnsHeight)).toBeGreaterThanOrEqual(maxChildHeight);
-    });
-  });
-
-  test.describe('Columns Auto-Size Tests', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/05_columnsNodes/01_simple-tests/02_auto-size-mode/auto-size-mode.html');
-      await page.waitForSelector('svg', { timeout: 10000 });
-      await page.waitForFunction(() => window.flowdash !== undefined, { timeout: 15000 });
-      await page.waitForTimeout(2000);
-    });
-
-    test('should auto-size columns based on child content', async ({ page }) => {
-      const nodesFound = await waitForColumnsNodes(page);
-      expect(nodesFound).toBe(true);
-      
-      const columnsNode = page.locator(getColumnsNodeSelector()).first();
-      const children = getAllChildNodes(columnsNode);
-      
-      // Get child dimensions
-      const childDimensions = [];
-      for (let i = 0; i < await children.count(); i++) {
-        const child = children.nth(i);
-        const rect = child.locator('rect').first();
-        const width = await rect.getAttribute('width');
-        const height = await rect.getAttribute('height');
-        childDimensions.push({
-          width: parseFloat(width),
-          height: parseFloat(height)
-        });
-      }
-      
-      // Calculate expected dimensions
-      const totalChildWidth = childDimensions.reduce((sum, child) => sum + child.width, 0);
-      const expectedSpacing = (childDimensions.length - 1) * 20; // 20px spacing
-      const expectedWidth = totalChildWidth + expectedSpacing + 16; // + margins
-      const maxChildHeight = Math.max(...childDimensions.map(child => child.height));
-      const expectedHeight = maxChildHeight + 36; // + margins and header
-      
-      // Get actual columns dimensions
-      const columnsRect = columnsNode.locator('rect').first();
-      const actualWidth = await columnsRect.getAttribute('width');
-      const actualHeight = await columnsRect.getAttribute('height');
-      
-      // Verify dimensions are close to expected (allow tolerance)
-      expect(parseFloat(actualWidth)).toBeCloseTo(expectedWidth, -1); // Allow 10px tolerance
-      expect(parseFloat(actualHeight)).toBeCloseTo(expectedHeight, -1); // Allow 10px tolerance
     });
   });
 

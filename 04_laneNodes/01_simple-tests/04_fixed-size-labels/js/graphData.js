@@ -61,12 +61,12 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "fixed-size"
                     },
                     // Fixed size properties
                     width: 120,
                     height: 60,
-                    fixedSize: true,
                     parentId: "lane1"
                 },
                 {
@@ -77,12 +77,12 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "fixed-size"
                     },
                     // Fixed size properties
                     width: 120,
                     height: 60,
-                    fixedSize: true,
                     parentId: "lane1"
                 },
                 {
@@ -93,12 +93,12 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: "default",
+                        layoutMode: "fixed-size"
                     },
                     // Fixed size properties
                     width: 120,
                     height: 60,
-                    fixedSize: true,
                     parentId: "lane1"
                 }
             ],
