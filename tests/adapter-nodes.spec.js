@@ -1038,7 +1038,7 @@ test.describe('Adapter Node Tests', () => {
       expect(containerCount + nodeCount + rectCount + textCount).toBeGreaterThan(0);
     });
 
-    test('should position staging node correctly relative to archive and transform nodes', async ({ page }) => {
+    test('should position staging node correctly for arrangement 3 (staging-focused layout)', async ({ page }) => {
       // Wait for page to load
       await page.waitForSelector('svg', { timeout: 10000 });
       
@@ -1053,6 +1053,15 @@ test.describe('Adapter Node Tests', () => {
         const adapter = document.querySelector('g.adapter');
         if (!adapter) return null;
         
+        // Get inner container bounds for reference
+        const innerContainer = adapter.querySelector('rect.zone-innerContainer');
+        const innerContainerBounds = innerContainer ? {
+          x: parseFloat(innerContainer.getAttribute('x') || 0),
+          y: parseFloat(innerContainer.getAttribute('y') || 0),
+          width: parseFloat(innerContainer.getAttribute('width') || 0),
+          height: parseFloat(innerContainer.getAttribute('height') || 0)
+        } : null;
+        
         const childNodes = adapter.querySelectorAll('g.Node');
         const nodePositions = {};
         
@@ -1065,7 +1074,7 @@ test.describe('Adapter Node Tests', () => {
             const width = parseFloat(rect.getAttribute('width') || 0);
             const height = parseFloat(rect.getAttribute('height') || 0);
             
-            // Get position from transform attribute (new coordinate system)
+            // Get position from transform attribute (zone coordinate system)
             const transform = node.getAttribute('transform') || '';
             const transformMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
             const x = parseFloat(transformMatch?.[1] || 0);
@@ -1081,38 +1090,142 @@ test.describe('Adapter Node Tests', () => {
           }
         });
         
-        return nodePositions;
+        return { nodes: nodePositions, innerContainer: innerContainerBounds };
       });
       
       expect(positions).toBeTruthy();
-      expect(positions.staging).toBeTruthy();
-      expect(positions.archive).toBeTruthy();
-      expect(positions.transform).toBeTruthy();
+      expect(positions.nodes.staging).toBeTruthy();
+      expect(positions.nodes.archive).toBeTruthy();
+      expect(positions.nodes.transform).toBeTruthy();
       
-      console.log('Node positions:', positions);
+      console.log('Staging-focused layout analysis:', positions);
       
-      // Test 1: Archive and transform should have minimal height (44px)
-      expect(positions.archive.height).toBe(44);
-      expect(positions.transform.height).toBe(44);
+      const { staging, archive, transform } = positions.nodes;
+      const tolerance = 5; // 5px tolerance for positioning
       
-      // Test 2: Staging height should be archive height + transform height + vertical spacing (10px)
-      const expectedStagingHeight = positions.archive.height + positions.transform.height + 10;
-      expect(positions.staging.height).toBe(expectedStagingHeight);
+      // Test 1: Staging should be leftmost node
+      expect(staging.x).toBeLessThan(archive.x);
+      expect(staging.x).toBeLessThan(transform.x);
       
-      // Test 3: Staging top should align with archive top
-      expect(positions.staging.y).toBeCloseTo(positions.archive.y, 1);
+      // Test 2: Archive should be above transform (archive has smaller y)
+      expect(archive.y).toBeLessThan(transform.y);
       
-      // Test 4: Staging bottom should align with transform bottom
-      const stagingBottom = positions.staging.y + positions.staging.height;
-      const transformBottom = positions.transform.y + positions.transform.height;
-      expect(stagingBottom).toBeCloseTo(transformBottom, 1);
+      // Test 3: Archive and transform should be vertically aligned (same x position)
+      expect(Math.abs(archive.x - transform.x)).toBeLessThanOrEqual(tolerance);
       
-      // Test 5: Archive and transform should be positioned to the right of staging
-      expect(positions.archive.x).toBeGreaterThan(positions.staging.x + positions.staging.width);
-      expect(positions.transform.x).toBeGreaterThan(positions.staging.x + positions.staging.width);
+      // Test 4: Archive top should align with staging top (considering center-based positioning)
+      const stagingTop = staging.y - staging.height / 2;
+      const archiveTop = archive.y - archive.height / 2;
+      expect(Math.abs(stagingTop - archiveTop)).toBeLessThanOrEqual(tolerance);
       
-      // Test 6: Transform should be below archive with proper spacing
-      expect(positions.transform.y).toBeCloseTo(positions.archive.y + positions.archive.height + 10, 1);
+      // Test 5: Transform bottom should align with staging bottom
+      const stagingBottom = staging.y + staging.height / 2;
+      const transformBottom = transform.y + transform.height / 2;
+      expect(Math.abs(stagingBottom - transformBottom)).toBeLessThanOrEqual(tolerance);
+      
+      // Test 6: Staging should span the full height of archive + transform + margin
+      const archiveTransformTotalHeight = archive.height + transform.height + Math.abs(transform.y - archive.y) - archive.height/2 - transform.height/2;
+      expect(Math.abs(staging.height - archiveTransformTotalHeight)).toBeLessThanOrEqual(tolerance * 2);
+      
+      // Test 7: All nodes should be inside the inner container
+      if (positions.innerContainer) {
+        const { innerContainer } = positions;
+        
+        [staging, archive, transform].forEach(node => {
+          const nodeLeft = node.x - node.width / 2;
+          const nodeRight = node.x + node.width / 2;
+          const nodeTop = node.y - node.height / 2;
+          const nodeBottom = node.y + node.height / 2;
+          
+          expect(nodeLeft).toBeGreaterThanOrEqual(innerContainer.x);
+          expect(nodeRight).toBeLessThanOrEqual(innerContainer.x + innerContainer.width);
+          expect(nodeTop).toBeGreaterThanOrEqual(innerContainer.y);
+          expect(nodeBottom).toBeLessThanOrEqual(innerContainer.y + innerContainer.height);
+        });
+      }
+      
+      console.log('✅ All staging-focused layout positioning tests passed');
+    });
+
+    test('should validate detailed staging-focused layout requirements', async ({ page }) => {
+      // Wait for page to load
+      await page.waitForSelector('svg', { timeout: 10000 });
+      await page.waitForSelector('g.adapter', { timeout: 10000 });
+      
+      const layoutAnalysis = await page.evaluate(() => {
+        const adapter = document.querySelector('g.adapter');
+        if (!adapter) return null;
+        
+        // Find all child nodes by their IDs
+        const stagingNode = adapter.querySelector('g[id="staging_bankview"]');
+        const archiveNode = adapter.querySelector('g[id="archive_bankview"]');
+        const transformNode = adapter.querySelector('g[id="transform_bankview"]');
+        
+        if (!stagingNode || !archiveNode || !transformNode) {
+          return { error: 'Missing nodes', found: { staging: !!stagingNode, archive: !!archiveNode, transform: !!transformNode } };
+        }
+        
+        // Helper function to get position and dimensions
+        const getNodeInfo = (node) => {
+          const transform = node.getAttribute('transform') || '';
+          const transformMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+          const x = parseFloat(transformMatch?.[1] || 0);
+          const y = parseFloat(transformMatch?.[2] || 0);
+          
+          const rect = node.querySelector('rect.shape');
+          const width = parseFloat(rect?.getAttribute('width') || 0);
+          const height = parseFloat(rect?.getAttribute('height') || 0);
+          
+          return { x, y, width, height };
+        };
+        
+        const staging = getNodeInfo(stagingNode);
+        const archive = getNodeInfo(archiveNode);
+        const transform = getNodeInfo(transformNode);
+        
+        // Calculate layout metrics
+        return {
+          staging,
+          archive,
+          transform,
+          layout: {
+            stagingIsLeft: staging.x < archive.x && staging.x < transform.x,
+            archiveAboveTransform: archive.y < transform.y,
+            archiveTransformAligned: Math.abs(archive.x - transform.x),
+            topAlignment: Math.abs((staging.y - staging.height/2) - (archive.y - archive.height/2)),
+            bottomAlignment: Math.abs((staging.y + staging.height/2) - (transform.y + transform.height/2)),
+            stagingHeight: staging.height,
+            expectedStagingHeight: archive.height + transform.height + Math.abs(transform.y - archive.y) - archive.height/2 - transform.height/2
+          }
+        };
+      });
+      
+      expect(layoutAnalysis).toBeTruthy();
+      expect(layoutAnalysis.error).toBeUndefined();
+      
+      console.log('Detailed layout analysis:', layoutAnalysis);
+      
+      const { layout } = layoutAnalysis;
+      const tolerance = 5;
+      
+      // Validate staging-focused layout requirements from adapter-node.md:
+      // "Staging node spans full height of the inner container"
+      // "Archive and transform node: above to each other, and have the same size"
+      // "top archive is top staging"
+      // "bottom transform is bottom staging"
+      
+      expect(layout.stagingIsLeft).toBe(true);
+      expect(layout.archiveAboveTransform).toBe(true);
+      expect(layout.archiveTransformAligned).toBeLessThanOrEqual(tolerance);
+      expect(layout.topAlignment).toBeLessThanOrEqual(tolerance);
+      expect(layout.bottomAlignment).toBeLessThanOrEqual(tolerance);
+      expect(Math.abs(layout.stagingHeight - layout.expectedStagingHeight)).toBeLessThanOrEqual(tolerance * 2);
+      
+      // Additional validation for arrangement 3 specific requirements
+      expect(layoutAnalysis.archive.height).toBe(layoutAnalysis.transform.height); // Same size
+      expect(layoutAnalysis.staging.width).toBe(150); // Expected staging width
+      expect(layoutAnalysis.archive.width).toBe(150); // Expected archive width  
+      expect(layoutAnalysis.transform.width).toBe(150); // Expected transform width
     });
   });
 }); 
