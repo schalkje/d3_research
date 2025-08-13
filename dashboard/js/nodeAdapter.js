@@ -42,7 +42,7 @@ export default class AdapterNode extends BaseContainerNode {
       this.stagingNode = null;
       this.transformNode = null;
       this.archiveNode = null;
-      this.nodeSpacing = { horizontal: 20, vertical: 10 };
+      this.nodeSpacing = { horizontal: 20, vertical:10 };
       
       console.log("AdapterNode constructor completed for:", this.id, "mode:", this.data.layout.mode, "arrangement:", this.data.layout.arrangement);
     } catch (error) {
@@ -347,11 +347,6 @@ export default class AdapterNode extends BaseContainerNode {
     
     // Update child positions using zone system
     innerContainerZone.updateChildPositions();
-    
-    // Resize container to fit children after positioning (with delay to ensure layout is complete)
-    setTimeout(() => {
-      this.resizeToFitChildren();
-    }, 0);
   }
 
   // New layout algorithms that work with the zone system
@@ -368,8 +363,8 @@ export default class AdapterNode extends BaseContainerNode {
     });
     
     if (stagingNode && archiveNode) {
-      // Add margin from the inner container border
-      const margin = 8; // 8px margin from border
+      // Use configurable margin from container margin settings
+      const margin = this.containerMargin.top;
       
       // Calculate available width for positioning (zone coordinate system)
       const availableWidth = coordinateSystem?.size?.width || 318; // Default to expected container width
@@ -455,8 +450,8 @@ export default class AdapterNode extends BaseContainerNode {
       const stagingHeight = archiveNode.data.height + transformNode.data.height + this.nodeSpacing.vertical;
       stagingNode.resize({ width: stagingNode.data.width, height: stagingHeight });
       
-      // Use 8px margin from the inner container border
-      const margin = 8;
+      // Use configurable margin from container margin settings
+      const margin = this.containerMargin.top;
       
       // Note: Container resizing is handled by resizeToFitChildren() after positioning
       
@@ -466,27 +461,37 @@ export default class AdapterNode extends BaseContainerNode {
       // Calculate center positions for proper alignment
       // All nodes use center-based positioning, so we need to account for this
       
-      // Staging: position at left edge of inner container with margin
-      // Target position: translate(-93, 49) as specified by user
-      const stagingCenterX = -93;
-      const stagingCenterY = 49;
+      // Staging: position so left edge aligns exactly with container left edge
+      // Calculate position based on container coordinate system (no additional margin)
+      const stagingCenterX = -availableWidth / 2 + stagingNode.data.width / 2;
+      
+      // Position staging node so it fits exactly within the available coordinate system space
+      // The coordinate system already accounts for margins, coordinate origin is at (0,0)
+      const availableHeight = coordinateSystem?.size?.height || 108;
+      
+      // When staging height equals available height, position so top edge is at y=0
+      let stagingCenterY;
+      if (stagingHeight >= availableHeight) {
+        stagingCenterY = stagingHeight / 2; // Top edge at y=0, center at height/2
+      } else {
+        stagingCenterY = availableHeight / 2; // Center in available space
+      }
+      
       stagingNode.move(stagingCenterX, stagingCenterY);
       
       // Calculate positioning for archive and transform on the right side
       // Available width coordinate system: from -availableWidth/2 to +availableWidth/2
-      const stagingRightEdge = stagingCenterX + stagingNode.data.width / 2;
-      const maxArchiveCenterX = availableWidth / 2 - margin - archiveNode.data.width / 2;
-      const minArchiveCenterX = stagingRightEdge + this.nodeSpacing.horizontal + archiveNode.data.width / 2;
-      const archiveCenterX = Math.min(maxArchiveCenterX, minArchiveCenterX);
+      // Archive and transform: position so right edge aligns exactly with container right edge
+      const archiveCenterX = availableWidth / 2 - archiveNode.data.width / 2;
       
       console.log('Layout calculation:', {
         availableWidth,
-        margin,
         stagingCenterX,
-        stagingRightEdge,
         archiveCenterX,
-        maxArchiveCenterX,
-        minArchiveCenterX
+        stagingLeftEdge: stagingCenterX - stagingNode.data.width / 2,
+        containerLeftEdge: -availableWidth / 2,
+        archiveRightEdge: archiveCenterX + archiveNode.data.width / 2,
+        containerRightEdge: availableWidth / 2
       });
       
       // Archive: position so its TOP edge aligns with staging TOP edge
@@ -514,53 +519,8 @@ export default class AdapterNode extends BaseContainerNode {
         staging: { x: stagingNode.x, y: stagingNode.y, bottomEdge: stagingNode.y + stagingHeight / 2 },
         archive: { x: archiveNode.x, y: archiveNode.y },
         transform: { x: transformNode.x, y: transformNode.y, bottomEdge: transformNode.y + transformNode.data.height / 2 },
-        margins: { top: margin, bottom: margin },
-        containerWillResize: true
+        margins: { top: margin, bottom: margin }
       });
-      
-      // Calculate exact size needed for this layout and resize immediately
-      const maxBottomEdge = Math.max(
-        stagingNode.y + stagingHeight / 2,
-        transformNode.y + transformNode.data.height / 2
-      );
-      const requiredContentHeight = maxBottomEdge + margin; // Add bottom margin
-      
-      // Get header and margin info
-      const headerZone = this.zoneManager?.headerZone;
-      const marginZone = this.zoneManager?.marginZone;
-      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
-      const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
-      
-      const requiredNodeHeight = headerHeight + margins.top + requiredContentHeight + margins.bottom;
-      
-      console.log('Manual sizing calculation:', {
-        maxBottomEdge,
-        requiredContentHeight,
-        headerHeight,
-        margins,
-        requiredNodeHeight,
-        currentNodeHeight: this.data.height
-      });
-      
-      // Force resize if needed
-      if (requiredNodeHeight > this.data.height) {
-        console.log('Force resizing adapter node from', this.data.height, 'to', requiredNodeHeight);
-        this.resize({
-          width: Math.max(this.data.width, 334), // Ensure minimum width
-          height: requiredNodeHeight
-        });
-        
-        // Check if zone system updated properly
-        setTimeout(() => {
-          const updatedCoordinateSystem = this.zoneManager.getChildCoordinateSystem();
-          console.log('After forced resize - coordinate system:', {
-            coordinateSystemHeight: updatedCoordinateSystem?.size?.height,
-            nodeHeight: this.data.height,
-            innerContainerZoneSize: this.zoneManager.innerContainerZone.size,
-            requiredHeight: requiredContentHeight
-          });
-        }, 10);
-      }
     }
   }
 
@@ -581,7 +541,7 @@ export default class AdapterNode extends BaseContainerNode {
     });
     
     if (stagingNode && otherNode) {
-      const margin = 8; // 8px margin from border
+      const margin = this.containerMargin.top;
       
       // Position staging node with margin from left and top (zone coordinates start at 0,0)
       stagingNode.move(margin, margin);
@@ -604,7 +564,7 @@ export default class AdapterNode extends BaseContainerNode {
     });
     
     if (archiveNode) {
-      const margin = 8; // 8px margin from border
+      const margin = this.containerMargin.top;
       
       // Position archive node with margin from left and top (zone coordinates start at 0,0)
       archiveNode.move(margin, margin);
@@ -636,7 +596,7 @@ export default class AdapterNode extends BaseContainerNode {
     });
     
     // Add margin to the bounding box
-    const margin = 8;
+    const margin = this.containerMargin.top;
     minX -= margin;
     minY -= margin; 
     maxX += margin;

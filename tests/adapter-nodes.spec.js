@@ -1144,6 +1144,32 @@ test.describe('Adapter Node Tests', () => {
         });
       }
       
+      // Test 8: Specific edge alignment tests
+      if (positions.innerContainer) {
+        const { innerContainer } = positions;
+        const tolerance = 1; // 1px tolerance for alignment
+        
+        // Left staging should align with left inner container
+        const stagingLeft = staging.x - staging.width / 2;
+        const containerLeft = innerContainer.x;
+        expect(Math.abs(stagingLeft - containerLeft)).toBeLessThanOrEqual(tolerance);
+        
+        // Right archive should align with right inner container  
+        const archiveRight = archive.x + archive.width / 2;
+        const containerRight = innerContainer.x + innerContainer.width;
+        expect(Math.abs(archiveRight - containerRight)).toBeLessThanOrEqual(tolerance);
+        
+        // Right transform should align with right inner container
+        const transformRight = transform.x + transform.width / 2;
+        expect(Math.abs(transformRight - containerRight)).toBeLessThanOrEqual(tolerance);
+        
+        console.log('Edge alignment test results:', {
+          stagingLeft: { actual: stagingLeft, expected: containerLeft, diff: stagingLeft - containerLeft },
+          archiveRight: { actual: archiveRight, expected: containerRight, diff: archiveRight - containerRight },
+          transformRight: { actual: transformRight, expected: containerRight, diff: transformRight - containerRight }
+        });
+      }
+      
       console.log('✅ All staging-focused layout positioning tests passed');
     });
 
