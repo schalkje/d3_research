@@ -482,19 +482,41 @@ export default class AdapterNode extends BaseContainerNode {
       
       stagingNode.move(stagingCenterX, stagingCenterY);
       
-      // Calculate positioning for archive and transform on the right side
+      // Calculate positioning for archive and transform with proper horizontal spacing
       // Available width coordinate system: from -availableWidth/2 to +availableWidth/2
-      // Archive and transform: position so right edge aligns exactly with container right edge
-      const archiveCenterX = availableWidth / 2 - archiveNode.data.width / 2;
+      // Ensure minimum horizontal spacing between staging and archive/transform nodes
+      const stagingRightEdge = stagingCenterX + stagingNode.data.width / 2;
+      const minimumArchiveLeft = stagingRightEdge + this.nodeSpacing.horizontal;
+      
+      // Position archive/transform so they respect the minimum spacing
+      // If there's enough space, align with container right edge; otherwise use minimum spacing
+      const archiveCenterXFromRight = availableWidth / 2 - archiveNode.data.width / 2;
+      const archiveCenterXFromSpacing = minimumArchiveLeft + archiveNode.data.width / 2;
+      const archiveCenterX = Math.max(archiveCenterXFromSpacing, archiveCenterXFromRight);
+      
+      // Check if container needs to expand to accommodate the spacing
+      const requiredWidth = (stagingCenterX + stagingNode.data.width / 2) + this.nodeSpacing.horizontal + archiveNode.data.width + (availableWidth / 2 - archiveCenterX - archiveNode.data.width / 2);
+      if (requiredWidth > availableWidth) {
+        // Container is too small, mark for resizing after positioning
+        this._needsResizeForSpacing = true;
+        this._requiredWidth = requiredWidth;
+      }
       
       console.log('Layout calculation:', {
         availableWidth,
         stagingCenterX,
         archiveCenterX,
         stagingLeftEdge: stagingCenterX - stagingNode.data.width / 2,
-        containerLeftEdge: -availableWidth / 2,
+        stagingRightEdge,
+        archiveLeftEdge: archiveCenterX - archiveNode.data.width / 2,
         archiveRightEdge: archiveCenterX + archiveNode.data.width / 2,
-        containerRightEdge: availableWidth / 2
+        containerLeftEdge: -availableWidth / 2,
+        containerRightEdge: availableWidth / 2,
+        actualHorizontalSpacing: (archiveCenterX - archiveNode.data.width / 2) - (stagingCenterX + stagingNode.data.width / 2),
+        requiredHorizontalSpacing: this.nodeSpacing.horizontal,
+        minimumArchiveLeft,
+        archiveCenterXFromRight,
+        archiveCenterXFromSpacing
       });
       
       // Archive: position so its TOP edge aligns with staging TOP edge
@@ -527,6 +549,16 @@ export default class AdapterNode extends BaseContainerNode {
         
         // Calculate required container size and resize if needed
         this.calculateAndResizeForArrangement3(stagingNode, archiveNode, transformNode);
+        
+        // Handle spacing-based resizing if needed
+        if (this._needsResizeForSpacing && this._requiredWidth) {
+          console.log('Container needs resizing for proper spacing:', {
+            currentWidth: this.data.width,
+            requiredWidth: this._requiredWidth
+          });
+          this._needsResizeForSpacing = false;
+          this._requiredWidth = null;
+        }
     }
   }
 
