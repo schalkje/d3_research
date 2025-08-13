@@ -12,8 +12,12 @@ export default class RectangularNode extends BaseNode {
       // For auto-size, calculate width based on text
       const textWidth = getTextWidth(nodeData.label);
       nodeData.width = Math.max(textWidth + 20, 60); // Minimum width of 60
+    } else if (layoutMode === 'fixed-size') {
+      // For fixed-size, use exact dimensions without expansion
+      if (!nodeData.width) nodeData.width = 150;
+      // Don't modify width based on text content
     } else {
-      // For default and fixed-size, use provided width or default
+      // For default mode, use provided width or default
       if (!nodeData.width) nodeData.width = 150;
       
       // Calculate text width and ensure minimum width
@@ -89,11 +93,14 @@ export default class RectangularNode extends BaseNode {
 
     const maxWidth = this.data.width - 20; // Leave 10px padding on each side
     const text = this.data.label;
+    const layoutMode = this.data.layout?.layoutMode || 'default';
     
     // Check if text needs truncation
     const textWidth = getTextWidth(text);
     if (textWidth <= maxWidth) {
       this.label.text(text);
+      // Remove any existing tooltip
+      this.removeTooltip();
       return;
     }
 
@@ -104,6 +111,10 @@ export default class RectangularNode extends BaseNode {
       const testWidth = getTextWidth(testText);
       if (testWidth <= maxWidth) {
         this.label.text(testText);
+        // Add tooltip for fixed-size mode when text is truncated
+        if (layoutMode === 'fixed-size') {
+          this.addTooltip(text);
+        }
         return;
       }
       truncatedText = truncatedText.slice(0, -1);
@@ -111,6 +122,10 @@ export default class RectangularNode extends BaseNode {
 
     // If even single character with ellipsis is too wide, show just ellipsis
     this.label.text('...');
+    // Add tooltip for fixed-size mode even when showing just ellipsis
+    if (layoutMode === 'fixed-size') {
+      this.addTooltip(text);
+    }
   }
 
   redrawText(label, width) {
@@ -133,10 +148,20 @@ export default class RectangularNode extends BaseNode {
         .attr("width", this.data.width)
         .attr("x", -this.data.width / 2);
       
-      // Update text without truncation
+      // Update text without truncation and remove any tooltip
       this.label.text(label);
+      this.removeTooltip();
+    } else if (layoutMode === 'fixed-size') {
+      // For fixed-size, don't change width based on text
+      this.element
+        .select("rect")
+        .attr("width", this.data.width)
+        .attr("x", -this.data.width / 2);
+
+      // Apply text truncation with tooltip
+      this.truncateTextIfNeeded();
     } else {
-      // For default and fixed-size, or when width is specified
+      // For default mode, expand width if needed
       if (label !== undefined) {
         const textWidth = getTextWidth(label);
         this.data.width = Math.max(this.data.width, textWidth + 20);
@@ -243,6 +268,38 @@ export default class RectangularNode extends BaseNode {
     if (layoutMode !== 'auto-size') {
       // Only truncate for non-auto-size layouts
       this.truncateTextIfNeeded();
+    }
+  }
+
+  /**
+   * Add tooltip to show full text when truncated
+   * @param {string} fullText - The complete text to show in tooltip
+   */
+  addTooltip(fullText) {
+    if (!this.label || !fullText) return;
+    
+    // Remove any existing tooltip
+    this.removeTooltip();
+    
+    // Add SVG title element for tooltip
+    this.tooltipElement = this.label.append("title").text(fullText);
+    
+    // Add visual indication that tooltip is available (optional)
+    this.label.style("cursor", "help");
+  }
+
+  /**
+   * Remove tooltip from the text element
+   */
+  removeTooltip() {
+    if (this.tooltipElement) {
+      this.tooltipElement.remove();
+      this.tooltipElement = null;
+    }
+    
+    // Reset cursor style
+    if (this.label) {
+      this.label.style("cursor", "default");
     }
   }
 }
