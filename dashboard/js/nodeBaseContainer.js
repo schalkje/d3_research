@@ -163,6 +163,14 @@ export default class BaseContainerNode extends BaseNode {
         this.zoneManager.updateZoneVisibility();
       }
 
+      // Show edges and ghostlines when expanding
+      if (this.edgesContainer) {
+        this.edgesContainer.style('display', null);
+      }
+      if (this.ghostContainer) {
+        this.ghostContainer.style('display', null);
+      }
+
       // Store current collapsed size before expanding  
       const collapsedSize = { width: this.data.width, height: this.data.height };
 
@@ -205,10 +213,28 @@ export default class BaseContainerNode extends BaseNode {
       this.cleanContainer();
     }
 
+    // Hide edges and ghostlines groups when collapsed
+    if (this.edgesContainer) {
+      this.edgesContainer.style('display', 'none');
+    }
+    if (this.ghostContainer) {
+      this.ghostContainer.style('display', 'none');
+    }
+
+    // Update zones before sizing, so header metrics are current
     this.update();
 
-    // set the collapsed size
-    this.resize({ width: this.minimumSize.width, height: this.minimumSize.height });
+    // Compute collapsed size: max(header minimum, node minimum)
+    let collapsedWidth = Math.max(this.data.width, this.minimumSize.width);
+    let collapsedHeight = this.minimumSize.height;
+    if (this.zoneManager?.headerZone) {
+      const headerSize = this.zoneManager.headerZone.getSize();
+      collapsedWidth = Math.max(collapsedWidth, headerSize.width);
+      collapsedHeight = Math.max(collapsedHeight, headerSize.height);
+    }
+
+    // Apply collapsed size
+    this.resize({ width: collapsedWidth, height: collapsedHeight }, true);
 
     if (this.parentNode) this.parentNode.update();
     this.suspenseDisplayChange = false;

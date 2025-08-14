@@ -81,8 +81,8 @@ test.describe('Lane Node Tests', () => {
       await expect(laneRect).toHaveCount(1);
       await expect(laneRect).toBeVisible();
       
-      // Check for lane label
-      const laneText = laneNode.locator('text');
+      // Check for lane label (exclude zoom icon)
+      const laneText = laneNode.locator('g.zone-header > text.header-text');
       await expect(laneText).toHaveCount(1);
       await expect(laneText).toBeVisible();
     });

@@ -336,6 +336,62 @@ test.describe('Adapter Nodes - Clean Suite', () => {
         const metrics = await getAdapterMetrics(page);
         assertZoneContainerSizing(metrics);
       });
+
+      // 4) collapse: inner container, children, edges and ghostlines hidden
+      test('collapse: hides innerContainer, children, edges, ghostlines', async ({ page }) => {
+        // Click zoom button to collapse
+        const zoomButton = page.locator('g.adapter g.zone-header g.zoom-button');
+        await zoomButton.click();
+        await page.waitForTimeout(500);
+
+        // Inner container should be hidden
+        const innerZone = page.locator('g.adapter g.zone-innerContainer');
+        await expect(innerZone).not.toBeVisible();
+
+        // Child nodes should be hidden
+        const childNodes = page.locator('g.adapter g.zone-innerContainer g');
+        const childCount = await childNodes.count();
+        for (let i = 0; i < childCount; i++) {
+          await expect(childNodes.nth(i)).not.toBeVisible();
+        }
+
+        // Edges should not be visible
+        const edgesGroup = page.locator('g.adapter g.edges');
+        await expect(edgesGroup).not.toBeVisible();
+
+        // Ghostlines should not be visible
+        const ghostlines = page.locator('g.adapter g.ghostlines');
+        // Ghostlines container may not exist; if it does, it should be hidden
+        if (await ghostlines.count() > 0) {
+          await expect(ghostlines).not.toBeVisible();
+        }
+      });
+
+      // 5) expand: inner container, children, edges visible again
+      test('expand: shows innerContainer, children, edges again', async ({ page }) => {
+        // Collapse
+        const zoomButton = page.locator('g.adapter g.zone-header g.zoom-button');
+        await zoomButton.click();
+        await page.waitForTimeout(400);
+        // Expand
+        await zoomButton.click();
+        await page.waitForTimeout(600);
+
+        // Inner container visible
+        const innerZone = page.locator('g.adapter g.zone-innerContainer');
+        await expect(innerZone).toBeVisible();
+
+        // At least one child visible (when applicable)
+        const childNodes = page.locator('g.adapter g.zone-innerContainer g');
+        if (await childNodes.count() > 0) {
+          await expect(childNodes.first()).toBeVisible();
+        }
+
+        // Edges should match expected count and have paths
+        const edges = await getEdgeSummary(page);
+        expect(edges.count).toBe(s.expectedEdges);
+        if (edges.count > 0) expect(edges.hasPaths).toBe(true);
+      });
   });
   }
 });

@@ -110,16 +110,28 @@ export class ZoneManager {
     // When collapsed, margins should not contribute to container height
     // Only header height and minimum size constraints should apply
     if (this.node.collapsed) {
+      const minNodeHeight = this.node.minimumSize?.height || 0;
+      const height = Math.max(headerSize.height, minNodeHeight);
       return {
         width: Math.max(headerSize.width, innerContainerSize.width) + margins.left + margins.right,
-        height: headerSize.height // Only header height when collapsed
+        height
       };
     }
 
     // When expanded, include all zone sizes
+    const rawWidth = Math.max(headerSize.width, innerContainerSize.width) + margins.left + margins.right;
+    const rawHeight = headerSize.height + margins.top + innerContainerSize.height + margins.bottom;
+
+    // Enforce minimum height constraints consistent with Lane behavior:
+    // - At least header minimum + top/bottom margins
+    // - At least node-configured minimumSize.height (if provided)
+    const minHeaderHeightWithMargins = headerSize.height + margins.top + margins.bottom;
+    const minNodeHeight = this.node.minimumSize?.height || 0;
+    const finalHeight = Math.max(rawHeight, minHeaderHeightWithMargins, minNodeHeight);
+
     return {
-      width: Math.max(headerSize.width, innerContainerSize.width) + margins.left + margins.right,
-      height: headerSize.height + margins.top + innerContainerSize.height + margins.bottom
+      width: rawWidth,
+      height: finalHeight
     };
   }
 

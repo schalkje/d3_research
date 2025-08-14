@@ -327,6 +327,17 @@ export default class AdapterNode extends BaseContainerNode {
     
     console.log('Using zone system for adapter node positioning:', this.id);
     
+    // When collapsed, do not run child layout; resize to collapsed min
+    if (this.collapsed) {
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
+      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
+      const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
+      this.resize({ width: collapsedWidth, height: collapsedHeight });
+      return;
+    }
+    
     // Set layout algorithm based on arrangement
     const innerContainerZone = this.zoneManager.innerContainerZone;
     

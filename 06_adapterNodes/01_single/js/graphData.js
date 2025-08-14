@@ -51,8 +51,6 @@ export const singleAdapter = {
             label: "Bankview",
             code: "BNV",
             type: "adapter",
-            x: 300,
-            y: 200,
             
             // Layout configuration for arrangement 3 (staging-focused)
             layout: {
