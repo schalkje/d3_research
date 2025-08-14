@@ -173,7 +173,8 @@ function assertInnerContainerPlacement(metrics) {
   
   // Zone system centers the innerContainer horizontally (innerX = 0)
   const expectedInnerX = 0; 
-  const expectedInnerY = -container.height / 2 + headerHeight + margins.top;
+  // Expected Y is the center of the inner zone: top (containerTop + header + topMargin) + half of available height
+  const expectedInnerY = -container.height / 2 + headerHeight + margins.top + (innerCS.size.height / 2);
   
   const tx = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[0]) : 0;
   const ty = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[1]) : 0;
@@ -229,7 +230,8 @@ function assertZonePositioning(metrics) {
   
   // Expected positioning calculations
   const expectedInnerX = 0; // Always centered horizontally
-  const expectedInnerY = -container.height / 2 + headerHeight + margins.top;
+  // Expected Y is the center of the inner zone: top (containerTop + header + topMargin) + half of available height
+  const expectedInnerY = -container.height / 2 + headerHeight + margins.top + (innerCS.size.height / 2);
   
   console.log(`\n🔍 Zone Positioning Analysis:`);
   console.log(`   Container dimensions: ${container.width} x ${container.height}`);

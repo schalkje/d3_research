@@ -544,18 +544,30 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    if (stagingNode && transformNode) {
-      // Position archive node on the left
-      if (archiveNode) {
-        archiveNode.move(0, 0);
-      }
-      
-      // Position staging node above transform
-      stagingNode.move(0, archiveNode ? archiveNode.data.height + this.nodeSpacing.vertical : 0);
-      
-      // Position transform node to the right of staging
-      transformNode.move(stagingNode.data.width + this.nodeSpacing.horizontal, 
-                        archiveNode ? archiveNode.data.height + this.nodeSpacing.vertical : 0);
+    if (stagingNode && transformNode && archiveNode) {
+      const horizontalSpacing = this.nodeSpacing.horizontal; // 20
+      const verticalSpacing = this.nodeSpacing.vertical; // 10
+
+      // Compute column layout widths
+      const totalWidth = stagingNode.data.width + horizontalSpacing + transformNode.data.width;
+
+      // Center horizontally in inner zone (origin at 0,0)
+      const stagingCenterX = -totalWidth / 2 + stagingNode.data.width / 2;
+      const transformCenterX = stagingCenterX + stagingNode.data.width / 2 + horizontalSpacing + transformNode.data.width / 2;
+      const archiveCenterX = stagingCenterX; // same column as staging
+
+      // Vertical stacking for archive over staging (centered around 0)
+      const columnHeight = archiveNode.data.height + verticalSpacing + stagingNode.data.height;
+      const archiveCenterY = -columnHeight / 2 + archiveNode.data.height / 2;
+      const stagingCenterY = columnHeight / 2 - stagingNode.data.height / 2;
+      const transformCenterY = stagingCenterY; // align with staging
+
+      archiveNode.move(archiveCenterX, archiveCenterY);
+      stagingNode.move(stagingCenterX, stagingCenterY);
+      transformNode.move(transformCenterX, transformCenterY);
+
+      // Fit container to children
+      this.resizeArrangementContainer(stagingNode, archiveNode, transformNode);
     }
   }
 
@@ -574,121 +586,35 @@ export default class AdapterNode extends BaseContainerNode {
     
     if (stagingNode && transformNode && archiveNode) {
       console.log('Found all three nodes, positioning them...');
-      
-      // Archive and transform should have minimal height (44px) and same width as staging
+
+      // Ensure sizes
       archiveNode.resize({ width: 150, height: 44 });
       transformNode.resize({ width: 150, height: 44 });
-      
-      // Staging height should be archive height + transform height + vertical spacing
-      const stagingHeight = archiveNode.data.height + transformNode.data.height + this.nodeSpacing.vertical;
+      const verticalSpacing = this.nodeSpacing.vertical; // 10
+      const horizontalSpacing = this.nodeSpacing.horizontal; // 20
+
+      // Staging is tall: height = archive + spacing + transform
+      const stagingHeight = archiveNode.data.height + verticalSpacing + transformNode.data.height;
       stagingNode.resize({ width: stagingNode.data.width, height: stagingHeight });
-      
-      // Use configurable margin from container margin settings
-      const margin = this.containerMargin.top;
-      
-      // Note: Container resizing is handled by resizeToFitChildren() after positioning
-      
-      // Calculate available width for positioning (zone coordinate system)
-      const availableWidth = coordinateSystem?.size?.width || 318; // Default to expected container width
-      
-      // Calculate center positions for proper alignment
-      // All nodes use center-based positioning, so we need to account for this
-      
-      // Staging: position so left edge aligns exactly with container left edge
-      // Calculate position based on container coordinate system (no additional margin)
-      const stagingCenterX = -availableWidth / 2 + stagingNode.data.width / 2;
-      
-      // Position staging node so it fits exactly within the available coordinate system space
-      // The coordinate system already accounts for margins, coordinate origin is at (0,0)
-      const availableHeight = coordinateSystem?.size?.height || 108;
-      
-      // When staging height equals available height, position so top edge is at y=0
-      let stagingCenterY;
-      if (stagingHeight >= availableHeight) {
-        stagingCenterY = stagingHeight / 2; // Top edge at y=0, center at height/2
-      } else {
-        stagingCenterY = availableHeight / 2; // Center in available space
-      }
-      
+
+      // Horizontal: staging on left, archive/transform on right; center horizontally around 0
+      const rightColumnWidth = Math.max(archiveNode.data.width, transformNode.data.width);
+      const totalWidth = stagingNode.data.width + horizontalSpacing + rightColumnWidth;
+      const stagingCenterX = -totalWidth / 2 + stagingNode.data.width / 2;
+      const rightColumnCenterX = stagingCenterX + stagingNode.data.width / 2 + horizontalSpacing + rightColumnWidth / 2;
+
+      // Vertical: center staging at 0; archive at top of staging; transform at bottom of staging
+      const stagingCenterY = 0;
+      const archiveCenterY = -stagingHeight / 2 + archiveNode.data.height / 2;
+      const transformCenterY = stagingHeight / 2 - transformNode.data.height / 2;
+
+      // Apply
       stagingNode.move(stagingCenterX, stagingCenterY);
-      
-      // Calculate positioning for archive and transform with proper horizontal spacing
-      // Available width coordinate system: from -availableWidth/2 to +availableWidth/2
-      // Ensure minimum horizontal spacing between staging and archive/transform nodes
-      const stagingRightEdge = stagingCenterX + stagingNode.data.width / 2;
-      const minimumArchiveLeft = stagingRightEdge + this.nodeSpacing.horizontal;
-      
-      // Position archive/transform so they respect the minimum spacing
-      // If there's enough space, align with container right edge; otherwise use minimum spacing
-      const archiveCenterXFromRight = availableWidth / 2 - archiveNode.data.width / 2;
-      const archiveCenterXFromSpacing = minimumArchiveLeft + archiveNode.data.width / 2;
-      const archiveCenterX = Math.max(archiveCenterXFromSpacing, archiveCenterXFromRight);
-      
-      // Check if container needs to expand to accommodate the spacing
-      const requiredWidth = (stagingCenterX + stagingNode.data.width / 2) + this.nodeSpacing.horizontal + archiveNode.data.width + (availableWidth / 2 - archiveCenterX - archiveNode.data.width / 2);
-      if (requiredWidth > availableWidth) {
-        // Container is too small, mark for resizing after positioning
-        this._needsResizeForSpacing = true;
-        this._requiredWidth = requiredWidth;
-      }
-      
-      console.log('Layout calculation:', {
-        availableWidth,
-        stagingCenterX,
-        archiveCenterX,
-        stagingLeftEdge: stagingCenterX - stagingNode.data.width / 2,
-        stagingRightEdge,
-        archiveLeftEdge: archiveCenterX - archiveNode.data.width / 2,
-        archiveRightEdge: archiveCenterX + archiveNode.data.width / 2,
-        containerLeftEdge: -availableWidth / 2,
-        containerRightEdge: availableWidth / 2,
-        actualHorizontalSpacing: (archiveCenterX - archiveNode.data.width / 2) - (stagingCenterX + stagingNode.data.width / 2),
-        requiredHorizontalSpacing: this.nodeSpacing.horizontal,
-        minimumArchiveLeft,
-        archiveCenterXFromRight,
-        archiveCenterXFromSpacing
-      });
-      
-      // Archive: position so its TOP edge aligns with staging TOP edge
-      // Archive top edge should be at: stagingCenterY - stagingHeight/2 
-      // Archive center should be at: archiveTop + archiveHeight/2
-      const archiveTop = stagingCenterY - stagingHeight / 2;
-      const archiveCenterY = archiveTop + archiveNode.data.height / 2;
-      
-      // Transform: position so its BOTTOM edge aligns with staging BOTTOM edge  
-      // Transform bottom edge should be at: stagingCenterY + stagingHeight/2
-      // Transform center should be at: transformBottom - transformHeight/2
-      const transformBottom = stagingCenterY + stagingHeight / 2;
-      const transformCenterY = transformBottom - transformNode.data.height / 2;
-      
-      // Position archive and transform at calculated position
-      // Both archive and transform should have the same X position (vertical alignment)
-      
-      // Position archive with aligned top edge
-      archiveNode.move(archiveCenterX, archiveCenterY);
-      
-      // Position transform with aligned bottom edge  
-      transformNode.move(archiveCenterX, transformCenterY);
-      
-              console.log('Positioning complete (arrangement 3):', {
-          staging: { x: stagingNode.x, y: stagingNode.y, bottomEdge: stagingNode.y + stagingHeight / 2 },
-          archive: { x: archiveNode.x, y: archiveNode.y },
-          transform: { x: transformNode.x, y: transformNode.y, bottomEdge: transformNode.y + transformNode.data.height / 2 },
-          margins: { top: margin, bottom: margin }
-        });
-        
-        // Calculate required container size and resize if needed
-        this.calculateAndResizeForArrangement3(stagingNode, archiveNode, transformNode);
-        
-        // Handle spacing-based resizing if needed
-        if (this._needsResizeForSpacing && this._requiredWidth) {
-          console.log('Container needs resizing for proper spacing:', {
-            currentWidth: this.data.width,
-            requiredWidth: this._requiredWidth
-          });
-          this._needsResizeForSpacing = false;
-          this._requiredWidth = null;
-        }
+      archiveNode.move(rightColumnCenterX, archiveCenterY);
+      transformNode.move(rightColumnCenterX, transformCenterY);
+
+      // Resize to fit
+      this.resizeArrangementContainer(stagingNode, archiveNode, transformNode);
     }
   }
 
@@ -713,7 +639,7 @@ export default class AdapterNode extends BaseContainerNode {
       // Center the two nodes horizontally within the zone coordinate system
       // Zone coordinate system has origin at (0,0) and size represents available space
       const totalWidth = stagingNode.data.width + this.nodeSpacing.horizontal + otherNode.data.width;
-      const y = coordinateSystem?.size?.height ? coordinateSystem.size.height / 2 : stagingNode.data.height / 2;
+      const y = 0; // center vertically in zone coordinate system
       
       // Center the layout horizontally
       const startX = -totalWidth / 2;
@@ -747,7 +673,7 @@ export default class AdapterNode extends BaseContainerNode {
       // Center the archive node within the innerContainer zone
       // Zone coordinate system has origin at (0,0) and size represents available space
       const x = 0; // Center horizontally
-      const y = coordinateSystem?.size?.height ? coordinateSystem.size.height / 2 : archiveNode.data.height / 2;
+      const y = 0; // Center vertically in zone coordinate system
       
       archiveNode.move(x, y);
       

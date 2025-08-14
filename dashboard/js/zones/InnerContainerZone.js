@@ -103,14 +103,13 @@ export class InnerContainerZone extends BaseZone {
       const margins = marginZone.getMargins();
       
       // Calculate inner container position relative to node center
-      // Position below header zone + top margin for proper spacing
+      // We position the CENTER of the inner container content area
+      // below the header zone + top margin, i.e. at (top + header + topMargin + availableHeight/2)
       const containerTop = -this.node.data.height / 2;
-      const innerX = 0; // Center horizontally
-      const innerY = containerTop + headerHeight + margins.top;
-      
-      // Calculate available space for content
       const availableWidth = Math.max(0, this.size.width - margins.left - margins.right);
       const availableHeight = Math.max(0, this.size.height - headerHeight - margins.top - margins.bottom);
+      const innerX = 0; // Center horizontally
+      const innerY = containerTop + headerHeight + margins.top + (availableHeight / 2);
       
       this.coordinateSystem = {
         origin: {
@@ -121,21 +120,20 @@ export class InnerContainerZone extends BaseZone {
           width: availableWidth,
           height: availableHeight
         },
-        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position
+        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position (centered)
       };
     } else {
       // Fallback if margin zone is not available
       const defaultMargin = 8;
-      const innerX = 0; // Center horizontally
-      const innerY = -this.node.data.height / 2 + headerHeight + defaultMargin;
-      
       const availableWidth = Math.max(0, this.size.width - defaultMargin * 2);
       const availableHeight = Math.max(0, this.size.height - headerHeight - defaultMargin * 2);
+      const innerX = 0; // Center horizontally
+      const innerY = -this.node.data.height / 2 + headerHeight + defaultMargin + (availableHeight / 2);
       
       this.coordinateSystem = {
         origin: { x: 0, y: 0 }, // Children are positioned relative to (0,0) in this zone
         size: { width: availableWidth, height: availableHeight },
-        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position
+        transform: `translate(${innerX}, ${innerY})` // Transform moves the zone to the correct position (centered)
       };
     }
   }
