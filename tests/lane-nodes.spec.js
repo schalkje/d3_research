@@ -34,7 +34,7 @@ test.describe('Lane Node Tests', () => {
   async function waitForLaneNodes(page, timeout = 30000) {
     try {
       // Wait for lane node elements to appear
-      await page.waitForSelector('g.Node[data-type="lane"]', { timeout });
+      await page.waitForSelector('g.lane', { timeout });
       
       // Wait a bit more for the nodes to be fully rendered
       await page.waitForTimeout(1000);
@@ -69,7 +69,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane nodes
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(1);
       
       // Verify the lane node is visible
@@ -77,7 +77,7 @@ test.describe('Lane Node Tests', () => {
       await expect(laneNode).toBeVisible();
       
       // Check for lane-specific elements
-      const laneRect = laneNode.locator('rect');
+      const laneRect = laneNode.locator('rect.container-shape');
       await expect(laneRect).toHaveCount(1);
       await expect(laneRect).toBeVisible();
       
@@ -111,11 +111,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(1);
       
       // Check for child rectangle nodes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // Verify all child nodes are visible
@@ -141,8 +141,8 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get lane node bounds
-      const laneNode = page.locator('g.Node[data-type="lane"]').first();
-      const laneRect = laneNode.locator('rect').first();
+      const laneNode = page.locator('g.lane').first();
+      const laneRect = laneNode.locator('rect.container-shape').first();
       
       const laneX = await laneRect.getAttribute('x');
       const laneY = await laneRect.getAttribute('y');
@@ -155,7 +155,7 @@ test.describe('Lane Node Tests', () => {
       expect(laneHeight).toBeTruthy();
       
       // Check child positioning
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       for (let i = 0; i < 3; i++) {
@@ -184,7 +184,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get child nodes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // Check vertical positioning
@@ -206,9 +206,9 @@ test.describe('Lane Node Tests', () => {
         });
       }
       
-      // Verify vertical stacking order
-      expect(positions[0].y).toBeLessThan(positions[1].y);
-      expect(positions[1].y).toBeLessThan(positions[2].y);
+      // Verify vertical stacking order (allow equality due to center-based rounding)
+      expect(positions[0].y).toBeLessThanOrEqual(positions[1].y - 1);
+      expect(positions[1].y).toBeLessThanOrEqual(positions[2].y - 1);
       
       // Verify spacing between nodes (should be at least 10px)
       const spacing1 = positions[1].y - positions[0].bottom;
@@ -242,11 +242,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(1);
       
       // Check that child nodes are not visible (collapsed)
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // All child nodes should be hidden in collapsed mode
@@ -262,7 +262,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNode = page.locator('g.Node[data-type="lane"]').first();
+      const laneNode = page.locator('g.lane').first();
       await expect(laneNode).toBeVisible();
       
       // Check for collapse indicator (usually a small icon or text)
@@ -276,14 +276,14 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Click on the lane to expand it
-      const laneNode = page.locator('g.Node[data-type="lane"]').first();
+      const laneNode = page.locator('g.lane').first();
       await laneNode.click();
       
       // Wait for expansion animation
       await page.waitForTimeout(1000);
       
       // Check that child nodes become visible
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // At least one child should be visible after expansion
@@ -315,11 +315,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(1);
       
       // Check for child nodes with different label lengths
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // Verify different label lengths
@@ -352,7 +352,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get initial labels
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       const initialLabels = [];
@@ -394,7 +394,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get initial node sizes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       const initialSizes = [];
@@ -459,7 +459,7 @@ test.describe('Lane Node Tests', () => {
       await expect(laneNodes).toHaveCount(1);
       
       // Check for child nodes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       // Verify all nodes have the same size (fixed-size mode)
@@ -492,7 +492,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get initial labels
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       const initialLabels = [];
@@ -529,7 +529,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get initial node sizes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       const initialSizes = [];
@@ -590,11 +590,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(1);
       
       // Check for initial child node
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(1);
       
       // Verify the initial node is visible
@@ -620,7 +620,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Get initial node count
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       let initialCount = await childNodes.count();
       expect(initialCount).toBe(1);
       
@@ -665,7 +665,7 @@ test.describe('Lane Node Tests', () => {
       }
       
       // Check that we have 4 nodes total
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(4);
       
       // Verify vertical stacking order
@@ -710,14 +710,14 @@ test.describe('Lane Node Tests', () => {
       }
       
       // Get lane bounds
-      const laneNode = page.locator('g.Node[data-type="lane"]').first();
+      const laneNode = page.locator('g.lane').first();
       const laneRect = laneNode.locator('rect').first();
       
       const laneX = await laneRect.getAttribute('x');
       const laneWidth = await laneRect.getAttribute('width');
       
       // Check horizontal centering for all nodes
-      const childNodes = page.locator('g.Node[data-type="rect"]');
+      const childNodes = page.locator('g.rect');
       await expect(childNodes).toHaveCount(3);
       
       for (let i = 0; i < 3; i++) {
@@ -769,11 +769,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for main lane node
-      const mainLaneNodes = page.locator('g.Node[data-type="lane"]');
+      const mainLaneNodes = page.locator('g.lane');
       await expect(mainLaneNodes).toHaveCount(3); // Main lane + 2 sub-lanes
       
       // Check for child rectangle nodes
-      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      const rectNodes = page.locator('g.rect');
       await expect(rectNodes).toHaveCount(6); // 3 rectangles per sub-lane
       
       // Verify all nodes are visible
@@ -796,11 +796,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for main lane node
-      const mainLaneNodes = page.locator('g.Node[data-type="lane"]');
+      const mainLaneNodes = page.locator('g.lane');
       await expect(mainLaneNodes).toHaveCount(3); // Main lane + 2 sub-lanes
       
       // Check for child rectangle nodes (only from expanded sub-lane should be visible)
-      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      const rectNodes = page.locator('g.rect');
       await expect(rectNodes).toHaveCount(3); // Only 3 rectangles from expanded sub-lane
       
       // Verify main lane and expanded sub-lane are visible
@@ -823,11 +823,11 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane nodes (1 level 1 + 2 level 2 + 3 level 3 = 6 lanes)
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.lane');
       await expect(laneNodes).toHaveCount(6);
       
       // Check for child rectangle nodes
-      const rectNodes = page.locator('g.Node[data-type="rect"]');
+      const rectNodes = page.locator('g.rect');
       await expect(rectNodes).toHaveCount(4); // 4 rectangles total
       
       // Verify all nodes are visible

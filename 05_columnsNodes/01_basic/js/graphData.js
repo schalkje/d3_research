@@ -59,42 +59,6 @@ export const demoData = {
             },
             // Child nodes (for container nodes)
             children: [
-                {
-                    id: "rect1",
-                    label: "Column 1",
-                    type: "rect",
-                    code: "C1",
-                    status: "Ready",
-                    layout: {
-                        displayMode: "full",
-                        arrangement: "default"
-                    },
-                    parentId: "columns1"
-                },
-                {
-                    id: "rect2",
-                    label: "Column 2",
-                    type: "rect",
-                    code: "C2",
-                    status: "Ready",
-                    layout: {
-                        displayMode: "full",
-                        arrangement: "default"
-                    },
-                    parentId: "columns1"
-                },
-                {
-                    id: "rect3",
-                    label: "Column 3",
-                    type: "rect",
-                    code: "C3",
-                    status: "Ready",
-                    layout: {
-                        displayMode: "full",
-                        arrangement: "default"
-                    },
-                    parentId: "columns1"
-                }
             ],
             // Parent reference
             parentId: null

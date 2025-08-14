@@ -47,7 +47,7 @@ export const demoData = {
             code: "N1",
             status: "Ready",
             // Fixed dimensions for fixed-size layout
-            width: 80,
+            width: 100,
             height: 60,
             // Layout properties
             layout: {

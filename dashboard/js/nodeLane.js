@@ -49,27 +49,28 @@ export default class LaneNode extends BaseContainerNode {
       visibleChildIds: debugVisibleChildren.map(node => node.id)
     });
 
-    // Set vertical stacking layout algorithm
-    innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
-      if (childNodes.length === 0) return;
+		// Set vertical stacking layout algorithm centered around (0,0)
+		innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+			if (childNodes.length === 0) return;
 
-      const spacing = this.nodeSpacing?.vertical || 10;
-      let currentY = 0;
+			const spacing = this.nodeSpacing?.vertical || 10;
 
-      // Only position visible children
-      const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+			// Only position visible children
+			const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+			if (visibleChildNodes.length === 0) return;
 
-      visibleChildNodes.forEach(childNode => {
-        // Center horizontally within the inner container
-        // Use center-based coordinate system for consistent positioning
-        const x = 0; // Center horizontally (child nodes are now centered)
-        const y = currentY + childNode.data.height / 2; // Position by center, not top
+			// Compute total content height to center around 0
+			const totalContentHeight = visibleChildNodes.reduce((sum, n) => sum + n.data.height, 0) +
+				spacing * (visibleChildNodes.length - 1);
+			let currentTop = -totalContentHeight / 2;
 
-        // Position children relative to the inner container's coordinate system
-        childNode.move(x, y);
-        currentY += childNode.data.height + spacing;
-      });
-    });
+			visibleChildNodes.forEach(childNode => {
+				const x = 0; // center horizontally
+				const y = currentTop + childNode.data.height / 2; // center of this child
+				childNode.move(x, y);
+				currentTop += childNode.data.height + spacing;
+			});
+		});
 
     // Calculate required size for visible children only
     // Children report their effective size (handling collapsed state internally)

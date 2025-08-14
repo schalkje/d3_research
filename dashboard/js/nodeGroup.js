@@ -24,49 +24,63 @@ export default class GroupNode extends BaseContainerNode {
   }
 
   layoutGroup() {
-    if (this.childNodes.length === 0) {
-      return;
-    }
+    if (this.childNodes.length === 0) return;
 
-    // Calculate bounding box of visible children only
+    // Use inner container zone when available to center children around (0,0)
+    const innerContainerZone = this.zoneManager?.innerContainerZone;
+    const marginZone = this.zoneManager?.marginZone;
+    const headerZone = this.zoneManager?.headerZone;
+
     const visibleChildren = this.childNodes.filter(node => node.visible);
+    if (visibleChildren.length === 0) return;
+
+    // Simple center-based layout: keep existing relative positions, but normalize to center
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
     visibleChildren.forEach(node => {
-      // Let each child report its effective size (handling collapsed state internally)
       const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
       const effectiveHeight = node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height;
-      const halfWidth = effectiveWidth / 2;
-      const halfHeight = effectiveHeight / 2;
-      
-      minX = Math.min(minX, node.x - halfWidth);
-      minY = Math.min(minY, node.y - halfHeight);
-      maxX = Math.max(maxX, node.x + halfWidth);
-      maxY = Math.max(maxY, node.y + halfHeight);
+      minX = Math.min(minX, node.x - effectiveWidth / 2);
+      minY = Math.min(minY, node.y - effectiveHeight / 2);
+      maxX = Math.max(maxX, node.x + effectiveWidth / 2);
+      maxY = Math.max(maxY, node.y + effectiveHeight / 2);
     });
 
-    // Calculate container size needed
-    const contentWidth = maxX - minX + this.containerMargin.left + this.containerMargin.right;
-    const contentHeight = maxY - minY + this.containerMargin.top + this.containerMargin.bottom;
-    
-    // Resize container to accommodate all children
-    this.resize({
-      width: Math.max(this.minimumSize.width, contentWidth),
-      height: Math.max(this.minimumSize.height, contentHeight)
-    });
-    
-    // Notify parent nodes that this node's size has changed
-    this.handleDisplayChange();
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
 
-    // Position visible children relative to container center
-    const containerCenterX = -this.data.width / 2 + this.containerMargin.left;
-    const containerCenterY = -this.data.height / 2 + this.containerMargin.top;
-    
+    // Normalize child positions to be centered around (0,0)
+    const contentCenterX = minX + contentWidth / 2;
+    const contentCenterY = minY + contentHeight / 2;
     visibleChildren.forEach(node => {
-      const x = containerCenterX + (node.x - minX) + node.data.width / 2;
-      const y = containerCenterY + (node.y - minY) + node.data.height / 2;
-      node.move(x, y);
+      const dx = node.x - contentCenterX;
+      const dy = node.y - contentCenterY;
+      node.move(dx, dy);
     });
+
+    // If zone system exists, size container and zone to fit content + margins
+    if (innerContainerZone && marginZone && headerZone) {
+      const margins = marginZone.getMargins();
+      const headerHeight = headerZone.getHeaderHeight();
+      const newSize = {
+        width: Math.max(this.minimumSize.width, contentWidth + margins.left + margins.right),
+        height: Math.max(this.minimumSize.height, headerHeight + margins.top + contentHeight + margins.bottom)
+      };
+      this.resize(newSize);
+      this.handleDisplayChange();
+
+      // Resize inner zone to tightly contain children (with small padding)
+      const padding = 10;
+      innerContainerZone.resize(contentWidth + padding * 2, contentHeight + padding * 2);
+      innerContainerZone.updateCoordinateSystem();
+    } else {
+      // Fallback: size to content + container margins
+      const newSize = {
+        width: Math.max(this.minimumSize.width, contentWidth + this.containerMargin.left + this.containerMargin.right),
+        height: Math.max(this.minimumSize.height, contentHeight + this.containerMargin.top + this.containerMargin.bottom)
+      };
+      this.resize(newSize);
+      this.handleDisplayChange();
+    }
   }
 
   runSimulation() {
