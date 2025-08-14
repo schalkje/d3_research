@@ -358,53 +358,183 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    console.log('Layout algorithm 1 - found nodes:', {
+    console.log('Layout algorithm 1 (archive-focused) - found nodes:', {
       staging: !!stagingNode,
       archive: !!archiveNode,
       transform: !!transformNode,
       coordinateSystem
     });
     
-    if (stagingNode && archiveNode) {
-      // Use configurable margin from container margin settings
-      const margin = this.containerMargin.top;
+    if (stagingNode && archiveNode && transformNode) {
+      // First standardize transform node size
+      transformNode.resize({ width: 150, height: 44 });
       
-      // Calculate available width for positioning (zone coordinate system)
-      const availableWidth = coordinateSystem?.size?.width || 318; // Default to expected container width
+      // Calculate archive width as: transform width + horizontal spacing + (1/3) * staging width
+      const horizontalSpacing = this.nodeSpacing.horizontal; // 20px
+      const requiredArchiveWidth = transformNode.data.width + horizontalSpacing + (1/3) * stagingNode.data.width;
       
-      // Calculate maximum position for archive to fit within container
-      const maxArchiveX = availableWidth - margin - archiveNode.data.width;
-      const stagingRightX = margin + stagingNode.data.width;
-      const spacing = Math.max(5, maxArchiveX - stagingRightX);
+      // Resize archive node with calculated width
+      archiveNode.resize({ width: requiredArchiveWidth, height: 44 });
       
-      console.log('Layout algorithm 1 calculation:', {
-        availableWidth,
-        margin,
-        stagingWidth: stagingNode.data.width,
-        archiveWidth: archiveNode.data.width,
-        maxArchiveX,
-        stagingRightX,
-        spacing,
-        calculatedRightX: stagingRightX + spacing
+      // Calculate required dimensions based on layout constraints
+      // Total height = staging height + vertical spacing + archive height
+      const verticalSpacing = this.nodeSpacing.vertical; // 10px
+      const totalContentHeight = stagingNode.data.height + verticalSpacing + archiveNode.data.height;
+      
+      // Calculate required content width including all nodes and spacing
+      const contentWidth = Math.max(
+        stagingNode.data.width,
+        archiveNode.data.width,
+        stagingNode.data.width + horizontalSpacing + transformNode.data.width
+      );
+      
+      // Center the entire layout horizontally within the coordinate system
+      const layoutCenterX = 0; // Center horizontally within coordinate system
+      
+      // Calculate Y positioning based on the required content height
+      // We want: archive at top, staging/transform at bottom
+      
+      // Archive: position at top (negative Y)
+      const archiveCenterY = -totalContentHeight / 2 + archiveNode.data.height / 2;
+      
+      // Staging and Transform: position at bottom (positive Y)  
+      const stagingCenterY = totalContentHeight / 2 - stagingNode.data.height / 2;
+      const transformCenterY = stagingCenterY; // Same Y as staging
+      
+      console.log('Y positioning calculation:', {
+        totalContentHeight,
+        verticalSpacing,
+        archiveCenterY,
+        stagingCenterY,
+        transformCenterY,
+        expectedVerticalGap: stagingCenterY - archiveCenterY
       });
       
-      // Position staging node with margin from left and top (zone coordinates start at 0,0)
-      stagingNode.move(margin, margin);
+      // Staging positioning: Bottom left, positioned to center the overall layout
+      const stagingCenterX = layoutCenterX - (contentWidth / 2) + (stagingNode.data.width / 2);
       
-      // Position archive node with calculated spacing
-      const rightX = stagingRightX + spacing;
-      archiveNode.move(rightX, margin);
+      // Archive positioning: Top row, respecting layout constraints
+      // Archive left edge starts at 2/3 staging width from staging left
+      const stagingLeftEdge = stagingCenterX - stagingNode.data.width / 2;
+      const expectedArchiveLeftEdge = stagingLeftEdge + (2/3) * stagingNode.data.width;
+      const archiveCenterX = expectedArchiveLeftEdge + archiveNode.data.width / 2;
       
-      // Position transform node below staging and archive
-      if (transformNode) {
-        const factor = 5 / 16;
-        const width = archiveNode.data.width + stagingNode.data.width * factor + spacing;
-        const height = transformNode.data.height;
-        transformNode.resize({ width: width, height: height });
+      // Transform positioning: Bottom right, in line with staging, with horizontal spacing
+      const transformCenterX = stagingCenterX + stagingNode.data.width / 2 + horizontalSpacing + transformNode.data.width / 2;
+      
+      // Verify right edge alignment constraint  
+      const stagingRightEdge = stagingCenterX + stagingNode.data.width / 2;
+      const actualArchiveRightEdge = archiveCenterX + archiveNode.data.width / 2;
+      const rightEdgeAlignment = Math.abs(actualArchiveRightEdge - stagingRightEdge);
+      
+      // Apply positioning
+      stagingNode.move(stagingCenterX, stagingCenterY);
+      archiveNode.move(archiveCenterX, archiveCenterY);
+      transformNode.move(transformCenterX, transformCenterY);
+      
+      // Trigger container resize for proper fitting
+      this.resizeArrangementContainer(stagingNode, archiveNode, transformNode);
+      
+      console.log('Positioning complete (arrangement 1 - archive-focused):', {
+        staging: { x: stagingCenterX, y: stagingCenterY, leftEdge: stagingCenterX - stagingNode.data.width/2, rightEdge: stagingCenterX + stagingNode.data.width/2 },
+        archive: { x: archiveCenterX, y: archiveCenterY, leftEdge: archiveCenterX - archiveNode.data.width/2, rightEdge: archiveCenterX + archiveNode.data.width/2 },
+        transform: { x: transformCenterX, y: transformCenterY, leftEdge: transformCenterX - transformNode.data.width/2, rightEdge: transformCenterX + transformNode.data.width/2 },
+        constraints: {
+          expectedArchiveLeftEdge,
+          actualArchiveLeftEdge: archiveCenterX - archiveNode.data.width / 2,
+          archiveLeftConstraintMet: Math.abs((archiveCenterX - archiveNode.data.width / 2) - expectedArchiveLeftEdge) < 5,
+          rightEdgeAlignment,
+          archiveRightConstraintMet: rightEdgeAlignment < 5,
+          verticalGap: stagingCenterY - archiveCenterY,
+          horizontalSpacing: (transformCenterX - transformNode.data.width/2) - (stagingCenterX + stagingNode.data.width/2)
+        }
+      });
+    }
+  }
+
+  // Method to resize container for three-node arrangements (1, 2, 3)
+  resizeArrangementContainer(stagingNode, archiveNode, transformNode) {
+    if (!this.zoneManager || this._isResizing) return;
+    
+    const marginZone = this.zoneManager.marginZone;
+    const headerZone = this.zoneManager.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    
+    if (marginZone) {
+      const margins = marginZone.getMargins();
+      
+      // Calculate bounding box of all nodes
+      const allNodes = [stagingNode, archiveNode, transformNode];
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      
+      allNodes.forEach(node => {
+        const left = node.x - node.data.width / 2;
+        const right = node.x + node.data.width / 2;
+        const top = node.y - node.data.height / 2;
+        const bottom = node.y + node.data.height / 2;
         
-        const x = margin; // Start from left margin
-        const y = margin + Math.max(stagingNode.data.height, archiveNode.data.height) + this.nodeSpacing.vertical;
-        transformNode.move(x, y);
+        minX = Math.min(minX, left);
+        minY = Math.min(minY, top);
+        maxX = Math.max(maxX, right);
+        maxY = Math.max(maxY, bottom);
+      });
+      
+      const contentWidth = maxX - minX;
+      const contentHeight = maxY - minY;
+      
+      const newSize = {
+        width: contentWidth + margins.left + margins.right,
+        height: headerHeight + margins.top + contentHeight + margins.bottom
+      };
+      
+      console.log('Arrangement container resize:', {
+        contentBounds: { minX, minY, maxX, maxY, contentWidth, contentHeight },
+        margins,
+        headerHeight,
+        newSize
+      });
+      
+      this._isResizing = true;
+      this.resize(newSize);
+      this._isResizing = false;
+      
+      // Also resize the innerContainer zone to properly contain all children
+      const innerContainerZone = this.zoneManager.innerContainerZone;
+      if (innerContainerZone) {
+        // Calculate the bounding box of positioned children to size innerContainer around them
+        const allNodes = [stagingNode, archiveNode, transformNode];
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        allNodes.forEach(node => {
+          const left = node.x - node.data.width / 2;
+          const right = node.x + node.data.width / 2;
+          const top = node.y - node.data.height / 2;
+          const bottom = node.y + node.data.height / 2;
+          
+          minX = Math.min(minX, left);
+          minY = Math.min(minY, top);
+          maxX = Math.max(maxX, right);
+          maxY = Math.max(maxY, bottom);
+        });
+        
+        // Add padding around the children for visual comfort
+        const padding = 10;
+        const innerContainerSize = {
+          width: (maxX - minX) + padding * 2,
+          height: (maxY - minY) + padding * 2
+        };
+        
+        console.log('InnerContainer sizing around children:', {
+          childBounds: { minX, minY, maxX, maxY },
+          innerContainerSize,
+          padding
+        });
+        
+        // Resize the innerContainer zone to contain the positioned children
+        innerContainerZone.resize(innerContainerSize.width, innerContainerSize.height);
+        
+        // Update the coordinate system after resizing
+        innerContainerZone.updateCoordinateSystem();
       }
     }
   }

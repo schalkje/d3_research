@@ -67,10 +67,10 @@ export class InnerContainerZone extends BaseZone {
       
       // Position the rect to encompass all children
       // Since children are positioned relative to (0,0) in this zone's coordinate system,
-      // the rect should start at (0,0) and extend to cover all children
-      // The zone transform will move both the zone and the rect to the correct global position
+      // and the zone is positioned below the header, the rect should be positioned
+      // so that it properly contains the children within the zone's coordinate space
       const rectX = -rectWidth / 2; // Center horizontally
-      const rectY = 0; // Start at top of child content area in zone coordinates
+      const rectY = -rectHeight / 2; // Center vertically around (0,0) in zone coordinates
       
       // Debug: Log the values used for positioning
       console.log(`InnerContainerZone ${this.name} updateSize:`, {

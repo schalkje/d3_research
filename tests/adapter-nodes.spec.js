@@ -107,10 +107,42 @@ function assertNodePositioningFullArr1(metrics) {
   expect(roles.staging).toBeTruthy();
   expect(roles.archive).toBeTruthy();
   expect(roles.transform).toBeTruthy();
-  expect(roles.staging.x).toBeLessThan(roles.archive.x);
-  expect(Math.abs(roles.staging.y - roles.archive.y)).toBeLessThan(6);
-  expect(roles.transform.y).toBeGreaterThan(roles.staging.y);
-  expect(Math.abs(roles.transform.x - roles.staging.x)).toBeLessThan(6);
+  
+  // Arrangement 1 Layout Requirements:
+  // - Staging Node: Bottom left
+  // - Archive Node: Top right, left side starts at 2/3 staging width, right side ends at same side as staging
+  // - Transform Node: Bottom right, in line with staging, small space between
+  // - Vertical spacing: distance between staging and archive rows
+  // - Total height: staging height + vertical spacing + archive height
+  
+  // 1. Archive should be significantly above staging (top vs bottom row)
+  const verticalGap = roles.staging.y - roles.archive.y;
+  expect(verticalGap).toBeGreaterThan(15); // Should have proper vertical spacing (10px + node heights)
+  
+  // 2. Transform should be on same level as staging (bottom row) 
+  expect(Math.abs(roles.transform.y - roles.staging.y)).toBeLessThan(3);
+  
+  // 3. Archive left edge should start at 2/3 staging width from staging left edge
+  const stagingLeftEdge = roles.staging.x - roles.staging.width / 2;
+  const stagingWidth = roles.staging.width;
+  const archiveLeftEdge = roles.archive.x - roles.archive.width / 2;
+  const expectedArchiveLeftEdge = stagingLeftEdge + (2/3) * stagingWidth;
+  expect(Math.abs(archiveLeftEdge - expectedArchiveLeftEdge)).toBeLessThan(5);
+  
+  // 4. Archive width should be: transform width + horizontal spacing + (1/3) * staging width
+  const horizontalSpacing = 20; // Standard horizontal spacing
+  const expectedArchiveWidth = roles.transform.width + horizontalSpacing + (1/3) * stagingWidth;
+  expect(Math.abs(roles.archive.width - expectedArchiveWidth)).toBeLessThan(5);
+  
+  // 5. Archive should extend beyond staging (consequence of the width formula)
+  const stagingRightEdge = roles.staging.x + roles.staging.width / 2;
+  const archiveRightEdge = roles.archive.x + roles.archive.width / 2;
+  expect(archiveRightEdge).toBeGreaterThan(stagingRightEdge); // Archive extends beyond staging
+  
+  // 6. Transform should be to the right of staging with proper horizontal spacing
+  const horizontalGap = (roles.transform.x - roles.transform.width / 2) - (roles.staging.x + roles.staging.width / 2);
+  expect(horizontalGap).toBeGreaterThan(15); // Should have proper horizontal spacing (20px)
+  expect(horizontalGap).toBeLessThan(30); // But not too much
 }
 
 function assertNodePositioningFullArr2(metrics) {
@@ -138,21 +170,99 @@ function assertNodePositioningFullArr3(metrics) {
 function assertInnerContainerPlacement(metrics) {
   const { innerCS, container, headerHeight, margins, childBounds } = metrics;
   expect(innerCS).toBeTruthy();
+  
   // Zone system centers the innerContainer horizontally (innerX = 0)
   const expectedInnerX = 0; 
   const expectedInnerY = -container.height / 2 + headerHeight + margins.top;
+  
   const tx = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[0]) : 0;
   const ty = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[1]) : 0;
+  
+  // More detailed zone positioning validation
+  console.log(`Zone positioning - Expected: (${expectedInnerX}, ${expectedInnerY}), Actual: (${tx}, ${ty})`);
+  console.log(`Container height: ${container.height}, Header height: ${headerHeight}, Top margin: ${margins.top}`);
+  
+  // Check horizontal positioning (should be centered)
   expect(Math.abs(tx - expectedInnerX)).toBeLessThan(2);
-  expect(Math.abs(ty - expectedInnerY)).toBeLessThan(2);
-  // Children use the full innerContainer coordinate space
-  // They can be positioned anywhere within the available width/height
-  // The zone system handles the overall positioning via transforms
+  
+  // Check vertical positioning with more detailed error reporting
+  const yError = Math.abs(ty - expectedInnerY);
+  if (yError > 2) {
+    console.log(`❌ Zone Y positioning error: ${yError}px`);
+    console.log(`   Expected Y: ${expectedInnerY}`);
+    console.log(`   Actual Y: ${ty}`);
+    console.log(`   This indicates the innerContainer zone is positioned incorrectly`);
+  }
+  expect(yError).toBeLessThan(2);
+  
+  // Children should be positioned within the innerContainer coordinate space
+  // The innerContainer zone provides a coordinate system where (0,0) is the center
+  // and children should fit within the available width/height bounds
   expect(childBounds.width).toBeGreaterThan(0);
   expect(childBounds.height).toBeGreaterThan(0);
-  // Basic sanity check - children shouldn't be wildly outside expected range
-  expect(Math.abs(childBounds.left)).toBeLessThan(innerCS.size.width);
-  expect(Math.abs(childBounds.top)).toBeLessThan(innerCS.size.height);
+  
+  // Children should be positioned within the innerContainer bounds
+  // Allow small tolerance for positioning precision
+  const tolerance = 5;
+  const innerLeft = -innerCS.size.width / 2;
+  const innerRight = innerCS.size.width / 2;
+  const innerTop = -innerCS.size.height / 2;
+  const innerBottom = innerCS.size.height / 2;
+  
+  expect(childBounds.left).toBeGreaterThanOrEqual(innerLeft - tolerance);
+  expect(childBounds.right).toBeLessThanOrEqual(innerRight + tolerance);
+  expect(childBounds.top).toBeGreaterThanOrEqual(innerTop - tolerance);
+  expect(childBounds.bottom).toBeLessThanOrEqual(innerBottom + tolerance);
+}
+
+// New function specifically for zone positioning validation
+function assertZonePositioning(metrics) {
+  const { innerCS, container, headerHeight, margins } = metrics;
+  expect(innerCS).toBeTruthy();
+  
+  // Extract transform values
+  const transform = innerCS.transform;
+  expect(transform).toContain('translate(');
+  
+  const tx = transform.includes('translate(') ? parseFloat(transform.split('(')[1].split(',')[0]) : 0;
+  const ty = transform.includes('translate(') ? parseFloat(transform.split('(')[1].split(',')[1]) : 0;
+  
+  // Expected positioning calculations
+  const expectedInnerX = 0; // Always centered horizontally
+  const expectedInnerY = -container.height / 2 + headerHeight + margins.top;
+  
+  console.log(`\n🔍 Zone Positioning Analysis:`);
+  console.log(`   Container dimensions: ${container.width} x ${container.height}`);
+  console.log(`   Header height: ${headerHeight}`);
+  console.log(`   Margins: top=${margins.top}, right=${margins.right}, bottom=${margins.bottom}, left=${margins.left}`);
+  console.log(`   Expected zone position: (${expectedInnerX}, ${expectedInnerY})`);
+  console.log(`   Actual zone position: (${tx}, ${ty})`);
+  console.log(`   Zone size: ${innerCS.size.width} x ${innerCS.size.height}`);
+  
+  // Validate horizontal centering
+  expect(tx).toBeCloseTo(expectedInnerX, 1);
+  
+  // Validate vertical positioning
+  const yError = Math.abs(ty - expectedInnerY);
+  if (yError > 5) {
+    console.log(`\n❌ CRITICAL: Zone Y positioning is significantly off!`);
+    console.log(`   Error: ${yError}px`);
+    console.log(`   This means the innerContainer zone is not positioned correctly`);
+    console.log(`   The zone should be at Y=${expectedInnerY} but is at Y=${ty}`);
+  }
+  expect(yError).toBeLessThan(5);
+  
+  // Additional validation: zone should be positioned relative to container center
+  const containerCenterY = 0; // Container is centered at (0,0)
+  const zoneTopY = ty - innerCS.size.height / 2;
+  const zoneBottomY = ty + innerCS.size.height / 2;
+  
+  console.log(`   Zone bounds: top=${zoneTopY.toFixed(1)}, bottom=${zoneBottomY.toFixed(1)}`);
+  console.log(`   Container bounds: top=${-container.height/2}, bottom=${container.height/2}`);
+  
+  // Zone should be within container bounds
+  expect(zoneTopY).toBeGreaterThan(-container.height / 2);
+  expect(zoneBottomY).toBeLessThan(container.height / 2);
 }
 
 function assertZoneContainerSizing(metrics) {
@@ -213,11 +323,17 @@ test.describe('Adapter Nodes - Clean Suite', () => {
         assertInnerContainerPlacement(metrics);
       });
 
+      // 2b) Zone positioning validation - specifically checks if zone is positioned correctly
+      test('zone positioning: innerContainer zone placement', async ({ page }) => {
+        const metrics = await getAdapterMetrics(page);
+        assertZonePositioning(metrics);
+      });
+
       // 3) zoneContainer: total size based on inner content + header + margins
       test('zoneContainer: sizing respects content + header + margins', async ({ page }) => {
         const metrics = await getAdapterMetrics(page);
         assertZoneContainerSizing(metrics);
-    });
+      });
   });
   }
 });
