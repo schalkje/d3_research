@@ -129,7 +129,7 @@ export const demoData = {
                     status: "Ready",
                     layout: {
                         displayMode: "full",
-                        arrangement: "default"
+                        arrangement: 1
                     },
                     parentId: "mixed-columns"
                 }

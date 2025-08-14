@@ -81,7 +81,17 @@ export default class AdapterNode extends BaseContainerNode {
       }
     }
     
-    if (!nodeData.layout.arrangement) nodeData.layout.arrangement = 1;
+    // Validate and normalize arrangement
+    const validArrangements = [1, 2, 3, 4, 5];
+    if (nodeData.layout.arrangement === undefined || nodeData.layout.arrangement === null) {
+      nodeData.layout.arrangement = 1;
+    } else {
+      const arr = nodeData.layout.arrangement;
+      if (typeof arr !== 'number' || !Number.isInteger(arr) || !validArrangements.includes(arr)) {
+        console.error(`AdapterNode: invalid layout.arrangement value: "${arr}". Expected number in [1..5]. Defaulting to 1.`);
+        nodeData.layout.arrangement = 1;
+      }
+    }
     
     // Ensure children array exists and pre-populate with child data
     if (!nodeData.children) nodeData.children = [];

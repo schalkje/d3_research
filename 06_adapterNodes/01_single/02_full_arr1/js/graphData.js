@@ -45,8 +45,6 @@ export const demoData = {
             label: "Archive Focused",
             code: "AF1",
             type: "adapter",
-            x: 300,
-            y: 200,
             
             // Layout configuration for arrangement 1 (archive-focused)
             layout: {

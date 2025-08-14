@@ -48,8 +48,8 @@ export const demoData = {
             status: "Ready",
             // Layout properties
             layout: {
-                displayMode: "full", // or "role", "code"
-                arrangement: "default" // varies by node type
+                mode: "full", // or "role", "code"
+                arrangement: "1", // varies by node type
             },
             // Child nodes (for container nodes)
             children: [],
