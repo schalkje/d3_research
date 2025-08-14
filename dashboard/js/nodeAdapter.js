@@ -598,18 +598,75 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     
     console.log('Layout algorithm 5 - found nodes:', {
-      archive: !!archiveNode
+      archive: !!archiveNode,
+      coordinateSystem
     });
     
     if (archiveNode) {
-      const margin = this.containerMargin.top;
+      // Center the archive node within the innerContainer zone
+      // Zone coordinate system has origin at (0,0) and size represents available space
+      const x = 0; // Center horizontally
+      const y = coordinateSystem?.size?.height ? coordinateSystem.size.height / 2 : archiveNode.data.height / 2;
       
-      // Position archive node with margin from left and top (zone coordinates start at 0,0)
-      archiveNode.move(margin, margin);
+      archiveNode.move(x, y);
       
-      console.log('Positioning complete:', {
-        archive: { x: margin, y: margin }
+      console.log('Positioning complete (archive-only, centered):', {
+        archive: { x, y },
+        coordinateSystemSize: coordinateSystem?.size
       });
+      
+      // Resize container to fit archive node properly (like lane/column nodes do)
+      this.resizeArchiveOnlyContainer(archiveNode);
+    }
+  }
+
+  // Method to resize container for archive-only mode (similar to lane/column nodes)
+  resizeArchiveOnlyContainer(archiveNode) {
+    if (!this.zoneManager || this._isResizing) return;
+    
+    const marginZone = this.zoneManager.marginZone;
+    const headerZone = this.zoneManager.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    
+    if (marginZone) {
+      const margins = marginZone.getMargins();
+      
+      // Calculate required size based on archive node content
+      const contentWidth = archiveNode.data.width;
+      const contentHeight = archiveNode.data.height;
+      
+      const newSize = {
+        width: contentWidth + margins.left + margins.right,
+        height: headerHeight + margins.top + contentHeight + margins.bottom
+      };
+      
+      console.log('Archive-only container resize calculation:', {
+        archiveNode: { width: archiveNode.data.width, height: archiveNode.data.height },
+        margins,
+        headerHeight,
+        newSize,
+        currentSize: { width: this.data.width, height: this.data.height }
+      });
+      
+      // Resize if the calculated size is different
+      if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
+        this._isResizing = true;
+        try {
+          this.resize(newSize);
+          // Force zones to update their coordinate systems after resizing
+          if (this.zoneManager) {
+            this.zoneManager.zones.forEach(zone => {
+              if (zone.updateCoordinateSystem) {
+                zone.updateCoordinateSystem();
+              }
+            });
+          }
+          // Notify parent nodes that this node's size has changed
+          this.handleDisplayChange();
+        } finally {
+          this._isResizing = false;
+        }
+      }
     }
   }
 
