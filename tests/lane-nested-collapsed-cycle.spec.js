@@ -34,13 +34,27 @@ test.describe('Lane Nested Collapsed: collapse-expand preserves layout', () => {
     await expect(sub1).toBeVisible();
     await expect(sub2).toBeVisible();
 
-    // Collapse main
-    await main.locator('g.zoom-button').click();
+    // Collapse main (target only the main lane's header zoom button)
+    await main.locator(':scope > g.zone-header > g.zoom-button').first().click();
     await page.waitForTimeout(800);
 
-    // Expand main
-    await main.locator('g.zoom-button').click();
+    // Expand main (target only the main lane's header zoom button)
+    await main.locator(':scope > g.zone-header > g.zoom-button').first().click();
     await page.waitForTimeout(1000);
+
+    // Wait for inner container to be recreated with proper height
+    await page.waitForFunction(() => {
+      const gSub1 = document.querySelector('g.lane#subLane1');
+      if (!gSub1) return false;
+      
+      const innerRect = gSub1.querySelector('g.zone-innerContainer > rect.zone-innerContainer');
+      if (!innerRect) return false;
+      
+      const height = parseFloat(innerRect.getAttribute('height') || '0');
+      console.log('subLane1 inner container height:', height);
+      
+      return height > 1;
+    }, { timeout: 10000 });
 
     // Collect metrics for subLane1 (expanded) and subLane2 (collapsed)
     const metrics = await page.evaluate(() => {
