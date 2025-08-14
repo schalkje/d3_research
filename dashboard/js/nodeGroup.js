@@ -84,23 +84,18 @@ export default class GroupNode extends BaseContainerNode {
   }
 
   runSimulation() {
-    // for this stage, only add links between children
+    // Disable legacy simulation when zone system is active to prevent drift
+    if (this.zoneManager?.innerContainerZone) {
+      return;
+    }
+    // Legacy path (no zones): keep behavior
     var links = [];
-    // for (let i = 0; i < this.data.children.length; i++) {
-    //   if (i < this.data.children.length - 1) {
-    //     links.push({
-    //       source: this.data.children[i].id,
-    //       source: this.data.children[i + 1].id,
-    //     });
-    //   }
-    // }
-
     this.simulation = new Simulation(this);
     this.simulation.init();
   }
 
   arrange() {
-    // console.log("Arranging GroupNode:", this.id);
-    this.runSimulation();
+    // Prefer zone-based layout; disable legacy simulation to avoid drift
+    this.updateChildren();
   }
 }

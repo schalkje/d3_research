@@ -87,11 +87,9 @@ export default class ColumnsNode extends BaseContainerNode {
       const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
 
       visibleChildNodes.forEach(childNode => {
-        const x = currentX + childNode.data.width / 2; // Position by center
-        // Position children at a consistent Y position (like lanes do)
-        const y = childNode.data.height / 2; // Position by center, starting from top
+        const x = currentX + childNode.data.width / 2; // center of child
+        const y = 0; // center vertically in zone coordinates
 
-        // Position children relative to the inner container's coordinate system
         childNode.move(x, y);
         currentX += childNode.data.width + spacing;
       });

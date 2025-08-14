@@ -68,6 +68,82 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
     return parentLocator.locator(getChildNodeSelector());
   }
 
+  // Metrics helper (zone-aware), similar to adapter metrics
+  async function getColumnsMetrics(page) {
+    return await page.evaluate(() => {
+      const columnsEl = document.querySelector('g.columns');
+      if (!columnsEl) return null;
+      const node = columnsEl.__node;
+      const zoneManager = node?.zoneManager;
+      const headerZone = zoneManager?.headerZone;
+      const marginZone = zoneManager?.marginZone;
+      const innerZone = zoneManager?.innerContainerZone;
+      const containerRect = columnsEl.querySelector('rect.container-shape');
+      const headerRect = columnsEl.querySelector('rect.header-background');
+
+      // Collect child nodes using __node for true center-based x/y
+      const childGroups = Array.from(columnsEl.querySelectorAll('g.zone-innerContainer > g'));
+      const childEntries = childGroups
+        .map(g => g.__node)
+        .filter(inst => inst && inst.data && typeof inst.x === 'number' && typeof inst.y === 'number')
+        .map(inst => ({ x: inst.x, y: inst.y, width: inst.data.width, height: inst.data.height }));
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const c of childEntries) {
+        const left = c.x - c.width / 2;
+        const right = c.x + c.width / 2;
+        const top = c.y - c.height / 2;
+        const bottom = c.y + c.height / 2;
+        minX = Math.min(minX, left);
+        minY = Math.min(minY, top);
+        maxX = Math.max(maxX, right);
+        maxY = Math.max(maxY, bottom);
+      }
+      const childBounds = childEntries.length === 0
+        ? { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 }
+        : { width: maxX - minX, height: maxY - minY, left: minX, top: minY, right: maxX, bottom: maxY };
+
+      return {
+        headerHeight: headerZone ? headerZone.getHeaderHeight() : (headerRect ? parseFloat(headerRect.getAttribute('height') || '0') : 0),
+        margins: marginZone ? marginZone.getMargins() : { top: 8, right: 8, bottom: 8, left: 8 },
+        innerCS: innerZone ? innerZone.getCoordinateSystem() : null,
+        container: {
+          width: node?.data?.width ?? (containerRect ? parseFloat(containerRect.getAttribute('width') || '0') : 0),
+          height: node?.data?.height ?? (containerRect ? parseFloat(containerRect.getAttribute('height') || '0') : 0)
+        },
+        childBounds
+      };
+    });
+  }
+
+  function assertInnerContainerPlacement(metrics) {
+    const { innerCS, container, headerHeight, margins, childBounds } = metrics;
+    expect(innerCS).toBeTruthy();
+
+    const expectedInnerX = 0;
+    const expectedInnerY = -container.height / 2 + headerHeight + margins.top + (innerCS.size.height / 2);
+    const tx = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[0]) : 0;
+    const ty = innerCS.transform.includes('translate(') ? parseFloat(innerCS.transform.split('(')[1].split(',')[1]) : 0;
+
+    // Positioning checks
+    expect(Math.abs(tx - expectedInnerX)).toBeLessThan(2);
+    expect(Math.abs(ty - expectedInnerY)).toBeLessThan(2);
+
+    // Containment checks
+    const tolerance = 5;
+    const innerLeft = -innerCS.size.width / 2;
+    const innerRight = innerCS.size.width / 2;
+    const innerTop = -innerCS.size.height / 2;
+    const innerBottom = innerCS.size.height / 2;
+
+    expect(childBounds.width).toBeGreaterThanOrEqual(0);
+    expect(childBounds.height).toBeGreaterThanOrEqual(0);
+    expect(childBounds.left).toBeGreaterThanOrEqual(innerLeft - tolerance);
+    expect(childBounds.right).toBeLessThanOrEqual(innerRight + tolerance);
+    expect(childBounds.top).toBeGreaterThanOrEqual(innerTop - tolerance);
+    expect(childBounds.bottom).toBeLessThanOrEqual(innerBottom + tolerance);
+  }
+
   // Helper function to get node dimensions
   async function getNodeDimensions(page, nodeSelector) {
     const node = page.locator(nodeSelector);
@@ -260,6 +336,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       
       // Verify width is close to expected (allow some tolerance)
       expect(parseFloat(actualWidth)).toBeCloseTo(expectedWidth, -1); // Allow 10px tolerance
+    });
+
+    test('innerContainer: coordinate system and containment', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
     });
   });
 

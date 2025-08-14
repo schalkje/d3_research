@@ -248,10 +248,13 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   positionContainer() {
-    // console.log(`Positioning Container for BaseContainerNode: ${this.id}`);
+    // When using the zone system, container positioning is handled by zones (center-based)
+    if (this.zoneManager) {
+      return;
+    }
+    // Legacy fallback (non-zone system)
     var containerDimensions = getComputedDimensions(this.element);
     var elementDimensions = getComputedDimensions(this.element);
-
     const containerX = 0;
     var containerY = elementDimensions.y - containerDimensions.y + this.containerMargin.top;
     this.element.attr("transform", `translate(${containerX}, ${containerY})`);
