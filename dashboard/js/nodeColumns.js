@@ -45,9 +45,7 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   layoutColumns() {
-    if (this.childNodes.length === 0) {
-      return;
-    }
+    // Always run sizing logic, even with zero children, so container height is at least header + margins
 
     // Get zone manager and inner container zone
     const innerContainerZone = this.zoneManager?.innerContainerZone;
@@ -78,18 +76,14 @@ export default class ColumnsNode extends BaseContainerNode {
       if (childNodes.length === 0) return;
 
       const spacing = this.nodeSpacing?.horizontal || 20;
-      // Start with minimal padding from the left edge of the inner container
-      // The inner container already accounts for margins, so use minimal padding
-      const leftPadding = 0; // Minimal left padding
+      const leftPadding = 0;
       let currentX = -coordinateSystem.size.width / 2 + leftPadding;
 
-      // Only position visible children
       const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
 
       visibleChildNodes.forEach(childNode => {
-        const x = currentX + childNode.data.width / 2; // center of child
-        const y = 0; // center vertically in zone coordinates
-
+        const x = currentX + childNode.data.width / 2;
+        const y = 0;
         childNode.move(x, y);
         currentX += childNode.data.width + spacing;
       });
@@ -115,7 +109,6 @@ export default class ColumnsNode extends BaseContainerNode {
     const totalSpacing = visibleChildren.length > 1 ? (visibleChildren.length - 1) * this.nodeSpacing.horizontal : 0;
     const maxChildHeight = visibleChildren.length > 0 
       ? Math.max(...visibleChildren.map(node => {
-          // Let each child report its effective height
           const effectiveHeight = node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height;
           return effectiveHeight;
         }))
@@ -158,11 +151,11 @@ export default class ColumnsNode extends BaseContainerNode {
         // This ensures proper sizing based on actual child content
         const margins = marginZone.getMargins();
         const contentWidth = totalChildWidth + totalSpacing;
-        const contentHeight = maxChildHeight;
+        const contentHeight = Math.max(maxChildHeight, 0);
         
         newSize = {
           width: Math.max(this.minimumSize.width, contentWidth + margins.left + margins.right),
-          height: headerHeight + margins.top + contentHeight + margins.bottom
+          height: headerHeight + margins.top + Math.max(contentHeight, 0) + margins.bottom
         };
       }
       
