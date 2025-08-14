@@ -575,22 +575,33 @@ export default class AdapterNode extends BaseContainerNode {
     console.log('Layout algorithm 4 - found nodes:', {
       staging: !!stagingNode,
       other: !!otherNode,
-      mode: this.data.layout.mode
+      mode: this.data.layout.mode,
+      coordinateSystem
     });
     
     if (stagingNode && otherNode) {
-      const margin = this.containerMargin.top;
+      // Center the two nodes horizontally within the zone coordinate system
+      // Zone coordinate system has origin at (0,0) and size represents available space
+      const totalWidth = stagingNode.data.width + this.nodeSpacing.horizontal + otherNode.data.width;
+      const y = coordinateSystem?.size?.height ? coordinateSystem.size.height / 2 : stagingNode.data.height / 2;
       
-      // Position staging node with margin from left and top (zone coordinates start at 0,0)
-      stagingNode.move(margin, margin);
+      // Center the layout horizontally
+      const startX = -totalWidth / 2;
+      const stagingX = startX + stagingNode.data.width / 2;
+      const otherX = stagingX + stagingNode.data.width / 2 + this.nodeSpacing.horizontal + otherNode.data.width / 2;
       
-      // Position other node to the right of staging
-      otherNode.move(margin + stagingNode.data.width + this.nodeSpacing.horizontal, margin);
+      stagingNode.move(stagingX, y);
+      otherNode.move(otherX, y);
       
-      console.log('Positioning complete:', {
-        staging: { x: margin, y: margin },
-        other: { x: margin + stagingNode.data.width + this.nodeSpacing.horizontal, y: margin }
+      console.log('Positioning complete (horizontal line, centered):', {
+        staging: { x: stagingX, y },
+        other: { x: otherX, y },
+        totalWidth,
+        coordinateSystemSize: coordinateSystem?.size
       });
+      
+      // Resize container to fit both nodes properly (like archive-only mode)
+      this.resizeTwoNodeContainer(stagingNode, otherNode);
     }
   }
 
@@ -617,6 +628,59 @@ export default class AdapterNode extends BaseContainerNode {
       
       // Resize container to fit archive node properly (like lane/column nodes do)
       this.resizeArchiveOnlyContainer(archiveNode);
+    }
+  }
+
+  // Method to resize container for two-node horizontal layout (staging-archive/staging-transform)
+  resizeTwoNodeContainer(stagingNode, otherNode) {
+    if (!this.zoneManager || this._isResizing) return;
+    
+    const marginZone = this.zoneManager.marginZone;
+    const headerZone = this.zoneManager.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    
+    if (marginZone) {
+      const margins = marginZone.getMargins();
+      
+      // Calculate required size based on both nodes + spacing
+      const contentWidth = stagingNode.data.width + this.nodeSpacing.horizontal + otherNode.data.width;
+      const contentHeight = Math.max(stagingNode.data.height, otherNode.data.height);
+      
+      const newSize = {
+        width: contentWidth + margins.left + margins.right,
+        height: headerHeight + margins.top + contentHeight + margins.bottom
+      };
+      
+      console.log('Two-node container resize calculation:', {
+        stagingNode: { width: stagingNode.data.width, height: stagingNode.data.height },
+        otherNode: { width: otherNode.data.width, height: otherNode.data.height },
+        spacing: this.nodeSpacing.horizontal,
+        margins,
+        headerHeight,
+        contentSize: { width: contentWidth, height: contentHeight },
+        newSize,
+        currentSize: { width: this.data.width, height: this.data.height }
+      });
+      
+      // Resize if the calculated size is different
+      if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
+        this._isResizing = true;
+        try {
+          this.resize(newSize);
+          // Force zones to update their coordinate systems after resizing
+          if (this.zoneManager) {
+            this.zoneManager.zones.forEach(zone => {
+              if (zone.updateCoordinateSystem) {
+                zone.updateCoordinateSystem();
+              }
+            });
+          }
+          // Notify parent nodes that this node's size has changed
+          this.handleDisplayChange();
+        } finally {
+          this._isResizing = false;
+        }
+      }
     }
   }
 
