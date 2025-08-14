@@ -156,13 +156,20 @@ export default class BaseContainerNode extends BaseNode {
     if (this.parentNode && this.parentNode.collapsed) {
       this.parentNode.collapsed = false;
     } else {
-      // Re-attach child nodes to the DOM when expanding
+      // Recreate inner container zone DOM and re-attach child nodes to the DOM when expanding
       if (this.zoneManager?.innerContainerZone) {
+        const innerZone = this.zoneManager.innerContainerZone;
+        // If the inner container zone DOM was destroyed, recreate it
+        if (!innerZone.element) {
+          innerZone.init();
+        }
         // Show zones first so the child container exists
         this.zoneManager.updateZoneVisibility();
+        // Ensure zones reflect current size
+        this.zoneManager.update();
+        // Re-attach children and make them visible
         this.attachChildrenToDOM();
-        // Ensure visibility flags are set correctly
-        this.zoneManager.innerContainerZone.updateChildVisibility(true);
+        innerZone.updateChildVisibility(true);
       }
 
       // Show edges and ghostlines when expanding
@@ -205,9 +212,27 @@ export default class BaseContainerNode extends BaseNode {
       // Js: + 5, because of a strange bug, where the size differs slightly between renders, depending on the zoom level
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
-    // Detach child nodes from the SVG (remove their DOM) while keeping data/instances
+    // Detach child nodes and remove inner container/edges from the DOM
     if (this.zoneManager?.innerContainerZone) {
+      // Remove child DOM and child zone managers
       this.detachChildrenFromDOM();
+
+      // Remove edges and ghostlines groups entirely
+      if (this.edgesContainer) {
+        this.edgesContainer.remove();
+        this.edgesContainer = null;
+      }
+      if (this.ghostContainer) {
+        this.ghostContainer.remove();
+        this.ghostContainer = null;
+      }
+
+      // Destroy inner container zone DOM (g and rect)
+      const innerZone = this.zoneManager.innerContainerZone;
+      if (innerZone && typeof innerZone.destroy === 'function') {
+        innerZone.destroy();
+      }
+
       // Update zone visibility to hide inner container and margin zones
       this.zoneManager.updateZoneVisibility();
     } else {
@@ -581,6 +606,22 @@ export default class BaseContainerNode extends BaseNode {
         }
         // Make the child visible again (containers will manage their own collapsed children)
         childNode.visible = true;
+        // For nested containers, ensure their zones and layout are refreshed
+        if (childNode.isContainer) {
+          // Ensure descendants are visible unless they are collapsed containers
+          if (typeof childNode.propagateVisibility === 'function') {
+            childNode.propagateVisibility(true);
+          }
+          if (childNode.zoneManager) {
+            childNode.zoneManager.update();
+          }
+          if (typeof childNode.updateChildren === 'function') {
+            childNode.updateChildren();
+          }
+          if (childNode.zoneManager?.innerContainerZone) {
+            childNode.zoneManager.innerContainerZone.updateChildPositions();
+          }
+        }
       } catch (e) {
         console.warn('Failed attaching child to DOM:', childNode?.id, e);
       }
@@ -590,6 +631,32 @@ export default class BaseContainerNode extends BaseNode {
     if (this.zoneManager?.innerContainerZone) {
       this.zoneManager.innerContainerZone.forceUpdateChildPositions();
     }
+
+    // Finally, ensure this container recomputes its own sizing/zone metrics
+    if (this.zoneManager) {
+      this.zoneManager.update();
+    }
+
+    // Defer an additional layout pass to ensure nested containers complete init cycles
+    setTimeout(() => {
+      try {
+        this.childNodes.forEach((childNode) => {
+          if (childNode.isContainer) {
+            if (childNode.zoneManager) childNode.zoneManager.update();
+            if (typeof childNode.updateChildren === 'function') childNode.updateChildren();
+            if (childNode.zoneManager?.innerContainerZone) {
+              childNode.zoneManager.innerContainerZone.updateChildPositions();
+            }
+          }
+        });
+        if (this.zoneManager?.innerContainerZone) {
+          this.zoneManager.innerContainerZone.updateChildPositions();
+        }
+        if (this.zoneManager) this.zoneManager.update();
+      } catch (e) {
+        console.warn('Deferred layout after reattach failed for', this.id, e);
+      }
+    }, 0);
   }
 
   applyMinimumSize() {
