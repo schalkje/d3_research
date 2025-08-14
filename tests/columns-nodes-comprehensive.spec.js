@@ -244,6 +244,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       expect(dimensions.height).toBeLessThan(10000); // Reasonable upper bound
     });
 
+    test('innerContainer: zone placement and containment', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
+    });
+
     test('should position child nodes in horizontal row', async ({ page }) => {
       const nodesFound = await waitForColumnsNodes(page);
       expect(nodesFound).toBe(true);
@@ -655,6 +663,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       const rightType = await rightSection.getAttribute('class');
       expect(rightType).toContain('columns');
     });
+
+    test('innerContainer: zone placement and containment (nested)', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
+    });
   });
 
   test.describe('Dynamic Columns Tests', () => {
@@ -703,6 +719,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       }
     });
 
+    test('innerContainer: zone placement and containment (after add)', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
+    });
+
     test('should remove children and recalculate layout', async ({ page }) => {
       const nodesFound = await waitForColumnsNodes(page);
       expect(nodesFound).toBe(true);
@@ -740,6 +764,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
         expect(currX).toBeGreaterThan(prevX);
       }
     });
+
+    test('innerContainer: zone placement and containment (after remove)', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
+    });
   });
 
   test.describe('Columns Sizing Tests', () => {
@@ -771,6 +803,14 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
       const columnsHeight = await columnsRect.getAttribute('height');
       
       expect(parseFloat(columnsHeight)).toBeGreaterThanOrEqual(maxChildHeight);
+    });
+
+    test('innerContainer: zone placement and containment', async ({ page }) => {
+      const nodesFound = await waitForColumnsNodes(page);
+      expect(nodesFound).toBe(true);
+      const metrics = await getColumnsMetrics(page);
+      expect(metrics).toBeTruthy();
+      assertInnerContainerPlacement(metrics);
     });
   });
 

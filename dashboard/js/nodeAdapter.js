@@ -586,17 +586,17 @@ export default class AdapterNode extends BaseContainerNode {
     
     if (stagingNode && transformNode && archiveNode) {
       console.log('Found all three nodes, positioning them...');
-
+      
       // Ensure sizes
       archiveNode.resize({ width: 150, height: 44 });
       transformNode.resize({ width: 150, height: 44 });
       const verticalSpacing = this.nodeSpacing.vertical; // 10
       const horizontalSpacing = this.nodeSpacing.horizontal; // 20
-
+      
       // Staging is tall: height = archive + spacing + transform
       const stagingHeight = archiveNode.data.height + verticalSpacing + transformNode.data.height;
       stagingNode.resize({ width: stagingNode.data.width, height: stagingHeight });
-
+      
       // Horizontal: staging on left, archive/transform on right; center horizontally around 0
       const rightColumnWidth = Math.max(archiveNode.data.width, transformNode.data.width);
       const totalWidth = stagingNode.data.width + horizontalSpacing + rightColumnWidth;
