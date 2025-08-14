@@ -156,11 +156,13 @@ export default class BaseContainerNode extends BaseNode {
     if (this.parentNode && this.parentNode.collapsed) {
       this.parentNode.collapsed = false;
     } else {
-      // Show child nodes if using zone system
+      // Re-attach child nodes to the DOM when expanding
       if (this.zoneManager?.innerContainerZone) {
-        this.zoneManager.innerContainerZone.updateChildVisibility(true);
-        // Update zone visibility to show all zones
+        // Show zones first so the child container exists
         this.zoneManager.updateZoneVisibility();
+        this.attachChildrenToDOM();
+        // Ensure visibility flags are set correctly
+        this.zoneManager.innerContainerZone.updateChildVisibility(true);
       }
 
       // Show edges and ghostlines when expanding
@@ -203,9 +205,9 @@ export default class BaseContainerNode extends BaseNode {
       // Js: + 5, because of a strange bug, where the size differs slightly between renders, depending on the zoom level
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
-    // Hide child nodes but keep zone system elements
+    // Detach child nodes from the SVG (remove their DOM) while keeping data/instances
     if (this.zoneManager?.innerContainerZone) {
-      this.zoneManager.innerContainerZone.updateChildVisibility(false);
+      this.detachChildrenFromDOM();
       // Update zone visibility to hide inner container and margin zones
       this.zoneManager.updateZoneVisibility();
     } else {
@@ -536,6 +538,57 @@ export default class BaseContainerNode extends BaseNode {
     this.edgesContainer = null;
     for (const childNode of this.childNodes) {
       if (childNode instanceof BaseContainerNode) childNode.cleanContainer(propagate);
+    }
+  }
+
+  // Remove child DOM nodes (but keep instances) so collapsed containers reduce DOM size
+  detachChildrenFromDOM() {
+    if (!this.childNodes || this.childNodes.length === 0) return;
+
+    // Mark children invisible and remove their DOM elements
+    this.childNodes.forEach((childNode) => {
+      try {
+        childNode.visible = false;
+        if (childNode.element) {
+          childNode.element.remove();
+          childNode.element = null;
+        }
+        // If child is a container and has zones, destroy them so they can re-init on expand
+        if (childNode.zoneManager && typeof childNode.zoneManager.destroy === 'function') {
+          childNode.zoneManager.destroy();
+          childNode.zoneManager = null;
+        }
+      } catch (e) {
+        console.warn('Failed detaching child from DOM:', childNode?.id, e);
+      }
+    });
+  }
+
+  // Re-create child DOM nodes and add them back into the inner container zone
+  attachChildrenToDOM() {
+    if (!this.childNodes || this.childNodes.length === 0) return;
+    const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.element;
+
+    this.childNodes.forEach((childNode) => {
+      try {
+        // If DOM does not exist, re-init the child into the current child container
+        if (!childNode.element) {
+          childNode.init(childContainer);
+          // Ensure the zone knows about this child
+          if (this.zoneManager?.innerContainerZone) {
+            this.zoneManager.innerContainerZone.addChild(childNode);
+          }
+        }
+        // Make the child visible again (containers will manage their own collapsed children)
+        childNode.visible = true;
+      } catch (e) {
+        console.warn('Failed attaching child to DOM:', childNode?.id, e);
+      }
+    });
+
+    // After re-attaching, update positions via the zone system
+    if (this.zoneManager?.innerContainerZone) {
+      this.zoneManager.innerContainerZone.forceUpdateChildPositions();
     }
   }
 
