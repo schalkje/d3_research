@@ -326,6 +326,38 @@ export default class RectangularNode extends BaseNode {
       // Only truncate for non-auto-size layouts
       this.truncateTextIfNeeded();
     }
+
+    // Ensure connection points reflect the actual rect size after resize
+    if (this.settings.showConnectionPoints) {
+      const rectSel = this.element.select("rect");
+      if (!rectSel.empty()) {
+        const width = parseFloat(rectSel.attr("width")) || this.data.width;
+        const height = parseFloat(rectSel.attr("height")) || this.data.height;
+        try {
+          if (this.settings.isDebug) {
+            const bbox = this.element?.node()?.getBBox?.();
+            console.log(`[CP/RESIZE-RECT] ${this.id} (rect) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
+          }
+        } catch {}
+        const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
+        Object.values(connectionPoints).forEach((point) => {
+          (this.connectionPointsGroup || this.element)
+            .select(`.connection-point.side-${point.side}`)
+            .attr("cx", point.x)
+            .attr("cy", point.y);
+        });
+        try {
+          if (this.settings.isDebug) {
+            const read = (side) => ({
+              side,
+              cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),
+              cy: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cy')),
+            });
+            console.log(`[CP/READ-RESIZE-RECT] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
+          }
+        } catch {}
+      }
+    }
   }
 
   /**
