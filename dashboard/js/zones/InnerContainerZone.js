@@ -102,12 +102,14 @@ export class InnerContainerZone extends BaseZone {
     if (marginZone) {
       const margins = marginZone.getMargins();
       
+      // Use the larger of zone size and node size to derive available content area
+      const baseWidth = Math.max(this.size.width, this.node.data.width || 0);
+      const baseHeight = Math.max(this.size.height, this.node.data.height || 0);
+      
       // Calculate inner container position relative to node center
-      // We position the CENTER of the inner container content area
-      // below the header zone + top margin, i.e. at (top + header + topMargin + availableHeight/2)
       const containerTop = -this.node.data.height / 2;
-      const availableWidth = Math.max(0, this.size.width - margins.left - margins.right);
-      const availableHeight = Math.max(0, this.size.height - headerHeight - margins.top - margins.bottom);
+      const availableWidth = Math.max(0, baseWidth - margins.left - margins.right);
+      const availableHeight = Math.max(0, baseHeight - headerHeight - margins.top - margins.bottom);
       const innerX = 0; // Center horizontally
       const innerY = containerTop + headerHeight + margins.top + (availableHeight / 2);
       
@@ -125,8 +127,10 @@ export class InnerContainerZone extends BaseZone {
     } else {
       // Fallback if margin zone is not available
       const defaultMargin = 8;
-      const availableWidth = Math.max(0, this.size.width - defaultMargin * 2);
-      const availableHeight = Math.max(0, this.size.height - headerHeight - defaultMargin * 2);
+      const baseWidth = Math.max(this.size.width, this.node.data.width || 0);
+      const baseHeight = Math.max(this.size.height, this.node.data.height || 0);
+      const availableWidth = Math.max(0, baseWidth - defaultMargin * 2);
+      const availableHeight = Math.max(0, baseHeight - headerHeight - defaultMargin * 2);
       const innerX = 0; // Center horizontally
       const innerY = -this.node.data.height / 2 + headerHeight + defaultMargin + (availableHeight / 2);
       

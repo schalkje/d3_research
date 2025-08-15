@@ -163,6 +163,12 @@ export default class BaseContainerNode extends BaseNode {
         // Force re-initialization of the inner container zone if its DOM was destroyed
         if (!innerZone.element || !innerZone.initialized) {
           innerZone.init();
+          // Ensure freshly recreated zone has correct size from current node
+          if (this.zoneManager) {
+            this.zoneManager.resize(this.data.width, this.data.height);
+          } else {
+            innerZone.resize(this.data.width, this.data.height);
+          }
           innerZone.update(); // Ensure coordinate system is updated
         }
         
@@ -209,10 +215,12 @@ export default class BaseContainerNode extends BaseNode {
           const headerHeight = this.zoneManager?.headerZone ? this.zoneManager.headerZone.getHeaderHeight() : 20;
           const margins = this.zoneManager?.marginZone ? this.zoneManager.marginZone.getMargins() : { top: 8, right: 8, bottom: 8, left: 8 };
           const contentSize = innerZone.calculateChildContentSize();
-          const newWidth = Math.max(this.minimumSize.width, contentSize.width + margins.left + margins.right);
+          const widthFromContent = contentSize.width + margins.left + margins.right;
+          const newWidth = Math.max(this.data.width, this.minimumSize.width, widthFromContent);
           const newHeight = Math.max(this.minimumSize.height, headerHeight + margins.top + contentSize.height + margins.bottom);
           this.resize({ width: newWidth, height: newHeight }, true);
           // Ensure zones reflect final size
+          if (this.zoneManager) this.zoneManager.resize(newWidth, newHeight);
           this.zoneManager.update();
           // And update child positions once more relative to final coordinate system
           innerZone.updateChildPositions();
@@ -661,6 +669,8 @@ export default class BaseContainerNode extends BaseNode {
           // Force re-initialization of nested container zones if their DOM was destroyed
           if (childNode.zoneManager?.innerContainerZone && (!childNode.zoneManager.innerContainerZone.element || !childNode.zoneManager.innerContainerZone.initialized)) {
             childNode.zoneManager.innerContainerZone.init();
+            // Ensure nested zones have correct size from child node
+            childNode.zoneManager.resize(childNode.data.width, childNode.data.height);
             childNode.zoneManager.innerContainerZone.update();
           }
           
