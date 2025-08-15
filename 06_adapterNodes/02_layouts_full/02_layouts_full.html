@@ -25,6 +25,7 @@
         
         <!-- Demo Controls -->
         <div class="demo-controls">
+            <button id="settingsBtn" type="button">Settings</button>
             <button id="updateBtn" onclick="updateDemo()">Update</button>
             <button id="resetBtn" onclick="resetDemo()">Reset</button>
             <button id="testBtn" onclick="runTests()">Run Tests</button>
@@ -33,6 +34,69 @@
     </header>
 
     <!-- Demo Container -->
+    <!-- Settings Panel -->
+    <section class="settings-panel">
+        <div class="settings-row">
+            <div class="settings-group">
+                <label class="settings-title">Variation</label>
+                <select id="variationSelect">
+                    <option value="default">Default</option>
+                    <option value="allFull">All Full Arrangements</option>
+                    <option value="twoNode">Two-Node Modes</option>
+                    <option value="singleNode">Single Node Mode</option>
+                    <option value="mixedDisplay">Mixed Display Modes</option>
+                    <option value="comprehensive">Comprehensive Grid</option>
+                </select>
+            </div>
+            <div class="settings-group is-toggles">
+                <label class="settings-title">Toggles</label>
+                <div class="settings-toggles">
+                    <label><input type="checkbox" id="chkZoomToRoot"> Zoom to root</label>
+                    <label><input type="checkbox" id="chkShowBoundingBox"> Show bounding box</label>
+                    <label><input type="checkbox" id="chkShowCenterMark"> Center mark</label>
+                    <label><input type="checkbox" id="chkShowConnectionPoints"> Connection points</label>
+                    <label><input type="checkbox" id="chkShowGhostlines"> Ghostlines</label>
+                    <label><input type="checkbox" id="chkCurved"> Curved edges</label>
+                    <label><input type="checkbox" id="chkShowEdges" checked> Show edges</label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Edges</label>
+                <div class="settings-inline">
+                    <label>Curve margin <input type="number" step="0.05" min="0" max="0.8" id="numCurveMargin" style="width:80px"></label>
+                </div>
+            </div>
+        </div>
+        <div class="settings-row">
+            <div class="settings-group">
+                <label class="settings-title">Selector</label>
+                <div class="settings-inline">
+                    <label>Incoming <input type="number" min="0" id="numSelectorIn" style="width:70px"></label>
+                    <label>Outgoing <input type="number" min="0" id="numSelectorOut" style="width:70px"></label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Node spacing</label>
+                <div class="settings-inline">
+                    <label>H <input type="number" min="0" id="numNodeSpacingH" style="width:70px"></label>
+                    <label>V <input type="number" min="0" id="numNodeSpacingV" style="width:70px"></label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Container margin</label>
+                <div class="settings-inline">
+                    <label>T <input type="number" min="0" id="numMarginTop" style="width:60px"></label>
+                    <label>R <input type="number" min="0" id="numMarginRight" style="width:60px"></label>
+                    <label>B <input type="number" min="0" id="numMarginBottom" style="width:60px"></label>
+                    <label>L <input type="number" min="0" id="numMarginLeft" style="width:60px"></label>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button id="rebuildBtn" type="button">Rebuild</button>
+            </div>
+        </div>
+    </section>
+
     <div class="demo-container">
         <svg id="graph" class="canvas"></svg>
     </div>
@@ -62,19 +126,79 @@
 
         let currentDataIndex = 0;
         let flowdash;
+        let currentVariationKey = 'default';
 
         // Initialize dashboard with first layout
-        function initializeDashboard(data = multipleLayoutsData) {
-            if (flowdash) {
-                flowdash.destroy();
-            }
-            flowdash = new flowDashboard.Dashboard(data);
-            flowdash.initialize('#graph');
-            updateLayoutDetails(data);
+        function getSettingsFromUI(baseSettings) {
+            const s = { ...(baseSettings || {}) };
+            s.zoomToRoot = document.getElementById('chkZoomToRoot').checked;
+            s.showBoundingBox = document.getElementById('chkShowBoundingBox').checked;
+            s.showCenterMark = document.getElementById('chkShowCenterMark').checked;
+            s.showConnectionPoints = document.getElementById('chkShowConnectionPoints').checked;
+            s.showGhostlines = document.getElementById('chkShowGhostlines').checked;
+            s.curved = document.getElementById('chkCurved').checked;
+            s.showEdges = document.getElementById('chkShowEdges').checked;
+            const curveMargin = parseFloat(document.getElementById('numCurveMargin').value);
+            if (!Number.isNaN(curveMargin)) s.curveMargin = curveMargin;
+            s.selector = s.selector || {};
+            const inVal = parseInt(document.getElementById('numSelectorIn').value, 10);
+            const outVal = parseInt(document.getElementById('numSelectorOut').value, 10);
+            if (!Number.isNaN(inVal)) s.selector.incomming = inVal;
+            if (!Number.isNaN(outVal)) s.selector.outgoing = outVal;
+            s.nodeSpacing = s.nodeSpacing || {};
+            const h = parseInt(document.getElementById('numNodeSpacingH').value, 10);
+            const v = parseInt(document.getElementById('numNodeSpacingV').value, 10);
+            if (!Number.isNaN(h)) s.nodeSpacing.horizontal = h;
+            if (!Number.isNaN(v)) s.nodeSpacing.vertical = v;
+            s.containerMargin = s.containerMargin || {};
+            const mt = parseInt(document.getElementById('numMarginTop').value, 10);
+            const mr = parseInt(document.getElementById('numMarginRight').value, 10);
+            const mb = parseInt(document.getElementById('numMarginBottom').value, 10);
+            const ml = parseInt(document.getElementById('numMarginLeft').value, 10);
+            if (!Number.isNaN(mt)) s.containerMargin.top = mt;
+            if (!Number.isNaN(mr)) s.containerMargin.right = mr;
+            if (!Number.isNaN(mb)) s.containerMargin.bottom = mb;
+            if (!Number.isNaN(ml)) s.containerMargin.left = ml;
+            return s;
         }
 
-        // Initialize with default data
-        initializeDashboard();
+        function setUIFromSettings(settings) {
+            const s = settings || {};
+            const get = (obj, key, def) => obj && obj[key] !== undefined ? obj[key] : def;
+            document.getElementById('chkZoomToRoot').checked = !!get(s, 'zoomToRoot', true);
+            document.getElementById('chkShowBoundingBox').checked = !!get(s, 'showBoundingBox', true);
+            document.getElementById('chkShowCenterMark').checked = !!get(s, 'showCenterMark', false);
+            document.getElementById('chkShowConnectionPoints').checked = !!get(s, 'showConnectionPoints', false);
+            document.getElementById('chkShowGhostlines').checked = !!get(s, 'showGhostlines', false);
+            document.getElementById('chkCurved').checked = !!get(s, 'curved', false);
+            document.getElementById('chkShowEdges').checked = get(s, 'showEdges', true) !== false;
+            document.getElementById('numCurveMargin').value = get(s, 'curveMargin', get(s, 'curved', false) ? 0.1 : 0);
+            const sel = s.selector || {};
+            document.getElementById('numSelectorIn').value = get(sel, 'incomming', 1);
+            document.getElementById('numSelectorOut').value = get(sel, 'outgoing', 1);
+            const ns = s.nodeSpacing || {};
+            document.getElementById('numNodeSpacingH').value = get(ns, 'horizontal', 20);
+            document.getElementById('numNodeSpacingV').value = get(ns, 'vertical', 10);
+            const cm = s.containerMargin || {};
+            document.getElementById('numMarginTop').value = get(cm, 'top', 18);
+            document.getElementById('numMarginRight').value = get(cm, 'right', 8);
+            document.getElementById('numMarginBottom').value = get(cm, 'bottom', 8);
+            document.getElementById('numMarginLeft').value = get(cm, 'left', 8);
+        }
+
+        function initializeDashboard(data = multipleLayoutsData) {
+            const settings = getSettingsFromUI(data.settings);
+            const dataset = { ...data, settings };
+            flowdash = new flowDashboard.Dashboard(dataset);
+            flowdash.initialize('#graph');
+            // keep global reference up to date for tests & console
+            window.flowdash = flowdash;
+            updateLayoutDetails(dataset);
+        }
+
+        // Initialize with default data and set UI
+        setUIFromSettings(multipleLayoutsData.settings);
+        initializeDashboard(multipleLayoutsData);
         
         // Attach to window for testing and debugging
         window.flowdash = flowdash;
@@ -84,21 +208,24 @@
         // Demo functions
         window.updateDemo = function() {
             console.log('Update demo called');
-            if (flowdash) {
-                flowdash.update();
-            }
+            initializeDashboard(layoutVariations[currentVariationKey] || multipleLayoutsData);
         };
         
         window.resetDemo = function() {
             console.log('Reset demo called');
             currentDataIndex = 0;
+            currentVariationKey = 'default';
+            document.getElementById('variationSelect').value = 'default';
+            setUIFromSettings(multipleLayoutsData.settings);
             initializeDashboard(multipleLayoutsData);
         };
         
         window.cycleLayouts = function() {
-            const variations = Object.values(layoutVariations);
-            currentDataIndex = (currentDataIndex + 1) % variations.length;
-            initializeDashboard(variations[currentDataIndex]);
+            const keys = Object.keys(layoutVariations);
+            currentDataIndex = (currentDataIndex + 1) % keys.length;
+            currentVariationKey = keys[currentDataIndex];
+            document.getElementById('variationSelect').value = currentVariationKey;
+            initializeDashboard(layoutVariations[currentVariationKey]);
         };
         
         window.runTests = function() {
@@ -138,6 +265,36 @@
             return descriptions[`${mode}-${arrangement}`] || 'Standard layout';
         }
         
+        // Settings events
+        document.getElementById('variationSelect').addEventListener('change', (e) => {
+            currentVariationKey = e.target.value;
+            initializeDashboard(layoutVariations[currentVariationKey] || multipleLayoutsData);
+        });
+        const immediateInputs = [
+            'chkZoomToRoot','chkShowBoundingBox','chkShowCenterMark','chkShowConnectionPoints',
+            'chkShowGhostlines','chkCurved','chkShowEdges','numCurveMargin','numSelectorIn','numSelectorOut',
+            'numNodeSpacingH','numNodeSpacingV','numMarginTop','numMarginRight','numMarginBottom','numMarginLeft'
+        ];
+        immediateInputs.forEach(id => {
+            const el = document.getElementById(id);
+            el && el.addEventListener('change', () => {
+                initializeDashboard(layoutVariations[currentVariationKey] || multipleLayoutsData);
+            });
+        });
+        document.getElementById('rebuildBtn').addEventListener('click', () => {
+            initializeDashboard(layoutVariations[currentVariationKey] || multipleLayoutsData);
+        });
+
+        // Show/Hide settings panel (hidden by default)
+        const settingsPanel = document.querySelector('.settings-panel');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const toggleSettingsVisibility = () => {
+            const isOpen = settingsPanel.classList.toggle('open');
+            settingsBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            settingsBtn.textContent = isOpen ? 'Hide settings' : 'Settings';
+        };
+        settingsBtn.addEventListener('click', toggleSettingsVisibility);
+
         // Test runner
         function runDemoTests() {
             const testStatus = document.getElementById('testStatus');

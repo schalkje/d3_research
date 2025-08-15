@@ -42,7 +42,11 @@ export default class AdapterNode extends BaseContainerNode {
       this.stagingNode = null;
       this.transformNode = null;
       this.archiveNode = null;
-      this.nodeSpacing = { horizontal: 20, vertical:10 };
+      // Adopt node spacing from container settings if provided
+      this.nodeSpacing = {
+        horizontal: (this.settings?.nodeSpacing?.horizontal ?? 20),
+        vertical: (this.settings?.nodeSpacing?.vertical ?? 10)
+      };
       
       console.log("AdapterNode constructor completed for:", this.id, "mode:", this.data.layout.mode, "arrangement:", this.data.layout.arrangement);
     } catch (error) {

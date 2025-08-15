@@ -30,13 +30,13 @@ export class MarginZone extends BaseZone {
    * Load margins from node settings
    */
   loadMargins() {
-    // Always use the standard margins for zone system consistency
-    // Override any containerMargin settings that might be incorrect
+    // Read margins from node settings if provided; fallback to defaults
+    const fromSettings = this.node?.settings?.containerMargin || {};
     this.margins = {
-      top: 8,
-      right: 8,
-      bottom: 8,
-      left: 8
+      top: fromSettings.top ?? 8,
+      right: fromSettings.right ?? 8,
+      bottom: fromSettings.bottom ?? 8,
+      left: fromSettings.left ?? 8
     };
   }
 

@@ -30,8 +30,15 @@ export default class BaseContainerNode extends BaseNode {
 
     this.simulation = null;
     this.edgesContainer ??= null;
-    this.containerMargin = ConfigManager.getDefaultContainerMargin();
-    this.nodeSpacing = ConfigManager.getDefaultNodeSpacing();
+    // Initialize layout-related properties from settings with sensible defaults
+    this.containerMargin = {
+      ...ConfigManager.getDefaultContainerMargin(),
+      ...(this.settings?.containerMargin || {})
+    };
+    this.nodeSpacing = {
+      ...ConfigManager.getDefaultNodeSpacing(),
+      ...(this.settings?.nodeSpacing || {})
+    };
     this.childNodes = [];
     this.zoneManager = null;
 
