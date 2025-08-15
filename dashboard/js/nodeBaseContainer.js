@@ -157,8 +157,9 @@ export default class BaseContainerNode extends BaseNode {
       this.parentNode.collapsed = false;
     } else {
       // Recreate inner container zone DOM and re-attach child nodes to the DOM when expanding
-      if (this.zoneManager?.innerContainerZone) {
-        const innerZone = this.zoneManager.innerContainerZone;
+      if (this.zoneManager) {
+        // Lazily ensure the inner zone exists only when expanding
+        const innerZone = this.zoneManager.ensureInnerContainerZone ? this.zoneManager.ensureInnerContainerZone() : this.zoneManager.innerContainerZone;
         
         // Force re-initialization of the inner container zone if its DOM was destroyed
         if (!innerZone.element || !innerZone.initialized) {
@@ -266,7 +267,7 @@ export default class BaseContainerNode extends BaseNode {
       this.data.expandedSize = { height: this.data.height, width: this.data.width };
 
     // Detach child nodes and remove inner container/edges from the DOM
-    if (this.zoneManager?.innerContainerZone) {
+    if (this.zoneManager) {
       // Remove child DOM and child zone managers
       this.detachChildrenFromDOM();
 
@@ -594,7 +595,7 @@ export default class BaseContainerNode extends BaseNode {
     // console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
 
     // Use zone system for child positioning if available
-    if (this.zoneManager?.innerContainerZone) {
+    if (this.zoneManager) {
       // Zone system handles positioning automatically
       return;
     }
@@ -645,7 +646,9 @@ export default class BaseContainerNode extends BaseNode {
   // Re-create child DOM nodes and add them back into the inner container zone
   attachChildrenToDOM() {
     if (!this.childNodes || this.childNodes.length === 0) return;
-    const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.element;
+    // Ensure inner container exists only when the parent is expanded
+    const innerZone = this.zoneManager?.ensureInnerContainerZone ? this.zoneManager.ensureInnerContainerZone() : this.zoneManager?.innerContainerZone;
+    const childContainer = innerZone?.getChildContainer() || this.element;
 
     this.childNodes.forEach((childNode) => {
       try {
@@ -654,8 +657,8 @@ export default class BaseContainerNode extends BaseNode {
           childNode.init(childContainer);
         }
         // Ensure the zone knows about this child (always re-register after zone recreation)
-        if (this.zoneManager?.innerContainerZone) {
-          this.zoneManager.innerContainerZone.addChild(childNode);
+        if (innerZone) {
+          innerZone.addChild(childNode);
         }
         // Make the child visible again (containers will manage their own collapsed children)
         childNode.visible = true;
@@ -668,10 +671,13 @@ export default class BaseContainerNode extends BaseNode {
           
           // Force re-initialization of nested container zones if their DOM was destroyed
           if (childNode.zoneManager?.innerContainerZone && (!childNode.zoneManager.innerContainerZone.element || !childNode.zoneManager.innerContainerZone.initialized)) {
-            childNode.zoneManager.innerContainerZone.init();
-            // Ensure nested zones have correct size from child node
-            childNode.zoneManager.resize(childNode.data.width, childNode.data.height);
-            childNode.zoneManager.innerContainerZone.update();
+            // Only initialize nested inner zones if the nested container is expanded
+            if (!childNode.collapsed) {
+              childNode.zoneManager.innerContainerZone.init();
+              // Ensure nested zones have correct size from child node
+              childNode.zoneManager.resize(childNode.data.width, childNode.data.height);
+              childNode.zoneManager.innerContainerZone.update();
+            }
           }
           
           if (childNode.zoneManager) {
@@ -680,12 +686,12 @@ export default class BaseContainerNode extends BaseNode {
           
           // CRITICAL: Update children BEFORE calling updateChildPositions
           // This ensures the nested container has proper dimensions
-          if (typeof childNode.updateChildren === 'function') {
+          if (!childNode.collapsed && typeof childNode.updateChildren === 'function') {
             childNode.updateChildren();
           }
           
           // Now that children are updated, position them
-          if (childNode.zoneManager?.innerContainerZone) {
+          if (!childNode.collapsed && childNode.zoneManager?.innerContainerZone) {
             childNode.zoneManager.innerContainerZone.updateChildPositions();
           }
         }
@@ -695,8 +701,8 @@ export default class BaseContainerNode extends BaseNode {
     });
 
     // After re-attaching, update positions via the zone system
-    if (this.zoneManager?.innerContainerZone) {
-      this.zoneManager.innerContainerZone.forceUpdateChildPositions();
+    if (innerZone) {
+      innerZone.forceUpdateChildPositions();
     }
 
     // Finally, ensure this container recomputes its own sizing/zone metrics
@@ -712,20 +718,20 @@ export default class BaseContainerNode extends BaseNode {
             if (childNode.zoneManager) childNode.zoneManager.update();
             
             // CRITICAL: Update children BEFORE positioning them
-            if (typeof childNode.updateChildren === 'function') {
+            if (!childNode.collapsed && typeof childNode.updateChildren === 'function') {
               childNode.updateChildren();
             }
             
             // Now position children after they're updated
-            if (childNode.zoneManager?.innerContainerZone) {
+            if (!childNode.collapsed && childNode.zoneManager?.innerContainerZone) {
               childNode.zoneManager.innerContainerZone.updateChildPositions();
             }
           }
         });
         
         // Finally update this container's child positions
-        if (this.zoneManager?.innerContainerZone) {
-          this.zoneManager.innerContainerZone.updateChildPositions();
+        if (innerZone) {
+          innerZone.updateChildPositions();
         }
         
         if (this.zoneManager) this.zoneManager.update();

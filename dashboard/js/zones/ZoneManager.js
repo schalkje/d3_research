@@ -27,7 +27,10 @@ export class ZoneManager {
     this.createZone('container', new ContainerZone(this.node));
     this.createZone('header', new HeaderZone(this.node));
     this.createZone('margin', new MarginZone(this.node));
-    this.createZone('innerContainer', new InnerContainerZone(this.node));
+    // Create inner container zone lazily when needed (only if not collapsed)
+    if (!this.node.collapsed) {
+      this.createZone('innerContainer', new InnerContainerZone(this.node));
+    }
 
     // Initialize zones
     this.zones.forEach(zone => zone.init());
@@ -105,7 +108,7 @@ export class ZoneManager {
   calculateTotalSize() {
     const headerSize = this.headerZone.getSize();
     const margins = this.marginZone.getMargins();
-    const innerContainerSize = this.innerContainerZone.getSize();
+    const innerContainerSize = this.innerContainerZone ? this.innerContainerZone.getSize() : { width: 0, height: 0 };
 
     // When collapsed, margins should not contribute to container height
     // Only header height and minimum size constraints should apply
@@ -139,7 +142,7 @@ export class ZoneManager {
    * Get coordinate system for child positioning
    */
   getChildCoordinateSystem() {
-    return this.innerContainerZone.getCoordinateSystem();
+    return this.innerContainerZone ? this.innerContainerZone.getCoordinateSystem() : { origin: { x: 0, y: 0 }, size: { width: 0, height: 0 }, transform: 'translate(0, 0)' };
   }
 
   /**
@@ -189,5 +192,22 @@ export class ZoneManager {
         this.marginZone.setVisible(true);
       }
     }
+  }
+
+  /**
+   * Ensure the inner container zone exists and is initialized.
+   * Creates and initializes it on demand, including initial sizing.
+   */
+  ensureInnerContainerZone() {
+    if (!this.innerContainerZone) {
+      this.createZone('innerContainer', new InnerContainerZone(this.node));
+      // Initialize just-created zone
+      const zone = this.innerContainerZone;
+      zone.init();
+      // Resize/update with current node dimensions
+      zone.resize(this.node.data.width, this.node.data.height);
+      zone.update();
+    }
+    return this.innerContainerZone;
   }
 } 
