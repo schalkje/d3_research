@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>basic - node Demo</title>
-    
+
     <!-- Standard CSS -->
     <link rel="stylesheet" href="../../dashboard/flowdash.css">
-    
-    <!-- Optional demo-specific CSS -->
-    <link rel="stylesheet" href="css/demo.css" if-exists>
-    
+    <link rel="stylesheet" href="../../dashboard/flowdash-demo.css">
+
     <!-- Required Libraries -->
     <script src="../../dashboard/libs/d3.min.js"></script>
-<script src="../../dashboard/libs/d3-shape.min.js"></script>
-<script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
+    <script src="../../dashboard/libs/d3-shape.min.js"></script>
+    <script src="../../dashboard/libs/d3-dag.iife.min.js"></script>
 </head>
+
 <body>
     <!-- Demo Header -->
     <header class="demo-header">
         <h1>node Demos</h1>
         <h2>basic</h2>
         <p class="demo-description">Basic rectangular node with text display</p>
-        
+
         <!-- Demo Controls -->
         <div class="demo-controls">
             <button id="updateBtn" onclick="updateDemo()">Update</button>
@@ -49,17 +49,32 @@
         // Import demo data
         import { demoData } from './js/graphData.js';
         import flowDashboard from '../../dashboard/js/index.js';
+        import { injectSettingsUI } from '../../dashboard/js/demoSettings.js';
 
-        // Initialize dashboard
-        const flowdash = new flowDashboard.Dashboard(demoData);
-        flowdash.initialize('#graph');
-        
-        // Attach to window for testing and debugging
-        window.flowdash = flowdash;
+        let flowdash;
+        const baseData = demoData;
+
+        function build(dataset) {
+            if (!dataset) return;
+            flowdash = new flowDashboard.Dashboard(dataset);
+            flowdash.initialize('#graph');
+            window.flowdash = flowdash;
+        }
+
+        injectSettingsUI({
+            containerSelector: 'body',
+            withVariation: false,
+            getBaseData: () => baseData,
+            buildDashboard: (dataset) => build(dataset)
+        });
+
+        build(baseData);
+
+        // Attach data for debugging
         window.demoData = demoData;
-        
+
         // Demo functions
-        window.updateDemo = function() {
+        window.updateDemo = function () {
             // Implementation for update functionality
             console.log('Update demo called');
             // Toggle between different text lengths to show text centering
@@ -71,22 +86,22 @@
                 node.update();
             }
         };
-        
-        window.resetDemo = function() {
+
+        window.resetDemo = function () {
             // Implementation for reset functionality
             flowdash.reset();
         };
-        
-        window.runTests = function() {
+
+        window.runTests = function () {
             // Implementation for running tests
             runDemoTests();
         };
-        
+
         // Test runner
         function runDemoTests() {
             const testStatus = document.getElementById('testStatus');
             testStatus.textContent = 'Running...';
-            
+
             // Basic validation tests
             const tests = [
                 testDashboardInitialization,
@@ -95,10 +110,10 @@
                 testTextCentering,
                 testNodePositioning
             ];
-            
+
             let passed = 0;
             let total = tests.length;
-            
+
             tests.forEach(test => {
                 try {
                     if (test()) passed++;
@@ -106,43 +121,44 @@
                     console.error('Test failed:', e);
                 }
             });
-            
+
             testStatus.textContent = `${passed}/${total} tests passed`;
             testStatus.className = passed === total ? 'test-pass' : 'test-fail';
         }
-        
+
         // Test functions
         function testDashboardInitialization() {
             return flowdash && typeof flowdash.initialize === 'function';
         }
-        
+
         function testNodeRendering() {
             const nodes = document.querySelectorAll('.node');
             return nodes.length > 0;
         }
-        
+
         function testDataStructure() {
             return demoData && demoData.nodes && Array.isArray(demoData.nodes);
         }
-        
+
         function testTextCentering() {
             const node = flowdash.main.root.getNode('node1');
             if (!node) return false;
-            
+
             // Check if text is properly centered
             const textElement = document.querySelector('.node text');
             if (!textElement) return false;
-            
+
             const textAnchor = textElement.getAttribute('text-anchor');
             const dominantBaseline = textElement.getAttribute('dominant-baseline');
-            
+
             return textAnchor === 'middle' && dominantBaseline === 'middle';
         }
-        
+
         function testNodePositioning() {
             const node = flowdash.main.root.getNode('node1');
             return node && typeof node.x === 'number' && typeof node.y === 'number';
         }
     </script>
 </body>
+
 </html>

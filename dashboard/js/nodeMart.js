@@ -84,7 +84,7 @@ export default class MartNode extends BaseContainerNode {
         this.reportNode.data.width +
         this.containerMargin.left +
         this.containerMargin.right,
-      height: this.containerMargin.top + this.containerMargin.bottom + 18,
+      height: this.containerMargin.top + this.containerMargin.bottom + 18,  //JS: why fixed 18
     };
 
     this.resize(this.data.expandedSize, true);

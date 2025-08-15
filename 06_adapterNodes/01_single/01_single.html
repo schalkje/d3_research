@@ -7,9 +7,7 @@
     
     <!-- Standard CSS -->
     <link rel="stylesheet" href="../../dashboard/flowdash.css">
-    
-    <!-- Optional demo-specific CSS -->
-    <link rel="stylesheet" href="css/demo.css" if-exists>
+    <link rel="stylesheet" href="../../dashboard/flowdash-demo.css">
     
     <!-- Required Libraries -->
     <script src="../../dashboard/libs/d3.min.js"></script>
@@ -50,13 +48,30 @@
         // Import demo data
         import { singleAdapter } from './js/graphData.js';
         import flowDashboard from '../../dashboard/js/index.js';
+        import { injectSettingsUI } from '../../dashboard/js/demoSettings.js';
 
-        // Initialize dashboard
-        const flowdash = new flowDashboard.Dashboard(singleAdapter);
-        flowdash.initialize('#graph');
+        let flowdash;
+        const baseData = singleAdapter;
+
+        function build(dataset) {
+            if (!dataset) return;
+            flowdash = new flowDashboard.Dashboard(dataset);
+            flowdash.initialize('#graph');
+            window.flowdash = flowdash;
+        }
+
+        // Inject settings UI
+        injectSettingsUI({
+            containerSelector: 'body',
+            withVariation: false,
+            getBaseData: () => baseData,
+            buildDashboard: (dataset) => build(dataset)
+        });
+
+        // Initial build
+        build(baseData);
         
         // Attach to window for testing and debugging
-        window.flowdash = flowdash;
         window.singleAdapter = singleAdapter;
         
         // Demo functions
