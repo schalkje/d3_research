@@ -92,7 +92,9 @@ export default class BaseNode {
 
   set status(value) {
     this._status = value;
-    this.element.attr("status", value);
+    if (this.element) {
+      this.element.attr("status", value);
+    }
 
     if (StatusManager.shouldCollapseOnStatus(value, this.settings)) {
       this.collapsed = true;
