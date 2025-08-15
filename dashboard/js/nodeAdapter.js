@@ -99,14 +99,16 @@ export default class AdapterNode extends BaseContainerNode {
     // Pre-create child data based on adapter mode so initChildren gets called
     if (nodeData.children.length === 0) {
       const childrenToCreate = AdapterNode.getRequiredChildrenForMode(nodeData.layout.mode);
+      const isRoleMode = nodeData.layout.displayMode === DisplayMode.ROLE;
       
       childrenToCreate.forEach(role => {
         const childData = {
           id: `${role}_${nodeData.id}`,
-          label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
+          label: isRoleMode ? role : `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
           role: role,
-          type: "Node",
-          width: 150,
+          category: role,
+          type: "node", // rectangular node type
+          width: isRoleMode ? 80 : 150,
           height: 44,
         };
         nodeData.children.push(childData);
@@ -165,6 +167,20 @@ export default class AdapterNode extends BaseContainerNode {
     this.createInternalEdges();
     this.initEdges();
     
+    // Normalize labels and sizes for role display mode even when children were pre-created by super
+    if (this.data.layout.displayMode === DisplayMode.ROLE) {
+      [this.stagingNode, this.archiveNode, this.transformNode].forEach((child) => {
+        if (!child) return;
+        child.data.width = 80;
+        const roleText = child.data.role || child.data.category || child.data.label;
+        if (typeof child.redrawText === 'function') {
+          child.redrawText(roleText, child.data.width);
+        } else {
+          child.data.label = roleText;
+        }
+      });
+    }
+
     // Trigger child positioning after all children are initialized
     if (this.zoneManager?.innerContainerZone) {
       console.log("AdapterNode - triggering child positioning");
