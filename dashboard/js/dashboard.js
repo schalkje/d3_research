@@ -108,7 +108,7 @@ export class Dashboard {
     // Initialize zoom behavior
     const zoom = d3
       .zoom()
-      .scaleExtent([1, 40])
+      .scaleExtent([0.1, 40])
       .on("zoom", (event) => this.zoomMinimap(event));
     this.minimap.svg.call(zoom);
     dashboard.minimap.zoom = zoom;
@@ -332,7 +332,7 @@ export class Dashboard {
     const dashboard = this;
     const zoom = d3
       .zoom()
-      .scaleExtent([1, 40])
+      .scaleExtent([0.1, 40])
       .on("zoom", (event) => this.zoomMain(event));
 
     this.main.svg.call(zoom);

@@ -17,17 +17,13 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   get nestedCorrection_y() {
-    return this.y + this.containerMargin.top / 2;
+    // Defer to BaseContainerNode's zone-aware implementation to avoid double offsets
+    return super.nestedCorrection_y;
   }
 
   get nestedCorrection_x() {
-    try {
-      return this.x - this.data.width / 2 + this.containerMargin.left;
-    } catch(e) {
-      console.error("Error in nestedCorrection_x", e);
-      console.log("Data:", this.x, this.data.width / 2, this.containerMargin.left);
-      return 0; // Fallback value
-    }
+    // Defer to BaseContainerNode's zone-aware implementation to avoid double offsets
+    return super.nestedCorrection_x;
   }
 
   updateChildren() {

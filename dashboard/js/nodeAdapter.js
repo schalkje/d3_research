@@ -137,7 +137,8 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   get nestedCorrection_y() {
-    return this.y;
+    // Defer to BaseContainerNode's zone-aware implementation to avoid double offsets
+    return super.nestedCorrection_y;
   }
 
   initChildren() {

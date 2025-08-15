@@ -34,6 +34,8 @@ export default class RectangularNode extends BaseNode {
     if (parentElement) this.parentElement = parentElement;
     super.init(parentElement);
     this.draw();
+    // Ensure connection points reflect final node dimensions
+    this.update();
   }
 
   draw() {
@@ -60,6 +62,29 @@ export default class RectangularNode extends BaseNode {
 
     // Apply text truncation if needed
     this.truncateTextIfNeeded();
+
+    // If connection points are visible, recreate them with accurate size and log
+    if (this.settings.showConnectionPoints) {
+      // Remove any pre-existing points appended during base init
+      (this.connectionPointsGroup || this.element).selectAll('circle.connection-point').remove();
+      const width = this.data.width;
+      const height = this.data.height;
+      try {
+        if (this.settings.isDebug) {
+          const bbox = this.element?.node()?.getBBox?.();
+          console.log(`[CP/DRAW] ${this.id} (rect) using data size`, { width, height, bbox });
+        }
+      } catch {}
+      const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
+      Object.values(connectionPoints).forEach((point) => {
+        (this.connectionPointsGroup || this.element)
+          .append("circle")
+          .attr("class", `connection-point side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y)
+          .attr("r", 2);
+      });
+    }
   }
 
   applyCustomStyling() {
@@ -204,7 +229,39 @@ export default class RectangularNode extends BaseNode {
   update() {
     // Call parent update first
     super.update();
-    
+
+    // After parent updates connection points using data, correct them using actual DOM size to avoid stale data issues
+    if (this.settings.showConnectionPoints) {
+      const rectSel = this.element.select("rect");
+      if (!rectSel.empty()) {
+        const width = parseFloat(rectSel.attr("width")) || this.data.width;
+        const height = parseFloat(rectSel.attr("height")) || this.data.height;
+        try {
+          if (this.settings.isDebug) {
+            const bbox = this.element?.node()?.getBBox?.();
+            console.log(`[CP/UPDATE-RECT] ${this.id} (rect) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
+          }
+        } catch {}
+        const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
+        Object.values(connectionPoints).forEach((point) => {
+          (this.connectionPointsGroup || this.element)
+            .select(`.connection-point.side-${point.side}`)
+            .attr("cx", point.x)
+            .attr("cy", point.y);
+        });
+        try {
+          if (this.settings.isDebug) {
+            const read = (side) => ({
+              side,
+              cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),
+              cy: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cy')),
+            });
+            console.log(`[CP/READ-RECT] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
+          }
+        } catch {}
+      }
+    }
+
     // Update text if label has changed
     if (this.label && this.data.label !== this.label.text()) {
       this.handleTextUpdate();

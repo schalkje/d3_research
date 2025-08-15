@@ -48,10 +48,32 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   get nestedCorrection_y() {
+    // Prefer zone-system derived offset when available (offset from container center to inner content origin)
+    try {
+      const innerZone = this.zoneManager?.innerContainerZone;
+      const transform = innerZone?.coordinateSystem?.transform;
+      if (transform && typeof transform === 'string') {
+        const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        if (match) return parseFloat(match[2]);
+      }
+    } catch {}
+
+    // Legacy fallback (non-zone layout)
     return this.y - this.data.height / 2 + this.containerMargin.top;
   }
 
   get nestedCorrection_x() {
+    // Prefer zone-system derived offset when available (offset from container center to inner content origin)
+    try {
+      const innerZone = this.zoneManager?.innerContainerZone;
+      const transform = innerZone?.coordinateSystem?.transform;
+      if (transform && typeof transform === 'string') {
+        const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        if (match) return parseFloat(match[1]);
+      }
+    } catch {}
+
+    // Legacy fallback (non-zone layout)
     return this.x;
   }
 

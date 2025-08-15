@@ -184,15 +184,23 @@ export default class BaseNode {
 
     // show the connection points
     if (this.settings.showConnectionPoints) {
+      // Create a dedicated group to isolate this node's connection points from descendants
+      this.connectionPointsGroup = this.element.append("g").attr("class", "connection-points");
       const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
       Object.values(connectionPoints).forEach((point) => {
-        this.element
+        this.connectionPointsGroup
           .append("circle")
           .attr("class", `connection-point side-${point.side}`)
           .attr("cx", point.x)
           .attr("cy", point.y)
           .attr("r", 2);
       });
+      try {
+        if (this.settings.isDebug) {
+          const bbox = this.element?.node()?.getBBox?.();
+          console.log(`[CP/INIT] ${this.id} (${this.data.type}) using data size`, { width: this.data.width, height: this.data.height, bbox });
+        }
+      } catch {}
     }
   }
 
@@ -206,10 +214,42 @@ export default class BaseNode {
     }
 
     if (this.settings.showConnectionPoints) {
-      const connectionPoints = this.computeConnectionPoints(0, 0, this.data.width, this.data.height);
+      // Use data width/height for containers (exact zone size); for non-containers, allow bbox fallback
+      let width = this.data.width;
+      let height = this.data.height;
+      let bbox = null;
+      if (!this.isContainer) {
+        try {
+          bbox = this.element?.node()?.getBBox();
+          if (bbox && bbox.width > 0 && bbox.height > 0) {
+            width = bbox.width;
+            height = bbox.height;
+          }
+        } catch {}
+      }
+      if (this.settings.isDebug) {
+        console.log(`[CP/UPDATE] ${this.id} (${this.data.type}) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
+      }
+
+      const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
       Object.values(connectionPoints).forEach((point) => {
-        this.element.select(`.connection-point.side-${point.side}`).attr("cx", point.x).attr("cy", point.y);
+        // Update only this node's own points (scoped to the dedicated group)
+        const scope = this.connectionPointsGroup || this.element;
+        scope
+          .select(`.connection-point.side-${point.side}`)
+          .attr("cx", point.x)
+          .attr("cy", point.y);
       });
+      try {
+        if (this.settings.isDebug) {
+          const read = (side) => ({
+            side,
+            cx: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cx')),
+            cy: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cy')),
+          });
+          console.log(`[CP/READ] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
+        }
+      } catch {}
     }
   }
   

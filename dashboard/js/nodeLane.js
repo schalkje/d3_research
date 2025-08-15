@@ -11,6 +11,16 @@ export default class LaneNode extends BaseContainerNode {
     this._isResizing = false;
   }
 
+  get nestedCorrection_y() {
+    // Defer to BaseContainerNode's zone-aware implementation
+    return super.nestedCorrection_y;
+  }
+
+  get nestedCorrection_x() {
+    // Defer to BaseContainerNode's zone-aware implementation
+    return super.nestedCorrection_x;
+  }
+
   updateChildren() {
     console.log(`LaneNode ${this.id} updateChildren called`);
     

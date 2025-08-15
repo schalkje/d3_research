@@ -120,7 +120,17 @@ export default class BaseEdge {
     
     // Apply zone transforms to get global coordinates
     const zoneTransforms = getZoneTransforms(this.source);
-    
+    if (this.settings?.isDebug) {
+      try {
+        console.log(`[EDGE x1] ${this.id}`, {
+          source: this.source.id,
+          base: this.source.x,
+          correction,
+          zone: zoneTransforms,
+          result: this.source.x + correction + zoneTransforms.x,
+        });
+      } catch {}
+    }
     return this.source.x + correction + zoneTransforms.x;
   }
 
@@ -135,7 +145,17 @@ export default class BaseEdge {
     
     // Apply zone transforms to get global coordinates
     const zoneTransforms = getZoneTransforms(this.source);
-    
+    if (this.settings?.isDebug) {
+      try {
+        console.log(`[EDGE y1] ${this.id}`, {
+          source: this.source.id,
+          base: this.source.y,
+          correction,
+          zone: zoneTransforms,
+          result: this.source.y + correction + zoneTransforms.y,
+        });
+      } catch {}
+    }
     return this.source.y + correction + zoneTransforms.y;
   }
 
@@ -149,7 +169,17 @@ export default class BaseEdge {
     
     // Apply zone transforms to get global coordinates
     const zoneTransforms = getZoneTransforms(this.target);
-    
+    if (this.settings?.isDebug) {
+      try {
+        console.log(`[EDGE x2] ${this.id}`, {
+          target: this.target.id,
+          base: this.target.x,
+          correction,
+          zone: zoneTransforms,
+          result: this.target.x + correction + zoneTransforms.x,
+        });
+      } catch {}
+    }
     return this.target.x + correction + zoneTransforms.x;
   }
 
@@ -163,7 +193,17 @@ export default class BaseEdge {
     
     // Apply zone transforms to get global coordinates
     const zoneTransforms = getZoneTransforms(this.target);
-    
+    if (this.settings?.isDebug) {
+      try {
+        console.log(`[EDGE y2] ${this.id}`, {
+          target: this.target.id,
+          base: this.target.y,
+          correction,
+          zone: zoneTransforms,
+          result: this.target.y + correction + zoneTransforms.y,
+        });
+      } catch {}
+    }
     return this.target.y + correction + zoneTransforms.y;
   }
 
