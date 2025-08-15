@@ -1,7 +1,7 @@
 export function initializeZoom(dashboard, dag, updateViewport) {
   const zoom = d3
     .zoom()
-    .scaleExtent([1, 40])
+    .scaleExtent([0.1, 40])
     .on("zoom", function (event) {
       dashboard.main.canvas.svg.attr("transform", event.transform);
       updateViewport(dashboard, event.transform);

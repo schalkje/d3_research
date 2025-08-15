@@ -9,79 +9,160 @@
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
     <link rel="stylesheet" href="flowdash.css">
+    <link rel="stylesheet" href="flowdash-demo.css">
 </head>
 
 <body>
-    <h1 id="pageTitle">Title to be replaced with filename</h1>
-    
-    
-    <label for="fileSelect">Select JSON file:</label>
-    <select id="fileSelect"></select>
+    <header class="demo-header">
+        <div class="demo-header__titles">
+            <h1 id="pageTitle">Title to be replaced with filename</h1>
+            <h2>Interactive Flow Dashboard</h2>
+            <p class="demo-description">Visualize datasets with configurable layout, visibility options and zoom controls</p>
+        </div>
+        <div class="demo-controls">
+            <button id="settingsBtn" type="button" aria-expanded="false">Settings</button>
+            <button id="cycleFilesBtn" type="button">Cycle Files</button>
+            <button id="status-updated" onclick="setStatus('Updated')">Set to ready</button>
+            <button id="status-unknown" onclick="setStatus('Unknown')">Set to unknown</button>
+        </div>
+    </header>
 
-    <span class="editbox">
-        <input type="checkbox" id="horizontalCheckbox">
-        <label for="horizontalCheckbox">Horizontal</label>
-    </span>
+    <section class="settings-panel">
+        <div class="settings-row">
+            <div class="settings-group">
+                <label class="settings-title">Data</label>
+                <div class="settings-inline">
+                    <label for="fileSelect">Select JSON file</label>
+                    <select id="fileSelect"></select>
+                </div>
+            </div>
+            <div class="settings-group is-toggles">
+                <label class="settings-title">Layout</label>
+                <div class="settings-toggles">
+                    <label><input type="checkbox" id="horizontalCheckbox"> Horizontal</label>
+                    <label><input type="checkbox" id="curveCheckbox" checked> Curved edges</label>
+                    <label>Mechanism
+                        <select id="layoutMechanismSelect" value="force">
+                            <option value="force" selected>Force</option>
+                            <option value="sugiyama">Sugiyama</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-group is-toggles">
+                <label class="settings-title">Visibility</label>
+                <div class="settings-toggles is-3cols">
+                    <label><input type="checkbox" id="showEdgesCheckbox" checked> Show edges</label>
+                    <label><input type="checkbox" id="showGhostlinesCheckbox"> Ghostlines</label>
+                    <label><input type="checkbox" id="showBoundingBoxCheckbox" checked> Bounding box</label>
+                    <label><input type="checkbox" id="showCenterMarkCheckbox"> Center mark</label>
+                    <label><input type="checkbox" id="showConnectionPointsCheckbox"> Connection points</label>
+                    <label><input type="checkbox" id="zoomToRoot" checked> Zoom to root</label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Edges</label>
+                <div class="settings-inline">
+                    <label>Curve margin <input type="number" step="0.05" min="0" max="0.8" id="numCurveMargin" style="width:80px"></label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Selector</label>
+                <div class="settings-inline">
+                    <label>Incoming <input type="number" min="0" id="numSelectorIn" style="width:70px"></label>
+                    <label>Outgoing <input type="number" min="0" id="numSelectorOut" style="width:70px"></label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Node spacing</label>
+                <div class="settings-inline">
+                    <label>H <input type="number" min="0" id="numNodeSpacingH" style="width:70px"></label>
+                    <label>V <input type="number" min="0" id="numNodeSpacingV" style="width:70px"></label>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label class="settings-title">Container margin</label>
+                <div class="settings-inline">
+                    <label>T <input type="number" min="0" id="numMarginTop" style="width:60px"></label>
+                    <label>R <input type="number" min="0" id="numMarginRight" style="width:60px"></label>
+                    <label>B <input type="number" min="0" id="numMarginBottom" style="width:60px"></label>
+                    <label>L <input type="number" min="0" id="numMarginLeft" style="width:60px"></label>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <span class="editbox">
-        <input type="checkbox" id="curveCheckbox" checked>
-    <label for="curveCheckbox">Curve</label>
-</span>
+    <div class="demo-container">
+        <div id="graph-container">
+            <svg id="graph" class="canvas"></svg>
+        </div>
 
-<span class="editbox">
-<label for="showEdgesCheckbox">Show Edges</label>
-    <input type="checkbox" id="showEdgesCheckbox" checked>
-</span>
+        <div id="zoom-controls" class="toolbar">
+            <button id="zoom-in">Zoom In</button>
+            <button id="zoom-out">Zoom Out</button>
+            <button id="zoom-reset">Reset Zoom</button>
+            <button id="zoom-random">Random Zoom</button>
+            <button id="zoom-node">Zoom Node</button>
+        </div>
 
-<span class="editbox">
-<label for="showGhostlinesCheckbox">Show Ghostlines</label>
-    <input type="checkbox" id="showGhostlinesCheckbox" checked>
-</span>
-
-<span class="editbox">
-<label for="showBoundingBoxCheckbox">Show Bounding Box</label>
-    <input type="checkbox" id="showBoundingBoxCheckbox" checked>
-</span>
-
-<span class="editbox">
-<label for="zoomToRoot">Automatic Zoom</label>
-    <input type="checkbox" id="zoomToRoot" checked>
-</span>
-
-  <label for="layoutMechanismSelect">Layout Mechanism:</label>
-    <select id="layoutMechanismSelect" value="force">
-        <option value="force" selected>Force</option>
-        <option value="sugiyama">Sugiyama</option>
-    </select>
-    <button id="status-updated" onclick="setStatus('Updated')">Set to ready</button>
-    <button id="status-unknown" onclick="setStatus('Unknown')">Set to unknown</button>
-
-    <div id="graph-container">
-        <svg id="graph"></svg>
-    </div>
-    
-    
-
-    <div id="zoom-controls">
-        <button id="zoom-in">Zoom In</button>
-        <button id="zoom-out">Zoom Out</button>
-        <button id="zoom-reset">Reset Zoom</button>
-        <button id="zoom-random">Random Zoom</button>
-        <button id="zoom-node">Zoom Node</button>
-    </div>
-
-    <div id="minimap-container">
-        <svg id="minimap"></svg>
+        <div id="minimap-container">
+            <svg id="minimap"></svg>
+        </div>
     </div>
 
     <script type="module">
         import flowDashboard from './js/index.js';
 
+        const jsonFiles = [
+            "dwh-1.json",
+            "adapter-1.json",
+            "dwh-2.json",
+            "dwh-3.json",
+            "dwh-4.json",
+            "dwh-5.json",
+            "dwh-6.json",
+            "foundation-lane.json",
+            "dwh-7a.json",
+            "dwh-7b.json",
+            "dwh-7.json",
+            "dwh-8.json",
+            "theme_1.json",
+            "theme_2.json"
+        ];
+        let currentFileIndex = 0;
+
         document.addEventListener('DOMContentLoaded', () => {
             setPageTitle();
             populateFileDropdown();
+            setUIFromDefaults();
             initializeEventListeners();
-            initializeDashboard();
+            renderDashboard();
+
+            // Settings panel toggle
+            const settingsPanel = document.querySelector('.settings-panel');
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsPanel && settingsBtn) {
+                const toggleSettingsVisibility = () => {
+                    const isOpen = settingsPanel.classList.toggle('open');
+                    settingsBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    settingsBtn.textContent = isOpen ? 'Hide settings' : 'Settings';
+                };
+                settingsBtn.addEventListener('click', toggleSettingsVisibility);
+            }
+
+            // Cycle files button
+            const cycleBtn = document.getElementById('cycleFilesBtn');
+            if (cycleBtn) {
+                cycleBtn.addEventListener('click', () => {
+                    currentFileIndex = (currentFileIndex + 1) % jsonFiles.length;
+                    const next = jsonFiles[currentFileIndex];
+                    const fileSelect = document.getElementById('fileSelect');
+                    if (fileSelect) {
+                        fileSelect.value = next;
+                    }
+                    updateGraphData();
+                });
+            }
         });
 
         // function setStatus(status) {
@@ -129,14 +210,41 @@
 
         // Function to populate the file dropdown
         function populateFileDropdown() {
-            const jsonFiles = ["dwh-2.json", "adapter-1.json",  "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "foundation-lane.json", "dwh-7a.json", "dwh-7b.json", "dwh-7.json", "dwh-8.json", "theme_1.json", "theme_2.json"];
             const fileSelect = document.getElementById('fileSelect');
-            jsonFiles.forEach(filename => {
+            if (!fileSelect) return;
+            fileSelect.innerHTML = '';
+            jsonFiles.forEach((filename, idx) => {
                 const option = document.createElement('option');
                 option.value = filename;
                 option.text = filename;
+                if (idx === currentFileIndex) option.selected = true;
                 fileSelect.appendChild(option);
             });
+        }
+
+        function setUIFromDefaults() {
+            const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+            const setValue = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            setChecked('horizontalCheckbox', false);
+            setChecked('curveCheckbox', false);
+            setChecked('showEdgesCheckbox', true);
+            setChecked('showGhostlinesCheckbox', false);
+            setChecked('showBoundingBoxCheckbox', true);
+            setChecked('showCenterMarkCheckbox', false);
+            setChecked('showConnectionPointsCheckbox', false);
+            setChecked('zoomToRoot', true);
+            setValue('layoutMechanismSelect', 'force');
+            setValue('numCurveMargin', 0);
+            setValue('numSelectorIn', 1);
+            setValue('numSelectorOut', 1);
+            setValue('numNodeSpacingH', 20);
+            setValue('numNodeSpacingV', 10);
+            setValue('numMarginTop', 8);
+            setValue('numMarginRight', 8);
+            setValue('numMarginBottom', 8);
+            setValue('numMarginLeft', 8);
+            const fileSelect = document.getElementById('fileSelect');
+            if (fileSelect) fileSelect.value = jsonFiles[currentFileIndex];
         }
 
         // Function to initialize event listeners
@@ -148,7 +256,18 @@
             document.getElementById('showEdgesCheckbox').addEventListener('change', updateLayout);
             document.getElementById('showGhostlinesCheckbox').addEventListener('change', updateLayout);
             document.getElementById('showBoundingBoxCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('showCenterMarkCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('showConnectionPointsCheckbox').addEventListener('change', updateLayout);
             document.getElementById('zoomToRoot').addEventListener('change', updateLayout);
+            document.getElementById('numCurveMargin').addEventListener('change', updateLayout);
+            document.getElementById('numSelectorIn').addEventListener('change', updateLayout);
+            document.getElementById('numSelectorOut').addEventListener('change', updateLayout);
+            document.getElementById('numNodeSpacingH').addEventListener('change', updateLayout);
+            document.getElementById('numNodeSpacingV').addEventListener('change', updateLayout);
+            document.getElementById('numMarginTop').addEventListener('change', updateLayout);
+            document.getElementById('numMarginRight').addEventListener('change', updateLayout);
+            document.getElementById('numMarginBottom').addEventListener('change', updateLayout);
+            document.getElementById('numMarginLeft').addEventListener('change', updateLayout);
 
                     }
 
@@ -158,6 +277,8 @@
         let showEdges = document.getElementById('showEdgesCheckbox').checked;
         let showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
         let showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
+        let showCenterMark = document.getElementById('showCenterMarkCheckbox').checked;
+        let showConnectionPoints = document.getElementById('showConnectionPointsCheckbox').checked;
         let zoomToRoot = document.getElementById('zoomToRoot').checked;
         let layoutMechanism = document.getElementById('layoutMechanismSelect').value;
         let selectedFile = document.getElementById('fileSelect').value;
@@ -165,15 +286,12 @@
         // Function to initialize the dashboard with default settings
         function initializeDashboard() {
             console.log('initializeDashboard');
-            selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
+            selectedFile = document.getElementById('fileSelect').value || jsonFiles[currentFileIndex] || "dwh-1.json";
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
+                // Ensure default expanded behavior regardless of file
+                dashboardData.settings.toggleCollapseOnStatusChange = false;
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph', '#minimap');
-                // console.error('dashboard', dashboard.getStructure());
-                // // wait 2 seconds, before getting the structure
-                // setTimeout(() => {
-                //     console.error('dashboard', dashboard.getStructure());
-                // }, 2000);
             });
         }
 
@@ -185,6 +303,8 @@
         showEdges = document.getElementById('showEdgesCheckbox').checked;
         showGhostlines = document.getElementById('showGhostlinesCheckbox').checked;
         showBoundingBox = document.getElementById('showBoundingBoxCheckbox').checked;
+        showCenterMark = document.getElementById('showCenterMarkCheckbox').checked;
+        showConnectionPoints = document.getElementById('showConnectionPointsCheckbox').checked;
         zoomToRoot = document.getElementById('zoomToRoot').checked;
 
         renderDashboard();
@@ -200,12 +320,40 @@
             selectedFile = document.getElementById('fileSelect').value;
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
-                // dashboardData.settings.showGhostlines = showGhostlines;
                 dashboardData.settings.zoomToRoot = zoomToRoot;
                 dashboardData.settings.showBoundingBox = showBoundingBox;
-                // dashboardData.settings.showEdges = showEdges;
+                dashboardData.settings.showCenterMark = showCenterMark;
+                dashboardData.settings.showConnectionPoints = showConnectionPoints;
+                dashboardData.settings.showGhostlines = showGhostlines;
+                dashboardData.settings.showEdges = showEdges;
                 dashboardData.settings.horizontal = horizontal;
                 dashboardData.settings.curved = isEdgeCurved;
+                const curveMargin = parseFloat(document.getElementById('numCurveMargin').value);
+                if (!Number.isNaN(curveMargin)) dashboardData.settings.curveMargin = curveMargin;
+                const selector = dashboardData.settings.selector || {};
+                const inVal = parseInt(document.getElementById('numSelectorIn').value, 10);
+                const outVal = parseInt(document.getElementById('numSelectorOut').value, 10);
+                if (!Number.isNaN(inVal)) selector.incomming = inVal;
+                if (!Number.isNaN(outVal)) selector.outgoing = outVal;
+                dashboardData.settings.selector = selector;
+                const nodeSpacing = dashboardData.settings.nodeSpacing || {};
+                const h = parseInt(document.getElementById('numNodeSpacingH').value, 10);
+                const v = parseInt(document.getElementById('numNodeSpacingV').value, 10);
+                if (!Number.isNaN(h)) nodeSpacing.horizontal = h;
+                if (!Number.isNaN(v)) nodeSpacing.vertical = v;
+                dashboardData.settings.nodeSpacing = nodeSpacing;
+                const containerMargin = dashboardData.settings.containerMargin || {};
+                const mt = parseInt(document.getElementById('numMarginTop').value, 10);
+                const mr = parseInt(document.getElementById('numMarginRight').value, 10);
+                const mb = parseInt(document.getElementById('numMarginBottom').value, 10);
+                const ml = parseInt(document.getElementById('numMarginLeft').value, 10);
+                if (!Number.isNaN(mt)) containerMargin.top = mt;
+                if (!Number.isNaN(mr)) containerMargin.right = mr;
+                if (!Number.isNaN(mb)) containerMargin.bottom = mb;
+                if (!Number.isNaN(ml)) containerMargin.left = ml;
+                dashboardData.settings.containerMargin = containerMargin;
+                // Keep nodes expanded by default on re-render
+                dashboardData.settings.toggleCollapseOnStatusChange = false;
 
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph', '#minimap');

@@ -3,7 +3,7 @@ export const DEFAULT_SETTINGS = {
   selector: { incomming: 1, outgoing: 1 },
   showBoundingBox: true,
   zoomToRoot: true,
-  toggleCollapseOnStatusChange: true,
+  toggleCollapseOnStatusChange: false,
   cascadeOnStatusChange: true,
   showCenterMark: false,
   showConnectionPoints: false,
