@@ -1,28 +1,90 @@
 :root, [data-theme="dark"] {
-  --fd-bg: #0d0f14;
-  --fd-surface: #171a21;
-  --fd-text: #f2f4f8;
-  --fd-muted: #8a8f98;
-  --fd-accent: #7aa2ff;
-  --fd-border: #2a2f3a;
-  --fd-edge: #5d6b7d;
+  --fd-bg: #0b0e14;      /* deep neutral background */
+  --fd-surface: #121821; /* low-glare surface */
+  --fd-text: #e6ebf2;    /* high-contrast text */
+  --fd-muted: #8b92a3;   /* subdued copy */
+  --fd-accent: #6bb6ff;  /* cool accent for focus */
+  --fd-border: #2a3342;  /* structural lines */
+  --fd-edge: #5c6a82;    /* edges/links */
 }
 
 body { background: var(--fd-bg); color: var(--fd-text); }
 
 /* canvases */
-#graph { background-color: #0b0e12; border-color: var(--fd-border); }
+#graph { background-color: var(--fd-bg); border-color: var(--fd-border); }
 #minimap { background-color: rgba(20, 24, 33, 0.7); border-color: var(--fd-border); }
 svg.canvas { border-color: var(--fd-border); box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
 
-.shape { fill: var(--fd-surface); stroke: var(--fd-accent); }
+.shape { fill: var(--fd-surface); stroke: var(--fd-border); stroke-width: 1.25px; }
 text, .label, .rect.label { fill: var(--fd-text); }
 .edge .path { stroke: var(--fd-edge); }
 
 /* dashboard containers */
-.container-shape, .adapter.shape, .rect.shape, .SSIS.shape { fill: #141821; stroke: var(--fd-border); }
+.container-shape, .adapter.shape, .rect.shape, .SSIS.shape { fill: var(--fd-surface); stroke: var(--fd-border); }
 .header-background { fill: #12151c; stroke: var(--fd-border); }
+.header-text { fill: var(--fd-text); }
 .zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
 .zoom-icon { fill: var(--fd-text); }
 
+
+/* status styles: restrained fills, luminous strokes for clarity on dark */
+@keyframes dark-dash {
+  to { stroke-dashoffset: -80; }
+}
+
+/* Unknown */
+.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
+  fill: #141a22;
+  stroke: #364254;
+}
+
+/* Ready */
+.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
+  fill: #0f2232;
+  stroke: #4db4ff;
+}
+
+/* Updating */
+.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+  fill: #241c0e;
+  stroke: #ffb84d;
+  stroke-width: 2.5px;
+  stroke-dasharray: 12 8;
+  animation: dark-dash 1s linear infinite;
+}
+
+/* Updated */
+.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
+  fill: #0f241c;
+  stroke: #22e28a;
+}
+
+/* Skipped */
+.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
+  fill: #232015;
+  stroke: #e8d37a;
+}
+
+/* Delayed */
+.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
+  fill: #2a1f10;
+  stroke: #ff9c3a;
+}
+
+/* Warning */
+.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
+  fill: #2f1b0e;
+  stroke: #ffb454;
+}
+
+/* Error */
+.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
+  fill: #2a1216;
+  stroke: #ff5c70;
+  stroke-width: 2.5px;
+  filter: drop-shadow(0 0 8px rgba(255,92,112,0.25));
+}
+
+/* selection emphasis */
+.selected .shape { stroke: var(--fd-accent); stroke-width: 2.5px; }
 
