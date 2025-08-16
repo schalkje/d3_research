@@ -13,6 +13,8 @@
   --fd-neon-orange: #ff9e3d;
   --fd-neon-red: #ff3366;
   --fd-neon-cyan: #00e5ff;
+  --fd-neon-purple: #7c4dff;
+  --fd-neon-pink: #ff4dff;
 }
 
 body { background: linear-gradient(135deg, #0b0a10 0%, #11122a 100%); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
@@ -107,6 +109,62 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
   stroke: var(--fd-neon-red) !important;
   stroke-width: 2.75px !important;
   filter: drop-shadow(0 0 14px rgba(255,51,102,0.65));
+}
+
+/*
+  Nested container depth styling for Cyberpunk
+  Slight opacity gradation with additive glow to convey hierarchy
+*/
+/* Depth 2 */
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape {
+  fill-opacity: 0.98 !important;
+  stroke-opacity: 0.92 !important;
+  filter: drop-shadow(0 0 6px rgba(0,229,255,0.25));
+}
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background {
+  fill-opacity: 0.98 !important;
+  stroke-opacity: 0.92 !important;
+}
+
+/* Depth 3 */
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape {
+  fill-opacity: 0.96 !important;
+  stroke-opacity: 0.88 !important;
+  filter: drop-shadow(0 0 8px rgba(255,0,229,0.25));
+}
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background {
+  fill-opacity: 0.96 !important;
+  stroke-opacity: 0.88 !important;
+}
+
+/* Depth 4 */
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape {
+  fill-opacity: 0.92 !important;
+  stroke-opacity: 0.84 !important;
+  filter: drop-shadow(0 0 10px rgba(0,229,255,0.28)) drop-shadow(0 0 10px rgba(124,77,255,0.25));
+}
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background {
+  fill-opacity: 0.92 !important;
+  stroke-opacity: 0.84 !important;
+}
+
+/* Depth 5 */
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-container > .container-shape {
+  fill-opacity: 0.88 !important;
+  stroke-opacity: 0.8 !important;
+  filter: drop-shadow(0 0 12px rgba(255,77,255,0.35)) drop-shadow(0 0 12px rgba(0,229,255,0.3));
+}
+.cyberpunk :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background,
+[data-theme="cyberpunk"] :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) :is(.lane, .columns, .group, .adapter, .mart, .foundation) > .zone-header > .header-background {
+  fill-opacity: 0.88 !important;
+  stroke-opacity: 0.8 !important;
 }
 
 
