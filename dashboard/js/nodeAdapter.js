@@ -186,17 +186,20 @@ export default class AdapterNode extends BaseContainerNode {
       });
     }
 
-    // Trigger child positioning after all children are initialized
-    if (this.zoneManager?.innerContainerZone) {
-      console.log("AdapterNode - triggering child positioning");
-      this.zoneManager.innerContainerZone.forceUpdateChildPositions();
-    } else {
-      console.warn("AdapterNode - zone system not available for positioning");
+    // If collapsed, skip zone-dependent layout work
+    if (!this.collapsed) {
+      // Trigger child positioning after all children are initialized
+      if (this.zoneManager?.innerContainerZone) {
+        console.log("AdapterNode - triggering child positioning");
+        this.zoneManager.innerContainerZone.forceUpdateChildPositions();
+      } else {
+        console.warn("AdapterNode - zone system not available for positioning");
+      }
+
+      this.updateChildren();
+      this.resize(this.data.expandedSize, true);
+      this.update();
     }
-    
-    this.updateChildren();
-    this.resize(this.data.expandedSize, true);
-    this.update();
     
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
@@ -340,24 +343,20 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    // Always use zone system for child positioning
+    // When collapsed, do not run child layout; container size is handled elsewhere
+    if (this.collapsed) return;
+
+    // Ensure inner container zone exists (it may be lazily created on expand)
     if (!this.zoneManager?.innerContainerZone) {
-      console.error('Zone system not available for adapter node:', this.id);
-      return;
+      if (this.zoneManager && typeof this.zoneManager.ensureInnerContainerZone === 'function') {
+        this.zoneManager.ensureInnerContainerZone();
+      }
     }
-    
+
+    // If still unavailable, skip to avoid errors (e.g., when not yet fully initialized)
+    if (!this.zoneManager?.innerContainerZone) return;
+
     console.log('Using zone system for adapter node positioning:', this.id);
-    
-    // When collapsed, do not run child layout; resize to collapsed min
-    if (this.collapsed) {
-      const headerZone = this.zoneManager?.headerZone;
-      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
-      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
-      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
-      const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
-      this.resize({ width: collapsedWidth, height: collapsedHeight });
-      return;
-    }
     
     // Set layout algorithm based on arrangement
     const innerContainerZone = this.zoneManager.innerContainerZone;
