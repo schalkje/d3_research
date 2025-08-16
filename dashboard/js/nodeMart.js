@@ -169,11 +169,12 @@ export default class MartNode extends BaseContainerNode {
 
   initChildNode(childData, childNode) {
     if (!childData) return null;
-    const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
-    if (!parentElement) {
-      console.error('Zone system not available for mart node:', this.id);
-      return null;
+    // Prefer inner container zone; lazily ensure it, otherwise fallback to node element
+    let parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+    if (!parentElement && this.zoneManager?.ensureInnerContainerZone) {
+      parentElement = this.zoneManager.ensureInnerContainerZone()?.getChildContainer();
     }
+    parentElement = parentElement || this.element;
     if (childNode == null) {
       const copyChild = JSON.parse(JSON.stringify(childData));
       if (this.data.layout.displayMode === DisplayMode.ROLE) {
@@ -182,7 +183,9 @@ export default class MartNode extends BaseContainerNode {
       }
       childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
       this.childNodes.push(childNode);
-      this.zoneManager.innerContainerZone.addChild(childNode);
+      if (this.zoneManager?.innerContainerZone) {
+        this.zoneManager.innerContainerZone.addChild(childNode);
+      }
       childNode.init(parentElement);
     } else {
       childNode.init(parentElement);
@@ -191,20 +194,25 @@ export default class MartNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    const innerContainerZone = this.zoneManager?.innerContainerZone;
-    if (!innerContainerZone) {
-      console.error('Zone system not available for mart node:', this.id);
-      return;
-    }
+    // When collapsed, size to header minimum and skip zone-dependent layout
     if (this.collapsed) {
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
-      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
-      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? headerZone.getSize().width : this.data.width);
+      const collapsedWidth = Math.max(this.minimumSize.width, headerMinWidth);
       const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
       this.resize({ width: collapsedWidth, height: collapsedHeight });
       return;
     }
+
+    // Ensure inner container exists for expanded layout
+    let innerContainerZone = this.zoneManager?.innerContainerZone;
+    if (!innerContainerZone && this.zoneManager?.ensureInnerContainerZone) {
+      innerContainerZone = this.zoneManager.ensureInnerContainerZone();
+    }
+    if (!innerContainerZone) return;
 
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:

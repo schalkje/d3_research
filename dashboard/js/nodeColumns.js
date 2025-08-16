@@ -41,13 +41,36 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   layoutColumns() {
-    // Always run sizing logic, even with zero children, so container height is at least header + margins
+    // If collapsed, size to header minimum without requiring inner zone
+    if (this.collapsed) {
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : headerHeight * 8 + 36;
 
-    // Get zone manager and inner container zone
-    const innerContainerZone = this.zoneManager?.innerContainerZone;
+      if (!this._isResizing) {
+        const newSize = {
+          width: Math.max(this.minimumSize.width, headerMinWidth),
+          height: Math.max(this.minimumSize.height, headerHeight)
+        };
+        this._isResizing = true;
+        try {
+          this.resize(newSize);
+          this.handleDisplayChange();
+        } finally {
+          this._isResizing = false;
+        }
+      }
+      return;
+    }
+
+    // Ensure inner container zone exists for expanded layout
+    let innerContainerZone = this.zoneManager?.innerContainerZone;
+    if (!innerContainerZone && this.zoneManager?.ensureInnerContainerZone) {
+      innerContainerZone = this.zoneManager.ensureInnerContainerZone();
+    }
     if (!innerContainerZone) {
-      // Zone system is required for columns layout
-      console.warn('Zone system not available for columns node:', this.id);
       return;
     }
 

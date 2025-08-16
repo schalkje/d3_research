@@ -175,12 +175,12 @@ export default class FoundationNode extends BaseContainerNode {
 
   initChildNode(childData, childNode) {
     if (!childData) return null;
-    // Always use zone system for parent element
-    const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
-    if (!parentElement) {
-      console.error('Zone system not available for foundation node:', this.id);
-      return null;
+    // Prefer inner container zone; lazily ensure it, otherwise fallback to node element
+    let parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+    if (!parentElement && this.zoneManager?.ensureInnerContainerZone) {
+      parentElement = this.zoneManager.ensureInnerContainerZone()?.getChildContainer();
     }
+    parentElement = parentElement || this.element;
     
     if (childNode == null) {
       const copyChild = JSON.parse(JSON.stringify(childData));
@@ -190,8 +190,10 @@ export default class FoundationNode extends BaseContainerNode {
       }
       childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
       this.childNodes.push(childNode);
-      // Add child to zone system
-      this.zoneManager.innerContainerZone.addChild(childNode);
+      // Add child to zone system when available
+      if (this.zoneManager?.innerContainerZone) {
+        this.zoneManager.innerContainerZone.addChild(childNode);
+      }
       // Initialize the child node immediately so it renders
       childNode.init(parentElement);
     } else {
@@ -202,22 +204,24 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    // Always use zone system for child positioning
-    if (!this.zoneManager?.innerContainerZone) {
-      console.error('Zone system not available for foundation node:', this.id);
-      return;
-    }
-    
-    // When collapsed, avoid doing child layout; let BaseContainer handle collapsed sizing
+    // When collapsed, size to header minimum and skip zone-dependent layout
     if (this.collapsed) {
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
-      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
-      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? headerZone.getSize().width : this.data.width);
+      const collapsedWidth = Math.max(this.minimumSize.width, headerMinWidth);
       const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
       this.resize({ width: collapsedWidth, height: collapsedHeight });
       return;
     }
+
+    // Ensure inner container exists for expanded layout
+    if (!this.zoneManager?.innerContainerZone && this.zoneManager?.ensureInnerContainerZone) {
+      this.zoneManager.ensureInnerContainerZone();
+    }
+    if (!this.zoneManager?.innerContainerZone) return;
 
     // Set layout algorithm based on display mode and orientation
     switch (this.data.layout.displayMode) {
