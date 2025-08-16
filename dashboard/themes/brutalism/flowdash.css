@@ -9,28 +9,139 @@
 }
 
 body { background: var(--fd-bg); color: var(--fd-text); font-family: Arial, Helvetica, sans-serif; }
+pre, code, .monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
 /* canvases */
-#graph { background-color: var(--fd-bg) !important; border-color: var(--fd-border) !important; }
-#minimap { background-color: rgba(255, 255, 200, 0.8) !important; border-color: var(--fd-border) !important; }
-svg.canvas { border-color: var(--fd-border) !important; box-shadow: 8px 8px 0 0 #000 !important; }
+#graph {
+  background-color: var(--fd-bg);
+  /* visible grid, crisp and utilitarian */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 16px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 16px);
+  border-color: var(--fd-border);
+}
+#minimap {
+  background-color: rgba(255, 255, 200, 0.8);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 12px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 12px);
+  border-color: var(--fd-border);
+}
+svg.canvas { border-color: var(--fd-border); box-shadow: 8px 8px 0 0 #000; }
 
 /* bold, high-contrast shapes */
-.shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 3px !important; }
-.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: #ffef99 !important; stroke: #000 !important; stroke-width: 3px !important; rx: 0 !important; ry: 0 !important; }
-.header-background { fill: #ffd24d !important; stroke: #000 !important; stroke-width: 3px !important; }
-.header-text { fill: #000 !important; font-weight: 800 !important; letter-spacing: 0.4px; }
+.shape {
+  fill: var(--fd-surface);
+  stroke: var(--fd-accent);
+  stroke-width: 3px;
+  rx: 2;
+  ry: 2;
+  /* offset drop-shadow, print-like */
+  filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.9));
+  transition: fill 120ms linear, stroke 120ms linear, stroke-width 120ms linear;
+}
+.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape {
+  fill: var(--fd-surface);
+  stroke: var(--fd-border);
+  stroke-width: 3px;
+  rx: 1;
+  ry: 1;
+}
+.header-background { fill: #000; stroke: #000; stroke-width: 3px; }
+.header-text { fill: #ffd24d; font-weight: 900; letter-spacing: 0.4px; text-transform: uppercase; }
 
-text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 800 !important; }
+text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
-.edge .path { stroke: var(--fd-edge) !important; stroke-width: 3px !important; }
+.edge .path { stroke: var(--fd-edge); stroke-width: 3px; }
 
-.zoom-button:hover circle { fill: #ffe066 !important; stroke: #000 !important; stroke-width: 2px !important; }
-.zoom-icon { fill: #000 !important; }
+.zoom-button:hover circle { fill: #ffe066; stroke: #000; stroke-width: 2px; }
+.zoom-icon { fill: #000; }
 
-/* status accents stay vivid but boxed */
-.container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #25d366 !important; fill-opacity: 1 !important; stroke: #000 !important; }
-.container-shape[status="Error"], .rect.shape[status="Error"] { fill: #ff453a !important; fill-opacity: 1 !important; stroke: #000 !important; }
-.container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #ff9f0a !important; fill-opacity: 1 !important; stroke: #000 !important; }
+/* Brutalist state overrides: vivid fills, heavy outlines, snappy motion */
+@keyframes brutal-dash {
+  to { stroke-dashoffset: -64; }
+}
+
+/* Unknown */
+.shape[status="Unknown"],
+.Node.shape[status="Unknown"],
+.container-shape[status="Unknown"] {
+  fill: #e6e6e6;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Ready */
+.shape[status="Ready"],
+.Node.shape[status="Ready"],
+.container-shape[status="Ready"] {
+  fill: #b6e0ff;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Updating: strong signal with marching outline */
+.shape[status="Updating"],
+.Node.shape[status="Updating"],
+.container-shape[status="Updating"] {
+  fill: #ffe066;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 4px;
+  stroke-dasharray: 10 8;
+  animation: brutal-dash 0.9s linear infinite;
+}
+
+/* Updated */
+.shape[status="Updated"],
+.Node.shape[status="Updated"],
+.container-shape[status="Updated"] {
+  fill: #22c55e;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Skipped */
+.shape[status="Skipped"],
+.Node.shape[status="Skipped"],
+.container-shape[status="Skipped"] {
+  fill: #fff1a8;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Delayed */
+.shape[status="Delayed"],
+.Node.shape[status="Delayed"],
+.container-shape[status="Delayed"] {
+  fill: #ffb02e;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Warning */
+.shape[status="Warning"],
+.Node.shape[status="Warning"],
+.container-shape[status="Warning"] {
+  fill: #ff9f0a;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+/* Error */
+.shape[status="Error"],
+.Node.shape[status="Error"],
+.container-shape[status="Error"] {
+  fill: #ff453a;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 3px;
+}
 
 
