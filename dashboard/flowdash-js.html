@@ -26,6 +26,7 @@
             <button id="cycleFilesBtn" type="button">Cycle Files</button>
             <button id="status-updated" onclick="setStatus('Updated')">Set to ready</button>
             <button id="status-unknown" onclick="setStatus('Unknown')">Set to unknown</button>
+            <button id="status-random" onclick="randomStates()">Random States</button>
         </div>
     </header>
 
@@ -115,9 +116,10 @@
 
     <script type="module">
         import flowDashboard from './js/index.js';
+        import { NodeStatus } from './js/nodeBase.js';
 
         const jsonFiles = [
-            "dwh-1.json",
+            "dwh-5.json",
             "adapter-1.json",
             "dwh-2.json",
             "dwh-3.json",
@@ -202,6 +204,34 @@
         console.error('structure.Nodes is undefined', structure);
     }
 };
+
+        // Randomize node statuses sequentially using all available statuses (excluding Undetermined)
+        const ALL_STATUSES = Object.values(NodeStatus).filter(s => s !== NodeStatus.UNDETERMINED);
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        window.randomStates = function() {
+            const structure = dashboard.getStructure();
+            if (!(structure && structure.Nodes)) {
+                console.error('structure.Nodes is undefined', structure);
+                return;
+            }
+            const statuses = shuffle([...ALL_STATUSES]);
+            const updatePromises = structure.Nodes.map((node, index) => {
+                const status = statuses[index % statuses.length];
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        dashboard.updateNodeStatus(node.Id, status);
+                        resolve();
+                    }, index * 100);
+                });
+            });
+            Promise.all(updatePromises);
+        }
         // Function to set the page title dynamically
         function setPageTitle() {
             const getFilename = () => {
