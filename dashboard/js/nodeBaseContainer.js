@@ -334,14 +334,24 @@ export default class BaseContainerNode extends BaseNode {
     // Update zones before sizing, so header metrics are current
     this.update();
 
-    // Compute collapsed size: max(header minimum, node minimum)
-    let collapsedWidth = Math.max(this.data.width, this.minimumSize.width);
-    let collapsedHeight = this.minimumSize.height;
+    // Compute collapsed size based on header's intrinsic minimum (text + controls) and user minimums
+    let headerMinWidth = 0;
+    let headerHeight = this.minimumSize.height;
     if (this.zoneManager?.headerZone) {
-      const headerSize = this.zoneManager.headerZone.getSize();
-      collapsedWidth = Math.max(collapsedWidth, headerSize.width);
-      collapsedHeight = Math.max(collapsedHeight, headerSize.height);
+      // Prefer precise header minimum width calculation when available
+      if (typeof this.zoneManager.headerZone.getMinimumWidth === 'function') {
+        headerMinWidth = this.zoneManager.headerZone.getMinimumWidth();
+      } else {
+        // Fallback to current header size width (may be larger than minimum)
+        headerMinWidth = this.zoneManager.headerZone.getSize().width || 0;
+      }
+      // Use header's measured height if available
+      headerHeight = this.zoneManager.headerZone.getHeaderHeight?.() ?? this.zoneManager.headerZone.getSize().height ?? headerHeight;
     }
+
+    // Final collapsed dimensions
+    const collapsedWidth = Math.max(headerMinWidth, this.minimumSize.width);
+    const collapsedHeight = Math.max(headerHeight, this.minimumSize.height);
 
     // Apply collapsed size
     this.resize({ width: collapsedWidth, height: collapsedHeight }, true);

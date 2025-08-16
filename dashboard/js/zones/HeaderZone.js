@@ -143,6 +143,50 @@ export class HeaderZone extends BaseZone {
   }
 
   /**
+   * Calculate the minimum width required by the header contents
+   * Includes: left/right padding + full text width + status indicator + zoom button (if container) + small gaps
+   */
+  getMinimumWidth() {
+    const text = this.node?.data?.label || this.node?.data?.name || '';
+    let textWidth = 0;
+    try {
+      if (this.textElement && typeof this.textElement.node === 'function') {
+        const tempElement = this.textElement.node().cloneNode(true);
+        tempElement.textContent = text;
+        tempElement.style.position = 'absolute';
+        tempElement.style.left = '-99999px';
+        tempElement.style.top = '-99999px';
+        document.body.appendChild(tempElement);
+        const rect = tempElement.getBoundingClientRect();
+        textWidth = rect.width;
+        document.body.removeChild(tempElement);
+      } else {
+        textWidth = text.length * 8; // Fallback approximation
+      }
+    } catch {
+      textWidth = text.length * 8; // Fallback approximation
+    }
+
+    const leftPadding = this.padding || 0;
+    const rightPadding = this.padding || 0;
+    const indicatorDiameter = 6; // Matches updateStatusIndicatorPosition()
+    const buttonDiameter = this.node?.isContainer ? 16 : 0; // Matches updateZoomButtonPosition()
+    const gapBetweenTextAndIcons = (indicatorDiameter > 0 || buttonDiameter > 0) ? 8 : 0;
+    const gapBetweenIndicatorAndButton = (indicatorDiameter > 0 && buttonDiameter > 0) ? 4 : 0;
+
+    const minWidth =
+      leftPadding +
+      textWidth +
+      gapBetweenTextAndIcons +
+      indicatorDiameter +
+      gapBetweenIndicatorAndButton +
+      buttonDiameter +
+      rightPadding;
+
+    return Math.ceil(minWidth);
+  }
+
+  /**
    * Calculate text height based on content
    */
   calculateTextHeight() {
