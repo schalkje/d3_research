@@ -40,7 +40,10 @@ export default class EdgeDemoNode extends BaseContainerNode {
     // Create edges from center to all surrounding demo children (once)
     const center = this.getChildNode('center');
     if (center) {
-      const neighborIds = ['top','top-right','right','bottom-right','bottom','bottom-left','left','top-left'];
+      // Create edges only to nodes present for the current layout
+      const neighborIds = this.data.children
+        .map(c => c.id)
+        .filter(id => id !== 'center');
       neighborIds.forEach(id => {
         const target = this.getChildNode(id);
         if (target) {
@@ -53,19 +56,34 @@ export default class EdgeDemoNode extends BaseContainerNode {
   }
 
   ensureDemoChildren() {
-    if (!this.data.children || this.data.children.length === 0) {
-      this.data.children = [
-        { id: 'center', label: 'center', type: 'rect' },
-        { id: 'top', label: 'top', type: 'rect' },
-        { id: 'top-right', label: 'top-right', type: 'rect' },
-        { id: 'right', label: 'right', type: 'rect' },
-        { id: 'bottom-right', label: 'bottom-right', type: 'rect' },
-        { id: 'bottom', label: 'bottom', type: 'rect' },
-        { id: 'bottom-left', label: 'bottom-left', type: 'rect' },
-        { id: 'left', label: 'left', type: 'rect' },
-        { id: 'top-left', label: 'top-left', type: 'rect' }
-      ];
+    // Build children specific to the selected layout
+    const all = ['top','top-right','right','bottom-right','bottom','bottom-left','left','top-left'];
+    let required = [];
+    switch (this.layout) {
+      case DemoMode.HSHIFTED:
+        required = ['top-right','bottom-right','top-left','bottom-left'];
+        break;
+      case DemoMode.VSHIFTED:
+        required = ['top-left','top-right','bottom-left','bottom-right'];
+        break;
+      case DemoMode.VSHIFTED2:
+        required = ['top-left','top-right','bottom-left','bottom-right'];
+        break;
+      case DemoMode.STAIR_UP:
+        required = ['bottom-left','top-right'];
+        break;
+      case DemoMode.STAIR_DOWN:
+        required = ['top-left','bottom-right'];
+        break;
+      case DemoMode.GRID:
+      default:
+        required = all.slice();
+        break;
     }
+
+    const children = [{ id: 'center', label: 'center', type: 'rect' }];
+    required.forEach(id => children.push({ id, label: id, type: 'rect' }));
+    this.data.children = children;
   }
 
   getChildNode(id) {
