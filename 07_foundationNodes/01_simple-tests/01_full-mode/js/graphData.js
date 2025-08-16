@@ -37,7 +37,8 @@ export const demoData = {
             type: "foundation",
             layout: {
                 mode: "auto",
-                displayMode: "full"
+                displayMode: "full",
+                orientation: "horizontal"
             },
             status: "active",
             state: "ready",

@@ -39,7 +39,8 @@ export const demoData = {
             y: 200,
             layout: {
                 mode: "auto",
-                displayMode: "full"
+                displayMode: "full",
+                orientation: "horizontal"
             },
             status: "active",
             state: "ready",

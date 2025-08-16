@@ -1,27 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Foundation Node Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the specific foundation node test page
-    await page.goto('/5_nodes/11_foundation/01_single.html');
-    
-    // Wait for the page to load and basic elements to appear
+  async function gotoAndReady(page, path) {
+    await page.goto(path);
     await page.waitForSelector('svg', { timeout: 10000 });
-    
-    // Wait a bit more for the page to be fully ready
-    await page.waitForTimeout(2000);
-    
-    // Add error handling for console errors
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        console.log('Browser console error:', msg.text());
-      }
-    });
-    
-    page.on('pageerror', error => {
-      console.log('Page error:', error.message);
-    });
-  });
+    await page.waitForTimeout(300);
+  }
 
   // Helper function to wait for nodes to be rendered
   async function waitForNodes(page, timeout = 30000) {
@@ -49,18 +33,21 @@ test.describe('Foundation Node Tests', () => {
   }
 
   test.describe('Simple Foundation Node Tests', () => {
+    test.beforeEach(async ({ page }) => {
+      // Use our new simple demo page for single foundation node in full mode
+      await gotoAndReady(page, '/07_foundationNodes/01_simple-tests/01_full-mode/full-mode.html');
+    });
+
     test('should render single foundation node', async ({ page }) => {
       const nodesFound = await waitForNodes(page);
       expect(nodesFound).toBe(true);
       
-      const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
+      const foundationNodes = page.locator('g.foundation');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
       
-      // Verify foundation node structure
       for (const node of await foundationNodes.all()) {
         const rect = node.locator('rect');
         const text = node.locator('text');
-        
         await expect(rect).toBeVisible();
         await expect(text).toBeVisible();
       }
@@ -70,7 +57,7 @@ test.describe('Foundation Node Tests', () => {
       const nodesFound = await waitForNodes(page);
       expect(nodesFound).toBe(true);
       
-      const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
+      const foundationNodes = page.locator('g.foundation');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
       
       // Verify foundation node has correct data attributes
@@ -91,7 +78,7 @@ test.describe('Foundation Node Tests', () => {
       const nodesFound = await waitForNodes(page);
       expect(nodesFound).toBe(true);
       
-      const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
+      const foundationNodes = page.locator('g.foundation');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
       
       // Verify text content in foundation nodes
@@ -110,7 +97,7 @@ test.describe('Foundation Node Tests', () => {
       const nodesFound = await waitForNodes(page);
       expect(nodesFound).toBe(true);
       
-      const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
+      const foundationNodes = page.locator('g.foundation');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
       
       // Verify styling properties
@@ -138,7 +125,7 @@ test.describe('Foundation Node Tests', () => {
       const nodesFound = await waitForNodes(page);
       expect(nodesFound).toBe(true);
       
-      const foundationNodes = page.locator('g.node-container[data-type="foundation"]');
+      const foundationNodes = page.locator('g.foundation');
       await expect(foundationNodes).toHaveCount.greaterThan(0);
       
       // Verify each foundation node has a valid position
@@ -173,5 +160,52 @@ test.describe('Foundation Node Tests', () => {
         expect(parseFloat(height)).toBeGreaterThan(0);
       }
     });
+  });
+
+  test.describe('Orientation Modes', () => {
+    const scenarios = [
+      { name: 'Horizontal', path: '/07_foundationNodes/01_simple-tests/03_orientations/horizontal.html', orientation: 'horizontal' },
+      { name: 'Horizontal Line', path: '/07_foundationNodes/01_simple-tests/03_orientations/horizontal_line.html', orientation: 'horizontal_line' },
+      { name: 'Vertical', path: '/07_foundationNodes/01_simple-tests/03_orientations/vertical.html', orientation: 'vertical' },
+      { name: 'Rotate 90', path: '/07_foundationNodes/01_simple-tests/03_orientations/rotate90.html', orientation: 'rotate90' },
+      { name: 'Rotate 270', path: '/07_foundationNodes/01_simple-tests/03_orientations/rotate270.html', orientation: 'rotate270' },
+    ];
+
+    for (const s of scenarios) {
+      test(`layout: ${s.name}`, async ({ page }) => {
+        await gotoAndReady(page, s.path);
+
+        // Extract role positions from the zone-based inner container
+        const roles = await page.evaluate(() => {
+          const foundationEl = document.querySelector('g.foundation');
+          if (!foundationEl) return null;
+          const nodes = foundationEl.querySelectorAll('g.Node');
+          const map = {};
+          nodes.forEach(n => {
+            const inst = n.__node;
+            if (inst?.data?.role) {
+              map[inst.data.role] = { x: inst.x, y: inst.y, width: inst.data.width, height: inst.data.height };
+            }
+          });
+          return map;
+        });
+        expect(roles).toBeTruthy();
+        expect(roles.raw).toBeTruthy();
+        expect(roles.base).toBeTruthy();
+
+        // Orientation-specific assertions
+        if (s.orientation === 'horizontal' || s.orientation === 'horizontal_line') {
+          expect(roles.base.x).toBeGreaterThan(roles.raw.x);
+          expect(Math.abs(roles.base.y - roles.raw.y)).toBeLessThan(2);
+        } else if (s.orientation === 'vertical' || s.orientation === 'rotate90') {
+          expect(roles.base.y).toBeGreaterThan(roles.raw.y);
+          expect(Math.abs(roles.base.x - roles.raw.x)).toBeLessThan(2);
+        } else if (s.orientation === 'rotate270') {
+          // Base above raw
+          expect(roles.base.y).toBeLessThan(roles.raw.y);
+          expect(Math.abs(roles.base.x - roles.raw.x)).toBeLessThan(2);
+        }
+      });
+    }
   });
 }); 

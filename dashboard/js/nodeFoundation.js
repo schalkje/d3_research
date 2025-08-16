@@ -25,7 +25,8 @@ const FoundationMode = Object.freeze({
 
 
 export default class FoundationNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+  static initializeNodeDataStatic(nodeData) {
+    // Base sizing and layout defaults
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 44;
     if (!nodeData.layout) nodeData.layout = {};
@@ -33,15 +34,50 @@ export default class FoundationNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, auto
 
-    if (nodeData.layout.displayMode == DisplayMode.ROLE) {
-      nodeData.width = roleWidth + roleWidth + 20 + 8 + 8;
+    // Role mode has fixed role tag widths
+    if (nodeData.layout.displayMode === DisplayMode.ROLE) {
+      nodeData.width = roleWidth + roleWidth + 20 + 8 + 8; // two roles + spacing + margins
+      nodeData.height = 44;
     }
+
+    // Ensure children array exists and pre-create raw/base when in AUTO mode
+    if (!nodeData.children) nodeData.children = [];
+    const isAuto = nodeData.layout.mode === FoundationMode.AUTO;
+    const ensureChild = (role) => {
+      let child = nodeData.children.find((c) => c.role === role || c.category === role);
+      if (!child && isAuto) {
+        const isRoleMode = nodeData.layout.displayMode === DisplayMode.ROLE;
+        child = {
+          id: `${role}_${nodeData.id}`,
+          label: isRoleMode ? role : `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
+          role: role,
+          category: role,
+          type: "node",
+          width: isRoleMode ? roleWidth : 150,
+          height: 44,
+        };
+        nodeData.children.push(child);
+      }
+    };
+    ensureChild('raw');
+    ensureChild('base');
+
+    return nodeData;
+  }
+
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    // Normalize and pre-populate children before base initialization (zone system relies on it)
+    nodeData = FoundationNode.initializeNodeDataStatic(nodeData);
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.rawNode = null;
     this.baseNode = null;
-    this.nodeSpacing = { horizontal: 20, vertical: 10 };
+    // Adopt node spacing from settings if provided
+    this.nodeSpacing = {
+      horizontal: (this.settings?.nodeSpacing?.horizontal ?? 20),
+      vertical: (this.settings?.nodeSpacing?.vertical ?? 10)
+    };
   }
 
   get nestedCorrection_y() {
@@ -53,14 +89,16 @@ export default class FoundationNode extends BaseContainerNode {
     this.suspenseDisplayChange = true;
     // console.log("    nodeFoundation - initChildren - Create Children for Foundation:", this.data.label, this.data.children);
 
+    // Let BaseContainerNode create child components from pre-created child data
     super.initChildren();
 
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
     }
 
-    this.rawNode = this.initializeChildNode("raw", ["raw"]);
-    this.baseNode = this.initializeChildNode("base", ["base"]);
+    // After super created the children, reference them by role
+    this.rawNode = this.childNodes.find((child) => child?.data?.role === 'raw') || this.initializeChildNode("raw", ["raw"]);
+    this.baseNode = this.childNodes.find((child) => child?.data?.role === 'base') || this.initializeChildNode("base", ["base"]);
 
     createInternalEdge(
       {
@@ -136,53 +174,52 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
   initChildNode(childData, childNode) {
-    console.log("    nodeFoundation - initChildNode:", childData, childNode);
-    if (childData) {
-      // Always use zone system for parent element
-      const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
-      if (!parentElement) {
-        console.error('Zone system not available for foundation node:', this.id);
-        return null;
+    if (!childData) return null;
+    // Always use zone system for parent element
+    const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+    if (!parentElement) {
+      console.error('Zone system not available for foundation node:', this.id);
+      return null;
+    }
+    
+    if (childNode == null) {
+      const copyChild = JSON.parse(JSON.stringify(childData));
+      if (this.data.layout.displayMode === DisplayMode.ROLE) {
+        copyChild.label = copyChild.role;
+        copyChild.width = roleWidth;
       }
-      
-      if (childNode == null) {
-        const copyChild = JSON.parse(JSON.stringify(childData));
-        if (this.data.layout.displayMode == DisplayMode.ROLE) {
-          copyChild.label = copyChild.role;
-          copyChild.width = roleWidth;
-        }
-        childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
-        this.childNodes.push(childNode);
-        // Add child to zone system
-        this.zoneManager.innerContainerZone.addChild(childNode);
-      }
-      // Always re-init with the correct parent element
+      childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
+      this.childNodes.push(childNode);
+      // Add child to zone system
+      this.zoneManager.innerContainerZone.addChild(childNode);
+      // Initialize the child node immediately so it renders
+      childNode.init(parentElement);
+    } else {
+      // Re-init existing child node to ensure it is rendered inside the current child container
       childNode.init(parentElement);
     }
     return childNode;
   }
 
   updateChildren() {
-    // Use zone system for child positioning if available
-    const innerContainerZone = this.zoneManager?.innerContainerZone;
-    if (!innerContainerZone) {
-      // Fallback to old layout if zone system not available
-      switch (this.data.layout.displayMode) {
-        case DisplayMode.FULL:
-          this.updateFull();
-          break;
-        case DisplayMode.ROLE:
-          this.updateRole();
-          break;
-        default:
-          console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
-          this.updateFull();
-          break;
-      }
+    // Always use zone system for child positioning
+    if (!this.zoneManager?.innerContainerZone) {
+      console.error('Zone system not available for foundation node:', this.id);
+      return;
+    }
+    
+    // When collapsed, avoid doing child layout; let BaseContainer handle collapsed sizing
+    if (this.collapsed) {
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
+      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
+      const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
+      this.resize({ width: collapsedWidth, height: collapsedHeight });
       return;
     }
 
-    // Use zone system for layout
+    // Set layout algorithm based on display mode and orientation
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
         this.updateFullZone();
@@ -191,7 +228,7 @@ export default class FoundationNode extends BaseContainerNode {
         this.updateRoleZone();
         break;
       default:
-        console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
+        console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`);
         this.updateFullZone();
         break;
     }
@@ -258,11 +295,42 @@ export default class FoundationNode extends BaseContainerNode {
       const baseNode = childNodes.find(node => node.data.role === 'base');
       
       if (rawNode && baseNode) {
-        // Position raw node on the left
-        rawNode.move(0, 0);
-        
-        // Position base node to the right of raw node
-        baseNode.move(rawNode.data.width + this.nodeSpacing.horizontal, 0);
+        const orientation = (this.data.layout?.orientation || 'horizontal').toLowerCase();
+        switch (orientation) {
+          case 'vertical':
+          case 'rotate90': {
+            // Centered vertical stack: Raw above Base
+            const totalHeight = rawNode.data.height + this.nodeSpacing.vertical + baseNode.data.height;
+            const rawY = -totalHeight / 2 + rawNode.data.height / 2;
+            const baseY = totalHeight / 2 - baseNode.data.height / 2;
+            rawNode.move(0, rawY);
+            baseNode.move(0, baseY);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'vertical');
+            break;
+          }
+          case 'rotate270': {
+            // Centered vertical stack: Base above Raw
+            const totalHeight = rawNode.data.height + this.nodeSpacing.vertical + baseNode.data.height;
+            const baseY = -totalHeight / 2 + baseNode.data.height / 2;
+            const rawY = totalHeight / 2 - rawNode.data.height / 2;
+            rawNode.move(0, rawY);
+            baseNode.move(0, baseY);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'vertical');
+            break;
+          }
+          case 'horizontal_line':
+          case 'horizontal':
+          default: {
+            // Centered horizontal row: Raw left, Base right
+            const totalWidth = rawNode.data.width + this.nodeSpacing.horizontal + baseNode.data.width;
+            const rawX = -totalWidth / 2 + rawNode.data.width / 2;
+            const baseX = totalWidth / 2 - baseNode.data.width / 2;
+            rawNode.move(rawX, 0);
+            baseNode.move(baseX, 0);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'horizontal');
+            break;
+          }
+        }
       }
     });
     
@@ -277,15 +345,81 @@ export default class FoundationNode extends BaseContainerNode {
       const baseNode = childNodes.find(node => node.data.role === 'base');
       
       if (rawNode && baseNode) {
-        // Position raw node on the left
-        rawNode.move(0, 0);
-        
-        // Position base node to the right of raw node
-        baseNode.move(rawNode.data.width + this.nodeSpacing.horizontal, 0);
+        const orientation = (this.data.layout?.orientation || 'horizontal').toLowerCase();
+        // Ensure fixed role widths
+        rawNode.data.width = roleWidth;
+        baseNode.data.width = roleWidth;
+        switch (orientation) {
+          case 'vertical':
+          case 'rotate90': {
+            const totalHeight = rawNode.data.height + this.nodeSpacing.vertical + baseNode.data.height;
+            const rawY = -totalHeight / 2 + rawNode.data.height / 2;
+            const baseY = totalHeight / 2 - baseNode.data.height / 2;
+            rawNode.move(0, rawY);
+            baseNode.move(0, baseY);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'vertical');
+            break;
+          }
+          case 'rotate270': {
+            const totalHeight = rawNode.data.height + this.nodeSpacing.vertical + baseNode.data.height;
+            const baseY = -totalHeight / 2 + baseNode.data.height / 2;
+            const rawY = totalHeight / 2 - rawNode.data.height / 2;
+            rawNode.move(0, rawY);
+            baseNode.move(0, baseY);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'vertical');
+            break;
+          }
+          case 'horizontal_line':
+          case 'horizontal':
+          default: {
+            const totalWidth = rawNode.data.width + this.nodeSpacing.horizontal + baseNode.data.width;
+            const rawX = -totalWidth / 2 + rawNode.data.width / 2;
+            const baseX = totalWidth / 2 - baseNode.data.width / 2;
+            rawNode.move(rawX, 0);
+            baseNode.move(baseX, 0);
+            this.resizeTwoNodeContainer(rawNode, baseNode, 'horizontal');
+            break;
+          }
+        }
       }
     });
     
     innerContainerZone.updateChildPositions();
+  }
+
+  // Resize container to fit two children according to zone-system sizing
+  resizeTwoNodeContainer(firstNode, secondNode, direction = 'horizontal') {
+    if (!this.zoneManager || this._isResizing) return;
+    const marginZone = this.zoneManager.marginZone;
+    const headerZone = this.zoneManager.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    if (!marginZone) return;
+    const margins = marginZone.getMargins();
+
+    let contentWidth, contentHeight;
+    if (direction === 'vertical') {
+      contentWidth = Math.max(firstNode.data.width, secondNode.data.width);
+      contentHeight = firstNode.data.height + this.nodeSpacing.vertical + secondNode.data.height;
+    } else {
+      contentWidth = firstNode.data.width + this.nodeSpacing.horizontal + secondNode.data.width;
+      contentHeight = Math.max(firstNode.data.height, secondNode.data.height);
+    }
+
+    const newSize = {
+      width: contentWidth + margins.left + margins.right,
+      height: headerHeight + margins.top + contentHeight + margins.bottom,
+    };
+
+    if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
+      this._isResizing = true;
+      try {
+        this.resize(newSize);
+        if (this.zoneManager) this.zoneManager.resize(newSize.width, newSize.height);
+        this.handleDisplayChange();
+      } finally {
+        this._isResizing = false;
+      }
+    }
   }
 
 }

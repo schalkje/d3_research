@@ -268,7 +268,7 @@ Container Zone (outermost)
 │   ├── Title: "Process Group"
 │   └── Zoom/collapse button
 ├── Margin Zones (surrounding)
-│   ├── Top Margin (4px from header)
+│   ├── Top Margin (8px from header)
 │   ├── Right Margin (8px)
 │   ├── Bottom Margin (8px)
 │   └── Left Margin (8px)

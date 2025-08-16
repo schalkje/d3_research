@@ -51,6 +51,20 @@ export function injectSettingsUI(options) {
             <label>Curve margin <input type="number" step="0.05" min="0" max="0.8" id="numCurveMargin" style="width:80px"></label>
           </div>
         </div>
+        <div class="settings-group">
+          <label class="settings-title">Orientation</label>
+          <div class="settings-inline">
+            <label for="selOrientation">Nodes</label>
+            <select id="selOrientation" style="width:160px">
+              <option value="horizontal">Horizontal</option>
+              <option value="horizontal_line">Horizontal (Line)</option>
+              <option value="vertical">Vertical</option>
+              <option value="rotate90">Rotate 90</option>
+              <option value="rotate270">Rotate 270</option>
+            </select>
+          </div>
+          <div class="settings-hint">Applies to nodes that support orientation (e.g., foundation, mart).</div>
+        </div>
       </div>
       <div class="settings-row">
         <div class="settings-group">
@@ -128,6 +142,16 @@ export function injectSettingsUI(options) {
     document.getElementById('numMarginRight').value = get(cm, 'right', 8);
     document.getElementById('numMarginBottom').value = get(cm, 'bottom', 8);
     document.getElementById('numMarginLeft').value = get(cm, 'left', 8);
+
+    // Orientation default from dataset (first node that supports it)
+    try {
+      const base = typeof getBaseData === 'function' ? getBaseData() : null;
+      const nodes = base?.nodes || [];
+      const withLayout = nodes.find(n => n?.layout && (n.layout.orientation || ['foundation','mart'].includes((n.type||'').toLowerCase())));
+      const currentOrientation = withLayout?.layout?.orientation || 'horizontal';
+      const sel = document.getElementById('selOrientation');
+      if (sel) sel.value = currentOrientation;
+    } catch {}
   }
 
   function getSettingsFromUI(baseSettings = {}) {
@@ -163,6 +187,25 @@ export function injectSettingsUI(options) {
     return s;
   }
 
+  function buildDatasetFromUI(base) {
+    const settings = getSettingsFromUI(base?.settings || {});
+    const orientation = (container.querySelector('#selOrientation')?.value) || 'horizontal';
+    const dataset = base ? { ...base, settings: { ...settings } } : null;
+    if (dataset && Array.isArray(dataset.nodes)) {
+      dataset.nodes = dataset.nodes.map(n => {
+        const node = { ...n };
+        node.layout = { ...(node.layout || {}) };
+        // Apply to nodes that support orientation (foundation, mart) or explicitly have layout
+        const type = (node.type || '').toLowerCase();
+        if (['foundation','mart'].includes(type) || node.layout) {
+          node.layout.orientation = orientation;
+        }
+        return node;
+      });
+    }
+    return dataset;
+  }
+
   // Event wiring
   const immediateInputs = [
     'chkZoomToRoot','chkShowBoundingBox','chkShowCenterMark','chkShowConnectionPoints',
@@ -173,18 +216,25 @@ export function injectSettingsUI(options) {
     const el = container.querySelector(`#${id}`);
     el && el.addEventListener('change', () => {
       const base = typeof getBaseData === 'function' ? getBaseData() : null;
-      const settings = getSettingsFromUI(base?.settings || {});
-      const dataset = base ? { ...base, settings } : null;
+      const dataset = buildDatasetFromUI(base);
       if (dataset && typeof buildDashboard === 'function') buildDashboard(dataset);
     });
   });
+  // Orientation triggers rebuild
+  const selOrientation = container.querySelector('#selOrientation');
+  if (selOrientation) {
+    selOrientation.addEventListener('change', () => {
+      const base = typeof getBaseData === 'function' ? getBaseData() : null;
+      const dataset = buildDatasetFromUI(base);
+      if (dataset && typeof buildDashboard === 'function') buildDashboard(dataset);
+    });
+  }
 
   const rebuildBtn = container.querySelector('#rebuildBtn');
   if (rebuildBtn) {
     rebuildBtn.addEventListener('click', () => {
       const base = typeof getBaseData === 'function' ? getBaseData() : null;
-      const settings = getSettingsFromUI(base?.settings || {});
-      const dataset = base ? { ...base, settings } : null;
+      const dataset = buildDatasetFromUI(base);
       if (dataset && typeof buildDashboard === 'function') buildDashboard(dataset);
     });
   }

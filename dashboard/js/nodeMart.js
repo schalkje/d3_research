@@ -25,7 +25,7 @@ const MartMode = Object.freeze({
 
 
 export default class MartNode extends BaseContainerNode {
-  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+  static initializeNodeDataStatic(nodeData) {
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 44;
     if (!nodeData.layout) nodeData.layout = {};
@@ -33,15 +33,47 @@ export default class MartNode extends BaseContainerNode {
     if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
     if (!nodeData.layout.mode) nodeData.layout.mode = MartMode.AUTO; // manual, auto
 
-    if (nodeData.layout.displayMode == DisplayMode.ROLE) {
+    if (nodeData.layout.displayMode === DisplayMode.ROLE) {
       nodeData.width = roleWidth + roleWidth + 20 + 8 + 8;
+      nodeData.height = 44;
     }
+
+    // Ensure children exist and pre-create for AUTO mode
+    if (!nodeData.children) nodeData.children = [];
+    const isAuto = nodeData.layout.mode === MartMode.AUTO;
+    const ensureChild = (role) => {
+      let child = nodeData.children.find((c) => c.role === role || c.category === role);
+      if (!child && isAuto) {
+        const isRoleMode = nodeData.layout.displayMode === DisplayMode.ROLE;
+        child = {
+          id: `${role}_${nodeData.id}`,
+          label: isRoleMode ? role : `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
+          role: role,
+          category: role,
+          type: "node",
+          width: isRoleMode ? roleWidth : 150,
+          height: 44,
+        };
+        nodeData.children.push(child);
+      }
+    };
+    ensureChild('load');
+    ensureChild('report');
+
+    return nodeData;
+  }
+
+  constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
+    nodeData = MartNode.initializeNodeDataStatic(nodeData);
 
     super(nodeData, parentElement, createNode, settings, parentNode);
 
     this.loadNode = null;
     this.reportNode = null;
-    this.nodeSpacing = { horizontal: 20, vertical: 10 };
+    this.nodeSpacing = {
+      horizontal: (this.settings?.nodeSpacing?.horizontal ?? 20),
+      vertical: (this.settings?.nodeSpacing?.vertical ?? 10)
+    };
   }
 
   get nestedCorrection_y() {
@@ -59,8 +91,8 @@ export default class MartNode extends BaseContainerNode {
       this.data.children = [];
     }
 
-    this.loadNode = this.initializeChildNode("load", ["load"]);
-    this.reportNode = this.initializeChildNode("report", ["report","rprt"]);
+    this.loadNode = this.childNodes.find((c) => c?.data?.role === 'load') || this.initializeChildNode("load", ["load"]);
+    this.reportNode = this.childNodes.find((c) => c?.data?.role === 'report') || this.initializeChildNode("report", ["report","rprt"]);
 
     createInternalEdge(
       {
@@ -136,53 +168,44 @@ export default class MartNode extends BaseContainerNode {
   }
 
   initChildNode(childData, childNode) {
-    console.log("    nodeMart - initChildNode:", childData, childNode);
-    if (childData) {
-      // Always use zone system for parent element
-      const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
-      if (!parentElement) {
-        console.error('Zone system not available for mart node:', this.id);
-        return null;
+    if (!childData) return null;
+    const parentElement = this.zoneManager?.innerContainerZone?.getChildContainer();
+    if (!parentElement) {
+      console.error('Zone system not available for mart node:', this.id);
+      return null;
+    }
+    if (childNode == null) {
+      const copyChild = JSON.parse(JSON.stringify(childData));
+      if (this.data.layout.displayMode === DisplayMode.ROLE) {
+        copyChild.label = copyChild.role;
+        copyChild.width = roleWidth;
       }
-      
-      if (childNode == null) {
-        const copyChild = JSON.parse(JSON.stringify(childData));
-        if (this.data.layout.displayMode == DisplayMode.ROLE) {
-          copyChild.label = copyChild.role;
-          copyChild.width = roleWidth;
-        }
-        childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
-        this.childNodes.push(childNode);
-        // Add child to zone system
-        this.zoneManager.innerContainerZone.addChild(childNode);
-      }
-      // Always re-init with the correct parent element
+      childNode = new RectangularNode(copyChild, parentElement, this.settings, this);
+      this.childNodes.push(childNode);
+      this.zoneManager.innerContainerZone.addChild(childNode);
+      childNode.init(parentElement);
+    } else {
       childNode.init(parentElement);
     }
     return childNode;
   }
 
   updateChildren() {
-    // Use zone system for child positioning if available
     const innerContainerZone = this.zoneManager?.innerContainerZone;
     if (!innerContainerZone) {
-      // Fallback to old layout if zone system not available
-      switch (this.data.layout.displayMode) {
-        case DisplayMode.FULL:
-          this.updateFull();
-          break;
-        case DisplayMode.ROLE:
-          this.updateRole();
-          break;
-        default:
-          console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
-          this.updateFull();
-          break;
-      }
+      console.error('Zone system not available for mart node:', this.id);
+      return;
+    }
+    if (this.collapsed) {
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+      const headerSize = headerZone ? headerZone.getSize() : { width: this.data.width, height: headerHeight };
+      const collapsedWidth = Math.max(this.minimumSize.width, headerSize.width, this.data.width);
+      const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
+      this.resize({ width: collapsedWidth, height: collapsedHeight });
       return;
     }
 
-    // Use zone system for layout
     switch (this.data.layout.displayMode) {
       case DisplayMode.FULL:
         this.updateFullZone();
@@ -191,7 +214,7 @@ export default class MartNode extends BaseContainerNode {
         this.updateRoleZone();
         break;
       default:
-        console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`)
+        console.warn(`Unknown displayMode "${this.data.layout.displayMode}" using ${DisplayMode.FULL}`);
         this.updateFullZone();
         break;
     }
@@ -258,11 +281,39 @@ export default class MartNode extends BaseContainerNode {
       const reportNode = childNodes.find(node => node.data.role === 'report');
       
       if (loadNode && reportNode) {
-        // Position load node on the left
-        loadNode.move(0, 0);
-        
-        // Position report node to the right of load node
-        reportNode.move(loadNode.data.width + this.nodeSpacing.horizontal, 0);
+        const orientation = (this.data.layout?.orientation || 'horizontal').toLowerCase();
+        switch (orientation) {
+          case 'vertical':
+          case 'rotate90': {
+            const totalHeight = loadNode.data.height + this.nodeSpacing.vertical + reportNode.data.height;
+            const loadY = -totalHeight / 2 + loadNode.data.height / 2;
+            const reportY = totalHeight / 2 - reportNode.data.height / 2;
+            loadNode.move(0, loadY);
+            reportNode.move(0, reportY);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'vertical');
+            break;
+          }
+          case 'rotate270': {
+            const totalHeight = loadNode.data.height + this.nodeSpacing.vertical + reportNode.data.height;
+            const reportY = -totalHeight / 2 + reportNode.data.height / 2;
+            const loadY = totalHeight / 2 - loadNode.data.height / 2;
+            loadNode.move(0, loadY);
+            reportNode.move(0, reportY);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'vertical');
+            break;
+          }
+          case 'horizontal_line':
+          case 'horizontal':
+          default: {
+            const totalWidth = loadNode.data.width + this.nodeSpacing.horizontal + reportNode.data.width;
+            const loadX = -totalWidth / 2 + loadNode.data.width / 2;
+            const reportX = totalWidth / 2 - reportNode.data.width / 2;
+            loadNode.move(loadX, 0);
+            reportNode.move(reportX, 0);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'horizontal');
+            break;
+          }
+        }
       }
     });
     
@@ -277,15 +328,80 @@ export default class MartNode extends BaseContainerNode {
       const reportNode = childNodes.find(node => node.data.role === 'report');
       
       if (loadNode && reportNode) {
-        // Position load node on the left
-        loadNode.move(0, 0);
-        
-        // Position report node to the right of load node
-        reportNode.move(loadNode.data.width + this.nodeSpacing.horizontal, 0);
+        const orientation = (this.data.layout?.orientation || 'horizontal').toLowerCase();
+        loadNode.data.width = roleWidth;
+        reportNode.data.width = roleWidth;
+        switch (orientation) {
+          case 'vertical':
+          case 'rotate90': {
+            const totalHeight = loadNode.data.height + this.nodeSpacing.vertical + reportNode.data.height;
+            const loadY = -totalHeight / 2 + loadNode.data.height / 2;
+            const reportY = totalHeight / 2 - reportNode.data.height / 2;
+            loadNode.move(0, loadY);
+            reportNode.move(0, reportY);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'vertical');
+            break;
+          }
+          case 'rotate270': {
+            const totalHeight = loadNode.data.height + this.nodeSpacing.vertical + reportNode.data.height;
+            const reportY = -totalHeight / 2 + reportNode.data.height / 2;
+            const loadY = totalHeight / 2 - loadNode.data.height / 2;
+            loadNode.move(0, loadY);
+            reportNode.move(0, reportY);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'vertical');
+            break;
+          }
+          case 'horizontal_line':
+          case 'horizontal':
+          default: {
+            const totalWidth = loadNode.data.width + this.nodeSpacing.horizontal + reportNode.data.width;
+            const loadX = -totalWidth / 2 + loadNode.data.width / 2;
+            const reportX = totalWidth / 2 - reportNode.data.width / 2;
+            loadNode.move(loadX, 0);
+            reportNode.move(reportX, 0);
+            this.resizeTwoNodeContainer(loadNode, reportNode, 'horizontal');
+            break;
+          }
+        }
       }
     });
     
     innerContainerZone.updateChildPositions();
+  }
+
+  // Resize container to fit two children according to zone-system sizing
+  resizeTwoNodeContainer(firstNode, secondNode, direction = 'horizontal') {
+    if (!this.zoneManager || this._isResizing) return;
+    const marginZone = this.zoneManager.marginZone;
+    const headerZone = this.zoneManager.headerZone;
+    const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    if (!marginZone) return;
+    const margins = marginZone.getMargins();
+
+    let contentWidth, contentHeight;
+    if (direction === 'vertical') {
+      contentWidth = Math.max(firstNode.data.width, secondNode.data.width);
+      contentHeight = firstNode.data.height + this.nodeSpacing.vertical + secondNode.data.height;
+    } else {
+      contentWidth = firstNode.data.width + this.nodeSpacing.horizontal + secondNode.data.width;
+      contentHeight = Math.max(firstNode.data.height, secondNode.data.height);
+    }
+
+    const newSize = {
+      width: contentWidth + margins.left + margins.right,
+      height: headerHeight + margins.top + contentHeight + margins.bottom,
+    };
+
+    if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
+      this._isResizing = true;
+      try {
+        this.resize(newSize);
+        if (this.zoneManager) this.zoneManager.resize(newSize.width, newSize.height);
+        this.handleDisplayChange();
+      } finally {
+        this._isResizing = false;
+      }
+    }
   }
 
 }
