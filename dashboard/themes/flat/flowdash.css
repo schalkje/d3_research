@@ -16,18 +16,18 @@ body { background: var(--fd-bg); color: var(--fd-text); font-family: Inter, 'Seg
 svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; border-radius: 8px; }
 
 .shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 1.5px; }
-.Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; rx: 6 !important; ry: 6 !important; }
+.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; rx: 6 !important; ry: 6 !important; }
 .header-background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
 .header-text { fill: var(--fd-text) !important; font-weight: 600; }
 
-text, .label, .Node.label { fill: var(--fd-text) !important; }
+text, .label, .rect.label { fill: var(--fd-text) !important; }
 .edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
 
 .zoom-button:hover circle { fill: #f3f4f6 !important; stroke: #d1d5db !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-.container-shape[status="Updated"], .Node.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #86efac !important; }
-.container-shape[status="Error"], .Node.shape[status="Error"] { fill: #fee2e2 !important; stroke: #fca5a5 !important; }
-.container-shape[status="Warning"], .Node.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #fde68a !important; }
+.container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #86efac !important; }
+.container-shape[status="Error"], .rect.shape[status="Error"] { fill: #fee2e2 !important; stroke: #fca5a5 !important; }
+.container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #fde68a !important; }
 
 

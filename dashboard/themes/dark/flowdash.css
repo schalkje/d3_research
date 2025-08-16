@@ -16,11 +16,11 @@ body { background: var(--fd-bg); color: var(--fd-text); }
 svg.canvas { border-color: var(--fd-border); box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
 
 .shape { fill: var(--fd-surface); stroke: var(--fd-accent); }
-text, .label, .Node.label { fill: var(--fd-text); }
+text, .label, .rect.label { fill: var(--fd-text); }
 .edge .path { stroke: var(--fd-edge); }
 
 /* dashboard containers */
-.container-shape, .adapter.shape, .Node.shape, .SSIS.shape { fill: #141821; stroke: var(--fd-border); }
+.container-shape, .adapter.shape, .rect.shape, .SSIS.shape { fill: #141821; stroke: var(--fd-border); }
 .header-background { fill: #12151c; stroke: var(--fd-border); }
 .zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
 .zoom-icon { fill: var(--fd-text); }

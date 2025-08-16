@@ -17,11 +17,11 @@ svg.canvas { border-color: var(--fd-border) !important; box-shadow: 8px 8px 0 0 
 
 /* bold, high-contrast shapes */
 .shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 3px !important; }
-.Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: #ffef99 !important; stroke: #000 !important; stroke-width: 3px !important; rx: 0 !important; ry: 0 !important; }
+.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: #ffef99 !important; stroke: #000 !important; stroke-width: 3px !important; rx: 0 !important; ry: 0 !important; }
 .header-background { fill: #ffd24d !important; stroke: #000 !important; stroke-width: 3px !important; }
 .header-text { fill: #000 !important; font-weight: 800 !important; letter-spacing: 0.4px; }
 
-text, .label, .Node.label { fill: var(--fd-text) !important; font-weight: 800 !important; }
+text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 800 !important; }
 
 .edge .path { stroke: var(--fd-edge) !important; stroke-width: 3px !important; }
 
@@ -29,8 +29,8 @@ text, .label, .Node.label { fill: var(--fd-text) !important; font-weight: 800 !i
 .zoom-icon { fill: #000 !important; }
 
 /* status accents stay vivid but boxed */
-.container-shape[status="Updated"], .Node.shape[status="Updated"] { fill: #25d366 !important; fill-opacity: 1 !important; stroke: #000 !important; }
-.container-shape[status="Error"], .Node.shape[status="Error"] { fill: #ff453a !important; fill-opacity: 1 !important; stroke: #000 !important; }
-.container-shape[status="Warning"], .Node.shape[status="Warning"] { fill: #ff9f0a !important; fill-opacity: 1 !important; stroke: #000 !important; }
+.container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #25d366 !important; fill-opacity: 1 !important; stroke: #000 !important; }
+.container-shape[status="Error"], .rect.shape[status="Error"] { fill: #ff453a !important; fill-opacity: 1 !important; stroke: #000 !important; }
+.container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #ff9f0a !important; fill-opacity: 1 !important; stroke: #000 !important; }
 
 

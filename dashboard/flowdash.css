@@ -182,12 +182,12 @@ svg.canvas {
     Node shape statusses
 */
 
-.Node.shape[status="Unknown"] {
+.rect.shape[status="Unknown"] {
   fill: rgb(132, 139, 146);
   fill-opacity: 1;
 }
 
-.Node.shape[status="Ready"] {
+.rect.shape[status="Ready"] {
   fill: lightblue;
   fill-opacity: 1;
 }
@@ -226,7 +226,7 @@ svg.canvas {
   }
 }
 
-.Node.shape[status="Updating"] {
+.rect.shape[status="Updating"] {
   fill: lightgreen;
   fill-opacity: 1;
   stroke: green;
@@ -236,28 +236,28 @@ svg.canvas {
   animation: dash 10s forwards linear infinite;
 }
 
-.Node.shape[status="Updated"] {
+.rect.shape[status="Updated"] {
   fill: rgb(24, 196, 24);
   fill-opacity: 1;
 }
 
-.Node.shape[status="Skipped"] {
+.rect.shape[status="Skipped"] {
   fill: rgb(255, 252, 208);
   fill-opacity: 1;
 }
 
 
-.Node.shape[status="Delayed"] {
+.rect.shape[status="Delayed"] {
   fill: orange;
   fill-opacity: 1;
 }
 
-.Node.shape[status="Warning"] {
+.rect.shape[status="Warning"] {
   fill: orangered;
   fill-opacity: 1;
 }
 
-.Node.shape[status="Error"] {
+.rect.shape[status="Error"] {
   fill: red;
   fill-opacity: 1;
 }
@@ -284,8 +284,8 @@ text {
 }
 
 /* Ensure all node labels are centered */
-.node.label,
-.Node.label,
+.rect.label,
+.rect.label,
 .rect.label,
 .adapter.label,
 .foundation.label,
@@ -335,7 +335,7 @@ text {
   opacity: 0.8;
 }
 
-.node_grabbing {
+.rect_grabbing {
   fill: #9b9bfa;
   fill-opacity: 0.95;
   stroke: rgb(65, 65, 151);
@@ -546,7 +546,7 @@ rect.zone-innerContainer {
 }
 
 /* Node Styles (for type="Node") */
-.Node.shape {
+.rect.shape {
   fill: #f8f9fa;
   stroke: #dee2e6;
   stroke-width: 1;
@@ -672,51 +672,6 @@ rect.zone-innerContainer {
 }
 
 .container-shape[status="Error"] {
-  stroke: red;
-  fill: red;
-  fill-opacity: 0.3;
-}
-
-/* Status-based styling for Node shapes */
-.Node.shape[status="Unknown"] {
-  fill: #ddc7ff;
-  fill-opacity: 0.1;
-}
-
-.Node.shape[status="Ready"] {
-  fill: lightblue;
-  fill-opacity: 0.3;
-}
-
-.Node.shape[status="Updating"] {
-  stroke: green;
-  fill: lightgreen;
-  fill-opacity: 0.3;
-}
-
-.Node.shape[status="Updated"] {
-  stroke: none;
-  fill: rgb(24, 196, 24);
-  fill-opacity: 0.1;
-}
-
-.Node.shape[status="Skipped"] {
-  stroke: yellowgreen;
-  fill: rgb(255, 252, 208);
-  fill-opacity: 1;
-}
-
-.Node.shape[status="Delayed"] {
-  stroke: orange;
-}
-
-.Node.shape[status="Warning"] {
-  stroke: orangered;
-  fill: orangered;
-  fill-opacity: 0.3;
-}
-
-.Node.shape[status="Error"] {
   stroke: red;
   fill: red;
   fill-opacity: 0.3;

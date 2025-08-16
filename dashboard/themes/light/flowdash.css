@@ -16,11 +16,10 @@ body { background: var(--fd-bg); color: var(--fd-text); }
 svg.canvas { border-color: var(--fd-border); box-shadow: 4px 3px 8px 1px #969696; }
 
 /* basic shapes/labels override to use tokens */
-.shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; }
-.Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
+.shape { fill: var(--fd-surface); stroke: var(--fd-accent); }
 .header-background { fill: #ffffff !important; stroke: var(--fd-border) !important; }
 .header-text { fill: var(--fd-text) !important; }
-text, .label, .Node.label { fill: var(--fd-text) !important; }
+text, .label, .rect.label { fill: var(--fd-text) !important; }
 .edge .path { stroke: var(--fd-edge) !important; }
 
 
