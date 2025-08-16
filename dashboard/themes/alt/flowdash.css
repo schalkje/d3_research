@@ -1,0 +1,16 @@
+:root, [data-theme="alt"] {
+  --fd-bg: #fcfcff;
+  --fd-surface: #eef3ff;
+  --fd-text: #081a2b;
+  --fd-muted: #4d5b6e;
+  --fd-accent: #0ea5e9;
+  --fd-border: #bcd5ff;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); }
+svg.canvas { border-color: var(--fd-border); box-shadow: 4px 3px 10px 1px rgba(14,165,233,0.25); }
+.shape { stroke: var(--fd-accent); }
+text, .label, .Node.label { fill: var(--fd-text); }
+.edge .path { stroke: var(--fd-muted); }
+
+

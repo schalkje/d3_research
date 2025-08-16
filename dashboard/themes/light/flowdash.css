@@ -1,0 +1,20 @@
+:root, [data-theme="light"] {
+  --fd-bg: #ffffff;
+  --fd-surface: #f7f7f8;
+  --fd-text: #0b0b0c;
+  --fd-muted: #666666;
+  --fd-accent: #2f6feb;
+  --fd-border: #d3d3d3;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); }
+
+/* demo canvas */
+svg.canvas { border-color: var(--fd-border); box-shadow: 4px 3px 8px 1px #969696; }
+
+/* basic shapes/labels override to use tokens */
+.shape { stroke: var(--fd-accent); }
+text, .label, .Node.label { fill: var(--fd-text); }
+.edge .path { stroke: #7795D1; }
+
+

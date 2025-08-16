@@ -1,0 +1,25 @@
+:root, [data-theme="dark"] {
+  --fd-bg: #0d0f14;
+  --fd-surface: #171a21;
+  --fd-text: #f2f4f8;
+  --fd-muted: #8a8f98;
+  --fd-accent: #7aa2ff;
+  --fd-border: #2a2f3a;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); }
+
+/* canvas and borders */
+svg.canvas { border-color: var(--fd-border); box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+
+.shape { stroke: var(--fd-accent); }
+text, .label, .Node.label { fill: var(--fd-text); }
+.edge .path { stroke: var(--fd-muted); }
+
+/* dashboard containers */
+.container-shape, .adapter.shape, .Node.shape, .SSIS.shape { fill: #141821; stroke: var(--fd-border); }
+.header-background { fill: #12151c; stroke: var(--fd-border); }
+.zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
+.zoom-icon { fill: var(--fd-text); }
+
+
