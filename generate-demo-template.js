@@ -414,7 +414,7 @@ const nodeTypeConfigs = {
         description: "Dynamic group node with force-directed layout"
     },
     "edge-demo": {
-        category: "10_edgeDemoNodes",
+        category: "10_edges",
         features: ["Edge connection testing", "Demo purposes"],
         childSupport: "No",
         description: "Edge demo node for testing connections"
