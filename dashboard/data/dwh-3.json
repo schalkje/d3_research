@@ -129,21 +129,21 @@
   "edges": [
     {
       "isActive": false,
-      "source": "trn_bankview",
+      "source": "transform_bankview",
       "type": "SSIS",
       "state": "Unknown",
       "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "trn_matrix",
+      "source": "transform_matrix",
       "type": "SSIS",
       "state": "Unknown",
       "target": "pbdwh_ods"
     },
     {
       "isActive": false,
-      "source": "trn_fidor",
+      "source": "transform_fidor",
       "type": "SSIS",
       "state": "Unknown",
       "target": "pbdwh_ods"

@@ -5,16 +5,19 @@
   --fd-muted: #8a8f98;
   --fd-accent: #7aa2ff;
   --fd-border: #2a2f3a;
+  --fd-edge: #5d6b7d;
 }
 
 body { background: var(--fd-bg); color: var(--fd-text); }
 
-/* canvas and borders */
+/* canvases */
+#graph { background-color: #0b0e12; border-color: var(--fd-border); }
+#minimap { background-color: rgba(20, 24, 33, 0.7); border-color: var(--fd-border); }
 svg.canvas { border-color: var(--fd-border); box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
 
-.shape { stroke: var(--fd-accent); }
+.shape { fill: var(--fd-surface); stroke: var(--fd-accent); }
 text, .label, .Node.label { fill: var(--fd-text); }
-.edge .path { stroke: var(--fd-muted); }
+.edge .path { stroke: var(--fd-edge); }
 
 /* dashboard containers */
 .container-shape, .adapter.shape, .Node.shape, .SSIS.shape { fill: #141821; stroke: var(--fd-border); }

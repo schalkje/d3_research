@@ -5,16 +5,22 @@
   --fd-muted: #666666;
   --fd-accent: #2f6feb;
   --fd-border: #d3d3d3;
+  --fd-edge: #7795D1;
 }
 
 body { background: var(--fd-bg); color: var(--fd-text); }
 
-/* demo canvas */
+/* canvases */
+#graph { background-color: var(--fd-bg) !important; border-color: var(--fd-border) !important; }
+#minimap { background-color: rgba(255,255,255,0.7) !important; border-color: var(--fd-border) !important; }
 svg.canvas { border-color: var(--fd-border); box-shadow: 4px 3px 8px 1px #969696; }
 
 /* basic shapes/labels override to use tokens */
-.shape { stroke: var(--fd-accent); }
-text, .label, .Node.label { fill: var(--fd-text); }
-.edge .path { stroke: #7795D1; }
+.shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; }
+.Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
+.header-background { fill: #ffffff !important; stroke: var(--fd-border) !important; }
+.header-text { fill: var(--fd-text) !important; }
+text, .label, .Node.label { fill: var(--fd-text) !important; }
+.edge .path { stroke: var(--fd-edge) !important; }
 
 
