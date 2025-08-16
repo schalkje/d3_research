@@ -1,11 +1,11 @@
 :root, [data-theme="flat"] {
-  --fd-bg: #f7f7fb;
+  --fd-bg: #f6f7fb;
   --fd-surface: #ffffff;
-  --fd-text: #1f2937;
-  --fd-muted: #6b7280;
+  --fd-text: #0f172a;
+  --fd-muted: #475569;
   --fd-accent: #2563eb;
   --fd-border: #e5e7eb;
-  --fd-edge: #93c5fd;
+  --fd-edge: #3b82f6;
 }
 
 body { background: var(--fd-bg); color: var(--fd-text); font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif; }
@@ -15,19 +15,27 @@ body { background: var(--fd-bg); color: var(--fd-text); font-family: Inter, 'Seg
 #minimap { background-color: #ffffff !important; border: 1px solid var(--fd-border) !important; border-radius: 6px; }
 svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; border-radius: 8px; }
 
-.shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 1.5px; }
-.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; rx: 6 !important; ry: 6 !important; }
+.shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 2px; }
+.rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; stroke-width: 1.5px; rx: 6 !important; ry: 6 !important; }
 .header-background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
-.header-text { fill: var(--fd-text) !important; font-weight: 600; }
+.header-text { fill: var(--fd-text) !important; font-weight: 700; letter-spacing: 0.2px; }
 
-text, .label, .rect.label { fill: var(--fd-text) !important; }
-.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
+text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 700; }
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2.5px; }
 
-.zoom-button:hover circle { fill: #f3f4f6 !important; stroke: #d1d5db !important; }
+.zoom-button:hover circle { fill: #eef2ff !important; stroke: #c7d2fe !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-.container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #86efac !important; }
-.container-shape[status="Error"], .rect.shape[status="Error"] { fill: #fee2e2 !important; stroke: #fca5a5 !important; }
-.container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #fde68a !important; }
+/* Strong, flat status palette */
+.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] { fill: #e2e8f0 !important; stroke: #cbd5e1 !important; }
+.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] { fill: #dbeafe !important; stroke: #60a5fa !important; }
+.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] { fill: #fef3c7 !important; stroke: #f59e0b !important; stroke-dasharray: 10 6; animation: flat-dash 1s linear infinite; }
+.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #34d399 !important; }
+.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] { fill: #f1f5f9 !important; stroke: #94a3b8 !important; }
+.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] { fill: #ffedd5 !important; stroke: #fb923c !important; }
+.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #facc15 !important; }
+.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] { fill: #fee2e2 !important; stroke: #ef4444 !important; }
+
+@keyframes flat-dash { to { stroke-dashoffset: -64; } }
 
 

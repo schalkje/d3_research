@@ -1,31 +1,174 @@
 :root, [data-theme="glassmorphism"] {
   --fd-bg: #0e1117;
-  --fd-surface: rgba(255, 255, 255, 0.12);
+  --fd-surface: rgba(255, 255, 255, 0.20);
   --fd-text: #f8fafc;
   --fd-muted: #cbd5e1;
-  --fd-accent: #60a5fa;
-  --fd-border: rgba(255,255,255,0.25);
-  --fd-edge: #93c5fd;
+  --fd-accent: #7ab8ff;
+  --fd-border: rgba(255,255,255,0.5);
+  --fd-edge: #8fd3ff;
 }
 
-body { background: linear-gradient(135deg, #0e1117 0%, #161b22 100%); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+body {
+  background:
+    radial-gradient(900px 700px at 15% 20%, rgba(56,189,248,0.18), transparent 60%),
+    radial-gradient(900px 700px at 85% 30%, rgba(192,132,252,0.14), transparent 60%),
+    radial-gradient(700px 500px at 70% 80%, rgba(34,197,94,0.12), transparent 60%),
+    radial-gradient(1200px 800px at 50% -10%, rgba(255,255,255,0.05), transparent 60%),
+    radial-gradient(1200px 800px at 50% 110%, rgba(0,0,0,0.45), transparent 60%),
+    linear-gradient(135deg, #0b1220 0%, #0a0f1a 40%, #10162a 100%);
+  color: var(--fd-text);
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
 
-#graph { background: var(--fd-surface) !important; border: 1px solid var(--fd-border) !important; backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
-#minimap { background: rgba(255,255,255,0.08) !important; border: 1px solid var(--fd-border) !important; backdrop-filter: blur(10px); border-radius: 12px; }
-svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important; border-radius: 16px; }
+#graph {
+  background: var(--fd-surface) !important;
+  border: 1px solid var(--fd-border) !important;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+#minimap {
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid var(--fd-border) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+svg.canvas {
+  border: 1px solid var(--fd-border) !important;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.5) !important;
+  border-radius: 16px;
+}
 
-.shape, .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: rgba(255,255,255,0.12) !important; stroke: rgba(255,255,255,0.35) !important; backdrop-filter: blur(8px); rx: 10 !important; ry: 10 !important; }
-.header-background { fill: rgba(255,255,255,0.10) !important; stroke: rgba(255,255,255,0.25) !important; }
-.header-text { fill: var(--fd-text) !important; }
+.shape, .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape {
+  fill: var(--fd-surface) !important;
+  stroke: var(--fd-border) !important;
+  stroke-width: 1.5px;
+  backdrop-filter: blur(12px) saturate(120%);
+  rx: 12 !important;
+  ry: 12 !important;
+  filter: drop-shadow(0 10px 28px rgba(0,0,0,0.5)) drop-shadow(0 0 16px rgba(122,184,255,0.22));
+}
 
-text, .label, .rect.label { fill: var(--fd-text) !important; }
-.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
+/* Smooth glass transitions */
+.container-shape, .header-background, .label, .edge .path, .rect.shape, .Node.shape, .node .shape {
+  transition: filter 180ms ease, fill 180ms ease, stroke 180ms ease, stroke-width 180ms ease, transform 180ms ease;
+}
+.header-background { fill: rgba(255,255,255,0.18) !important; stroke: rgba(255,255,255,0.5) !important; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25)); }
+.header-text {
+  fill: var(--fd-text) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.2px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 8px rgba(255,255,255,0.12);
+}
 
-.zoom-button:hover circle { fill: rgba(255,255,255,0.15) !important; stroke: rgba(255,255,255,0.35) !important; }
+text, .label, .rect.label {
+  fill: var(--fd-text) !important;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45));
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.25);
+  stroke-width: 0.4px;
+}
+
+/* Emphasize rectangular node labels for stronger readability */
+.rect.label {
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  letter-spacing: 0.2px !important;
+  fill: #ffffff !important;
+  stroke: rgba(0,0,0,0.45) !important;
+  stroke-width: 0.6px !important;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)) drop-shadow(0 0 6px rgba(122,184,255,0.25));
+}
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2.5px; filter: drop-shadow(0 1px 8px rgba(143,211,255,0.55)); }
+
+.zoom-button:hover circle { fill: rgba(255,255,255,0.18) !important; stroke: rgba(255,255,255,0.45) !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-.container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: rgba(16, 185, 129, 0.25) !important; stroke: rgba(16,185,129,0.5) !important; }
-.container-shape[status="Error"], .rect.shape[status="Error"] { fill: rgba(239, 68, 68, 0.25) !important; stroke: rgba(239,68,68,0.5) !important; }
-.container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: rgba(245, 158, 11, 0.25) !important; stroke: rgba(245,158,11,0.5) !important; }
+/* State system: brighter, more legible frosted tints */
+.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] { fill: rgba(255,255,255,0.18) !important; stroke: rgba(255,255,255,0.5) !important; }
+.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] { fill: rgba(59, 130, 246, 0.30) !important; stroke: rgba(122,184,255,1) !important; filter: drop-shadow(0 2px 10px rgba(122,184,255,0.45)); }
+.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] { fill: rgba(245, 158, 11, 0.26) !important; stroke: rgba(251, 191, 36, 0.95) !important; stroke-width: 2.25px; filter: drop-shadow(0 2px 8px rgba(251,191,36,0.35)); }
+.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: rgba(16, 185, 129, 0.36) !important; stroke: rgba(34,197,94,1) !important; filter: drop-shadow(0 2px 10px rgba(34,197,94,0.45)); }
+.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] { fill: rgba(148,163,184,0.26) !important; stroke: rgba(203,213,225,0.75) !important; }
+.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] { fill: rgba(251, 146, 60, 0.32) !important; stroke: rgba(255, 138, 76, 1) !important; filter: drop-shadow(0 2px 10px rgba(255,138,76,0.45)); }
+.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: rgba(245, 158, 11, 0.34) !important; stroke: rgba(255, 193, 7, 1) !important; stroke-width: 2.25px; filter: drop-shadow(0 2px 12px rgba(255,193,7,0.45)); }
+.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] { fill: rgba(239, 68, 68, 0.38) !important; stroke: rgba(255, 82, 82, 1) !important; stroke-width: 2.5px; filter: drop-shadow(0 2px 12px rgba(255,82,82,0.5)); }
+
+/* Updating animation: soft shimmer/pulse appropriate for glass */
+@keyframes glass-pulse {
+  0%, 100% { stroke-width: 1.5px; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35)); }
+  50% { stroke-width: 2.5px; filter: drop-shadow(0 12px 30px rgba(0,0,0,0.45)); }
+}
+.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+  animation: glass-pulse 1.2s ease-in-out infinite;
+}
+
+/* Glassy hover effects on containers and headers */
+.container-shape.hover,
+.lane:hover > .zone-container > .container-shape,
+.columns:hover > .zone-container > .container-shape,
+.group:hover > .zone-container > .container-shape,
+.adapter:hover > .zone-container > .container-shape,
+.mart:hover > .zone-container > .container-shape,
+.foundation:hover > .zone-container > .container-shape {
+  fill: rgba(255,255,255,0.28) !important;
+  stroke: rgba(255,255,255,0.7) !important;
+  stroke-width: 1.8px !important;
+  /* Avoid changing backdrop-filter on hover to prevent large box artifacts in some SVG renderers */
+  filter: drop-shadow(0 14px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 22px rgba(122,184,255,0.30));
+  transform: translateY(-1px) scale(1.01);
+}
+
+.lane:hover .zone-header > .header-background,
+.columns:hover .zone-header > .header-background,
+.group:hover .zone-header > .header-background,
+.adapter:hover .zone-header > .header-background,
+.mart:hover .zone-header > .header-background,
+.foundation:hover .zone-header > .header-background {
+  fill: rgba(255,255,255,0.24) !important;
+  stroke: rgba(255,255,255,0.75) !important;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
+}
+
+.lane:hover .header-text,
+.columns:hover .header-text,
+.group:hover .header-text,
+.adapter:hover .header-text,
+.mart:hover .header-text,
+.foundation:hover .header-text {
+  text-shadow: 0 2px 3px rgba(0,0,0,0.65), 0 0 10px rgba(255,255,255,0.18);
+}
+
+/* Node hover: lift and brighten */
+.node:hover .shape, .Node:hover .shape, .rect.shape:hover {
+  fill: rgba(255,255,255,0.30) !important;
+  stroke: rgba(255,255,255,0.8) !important;
+  stroke-width: 1.8px !important;
+  /* Avoid changing backdrop-filter on hover to prevent large box artifacts */
+  filter: drop-shadow(0 12px 34px rgba(0,0,0,0.6)) drop-shadow(0 0 20px rgba(122,184,255,0.32));
+  transform: translateY(-0.5px) scale(1.01);
+}
+
+.node:hover .label, .Node:hover .label, .rect.label:hover {
+  text-shadow: 0 2px 3px rgba(0,0,0,0.7), 0 0 10px rgba(255,255,255,0.22);
+  stroke-width: 0.7px;
+}
+
+/* Edge hover: brighter stroke and glow */
+.edge .path:hover {
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 2px 10px rgba(143,211,255,0.65));
+}
+
+/* Header status indicators tuned to match frosted state palette */
+.status-indicator.unknown { fill: rgba(255,255,255,0.6) !important; }
+.status-indicator.ready { fill: rgba(96,165,250,0.9) !important; }
+.status-indicator.updating { fill: rgba(251,191,36,0.95) !important; }
+.status-indicator.updated { fill: rgba(16,185,129,0.95) !important; }
+.status-indicator.error { fill: rgba(239,68,68,1) !important; }
+.status-indicator.warning { fill: rgba(245,158,11,1) !important; }
 
 
