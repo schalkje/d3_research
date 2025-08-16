@@ -1,0 +1,36 @@
+:root, [data-theme="cyberpunk"] {
+  --fd-bg: #0b0a10;
+  --fd-surface: #141322;
+  --fd-text: #e2e8f0;
+  --fd-muted: #94a3b8;
+  --fd-accent: #ff00e5;
+  --fd-border: #2b2a3a;
+  --fd-edge: #00e5ff;
+  --fd-glow1: #ff00e5;
+  --fd-glow2: #00e5ff;
+}
+
+body { background: linear-gradient(135deg, #0b0a10 0%, #11122a 100%); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+
+#graph { background: radial-gradient(1200px 600px at 50% 0%, rgba(255,0,229,0.08), transparent 60%), radial-gradient(1000px 500px at 10% 80%, rgba(0,229,255,0.08), transparent 60%), var(--fd-surface) !important; border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2b2a3a, 0 0 40px rgba(255,0,229,0.2), 0 0 60px rgba(0,229,255,0.15); }
+#minimap { background-color: rgba(17,18,42,0.7) !important; border-color: var(--fd-border) !important; }
+svg.canvas { border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2b2a3a, 0 0 24px rgba(255,0,229,0.2), 0 0 48px rgba(0,229,255,0.15) !important; }
+
+.shape { fill: #17162c !important; stroke: var(--fd-accent) !important; stroke-width: 1.5px; filter: drop-shadow(0 0 8px rgba(255,0,229,0.3)); }
+.Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: #14132a !important; stroke: #3b3a5a !important; rx: 6 !important; ry: 6 !important; }
+.header-background { fill: #151433 !important; stroke: #3b3a5a !important; }
+.header-text { fill: var(--fd-text) !important; text-shadow: 0 0 8px rgba(0,229,255,0.5); }
+
+text, .label, .Node.label { fill: var(--fd-text) !important; }
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; filter: drop-shadow(0 0 6px rgba(0,229,255,0.6)); }
+
+.zoom-button:hover circle { fill: rgba(255,0,229,0.1) !important; stroke: #3b3a5a !important; }
+.zoom-icon { fill: var(--fd-text) !important; }
+
+.container-shape.selected, .Node.shape.selected { box-shadow: 0 0 0 1px var(--fd-accent), 0 0 20px rgba(255,0,229,0.4); }
+
+.container-shape[status="Updated"], .Node.shape[status="Updated"] { fill: #0a2f2f !important; stroke: #00ffa8 !important; }
+.container-shape[status="Error"], .Node.shape[status="Error"] { fill: #2a0a12 !important; stroke: #ff5577 !important; }
+.container-shape[status="Warning"], .Node.shape[status="Warning"] { fill: #2f230a !important; stroke: #ffc400 !important; }
+
+

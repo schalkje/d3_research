@@ -1,6 +1,6 @@
 (()=>{
   const STORAGE_KEY = 'flowdashTheme';
-  const KNOWN_THEMES = ['light','dark','alt'];
+  const KNOWN_THEMES = ['light','dark','brutalism','neumorphism','cyberpunk','glassmorphism','flat'];
 
   function getScriptEl(){
     return document.currentScript || Array.from(document.scripts).find(s=>s.src && s.src.endsWith('/themeManager.js'));

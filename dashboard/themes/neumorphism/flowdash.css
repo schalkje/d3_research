@@ -1,0 +1,35 @@
+:root, [data-theme="neumorphism"] {
+  --fd-bg: #e6e9ef;
+  --fd-surface: #eef1f7;
+  --fd-text: #2d3142;
+  --fd-muted: #6b7280;
+  --fd-accent: #6b9cff;
+  --fd-border: #d1d5db;
+  --fd-edge: #8892a6;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+
+/* soft elevated canvases */
+#graph { background-color: var(--fd-surface) !important; border: none !important; box-shadow: 10px 10px 20px #c8ccd4, -10px -10px 20px #ffffff; border-radius: 16px; }
+#minimap { background-color: rgba(255,255,255,0.6) !important; border: none !important; box-shadow: inset 6px 6px 12px #d0d4dc, inset -6px -6px 12px #ffffff; border-radius: 12px; }
+svg.canvas { border: none !important; box-shadow: 12px 12px 24px #c8ccd4, -12px -12px 24px #ffffff !important; border-radius: 16px; }
+
+.shape, .Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface) !important; stroke: #dfe3ea !important; stroke-width: 1px !important; filter: drop-shadow(4px 4px 8px rgba(0,0,0,.08)); rx: 12 !important; ry: 12 !important; }
+.header-background { fill: var(--fd-surface) !important; stroke: #e5e9f0 !important; }
+.header-text { fill: var(--fd-text) !important; font-weight: 600; }
+
+text, .label, .Node.label { fill: var(--fd-text) !important; }
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
+
+.zoom-button:hover circle { fill: #f6f8fc !important; stroke: #d7dce5 !important; }
+.zoom-icon { fill: var(--fd-text) !important; }
+
+.container-shape.selected, .Node.shape.selected { filter: drop-shadow(10px 10px 20px rgba(0,0,0,.12)) !important; }
+
+/* status colors subtly tinted */
+.container-shape[status="Updated"], .Node.shape[status="Updated"] { fill: #dbffe8 !important; stroke: #a7f3d0 !important; }
+.container-shape[status="Error"], .Node.shape[status="Error"] { fill: #ffe5e7 !important; stroke: #fecaca !important; }
+.container-shape[status="Warning"], .Node.shape[status="Warning"] { fill: #fff3cd !important; stroke: #fde68a !important; }
+
+

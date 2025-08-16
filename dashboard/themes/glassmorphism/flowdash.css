@@ -1,0 +1,31 @@
+:root, [data-theme="glassmorphism"] {
+  --fd-bg: #0e1117;
+  --fd-surface: rgba(255, 255, 255, 0.12);
+  --fd-text: #f8fafc;
+  --fd-muted: #cbd5e1;
+  --fd-accent: #60a5fa;
+  --fd-border: rgba(255,255,255,0.25);
+  --fd-edge: #93c5fd;
+}
+
+body { background: linear-gradient(135deg, #0e1117 0%, #161b22 100%); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+
+#graph { background: var(--fd-surface) !important; border: 1px solid var(--fd-border) !important; backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+#minimap { background: rgba(255,255,255,0.08) !important; border: 1px solid var(--fd-border) !important; backdrop-filter: blur(10px); border-radius: 12px; }
+svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important; border-radius: 16px; }
+
+.shape, .Node.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: rgba(255,255,255,0.12) !important; stroke: rgba(255,255,255,0.35) !important; backdrop-filter: blur(8px); rx: 10 !important; ry: 10 !important; }
+.header-background { fill: rgba(255,255,255,0.10) !important; stroke: rgba(255,255,255,0.25) !important; }
+.header-text { fill: var(--fd-text) !important; }
+
+text, .label, .Node.label { fill: var(--fd-text) !important; }
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
+
+.zoom-button:hover circle { fill: rgba(255,255,255,0.15) !important; stroke: rgba(255,255,255,0.35) !important; }
+.zoom-icon { fill: var(--fd-text) !important; }
+
+.container-shape[status="Updated"], .Node.shape[status="Updated"] { fill: rgba(16, 185, 129, 0.25) !important; stroke: rgba(16,185,129,0.5) !important; }
+.container-shape[status="Error"], .Node.shape[status="Error"] { fill: rgba(239, 68, 68, 0.25) !important; stroke: rgba(239,68,68,0.5) !important; }
+.container-shape[status="Warning"], .Node.shape[status="Warning"] { fill: rgba(245, 158, 11, 0.25) !important; stroke: rgba(245,158,11,0.5) !important; }
+
+
