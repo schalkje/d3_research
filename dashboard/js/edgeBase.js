@@ -117,6 +117,12 @@ export default class BaseEdge {
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].nestedCorrection_x;
     }
+    // Add cumulative container translations (group transforms) up the parent chain
+    let positionalCorrection = 0;
+    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
+      const ancestor = this.parents.source[i];
+      if (typeof ancestor.x === 'number') positionalCorrection += ancestor.x;
+    }
     
     // Apply zone transforms to get global coordinates
     const zoneTransforms = getZoneTransforms(this.source);
@@ -131,7 +137,7 @@ export default class BaseEdge {
         });
       } catch {}
     }
-    return this.source.x + correction + zoneTransforms.x;
+    return this.source.x + correction + zoneTransforms.x + positionalCorrection;
   }
 
   get y1() {
@@ -141,6 +147,12 @@ export default class BaseEdge {
     for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
       // console.log("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       correction += this.parents.source[i].nestedCorrection_y;
+    }
+    // Add cumulative container translations (group transforms) up the parent chain
+    let positionalCorrection = 0;
+    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
+      const ancestor = this.parents.source[i];
+      if (typeof ancestor.y === 'number') positionalCorrection += ancestor.y;
     }
     
     // Apply zone transforms to get global coordinates
@@ -156,7 +168,7 @@ export default class BaseEdge {
         });
       } catch {}
     }
-    return this.source.y + correction + zoneTransforms.y;
+    return this.source.y + correction + zoneTransforms.y + positionalCorrection;
   }
 
   get x2() {
@@ -165,6 +177,12 @@ export default class BaseEdge {
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_x;
+    }
+    // Add cumulative container translations (group transforms) up the parent chain
+    let positionalCorrection = 0;
+    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
+      const ancestor = this.parents.target[i];
+      if (typeof ancestor.x === 'number') positionalCorrection += ancestor.x;
     }
     
     // Apply zone transforms to get global coordinates
@@ -180,7 +198,7 @@ export default class BaseEdge {
         });
       } catch {}
     }
-    return this.target.x + correction + zoneTransforms.x;
+    return this.target.x + correction + zoneTransforms.x + positionalCorrection;
   }
 
   get y2() {
@@ -189,6 +207,12 @@ export default class BaseEdge {
     let correction = 0;
     for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_y;
+    }
+    // Add cumulative container translations (group transforms) up the parent chain
+    let positionalCorrection = 0;
+    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
+      const ancestor = this.parents.target[i];
+      if (typeof ancestor.y === 'number') positionalCorrection += ancestor.y;
     }
     
     // Apply zone transforms to get global coordinates
@@ -204,7 +228,7 @@ export default class BaseEdge {
         });
       } catch {}
     }
-    return this.target.y + correction + zoneTransforms.y;
+    return this.target.y + correction + zoneTransforms.y + positionalCorrection;
   }
 
   get sourcePoint() {

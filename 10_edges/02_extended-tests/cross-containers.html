@@ -40,16 +40,25 @@
     <script type="module">
         import { demoData } from './js/cross-containers.js';
         import flowDashboard from '../../dashboard/js/index.js';
+        import { injectSettingsUI } from '../../dashboard/js/demoSettings.js';
 
         let flowdash;
 
-        function build() {
-            flowdash = new flowDashboard.Dashboard(demoData);
+        function build(dataset) {
+            const ds = dataset || demoData;
+            flowdash = new flowDashboard.Dashboard(ds);
             flowdash.initialize('#graph');
             window.flowdash = flowdash;
         }
 
-        build();
+        injectSettingsUI({
+            containerSelector: 'body',
+            withVariation: false,
+            getBaseData: () => demoData,
+            buildDashboard: (dataset) => build(dataset)
+        });
+
+        build(demoData);
 
         function getNode(id) { return flowdash.main.root.getNode(id); }
 

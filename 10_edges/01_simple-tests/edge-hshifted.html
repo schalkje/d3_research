@@ -17,9 +17,17 @@
         <h1>Edge Demo</h1>
         <h2>H-Shifted</h2>
         <div class="demo-controls">
-            <label><input id="curvedToggle" type="checkbox"> Curved</label>
-            <label><input id="ghostToggle" type="checkbox"> Ghostlines</label>
-            <button id="rebuildBtn">Rebuild</button>
+            <label>Variation
+                <select id="variationSelect">
+                    <option value="grid">grid</option>
+                    <option value="h-shifted">h-shifted</option>
+                    <option value="v-shifted">v-shifted</option>
+                    <option value="v-shifted2">v-shifted2</option>
+                    <option value="stair-up">stair-up</option>
+                    <option value="stair-down">stair-down</option>
+                </select>
+            </label>
+            <button id="cycleBtn">Cycle</button>
         </div>
     </header>
 
@@ -30,24 +38,38 @@
     <script type="module">
         import { makeData } from './js/edge-demo.js';
         import flowDashboard from '../../dashboard/js/index.js';
+        import { injectSettingsUI } from '../../dashboard/js/demoSettings.js';
 
         let flowdash;
 
-        function build() {
-            const curved = document.getElementById('curvedToggle').checked;
-            const ghost = document.getElementById('ghostToggle').checked;
-            const dataset = makeData({ curved, ghost, mode: 'h-shifted' });
-            flowdash = new flowDashboard.Dashboard(dataset);
+        function build(dataset) {
+            const ds = dataset || makeData({ mode: currentMode() });
+            flowdash = new flowDashboard.Dashboard(ds);
             flowdash.initialize('#graph');
             window.flowdash = flowdash;
         }
 
-        document.getElementById('rebuildBtn').addEventListener('click', () => {
-            flowdash?.reset();
-            build();
+        injectSettingsUI({
+            containerSelector: 'body',
+            withVariation: false,
+            getBaseData: () => makeData({ mode: currentMode() }),
+            buildDashboard: (dataset) => build(dataset)
         });
 
-        build();
+        const variations = ['grid','h-shifted','v-shifted','v-shifted2','stair-up','stair-down'];
+        const sel = document.getElementById('variationSelect');
+        sel.value = 'h-shifted';
+        sel.addEventListener('change', () => build(makeData({ mode: sel.value })));
+        document.getElementById('cycleBtn').addEventListener('click', () => {
+            const idx = variations.indexOf(sel.value);
+            const next = variations[(idx + 1) % variations.length];
+            sel.value = next;
+            build(makeData({ mode: next }));
+        });
+
+        function currentMode() { return sel?.value || 'h-shifted'; }
+
+        build(makeData({ mode: currentMode() }));
     </script>
 </body>
 </html>

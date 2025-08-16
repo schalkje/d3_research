@@ -30,10 +30,24 @@
     <script type="module">
         import { demoData } from './js/horizontal-ltr.js';
         import flowDashboard from '../../dashboard/js/index.js';
+        import { injectSettingsUI } from '../../dashboard/js/demoSettings.js';
 
         let flowdash;
-        function build() { flowdash = new flowDashboard.Dashboard(demoData); flowdash.initialize('#graph'); }
-        build();
+        function build(dataset) {
+            const ds = dataset || demoData;
+            flowdash = new flowDashboard.Dashboard(ds);
+            flowdash.initialize('#graph');
+            window.flowdash = flowdash;
+        }
+
+        injectSettingsUI({
+            containerSelector: 'body',
+            withVariation: false,
+            getBaseData: () => demoData,
+            buildDashboard: (dataset) => build(dataset)
+        });
+
+        build(demoData);
 
         document.getElementById('collapseBtn').addEventListener('click', () => flowdash.main.root?.collapse());
         document.getElementById('expandBtn').addEventListener('click', () => flowdash.main.root?.expand());

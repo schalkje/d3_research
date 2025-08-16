@@ -180,27 +180,13 @@ export function generateDirectEdge(edge) {
 }
 
 export function generateGhostEdge(edge) {
-  // Calculate exact midpoints of source and target nodes
-  const sourceMidpoint = getNodeMidpoint(edge.source);
-  const targetMidpoint = getNodeMidpoint(edge.target);
-  
-  return [sourceMidpoint, targetMidpoint];
+  // Return exact center points in global coordinates by reusing edge coordinate getters
+  const start = [edge.x1, edge.y1];
+  const end = [edge.x2, edge.y2];
+  return [start, end];
 }
 
-function getNodeMidpoint(node) {
-  if (!node) return [0, 0];
-  
-  // Get the node's position (which is already the center)
-  let centerX = node.x;
-  let centerY = node.y;
-  
-  // Apply zone transforms if the node is inside a zone system
-  const transforms = getZoneTransforms(node);
-  centerX += transforms.x;
-  centerY += transforms.y;
-  
-  return [centerX, centerY];
-}
+// getNodeMidpoint no longer used – edge.x1/y1 and edge.x2/y2 compute global centers reliably
 
 // Helper function to get zone transforms for a node
 export function getZoneTransforms(node) {
