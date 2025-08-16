@@ -32,196 +32,204 @@ export default class EdgeDemoNode extends BaseContainerNode {
     this.nodeSpacing = nodeData.nodeSpacing || { horizontal: 30, vertical: 20 };
   }
 
-   renderChildren() {
-    // console.log("    Rendering Children for Adapter:", this.id, this.data.children);
-    if (!this.data.children || this.data.children.length === 0) {
-      this.data.children = [];
+  init(parentElement = null) {
+    // Ensure demo children are present before base init so the zone system can create them
+    this.ensureDemoChildren();
+    super.init(parentElement);
+
+    // Create edges from center to all surrounding demo children (once)
+    const center = this.getChildNode('center');
+    if (center) {
+      const neighborIds = ['top','top-right','right','bottom-right','bottom','bottom-left','left','top-left'];
+      neighborIds.forEach(id => {
+        const target = this.getChildNode(id);
+        if (target) {
+          createInternalEdge({ source: center.data, target: target.data, isActive: true, type: 'SSIS', state: 'Ready' }, center, target, this.settings);
+        }
+      });
+      // Initialize edges now that they exist
+      this.initEdges();
     }
+  }
 
-    // render "center" node
-    this.centerNode = this.createChild(null, "center", 0, 0);
+  ensureDemoChildren() {
+    if (!this.data.children || this.data.children.length === 0) {
+      this.data.children = [
+        { id: 'center', label: 'center', type: 'rect' },
+        { id: 'top', label: 'top', type: 'rect' },
+        { id: 'top-right', label: 'top-right', type: 'rect' },
+        { id: 'right', label: 'right', type: 'rect' },
+        { id: 'bottom-right', label: 'bottom-right', type: 'rect' },
+        { id: 'bottom', label: 'bottom', type: 'rect' },
+        { id: 'bottom-left', label: 'bottom-left', type: 'rect' },
+        { id: 'left', label: 'left', type: 'rect' },
+        { id: 'top-left', label: 'top-left', type: 'rect' }
+      ];
+    }
+  }
 
-    // grid layout
-    switch (this.layout) {
-      case DemoMode.GRID:
-        this.gridLayout();
-        break;
-      case DemoMode.HSHIFTED:
-        this.hshiftedLayout();
-        break;
-      case DemoMode.VSHIFTED:
-        this.vshiftedLayout();
-        break;
-      case DemoMode.VSHIFTED2:
-        this.vshifted2Layout();
-        break;
-        case DemoMode.STAIR_UP:
-          this.stairUpLayout();
+  getChildNode(id) {
+    if (!this.childNodes) return null;
+    return this.childNodes.find(n => n.id === id || n.data?.id === id) || null;
+  }
+
+  moveChild(id, x, y) {
+    const node = this.getChildNode(id);
+    if (node) node.move(x, y);
+  }
+
+  updateChildren() {
+    // Use the zone system layout algorithm to position children so it doesn't override us later
+    const innerZone = this.zoneManager?.innerContainerZone;
+    if (!innerZone) return;
+
+    const self = this;
+    innerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
+      const childById = new Map(childNodes.map(n => [n.id, n]));
+      const c = childById.get('center');
+      if (!c) return;
+
+      const w = c.data.width;
+      const h = c.data.height;
+      const sx = self.nodeSpacing.horizontal;
+      const sy = self.nodeSpacing.vertical;
+      const r1 = self.shiftRatio;
+      const r2 = self.shift2Ratio;
+
+      const move = (id, x, y) => { const n = childById.get(id); if (n) n.move(x, y); };
+      // Always place center
+      move('center', 0, 0);
+
+      switch (self.layout) {
+        case DemoMode.HSHIFTED:
+          move('top-right',   w + sx, -h * r1);
+          move('bottom-right',w + sx,  h * r1);
+          move('top-left',   -w - sx, -h * r1);
+          move('bottom-left',-w - sx,  h * r1);
           break;
-          case DemoMode.STAIR_DOWN:
-            this.stairDownLayout();
-            break;
+        case DemoMode.VSHIFTED:
+          move('top-left',    -w * r1, -h - sy);
+          move('top-right',    w * r1, -h - sy);
+          move('bottom-left', -w * r1,  h + sy);
+          move('bottom-right', w * r1,  h + sy);
+          break;
+        case DemoMode.VSHIFTED2:
+          move('top-left',    -w * r2, -h - sy);
+          move('top-right',    w * r2, -h - sy);
+          move('bottom-left', -w * r2,  h + sy);
+          move('bottom-right', w * r2,  h + sy);
+          break;
+        case DemoMode.STAIR_UP:
+          move('bottom-left', -w * (1 - r1),  h + sy);
+          move('top-right',    w * (1 - r1), -h - sy);
+          break;
+        case DemoMode.STAIR_DOWN:
+          move('top-left',    -w * (1 - r1), -h - sy);
+          move('bottom-right', w * (1 - r1),  h + sy);
+          break;
+        case DemoMode.GRID:
+        default:
+          move('top',          0,       -h - sy);
+          move('top-right',    w + sx,  -h - sy);
+          move('right',        w + sx,   0);
+          move('bottom-right', w + sx,   h + sy);
+          move('bottom',       0,        h + sy);
+          move('bottom-left', -w - sx,   h + sy);
+          move('left',        -w - sx,   0);
+          move('top-left',    -w - sx,  -h - sy);
+          break;
       }
+    });
 
-    // resize to contain all children
-    this.resizeToFitChildren();
-
-     this.initEdges();
-    // this.updateEdges();
+    // Apply the algorithm now
+    innerZone.updateChildPositions();
   }
 
-  gridLayout()
-  {
-    this.createChild(this.centerNode, "top", 0, -this.centerNode.data.height - this.nodeSpacing.vertical);
-    this.createChild(
-      this.centerNode,
-      "top-right",
-      this.centerNode.data.width + this.nodeSpacing.horizontal,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-    this.createChild(this.centerNode, "right", this.centerNode.data.width + this.nodeSpacing.horizontal, 0);
-    this.createChild(
-      this.centerNode,
-      "bottom-right",
-      this.centerNode.data.width + this.nodeSpacing.horizontal,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
-    this.createChild(this.centerNode, "bottom", 0, this.centerNode.data.height + this.nodeSpacing.vertical);
-    this.createChild(
-      this.centerNode,
-      "bottom-left",
-      -this.centerNode.data.width - this.nodeSpacing.horizontal,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
-    this.createChild(this.centerNode, "left", -this.centerNode.data.width - this.nodeSpacing.horizontal, 0);
-    this.createChild(
-      this.centerNode,
-      "top-left",
-      -this.centerNode.data.width - this.nodeSpacing.horizontal,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
+  gridLayout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sx = this.nodeSpacing.horizontal;
+    const sy = this.nodeSpacing.vertical;
+    this.moveChild('center', 0, 0);
+    this.moveChild('top', 0, -h - sy);
+    this.moveChild('top-right', w + sx, -h - sy);
+    this.moveChild('right', w + sx, 0);
+    this.moveChild('bottom-right', w + sx, h + sy);
+    this.moveChild('bottom', 0, h + sy);
+    this.moveChild('bottom-left', -w - sx, h + sy);
+    this.moveChild('left', -w - sx, 0);
+    this.moveChild('top-left', -w - sx, -h - sy);
   }
   
-  hshiftedLayout() 
-  {
-    this.createChild(
-      this.centerNode,
-      "top-right",
-      this.centerNode.data.width + this.nodeSpacing.horizontal,
-      -this.centerNode.data.height * this.shiftRatio
-    );
-    this.createChild(
-      this.centerNode,
-      "bottom-right",
-      this.centerNode.data.width + this.nodeSpacing.horizontal,
-      this.centerNode.data.height * this.shiftRatio
-    );
-
-    this.createChild(
-      this.centerNode,
-      "top-left",
-      -this.centerNode.data.width - this.nodeSpacing.horizontal,
-      -this.centerNode.data.height * this.shiftRatio
-    );
-    this.createChild(
-      this.centerNode,
-      "bottom-left",
-      -this.centerNode.data.width - this.nodeSpacing.horizontal,
-      this.centerNode.data.height * this.shiftRatio
-      // this.centerNode.data.height * 0 + this.nodeSpacing.vertical
-    );
+  hshiftedLayout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sx = this.nodeSpacing.horizontal;
+    const r = this.shiftRatio;
+    this.moveChild('center', 0, 0);
+    this.moveChild('top-right',  w + sx, -h * r);
+    this.moveChild('bottom-right',  w + sx,  h * r);
+    this.moveChild('top-left', -w - sx, -h * r);
+    this.moveChild('bottom-left', -w - sx,  h * r);
   }
 
-  vshiftedLayout() 
-  {
-    this.createChild(
-      this.centerNode,
-      "top-left",
-      -this.centerNode.data.width * this.shiftRatio,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "top-right",
-      this.centerNode.data.width * this.shiftRatio,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-
-    this.createChild(
-      this.centerNode,
-      "bottom-left",
-      -this.centerNode.data.width * this.shiftRatio,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "bottom-right",
-      this.centerNode.data.width * this.shiftRatio,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
+  vshiftedLayout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sx = this.nodeSpacing.horizontal;
+    const sy = this.nodeSpacing.vertical;
+    const r = this.shiftRatio;
+    this.moveChild('center', 0, 0);
+    this.moveChild('top-left',    -w * r, -h - sy);
+    this.moveChild('top-right',    w * r, -h - sy);
+    this.moveChild('bottom-left', -w * r,  h + sy);
+    this.moveChild('bottom-right', w * r,  h + sy);
   }
 
 
-  vshifted2Layout() 
-  {
-    this.createChild(
-      this.centerNode,
-      "top-left",
-      -this.centerNode.data.width * this.shift2Ratio,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "top-right",
-      this.centerNode.data.width * this.shift2Ratio,
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-
-    this.createChild(
-      this.centerNode,
-      "bottom-left",
-      -this.centerNode.data.width * this.shift2Ratio,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "bottom-right",
-      this.centerNode.data.width * this.shift2Ratio,
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
+  vshifted2Layout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sy = this.nodeSpacing.vertical;
+    const r = this.shift2Ratio;
+    this.moveChild('center', 0, 0);
+    this.moveChild('top-left',    -w * r, -h - sy);
+    this.moveChild('top-right',    w * r, -h - sy);
+    this.moveChild('bottom-left', -w * r,  h + sy);
+    this.moveChild('bottom-right', w * r,  h + sy);
   }
 
   
-  stairUpLayout() 
-  {
-    this.createChild(
-      this.centerNode,
-      "bottom-left",
-      -this.centerNode.data.width * (1-this.shiftRatio),
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "top-right",
-      this.centerNode.data.width * (1-this.shiftRatio),
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
+  stairUpLayout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sy = this.nodeSpacing.vertical;
+    const r = (1 - this.shiftRatio);
+    this.moveChild('center', 0, 0);
+    this.moveChild('bottom-left', -w * r,  h + sy);
+    this.moveChild('top-right',    w * r, -h - sy);
   }
   
-  stairDownLayout() 
-  {
-    this.createChild(
-      this.centerNode,
-      "top-left",
-      -this.centerNode.data.width * (1-this.shiftRatio),
-      -this.centerNode.data.height - this.nodeSpacing.vertical
-    );
-    this.createChild(
-      this.centerNode,
-      "bottom-right",
-      this.centerNode.data.width * (1-this.shiftRatio),
-      this.centerNode.data.height + this.nodeSpacing.vertical
-    );
+  stairDownLayout() {
+    const c = this.getChildNode('center');
+    if (!c) return;
+    const w = c.data.width;
+    const h = c.data.height;
+    const sy = this.nodeSpacing.vertical;
+    const r = (1 - this.shiftRatio);
+    this.moveChild('center', 0, 0);
+    this.moveChild('top-left',    -w * r, -h - sy);
+    this.moveChild('bottom-right', w * r,  h + sy);
   }
 
   resizeToFitChildren() {
@@ -237,7 +245,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
       id: `child_${id}`,
       label: `${id}`,
       category: "child",
-      type: "Node",
+      type: "rect",
     };
     this.data.children.push(child);
 

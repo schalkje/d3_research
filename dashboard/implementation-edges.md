@@ -2,23 +2,23 @@
 
 ## Overview
 
-The edge system manages connections between nodes in the dashboard. It handles edge creation, routing, and visual representation with support for different edge types and routing algorithms.
+The edge system manages connections between nodes in the dashboard. It handles edge creation, parent resolution, routing, and visual representation with support for straight or curved rendering and optional ghostlines.
 
 ## Architecture
 
 ### Edge Creation Flow
 
-1. **Edge Factory** (`edge.js`) - Creates edge instances
-2. **Parent Resolution** - Determines common parent container
-3. **Edge Instance** (`edgeBase.js`) - Manages edge visualization
-4. **Path Calculation** (`utilPath.js`) - Computes routing paths
-5. **Markers** (`markers.js`) - Defines arrow heads and symbols
+1. **Edge Factory** (`edge.js`) – Creates edge instances
+2. **Parent Resolution** – Determines common parent container
+3. **Edge Instance** (`edgeBase.js`) – Manages SVG elements and interaction
+4. **Path Calculation** (`utilPath.js`) – Computes routed polyline points
+5. **Markers** (`markers.js`) – Optional SVG markers (arrow heads, symbols)
 
 ## Edge Factory
 
 **File:** `edge.js`
 
-The factory handles edge creation and parent resolution:
+The factory handles edge creation and parent resolution. The real code uses defensive checks and avoids duplicate edges between the same nodes.
 
 ### Key Functions
 
@@ -35,36 +35,41 @@ export function createEdges(rootNode, edges, settings) {
 ```
 
 #### `createEdge(rootNode, edgeData, settings)`
-Creates a single edge by finding source and target nodes:
+Creates a single edge by finding source and target nodes (IDs or objects are accepted):
 
 ```javascript
 export function createEdge(rootNode, edgeData, settings) {
-  const source = rootNode.getNode(edgeData.source);
-  const target = rootNode.getNode(edgeData.target);
-  createInternalEdge(edgeData, source, target, settings);
+  var sourceId = typeof edgeData.source === 'string' ? edgeData.source : edgeData.source.id;
+  var targetId = typeof edgeData.target === 'string' ? edgeData.target : edgeData.target.id;
+
+  const source = rootNode.getNode(sourceId);
+  if (!source) { console.error(`Creating Edge - Source node ${sourceId} not found`, edgeData); return; }
+
+  const target = rootNode.getNode(targetId);
+  if (!target) { console.error(`Creating Edge - Target node ${targetId} not found`); return; }
+
+  createInternalEdge(edgeData, source, target, settings)
 }
 ```
 
 #### `createInternalEdge(edgeData, source, target, settings)`
-Creates the actual edge instance:
+Creates the actual edge instance using the common parent container:
 
 ```javascript
 export function createInternalEdge(edgeData, source, target, settings) {
+  if (source === target) { console.error('createInternalEdge - Source and Target are the same node', source); return; }
+
   const parents = buildEdgeParents(source, target);
   const parent = parents.container;
-  
-  // Check for existing edge
-  if (source.edges.outgoing.find((edge) => edge.target === target)) {
-    return;
-  }
-  
+  if (!parent || !parent.childEdges) { console.error('createInternalEdge: invalid parent container', { parent }); return; }
+
+  // Avoid duplicate edges between the same nodes
+  if (source.edges.outgoing.find((edge) => edge.target === target)) return;
+
   const edge = new BaseEdge(edgeData, parents, settings);
-  
-  // Add to source and target
+
   source.edges.outgoing.push(edge);
   target.edges.incoming.push(edge);
-  
-  // Add to parent container
   parent.childEdges.push(edge);
 }
 ```
@@ -72,33 +77,23 @@ export function createInternalEdge(edgeData, source, target, settings) {
 ### Parent Resolution
 
 #### `buildEdgeParents(sourceNode, targetNode)`
-Determines the common parent container and builds parent hierarchies:
+Determines the common parent container and builds parent hierarchies (closest shared ancestor). Only the chain up to (but excluding) the container is kept for both sides:
 
 ```javascript
 export function buildEdgeParents(sourceNode, targetNode) {
   const sourceParents = [sourceNode, ...sourceNode.getParents()];
   const targetParents = [targetNode, ...targetNode.getParents()];
-  
+
   let container = null;
   const targetParentSet = new Set(targetParents);
-  
-  // Find common parent
   for (let i = 0; i < sourceParents.length; i++) {
-    if (targetParentSet.has(sourceParents[i])) {
-      container = sourceParents[i];
-      break;
-    }
+    if (targetParentSet.has(sourceParents[i])) { container = sourceParents[i]; break; }
   }
-  
-  // Prune parent arrays up to container
+
   const prunedSourceParents = sourceParents.slice(0, sourceParents.indexOf(container));
   const prunedTargetParents = targetParents.slice(0, targetParents.indexOf(container));
-  
-  return {
-    source: prunedSourceParents,
-    target: prunedTargetParents,
-    container: container
-  };
+
+  return { source: prunedSourceParents, target: prunedTargetParents, container };
 }
 ```
 
@@ -106,169 +101,81 @@ export function buildEdgeParents(sourceNode, targetNode) {
 
 **File:** `edgeBase.js`
 
-The base class for all edge implementations:
+The base class for all edge implementations. It renders into the common parent container's `edgesContainer` and optionally a `ghostContainer`.
 
 ### Key Properties
 
-- `data` - Edge configuration data
-- `parents` - Parent hierarchy information
-- `settings` - Dashboard settings
-- `source` - Source node reference
-- `target` - Target node reference
-- `element` - D3 selection of edge SVG element
-- `path` - D3 selection of path element
-- `markers` - Arrow head markers
+- `data` – Edge configuration (`type`, `active`, etc.)
+- `parents` – `{ source: [...], target: [...], container }`
+- `settings` – Rendering options: `showEdges`, `showGhostlines`, `curved`, `curveMargin`
+- `source` / `target` – Computed from parent chains
+- `element` – D3 selection for the main edge group and `.path`
+- `ghostElement` – Optional ghostline group and `.path`
 
 ### Key Methods
 
 #### `init(parentElement)`
-Initializes the edge's SVG elements:
-
-```javascript
-init(parentElement = null) {
-  if (parentElement) this.parentElement = parentElement;
-  
-  this.element = this.parentElement
-    .append("g")
-    .attr("class", "edge")
-    .attr("id", this.id);
-    
-  this.path = this.element.append("path")
-    .attr("class", "edge-path")
-    .attr("marker-end", "url(#arrowhead)");
-}
-```
+Initializes ghostline and edge groups under the container’s dedicated layers and wires click handlers. The path is rendered using a D3 line generator (curved when `settings.curved` is true).
 
 #### `update()`
-Updates edge path and position:
+Recomputes the points via `generateEdgePath(this)` from `utilPath.js` and sets the `d` attribute with the configured line generator. Ghostlines use `generateGhostEdge(this)`.
 
-```javascript
-update() {
-  const connectionPoints = this.getConnectionPoints();
-  const pathData = this.calculatePath(connectionPoints);
-  
-  this.path.attr("d", pathData);
-  this.updateMarkers(connectionPoints);
-}
-```
-
-#### `getConnectionPoints()`
-Gets connection points from source and target nodes:
-
-```javascript
-getConnectionPoints() {
-  const sourcePoints = this.source.computeConnectionPoints(
-    this.source.x, this.source.y, 
-    this.source.data.width, this.source.data.height
-  );
-  
-  const targetPoints = this.target.computeConnectionPoints(
-    this.target.x, this.target.y,
-    this.target.data.width, this.target.data.height
-  );
-  
-  return { source: sourcePoints, target: targetPoints };
-}
-```
+#### Coordinates and Zone System
+`x1`, `y1`, `x2`, `y2` apply hierarchical nesting corrections and `getZoneTransforms(node)` to produce global coordinates, ensuring accurate rendering within the zone system.
 
 ## Path Calculation
 
 **File:** `utilPath.js`
 
-Handles complex path routing between nodes:
+Path routing returns an array of point pairs consumed by a D3 line generator. Connection points are selected based on feasible sides and minimal distance, then intermediate waypoints are added depending on side combinations and `curveMargin`.
 
 ### Key Functions
 
 #### `computeConnectionPoints(x, y, width, height)`
-Calculates connection points on node boundaries:
+Boundary connection points for a node center at `(x,y)`:
 
 ```javascript
 export function computeConnectionPoints(x, y, width, height) {
   return {
-    top: { x: x, y: y - height/2, side: 'top' },
-    right: { x: x + width/2, y: y, side: 'right' },
-    bottom: { x: x, y: y + height/2, side: 'bottom' },
-    left: { x: x - width/2, y: y, side: 'left' }
+    top:    { side: 'top',    x: x,           y: y - height/2 },
+    bottom: { side: 'bottom', x: x,           y: y + height/2 },
+    left:   { side: 'left',   x: x - width/2, y: y },
+    right:  { side: 'right',  x: x + width/2, y: y },
   };
 }
 ```
 
-#### `calculatePath(connectionPoints)`
-Computes the actual path between connection points:
+#### `generateEdgePath(edge)`
+Returns an array of `[x,y]` points. The caller applies `d3.line()` or `d3.line().curve(d3.curveBasis)` depending on `settings.curved`.
 
-```javascript
-export function calculatePath(sourcePoint, targetPoint, edgeType = 'straight') {
-  switch (edgeType) {
-    case 'straight':
-      return `M ${sourcePoint.x} ${sourcePoint.y} L ${targetPoint.x} ${targetPoint.y}`;
-    case 'curved':
-      return calculateCurvedPath(sourcePoint, targetPoint);
-    case 'orthogonal':
-      return calculateOrthogonalPath(sourcePoint, targetPoint);
-  }
-}
-```
+#### `generateGhostEdge(edge)`
+Returns two points between node midpoints, accounting for zone transforms.
 
-### Path Types
-
-1. **Straight** - Direct line between points
-2. **Curved** - Bezier curve with automatic control points
-3. **Orthogonal** - Right-angled path with horizontal/vertical segments
+#### `getZoneTransforms(node)`
+Extracts the current container inner zone translation to convert local coordinates to global.
 
 ## Markers
 
 **File:** `markers.js`
 
-Defines SVG markers for arrow heads and other symbols:
-
-### Key Functions
-
-#### `createMarkers(svg)`
-Creates marker definitions in SVG:
-
-```javascript
-export function createMarkers(svg) {
-  const defs = svg.append("defs");
-  
-  // Arrow head marker
-  defs.append("marker")
-    .attr("id", "arrowhead")
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 8)
-    .attr("refY", 0)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", "M0,-5L10,0L0,5")
-    .attr("fill", "#999");
-}
-```
+Defines multiple SVG markers (arrowheads, circles). Use them by adding `marker-start`, `marker-mid`, or `marker-end` on the edge path via CSS or code. BaseEdge does not force markers by default, so projects can opt-in.
 
 ## Edge Data Structure
 
-Edges expect data in this format:
-
 ```javascript
 {
-  source: "source-node-id" | { id: "source-node-id" },
+  source: "source-node-id" | { id: "source-node-id" }, // ID or object with id
   target: "target-node-id" | { id: "target-node-id" },
-  type: "SSIS|DataFlow|...",
-  state: "Ready|Error|Warning|...",
-  isActive: true,
-  properties: {
-    // Edge-specific properties
-  }
+  type: "SSIS" | "DataFlow" | string,                  // optional, defaults to "unknown"
+  active: true,                                          // optional, defaults to true
+  state: "Ready" | "Error" | "Warning" | string        // optional
 }
 ```
 
 ## Edge Types
 
-### Internal Edges
-Edges between nodes within the same container, created automatically by container nodes (e.g., AdapterNode creates edges between staging, transform, and archive components).
-
-### External Edges
-Edges between nodes in different containers, created explicitly in the data.
+- Internal edges – Between nodes within the same container (typical when containers auto-create edges for their children).
+- External edges – Between nodes in different containers, created explicitly in the dashboard data and resolved by `createEdge`/`createEdges`.
 
 ## Performance Considerations
 
@@ -277,46 +184,36 @@ Edges between nodes in different containers, created explicitly in the data.
 - **Batch Operations** - Multiple edge updates batched together
 - **Efficient Selection** - Uses D3 selections for DOM manipulation
 
-## Edge Routing Strategies
+## Edge Routing
 
-### 1. Direct Routing
-Straight line between connection points.
+Routing is currently polyline-based using side-aware shortest-feasible connection points. Rendering style is controlled by the line generator:
 
-### 2. Smart Routing
-Automatically chooses best connection points based on relative positions.
-
-### 3. Orthogonal Routing
-Right-angled paths for cleaner visual appearance.
-
-### 4. Curved Routing
-Bezier curves for smooth, organic appearance.
+- Straight: `d3.line()`
+- Curved: `d3.line().curve(d3.curveBasis)`
 
 ## Edge Styling
 
-Edges support various styling options:
+Style edges via CSS classes emitted by `BaseEdge`:
 
-- **Line Style** - Solid, dashed, dotted
-- **Line Width** - Thickness of the edge
-- **Color** - Based on edge type or status
-- **Opacity** - For visual hierarchy
-- **Markers** - Arrow heads, symbols, etc.
+- Group class: `edge` and `edge <type>`
+- Status attribute: `status="ready|active|error|warning|unknown|disabled"`
+- Selected state: `class="selected"` on the edge group
+- Path class: `.path` (apply markers via CSS if desired)
 
 ## Event Handling
 
-Edges can respond to events:
+`BaseEdge` wires events on the edge group:
 
 ```javascript
-this.path.on("click", (event) => {
-  event.stopPropagation();
-  this.handleEdgeClick(event);
-});
+this.element
+  .on('click', (event) => { event.stopPropagation(); this.handleClicked(event); })
+  .on('dblclick', (event) => { event.stopPropagation(); this.handleDblClicked(event); });
 ```
 
 ## Integration with Node System
 
 Edges integrate closely with the node system:
 
-- **Connection Points** - Nodes provide connection points for edge routing
-- **Status Propagation** - Edge appearance changes with node status
-- **Visibility** - Edges hidden when source or target nodes are hidden
-- **Selection** - Edges can be selected along with nodes 
+- Connection points – Provided by nodes via `computeConnectionPoints`
+- Status and selection – Reflected on edge DOM via attributes/classes
+- Visibility – Managed by container layers; hidden when containers collapse
