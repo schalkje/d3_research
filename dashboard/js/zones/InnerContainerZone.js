@@ -26,13 +26,17 @@ export class InnerContainerZone extends BaseZone {
   createElement() {
     super.createElement();
     
-    // Create visual border for the inner container zone
-    this.borderElement = this.element.append('rect')
-      .attr('class', 'zone-innerContainer')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', 0)
-      .attr('height', 0);
+    // Create visual border for the inner container zone (optional)
+    if (this.node?.settings?.showInnerZoneRect) {
+      this.borderElement = this.element.append('rect')
+        .attr('class', 'zone-innerContainer')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 0)
+        .attr('height', 0);
+    } else {
+      this.borderElement = null;
+    }
   }
 
   /**
@@ -56,6 +60,20 @@ export class InnerContainerZone extends BaseZone {
     // Update coordinate system
     this.updateCoordinateSystem();
     
+    // Ensure border element presence matches current setting
+    const shouldShowBorder = !!(this.node?.settings?.showInnerZoneRect);
+    if (shouldShowBorder && !this.borderElement && this.element) {
+      this.borderElement = this.element.append('rect')
+        .attr('class', 'zone-innerContainer')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 0)
+        .attr('height', 0);
+    } else if (!shouldShowBorder && this.borderElement) {
+      this.borderElement.remove();
+      this.borderElement = null;
+    }
+
     // Update border element dimensions
     // Calculate actual size needed for children
     const childContentSize = this.calculateChildContentSize();

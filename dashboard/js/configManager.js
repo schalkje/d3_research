@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS = {
   cascadeOnStatusChange: true,
   showCenterMark: false,
   showConnectionPoints: false,
+  showInnerZoneRect: false,
   containerMargin: { top: 8, right: 8, bottom: 8, left: 8 },
   nodeSpacing: { horizontal: 20, vertical: 10 }
 };

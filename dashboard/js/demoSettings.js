@@ -43,6 +43,7 @@ export function injectSettingsUI(options) {
             <label><input type="checkbox" id="chkShowGhostlines"> Ghostlines</label>
             <label><input type="checkbox" id="chkCurved"> Curved edges</label>
             <label><input type="checkbox" id="chkShowEdges" checked> Show edges</label>
+            <label><input type="checkbox" id="chkShowInnerZoneRect"> Inner zone rect</label>
           </div>
         </div>
         <div class="settings-group">
@@ -130,6 +131,7 @@ export function injectSettingsUI(options) {
     document.getElementById('chkShowGhostlines').checked = !!get(settings, 'showGhostlines', false);
     document.getElementById('chkCurved').checked = !!get(settings, 'curved', false);
     document.getElementById('chkShowEdges').checked = get(settings, 'showEdges', true) !== false;
+    document.getElementById('chkShowInnerZoneRect').checked = !!get(settings, 'showInnerZoneRect', false);
     document.getElementById('numCurveMargin').value = get(settings, 'curveMargin', get(settings, 'curved', false) ? 0.1 : 0);
     const sel = settings.selector || {};
     document.getElementById('numSelectorIn').value = get(sel, 'incomming', 1);
@@ -163,6 +165,7 @@ export function injectSettingsUI(options) {
     s.showGhostlines = document.getElementById('chkShowGhostlines').checked;
     s.curved = document.getElementById('chkCurved').checked;
     s.showEdges = document.getElementById('chkShowEdges').checked;
+    s.showInnerZoneRect = document.getElementById('chkShowInnerZoneRect').checked;
     const curveMargin = parseFloat(document.getElementById('numCurveMargin').value);
     if (!Number.isNaN(curveMargin)) s.curveMargin = curveMargin;
     s.selector = s.selector || {};
@@ -209,7 +212,7 @@ export function injectSettingsUI(options) {
   // Event wiring
   const immediateInputs = [
     'chkZoomToRoot','chkShowBoundingBox','chkShowCenterMark','chkShowConnectionPoints',
-    'chkShowGhostlines','chkCurved','chkShowEdges','numCurveMargin','numSelectorIn','numSelectorOut',
+    'chkShowGhostlines','chkCurved','chkShowEdges','chkShowInnerZoneRect','numCurveMargin','numSelectorIn','numSelectorOut',
     'numNodeSpacingH','numNodeSpacingV','numMarginTop','numMarginRight','numMarginBottom','numMarginLeft'
   ];
   immediateInputs.forEach(id => {

@@ -60,6 +60,7 @@
                     <label><input type="checkbox" id="showCenterMarkCheckbox"> Center mark</label>
                     <label><input type="checkbox" id="showConnectionPointsCheckbox"> Connection points</label>
                     <label><input type="checkbox" id="zoomToRoot" checked> Zoom to root</label>
+                    <label><input type="checkbox" id="showInnerZoneRectCheckbox"> Inner zone rect</label>
                 </div>
             </div>
             <div class="settings-group">
@@ -235,6 +236,7 @@
             setChecked('showCenterMarkCheckbox', false);
             setChecked('showConnectionPointsCheckbox', false);
             setChecked('zoomToRoot', true);
+            setChecked('showInnerZoneRectCheckbox', false);
             setValue('layoutMechanismSelect', 'force');
             setValue('numCurveMargin', 0);
             setValue('numSelectorIn', 1);
@@ -261,6 +263,7 @@
             document.getElementById('showCenterMarkCheckbox').addEventListener('change', updateLayout);
             document.getElementById('showConnectionPointsCheckbox').addEventListener('change', updateLayout);
             document.getElementById('zoomToRoot').addEventListener('change', updateLayout);
+            document.getElementById('showInnerZoneRectCheckbox').addEventListener('change', updateLayout);
             document.getElementById('numCurveMargin').addEventListener('change', updateLayout);
             document.getElementById('numSelectorIn').addEventListener('change', updateLayout);
             document.getElementById('numSelectorOut').addEventListener('change', updateLayout);
@@ -327,6 +330,7 @@
                 dashboardData.settings.showCenterMark = showCenterMark;
                 dashboardData.settings.showConnectionPoints = showConnectionPoints;
                 dashboardData.settings.showGhostlines = showGhostlines;
+                dashboardData.settings.showInnerZoneRect = document.getElementById('showInnerZoneRectCheckbox').checked;
                 dashboardData.settings.showEdges = showEdges;
                 dashboardData.settings.horizontal = horizontal;
                 dashboardData.settings.curved = isEdgeCurved;
