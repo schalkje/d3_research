@@ -60,18 +60,15 @@
 }
 
 /* Embedded Minimap Overlay */
-.minimap-overlay {
-  pointer-events: auto;
+.zoom-cockpit {
+  pointer-events: all;
 }
 .minimap-svg {
   border: 1px solid var(--fd-border, #2b4b7c);
   background-color: var(--fd-surface, rgba(255,255,255, 0.7));
 }
 .minimap { }
-.minimap-footer-bg {
-  fill: var(--fd-surface, rgba(255,255,255, 0.65));
-  stroke: none;
-}
+/* No visible header/footer backgrounds; logical rows only */
 .minimap-scale {
   fill: var(--minimap-scale-fg, #333);
 }
@@ -100,7 +97,7 @@
   fill: var(--fd-border, rgba(0,0,0,0.6));
 }
 .minimap-pin-button.active .pin-btn-bg {
-  stroke: var(--fd-accent, #2b4b7c);
+  stroke: none;
 }
 
 .minimap-svg rect.background {
@@ -128,8 +125,12 @@
 
 /* Minimap control buttons */
 .minimap-controls .btn-bg {
-  fill: transparent;
-  stroke: none;
+  fill: var(--fd-surface, rgba(255,255,255, 0.9));
+  stroke: var(--fd-border, rgba(0,0,0,0.25));
+}
+.minimap-header-hit,
+.minimap-footer-hit {
+  pointer-events: all;
 }
 .minimap-controls .icon {
   fill: var(--fd-border, rgba(0,0,0,0.75));

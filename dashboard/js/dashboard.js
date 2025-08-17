@@ -98,14 +98,16 @@ export class Dashboard {
       } catch {}
     }
 
-    // Create an overlay group inside main svg
-    const overlay = this.main.svg.append('g').attr('class', 'minimap-overlay');
-    this.minimap.overlay = overlay;
+    // Create the cockpit root inside main svg
+    const cockpit = this.main.svg.append('g').attr('class', 'zoom-cockpit');
+    this.minimap.cockpit = cockpit;
+    this.minimap.overlay = cockpit; // alias for existing code paths
+    this.minimap.content = cockpit.append('g').attr('class', 'minimap-content');
     this.minimap.active = true;
     this.minimap.state = { showTimer: null, hideTimer: null, interacting: false };
 
     // Collapsed icon (always rendered; visibility toggled)
-    this.minimap.collapsedIcon = overlay.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
+    this.minimap.collapsedIcon = cockpit.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
     // Simple square icon placeholder; themes can override
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-bg').attr('width', 20).attr('height', 14).attr('rx', 2).attr('ry', 2);
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-mini').attr('x', 4).attr('y', 3).attr('width', 12).attr('height', 8);
@@ -113,8 +115,12 @@ export class Dashboard {
       this.setMinimapCollapsed(false, true);
     });
 
+    // Header (pin, collapse, size switch)
+    this.minimap.header = this.minimap.content.append('g').attr('class', 'minimap-header');
+    this.minimap.headerHeight = 20;
+
     // Collapse and Pin buttons when expanded
-    this.minimap.collapseButton = overlay.append('g').attr('class', 'minimap-collapse-button').style('cursor', 'pointer');
+    this.minimap.collapseButton = this.minimap.header.append('g').attr('class', 'minimap-collapse-button').style('cursor', 'pointer');
     this.minimap.collapseButton.append('rect').attr('class', 'collapse-btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
     // triangle-down shape
     this.minimap.collapseButton.append('path').attr('class', 'collapse-btn-icon').attr('d', 'M2,6 L14,6 L8,12 Z');
@@ -125,7 +131,38 @@ export class Dashboard {
       this.setMinimapCollapsed(true, true);
     });
 
-    this.minimap.pinButton = overlay.append('g').attr('class', 'minimap-pin-button').style('cursor', 'pointer');
+    this.minimap.pinButton = this.minimap.header.append('g').attr('class', 'minimap-pin-button').style('cursor', 'pointer');
+    // Size switcher (cycles s → m → l)
+    this.minimap.sizeButton = this.minimap.header.append('g').attr('class', 'minimap-size-button').style('cursor', 'pointer');
+    this.minimap.sizeButton.append('rect').attr('class', 'btn-bg').attr('width', 20).attr('height', 16).attr('rx', 3).attr('ry', 3);
+    this.minimap.sizeLabel = this.minimap.sizeButton.append('text').attr('class', 'btn-label').attr('x', 10).attr('y', 10).attr('text-anchor', 'middle').style('dominant-baseline', 'middle').style('font-size', '10px');
+    const updateSizeLabel = () => {
+      const token = this.data.settings.minimap.size;
+      const label = (typeof token === 'object' ? (token.label || 'M') : String(token || 'm').toUpperCase());
+      this.minimap.sizeLabel.text(label);
+    };
+    updateSizeLabel();
+    this.minimap.sizeButton.on('click', () => {
+      const order = (this.data.settings.minimap.sizeSwitcher && this.data.settings.minimap.sizeSwitcher.order) || ['s','m','l'];
+      const current = this.data.settings.minimap.size;
+      const idx = order.indexOf(typeof current === 'object' ? current.token : current) >= 0 ? order.indexOf(typeof current === 'object' ? current.token : current) : order.indexOf('m');
+      const nextToken = order[(idx + 1) % order.length];
+      this.data.settings.minimap.size = nextToken;
+      // Recalculate pixel size and reposition
+      const width = (nextToken === 's' ? 140 : nextToken === 'l' ? 220 : 180);
+      const height = Math.max(60, Math.round(width / (this.main.divRatio || (this.main.width / this.main.height) || 16/9)));
+      this.minimap.width = width;
+      this.minimap.height = height;
+      this.minimap.svg.attr('width', width).attr('height', height);
+      this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+      this.updateMinimap();
+      this.positionEmbeddedMinimap();
+      updateSizeLabel();
+      // Notify via callback if provided
+      if (typeof this.data.settings.minimap.onSizeChange === 'function') {
+        try { this.data.settings.minimap.onSizeChange({ size: nextToken, width, height }); } catch {}
+      }
+    });
     this.minimap.pinButton.append('rect').attr('class', 'pin-btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
     // simple pin icon: a circle with a small stem
     this.minimap.pinButton.append('circle').attr('class', 'pin-btn-head').attr('cx', 8).attr('cy', 6).attr('r', 3);
@@ -138,32 +175,36 @@ export class Dashboard {
     });
 
     // Minimap svg and inner content group
-    this.minimap.svg = overlay.append('svg').attr('class', 'minimap-svg');
+    this.minimap.svg = this.minimap.content.append('svg').attr('class', 'minimap-svg');
     this.minimap.container = this.minimap.svg.append('g').attr('class', 'minimap');
 
-    // Resolve size from token or explicit
-    const tokenToSize = (token) => {
-      if (typeof token === 'object' && token) return token;
+    // Resolve width from token; height derived from current dashboard aspect
+    const widthFromToken = (token) => {
+      if (typeof token === 'object' && token && typeof token.width === 'number') return token.width;
       switch (token) {
-        case 's': return { width: 140, height: 90 };
-        case 'l': return { width: 220, height: 140 };
+        case 's': return 140;
+        case 'l': return 220;
         case 'm':
-        default: return { width: 180, height: 120 };
+        default: return 180;
       }
     };
-    const resolvedSize = tokenToSize(mm.size);
-    this.minimap.width = resolvedSize.width;
-    this.minimap.height = resolvedSize.height;
-    this.minimap.svg.attr('width', resolvedSize.width).attr('height', resolvedSize.height);
+    const recalcPixelSize = () => {
+      const width = widthFromToken(mm.size);
+      const ratio = this.main.divRatio || (this.main.width / this.main.height) || 16/9;
+      const height = Math.max(60, Math.round(width / ratio));
+      this.minimap.width = width;
+      this.minimap.height = height;
+      this.minimap.svg.attr('width', width).attr('height', height);
+    };
+    recalcPixelSize();
 
     // Initialize behaviors and content
     this.initializeMinimap();
     this.updateMinimap();
 
     // Footer bar (controls + scale)
-    this.minimap.footer = overlay.append('g').attr('class', 'minimap-footer');
+    this.minimap.footer = this.minimap.content.append('g').attr('class', 'minimap-footer');
     this.minimap.footerHeight = 20;
-    this.minimap.footerRect = this.minimap.footer.append('rect').attr('class', 'minimap-footer-bg');
     // Scale indicator in footer
     if (mm.scaleIndicator?.visible !== false) {
       this.minimap.scaleText = this.minimap.footer.append('text').attr('class', 'minimap-scale').attr('text-anchor', 'end');
@@ -172,6 +213,7 @@ export class Dashboard {
     // Controls: zoom in/out/reset
     const makeButton = (group, className, onClick) => {
       const g = group.append('g').attr('class', `minimap-btn ${className}`).style('cursor', 'pointer');
+      // Button background for clear affordance
       g.append('rect').attr('class', 'btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
       g.on('click', (ev) => { ev.stopPropagation(); onClick(); });
       return g;
@@ -189,44 +231,56 @@ export class Dashboard {
     this.minimap.btnReset.append('circle').attr('class', 'icon target-outer').attr('cx', 8).attr('cy', 8).attr('r', 5);
     this.minimap.btnReset.append('circle').attr('class', 'icon target-inner').attr('cx', 8).attr('cy', 8).attr('r', 1.5);
 
+    // Invisible hit rects to stabilize hover over header/footer rows
+    this.minimap.headerHitRect = this.minimap.header.append('rect').attr('class', 'minimap-header-hit').attr('fill', 'transparent');
+    this.minimap.footerHitRect = this.minimap.footer.append('rect').attr('class', 'minimap-footer-hit').attr('fill', 'transparent');
+
     // Ensure chrome sits on top
+    if (this.minimap.header) this.minimap.header.raise();
     if (this.minimap.footer) this.minimap.footer.raise();
-    if (this.minimap.collapseButton) this.minimap.collapseButton.raise();
-    if (this.minimap.pinButton) this.minimap.pinButton.raise();
 
     // Position overlay
     this.positionEmbeddedMinimap();
 
-    // Hover behavior
+    // Hover behavior (attach to collapsed icon and cockpit regions)
     if (mode === 'hover') {
       const show = () => this.setMinimapCollapsed(false);
-      const hide = () => {
-        if (!this.data.settings.minimap.pinned) this.setMinimapCollapsed(true);
-      };
-      overlay
+      const hide = () => { if (!this.data.settings.minimap.pinned) this.setMinimapCollapsed(true); };
+
+      // Enter on collapsed icon shows cockpit
+      this.minimap.collapsedIcon
         .on('mouseenter', () => {
           this.minimap.state.isHover = true;
-          const s = this.minimap.state; if (s.hideTimer) clearTimeout(s.hideTimer);
+          if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
           this.minimap.state.showTimer = setTimeout(show, mm.hover?.showDelayMs ?? 120);
         })
         .on('mouseleave', () => {
           this.minimap.state.isHover = false;
-          const s = this.minimap.state; if (s.showTimer) clearTimeout(s.showTimer);
-          if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting)
+          if (!this.data.settings.minimap.pinned)
             this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
         });
-      // Interaction tracking keeps it visible
-      overlay
-        .on('mousedown', () => { this.minimap.state.interacting = true; })
-        .on('mouseup', () => { this.minimap.state.interacting = false; })
-        .on('wheel', () => { this.minimap.state.interacting = true; clearTimeout(this.minimap.state.hideTimer); })
-        .on('mouseout', () => { this.minimap.state.interacting = false; });
-      // Touch support: tap to reveal, auto hide
-      overlay.on('touchstart', () => {
-        show();
-        const timeout = mm.touch?.autoHideAfterMs ?? 2500;
-        setTimeout(hide, timeout);
+
+      // Cockpit keeps itself visible while hovered or interacting
+      const cockpitNodes = [this.minimap.cockpit];
+      cockpitNodes.forEach((node) => {
+        node
+          .on('mouseenter', () => {
+            this.minimap.state.isHover = true;
+            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
+            show();
+          })
+          .on('mouseleave', () => {
+            this.minimap.state.isHover = false;
+            if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting)
+              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
+          })
+          .on('mousedown', () => { this.minimap.state.interacting = true; })
+          .on('mouseup', () => { this.minimap.state.interacting = false; })
+          .on('wheel', () => { this.minimap.state.interacting = true; if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer); });
       });
+
+      // Touch: tap shows, then auto-hide after inactivity
+      this.minimap.svg.on('touchstart', () => { show(); setTimeout(hide, mm.touch?.autoHideAfterMs ?? 2500); });
     }
 
     // Initial collapsed state
@@ -290,19 +344,30 @@ export class Dashboard {
       }
     };
 
-    // Use same corner for minimap and collapsed icon
+    // Use same corner for cockpit (header + minimap + footer + collapsed icon)
     const corner = (mm.collapsedIcon && mm.collapsedIcon.position) || mm.position || 'bottom-right';
-    // Place minimap svg
-    const mapPos = posToXY(corner, size);
+    const headerH = this.minimap.headerHeight || 20;
+    const footerH = this.minimap.footerHeight || 20;
+    const cockpit = { width: size.width, height: size.height + headerH + footerH };
+    const cockpitPos = posToXY(corner, cockpit);
+    // Place header and size its invisible hit rect
+    if (this.minimap.header) {
+      this.minimap.header.attr('transform', `translate(${cockpitPos.x},${cockpitPos.y})`);
+      // right-aligned header buttons
+      const yPad = 2;
+      let xRight = cockpitPos.x + size.width - 4;
+      if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
+      if (this.minimap.pinButton) { xRight -= 20; this.minimap.pinButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
+      if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
+      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', cockpitPos.x).attr('y', cockpitPos.y).attr('width', size.width).attr('height', headerH);
+    }
+    // Place minimap body under header
+    const mapPos = { x: cockpitPos.x, y: cockpitPos.y + headerH };
     this.minimap.svg.attr('x', mapPos.x).attr('y', mapPos.y);
-    // Footer sizing and controls at bottom in-line
+    // Place footer under minimap and size its invisible hit rect
     if (this.minimap.footer) {
-      const footerH = this.minimap.footerHeight || 20;
-      // Position footer group
-      this.minimap.footer.attr('transform', `translate(${mapPos.x},${mapPos.y + size.height - footerH})`);
-      // Footer background
-      this.minimap.footerRect.attr('x', 0).attr('y', 0).attr('width', size.width).attr('height', footerH).attr('rx', 0).attr('ry', 0);
-      // Controls block
+      this.minimap.footer.attr('transform', `translate(${cockpitPos.x},${cockpitPos.y + headerH + size.height})`);
+      if (this.minimap.footerHitRect) this.minimap.footerHitRect.attr('x', cockpitPos.x).attr('y', cockpitPos.y + headerH + size.height).attr('width', size.width).attr('height', footerH);
       if (this.minimap.controls) {
         const spacing = 6;
         const startX = 6;
@@ -313,34 +378,21 @@ export class Dashboard {
         this.minimap.btnReset.attr('transform', `translate(${(16 + spacing) * 2},0)`);
       }
     }
-    // place collapse button in top-right of minimap
-    if (this.minimap.collapseButton) {
-      this.minimap.collapseButton.attr('transform', `translate(${mapPos.x + size.width - 20},${mapPos.y + 4})`);
-    }
-
-    // Place collapsed icon (may use its own position)
+    // Position collapsed icon at cockpit corner
     const collapsedIconPos = posToXY(corner, iconSize);
     this.minimap.collapsedIcon.attr('transform', `translate(${collapsedIconPos.x},${collapsedIconPos.y})`);
 
-    // Place scale indicator text inside footer, right-aligned
+    // Scale text position adjusted to cockpit coordinates
     if (this.minimap.scaleText && this.minimap.footer) {
-      const footerH = this.minimap.footerHeight || 20;
+      const padX = 10;
+      const padY = Math.floor((this.minimap.footerHeight || 20) / 2);
       this.minimap.scaleText
-        .attr('x', mapPos.x + size.width - 8)
-        .attr('y', mapPos.y + size.height - Math.ceil(footerH / 2))
+        .attr('x', cockpitPos.x + size.width - padX)
+        .attr('y', cockpitPos.y + headerH + size.height + padY)
         .style('font-size', '12px')
         .style('dominant-baseline', 'middle')
         .style('fill', 'var(--minimap-scale-fg, #333)');
       this.updateMinimapScaleIndicator();
-    }
-
-    // Place collapse and pin buttons at top-right of minimap
-    if (this.minimap.collapseButton) {
-      // draw above the minimap body and footer
-      this.minimap.collapseButton.attr('transform', `translate(${mapPos.x + size.width - 18},${mapPos.y - 22})`);
-    }
-    if (this.minimap.pinButton) {
-      this.minimap.pinButton.attr('transform', `translate(${mapPos.x + size.width - 38},${mapPos.y - 22})`);
     }
   }
 
@@ -499,12 +551,22 @@ export class Dashboard {
       this.main.divRatio = this.main.width / this.main.height;
       this.main.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
       if (this.minimap.active) {
+        // Recompute minimap pixel size from width token and new aspect
+        const mm = this.data.settings.minimap;
+        if (mm) {
+          const width = (typeof mm.size === 'object' && mm.size && typeof mm.size.width === 'number') ? mm.size.width : (mm.size === 's' ? 140 : mm.size === 'l' ? 220 : 180);
+          const height = Math.max(60, Math.round(width / this.main.divRatio));
+          this.minimap.width = width;
+          this.minimap.height = height;
+          this.minimap.svg.attr('width', width).attr('height', height);
+        }
         this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
         this.updateMinimap();
         const transform = d3.zoomIdentity
           .translate(this.main.transform.x, this.main.transform.y)
           .scale(this.main.transform.k);
         updateViewport(this, transform);
+        this.positionEmbeddedMinimap();
       }
     };
 

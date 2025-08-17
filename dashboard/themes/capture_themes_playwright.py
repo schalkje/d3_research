@@ -62,8 +62,8 @@ class ThemeScreenshotCapture:
                     
                     # Try to capture just the graph container area with margin
                     try:
-                        # Wait for the graph container to be visible
-                        await page.wait_for_selector("#graph-container", timeout=5000)
+                        # Wait for the demo container to be visible
+                        await page.wait_for_selector(".demo-container", timeout=5000)
                         
                         # Hide the theme selector UI to keep it out of captures
                         await page.evaluate("""
@@ -71,74 +71,54 @@ class ThemeScreenshotCapture:
                             if (themeUI) themeUI.style.display = 'none';
                         """)
                         
-                        # Zoom out to 95% to get a better overview and ensure full dashboard is visible
+                        # Zoom out by 1 click to get a slightly smaller view
                         await page.evaluate("""
                             // Try to zoom out using the dashboard's zoom controls
                             const zoomOutBtn = document.getElementById('zoom-out');
                             if (zoomOutBtn) {
-                                // Click zoom out a few times to get to ~95%
-                                for (let i = 0; i < 3; i++) {
-                                    zoomOutBtn.click();
-                                }
+                                // Click zoom out once
+                                zoomOutBtn.click();
                             }
                         """)
                         
                         # Wait for zoom to settle and content to reposition
                         await page.wait_for_timeout(2000)
                         
-                        # Get the graph container element AFTER zooming
-                        graph_container = await page.query_selector("#graph-container")
-                        if graph_container:
-                            # Get the bounding box of the graph container (now with zoom applied)
-                            bbox = await graph_container.bounding_box()
-                            if bbox:
-                                # Get the body element to calculate the full dashboard height
-                                body_element = await page.query_selector("body")
-                                if body_element:
-                                    body_bbox = await body_element.bounding_box()
-                                    if body_bbox:
-                                        # Calculate the full height needed based on body dimensions
-                                        # Add 12px margin on all sides
-                                        margin = 12
-                                        clip_area = {
-                                            'x': bbox['x'] - margin,
-                                            'y': bbox['y'] - margin,
-                                            'width': bbox['width'] + (margin * 2),
-                                            'height': body_bbox['height'] - bbox['y'] + margin
-                                        }
-                                        
-                                        # Capture the area with proper body height and 12px margins
-                                        await page.screenshot(
-                                            path=screenshot_path,
-                                            clip=clip_area
-                                        )
-                                        print(f"✅ Screenshot saved (full body height + 12px margin): {screenshot_path}")
-                                    else:
-                                        # Fallback: use container height with margin
-                                        margin = 12
-                                        clip_area = {
-                                            'x': bbox['x'] - margin,
-                                            'y': bbox['y'] - margin,
-                                            'width': bbox['width'] + (margin * 2),
-                                            'height': bbox['height'] + (margin * 2)
-                                        }
-                                        await page.screenshot(path=screenshot_path, clip=clip_area)
-                                        print(f"✅ Screenshot saved (container height + 12px margin): {screenshot_path}")
-                                else:
-                                    # Fallback: use container height with margin
-                                    margin = 12
-                                    clip_area = {
-                                        'x': bbox['x'] - margin,
-                                        'y': bbox['y'] - margin,
-                                        'width': bbox['width'] + (margin * 2),
-                                        'height': bbox['height'] + (margin * 2)
-                                    }
-                                    await page.screenshot(path=screenshot_path, clip=clip_area)
-                                    print(f"✅ Screenshot saved (container height + 12px margin): {screenshot_path}")
-                            else:
-                                # Fallback: capture just the graph container
-                                await graph_container.screenshot(path=screenshot_path)
-                                print(f"✅ Screenshot saved (graph container): {screenshot_path}")
+                        # Compute bounding rect from demo container after zoom
+                        demo_rect = await page.evaluate("""
+                            (selector) => {
+                                const el = document.querySelector(selector);
+                                if (!el) return null;
+                                const r = el.getBoundingClientRect();
+                                return { x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height };
+                            }
+                        """, ".demo-container")
+                        if demo_rect and demo_rect.get('width') and demo_rect.get('height'):
+                            margin = 12
+                            clip_x = max(0, demo_rect['x'] - margin)
+                            clip_y = max(0, demo_rect['y'] - margin)
+                            clip_width = demo_rect['width'] + (margin * 2)
+                            clip_height = demo_rect['height'] + (margin * 2)
+
+                            # Ensure viewport is large enough
+                            required_height = int(clip_y + clip_height)
+                            required_width = int(clip_x + clip_width)
+                            current_viewport = { 'width': 1200, 'height': 800 }
+                            new_viewport = {
+                                'width': max(current_viewport['width'], required_width),
+                                'height': max(current_viewport['height'], required_height)
+                            }
+                            await page.set_viewport_size(new_viewport)
+                            await page.evaluate("window.scrollTo(0, 0)")
+
+                            clip_area = {
+                                'x': clip_x,
+                                'y': clip_y,
+                                'width': clip_width,
+                                'height': clip_height
+                            }
+                            await page.screenshot(path=screenshot_path, clip=clip_area)
+                            print(f"✅ Screenshot saved (demo-container + 12px margins): {screenshot_path}")
                         else:
                             # Fallback to full page screenshot
                             await page.screenshot(path=screenshot_path, full_page=False)

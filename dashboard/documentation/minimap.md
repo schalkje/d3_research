@@ -83,6 +83,13 @@ const dashboard = createAndInitDashboard(data, "#graph", {
       collapse: "triangle-down", // minimize
       expand: "minimap" // depict a minimap to expand
     },
+    sizeSwitcher: {
+      enabled: true,           // show size cycle button in header
+      order: ["s", "m", "l"], // cycle order
+      default: "m"            // initial size if not set explicitly
+    },
+    // Optional callback when size changes via the header button
+    onSizeChange: ({ size, width, height }) => {}
     persistence: {
       persistCollapsedState: true, // uses localStorage by default
       storageKey: "flowdash:minimap:collapsed"
@@ -104,14 +111,16 @@ Backward compatibility: If a legacy `minimapSelector` is provided, we may ignore
 - **Zoom on Minimap**: Wheel/gesture zoom on the minimap adjusts the main view’s zoom and center.
 - **Two‑way Sync**: Main view zoom/pan updates the minimap eye, and minimap interactions update the main view.
 
-## UI Composition
+## UI Composition (Minimap Cockpit)
 
-- **Container**: Internal to the graph container, positioned via `position` option.
-- **Canvas**: Scaled rendering of the full graph.
-- **Viewport Eye**: Visible rectangle with outline and translucent outside mask.
-- **Controls**: Icon buttons for Zoom In, Zoom Out, Reset View, Mode toggle, and Collapse/Expand; group buttons with adequate spacing and tooltips.
-- **Zoom Scale**: Numeric percent or scale bar positioned near the controls or along the minimap bottom edge.
- - **Collapsed Icon**: When collapsed, render a small floating icon at bottom‑right that restores the minimap on click/tap.
+The minimap cockpit is composed of three stacked sections:
+
+- **Header**: Contains the pin toggle, minimize button, and a size switch (cycles `s` → `m` → `l`).
+- **Minimap**: The scaled overview itself. Width is fixed by size token (`s/m/l`), height is derived from the dashboard aspect ratio so the minimap preserves shape consistency across layouts.
+- **Footer**: A control row with zoom buttons on the left (zoom in/out/reset) and the zoom percentage on the right.
+
+Additional element:
+- **Collapsed Icon**: When collapsed, a small icon appears (default bottom‑right) to restore the cockpit on click/tap.
 
 ## Styling and Theming
 
@@ -124,6 +133,8 @@ Expose CSS variables and hooks for themes to customize appearance. Example hooks
 - `--minimap-control-bg`
 - `--minimap-control-fg`
 - `--minimap-scale-fg`
+ - `--minimap-button-border`
+ - `--minimap-button-bg`
 
 Theme examples live under `dashboard/themes/*/flowdash.css` and should include minimap rules.
 
