@@ -5,13 +5,13 @@
   width: 100vw; /* Set the width to 100% of the viewport width */
   height: 100vh; /* Set the height to 100% of the viewport height */
   z-index: 9999; /* Ensure the element is on top of other elements */
-  background: white; /* Optional: Set a background color */
+  background: var(--fd-bg, white); /* Respect theme background */
 }
 #graph {
   border: 1px solid black;
   width: 100%;
   height: 800px;
-  background-color: white;
+  background-color: var(--fd-bg, white);
    /* rgba(200, 200, 200, 0.2); */
 }
 
@@ -47,7 +47,7 @@
   width: 1600px;
   height: 600px;
   /* background-color: rgba(200, 200, 200, 0.2); */
-  background-color:rgba(255,255,255, 0.7);
+  background-color: var(--fd-surface, rgba(255,255,255, 0.7));
 }
 
 #minimap rect.background {
@@ -84,7 +84,8 @@
 
 
 body {
-  background-color: white;
+  background-color: var(--fd-bg, white);
+  color: var(--fd-text, #000);
   font-family: Arial;
 }
 

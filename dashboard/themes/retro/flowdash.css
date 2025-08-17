@@ -15,7 +15,7 @@ body {
   background:
     radial-gradient(1200px 800px at 50% -10%, rgba(0,255,102,0.06), transparent 60%),
     radial-gradient(1200px 800px at 50% 110%, rgba(0,0,0,0.6), transparent 60%),
-    linear-gradient(180deg, #030603 0%, #060b06 100%);
+    linear-gradient(180deg, #030603 0%, #060b06 100%) !important;
   color: var(--fd-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   /* CRT scanlines */
@@ -23,7 +23,7 @@ body {
     repeating-linear-gradient(0deg, rgba(0,255,102,0.04) 0px, rgba(0,255,102,0.04) 1px, transparent 1px, transparent 3px),
     radial-gradient(1200px 800px at 50% -10%, rgba(0,255,102,0.06), transparent 60%),
     radial-gradient(1200px 800px at 50% 110%, rgba(0,0,0,0.6), transparent 60%),
-    linear-gradient(180deg, #030603 0%, #060b06 100%);
+    linear-gradient(180deg, #030603 0%, #060b06 100%) !important;
 }
 
 /* canvases */
@@ -79,5 +79,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; text-shadow: 0 0 4p
 
 /* Selection */
 .selected .shape { stroke: var(--fd-accent) !important; stroke-width: 2.5px !important; }
+
+/* Demo page overrides to ensure dark dashboard surfaces when retro theme is active */
+[data-theme="retro"] .demo-container { background: #060b06 !important; }
+[data-theme="retro"] .canvas { background: transparent !important; }
+[data-theme="retro"] .layout-info-panel,
+[data-theme="retro"] .demo-info,
+[data-theme="retro"] .settings-panel,
+[data-theme="retro"] .settings-group,
+[data-theme="retro"] .layout-card { background: #0b130b !important; color: var(--fd-text) !important; border-color: var(--fd-border) !important; }
 
 
