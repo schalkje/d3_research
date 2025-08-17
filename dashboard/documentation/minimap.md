@@ -6,6 +6,8 @@ The minimap provides a scaled overview of the full diagram and a visible viewpor
 
 See also: [Dashboard Overview](dashboard.md)
 
+Tip: The fullscreen toggle works seamlessly with the minimap; when maximized, the minimap resizes and stays synchronized.
+
 ## Enabling the Minimap
 
 Add a dedicated SVG and pass its selector when initializing the dashboard:

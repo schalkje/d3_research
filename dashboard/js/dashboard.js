@@ -91,6 +91,9 @@ export class Dashboard {
     if (this.data.settings.zoomToRoot)
       this.zoomToRoot();
     console.log("dashboard - initialize - finished", this);
+
+    // Initialize fullscreen toggle button after setup
+    this.initializeFullscreenToggle();
   }
 
   initializeMinimap() {
@@ -209,6 +212,75 @@ export class Dashboard {
 
     // If you are displaying a visible outline of the pupil, update it here as well
     this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+  }
+
+  initializeFullscreenToggle() {
+    const container = document.querySelector('#graph-container') || document.body;
+    let button = container.querySelector('.fullscreen-toggle');
+    if (!button) {
+      button = document.createElement('button');
+      button.className = 'fullscreen-toggle';
+      button.setAttribute('aria-label', 'Toggle fullscreen');
+      button.title = 'Maximize / Restore';
+      container.appendChild(button);
+    }
+
+    const updateIcon = () => {
+      const isFullscreen = this.main.svg.classed('flowdash-fullscreen');
+      button.textContent = isFullscreen ? '⤡' : '⤢';
+    };
+
+    const applySize = () => {
+      const rect = this.main.svg.node().getBoundingClientRect();
+      this.main.width = rect.width;
+      this.main.height = rect.height;
+      this.main.divRatio = this.main.width / this.main.height;
+      this.main.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+      if (this.minimap.active) {
+        this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+        this.updateMinimap();
+        const transform = d3.zoomIdentity
+          .translate(this.main.transform.x, this.main.transform.y)
+          .scale(this.main.transform.k);
+        updateViewport(this, transform);
+      }
+    };
+
+    const onResize = () => {
+      if (!this.main.svg.classed('flowdash-fullscreen')) return;
+      applySize();
+    };
+
+    const toggle = () => {
+      const isFullscreen = this.main.svg.classed('flowdash-fullscreen');
+      if (!isFullscreen) {
+        this.main.svg.classed('flowdash-fullscreen', true).classed('fullscreen', true);
+        window.addEventListener('resize', onResize);
+        applySize();
+        button.classList.add('fullscreen-active');
+      } else {
+        this.main.svg.classed('flowdash-fullscreen', false).classed('fullscreen', false);
+        window.removeEventListener('resize', onResize);
+        const rect = this.main.svg.node().getBoundingClientRect();
+        this.main.width = rect.width;
+        this.main.height = rect.height;
+        this.main.divRatio = this.main.width / this.main.height;
+        this.main.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+        if (this.minimap.active) {
+          this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+          this.updateMinimap();
+          const transform = d3.zoomIdentity
+            .translate(this.main.transform.x, this.main.transform.y)
+            .scale(this.main.transform.k);
+          updateViewport(this, transform);
+        }
+        button.classList.remove('fullscreen-active');
+      }
+      updateIcon();
+    };
+
+    button.onclick = toggle;
+    updateIcon();
   }
 
   updateNodeStatus(nodeId, status) {

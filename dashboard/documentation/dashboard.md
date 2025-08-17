@@ -44,6 +44,24 @@ If you are using the bundled build, initialize according to your bundling setup 
 - **Theme Support**: Works with all themes under `dashboard/themes/*`.
 - **Performance**: Minimap updates and heavy operations use `requestAnimationFrame` to stay responsive.
 
+## Maximize/Restore (Floating Button)
+
+- A floating button is always visible (top-right of the window) to toggle the dashboard between normal and maximized states.
+- **Maximize**: The main SVG fills the entire viewport and automatically resizes on browser resize.
+- **Restore**: Returns to the normal layout inside the page.
+
+How it works:
+
+- A fixed-position button is injected by the Dashboard on initialization.
+- Clicking toggles a fullscreen class on the main SVG and updates the internal viewport to match the new size.
+- Window `resize` is handled to keep the viewBox and minimap in sync while maximized.
+
+Styling hooks:
+
+- Button element: `.fullscreen-toggle` (fixed at top-right; small, low-opacity icon; on hover it becomes a clear, high-contrast button)
+- Fullscreen class: `.flowdash-fullscreen` (applied to the main SVG). If your page uses `#graph`, the legacy `#graph.fullscreen` also applies.
+
+
 ## Basic API (high level)
 
 - `createAndInitDashboard(data, mainDivSelector, minimapDivSelector?)` → Dashboard instance
