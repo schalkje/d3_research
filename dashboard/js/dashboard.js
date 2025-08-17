@@ -77,6 +77,15 @@ export class Dashboard {
 
     // Initialize fullscreen toggle button after setup
     this.initializeFullscreenToggle();
+
+    // Preserve zoom and center on normal window resizes (when not fullscreen)
+    if (typeof window !== 'undefined') {
+      this._onWindowResize = () => {
+        if (this.main.svg.classed('flowdash-fullscreen')) return; // fullscreen path handles its own resizes
+        this.applyResizePreserveZoom();
+      };
+      window.addEventListener('resize', this._onWindowResize);
+    }
   }
 
   initializeEmbeddedMinimap() {
@@ -665,12 +674,42 @@ export class Dashboard {
 
     const applySize = () => {
       const rect = this.main.svg.node().getBoundingClientRect();
-      this.main.width = rect.width;
-      this.main.height = rect.height;
-      this.main.divRatio = this.main.width / this.main.height;
-      this.main.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+
+      // Capture previous canvas and transform
+      const prevWidth = this.main.width;
+      const prevHeight = this.main.height;
+      const prevK = this.main.transform.k;
+      const prevX = this.main.transform.x;
+      const prevY = this.main.transform.y;
+
+      // Compute current world viewport from previous values
+      const worldLeft = (prevX + prevWidth / 2) / -prevK;
+      const worldTop = (prevY + prevHeight / 2) / -prevK;
+      const worldWidth = prevWidth / prevK;
+      const worldHeight = prevHeight / prevK;
+      const worldCenterX = worldLeft + worldWidth / 2;
+      const worldCenterY = worldTop + worldHeight / 2;
+
+      // Apply new canvas size
+      const newWidth = rect.width;
+      const newHeight = rect.height;
+      this.main.width = newWidth;
+      this.main.height = newHeight;
+      this.main.divRatio = newWidth / newHeight;
+      this.main.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
+
+      // Preserve previous zoom level (k) and world center; canvas shows more/less world as size changes
+      const newK = prevK;
+      const newWorldWidth = newWidth / newK;
+      const newWorldHeight = newHeight / newK;
+      const newLeft = worldCenterX - newWorldWidth / 2;
+      const newTop = worldCenterY - newWorldHeight / 2;
+      const newTransform = d3.zoomIdentity
+        .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
+        .scale(newK);
+
+      // Minimap sizing to match new aspect
       if (this.minimap.active) {
-        // Recompute minimap pixel size from width token and new aspect
         const mm = this.data.settings.minimap;
         if (mm) {
           const width = (typeof mm.size === 'object' && mm.size && typeof mm.size.width === 'number') ? mm.size.width : (mm.size === 's' ? 140 : mm.size === 'l' ? 220 : 180);
@@ -679,14 +718,20 @@ export class Dashboard {
           this.minimap.height = height;
           this.minimap.svg.attr('width', width).attr('height', height);
         }
-        this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+        this.minimap.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
         // Recompute minimap content scale used for drag compensation
-        this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
+        this.minimap.scale = Math.min(this.minimap.width / newWidth, this.minimap.height / newHeight);
+      }
+
+      // Apply transform to keep relative zoom consistent
+      this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
+      this.main.container.attr('transform', newTransform);
+      this.main.svg.call(this.main.zoom.transform, newTransform);
+
+      // Update minimap clone and eye position
+      if (this.minimap.active) {
         this.updateMinimap();
-        const transform = d3.zoomIdentity
-          .translate(this.main.transform.x, this.main.transform.y)
-          .scale(this.main.transform.k);
-        updateViewport(this, transform);
+        updateViewport(this, newTransform);
         this.positionEmbeddedMinimap();
       }
     };
@@ -718,6 +763,7 @@ export class Dashboard {
             .translate(this.main.transform.x, this.main.transform.y)
             .scale(this.main.transform.k);
           updateViewport(this, transform);
+          this.positionEmbeddedMinimap();
         }
         button.classList.remove('fullscreen-active');
       }
@@ -726,6 +772,70 @@ export class Dashboard {
 
     button.onclick = toggle;
     updateIcon();
+  }
+
+  // Recompute sizes when the browser window resizes (not fullscreen)
+  applyResizePreserveZoom() {
+    const rect = this.main.svg.node().getBoundingClientRect();
+
+    // Capture previous canvas and transform
+    const prevWidth = this.main.width;
+    const prevHeight = this.main.height;
+    const prevK = this.main.transform.k;
+    const prevX = this.main.transform.x;
+    const prevY = this.main.transform.y;
+
+    // Compute current world viewport from previous values
+    const worldLeft = (prevX + prevWidth / 2) / -prevK;
+    const worldTop = (prevY + prevHeight / 2) / -prevK;
+    const worldWidth = prevWidth / prevK;
+    const worldHeight = prevHeight / prevK;
+    const worldCenterX = worldLeft + worldWidth / 2;
+    const worldCenterY = worldTop + worldHeight / 2;
+
+    // Apply new canvas size
+    const newWidth = rect.width;
+    const newHeight = rect.height;
+    this.main.width = newWidth;
+    this.main.height = newHeight;
+    this.main.divRatio = newWidth / newHeight;
+    this.main.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
+
+    // Preserve previous zoom level (k) and world center; canvas shows more/less world as size changes
+    const newK = prevK;
+    const newWorldWidth = newWidth / newK;
+    const newWorldHeight = newHeight / newK;
+    const newLeft = worldCenterX - newWorldWidth / 2;
+    const newTop = worldCenterY - newWorldHeight / 2;
+    const newTransform = d3.zoomIdentity
+      .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
+      .scale(newK);
+
+    // Update minimap dimensions and scale
+    if (this.minimap.active) {
+      const mm = this.data.settings.minimap;
+      if (mm) {
+        const width = (typeof mm.size === 'object' && mm.size && typeof mm.size.width === 'number') ? mm.size.width : (mm.size === 's' ? 140 : mm.size === 'l' ? 220 : 180);
+        const height = Math.max(60, Math.round(width / this.main.divRatio));
+        this.minimap.width = width;
+        this.minimap.height = height;
+        this.minimap.svg.attr('width', width).attr('height', height);
+      }
+      this.minimap.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
+      this.minimap.scale = Math.min(this.minimap.width / newWidth, this.minimap.height / newHeight);
+    }
+
+    // Apply transform to keep relative zoom consistent
+    this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
+    this.main.container.attr('transform', newTransform);
+    this.main.svg.call(this.main.zoom.transform, newTransform);
+
+    if (this.minimap.active) {
+      this.updateMinimap();
+      updateViewport(this, newTransform);
+      this.positionEmbeddedMinimap();
+      this.updateMinimapScaleIndicator?.();
+    }
   }
 
   updateNodeStatus(nodeId, status) {
