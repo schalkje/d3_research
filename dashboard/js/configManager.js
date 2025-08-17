@@ -13,7 +13,7 @@ export const DEFAULT_SETTINGS = {
   minimap: {
     enabled: true,
     // If omitted in API: desktop → hover, small screens → hidden
-    mode: "hover", // "hidden" | "always" | "hover"
+    mode: "always", // "hidden" | "always" | "hover" (default: always visible for now)
     position: "bottom-right", // "bottom-right" | "bottom-left" | "top-right" | "top-left"
     size: "m", // tokens: "s" | "m" | "l" or { width, height }
     opacity: 1,

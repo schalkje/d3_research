@@ -85,8 +85,15 @@ export class Dashboard {
 
     // Determine mode defaults by environment
     const isSmallScreen = typeof window !== 'undefined' && (window.innerWidth || 0) < 600;
-    const mode = this.data.settings.minimap.mode || (isSmallScreen ? 'hidden' : 'hover');
+    let mode = this.data.settings.minimap.mode || (isSmallScreen ? 'disabled' : 'hover');
+    if (mode === 'hidden') mode = 'disabled';
     this.data.settings.minimap.mode = mode;
+
+    // Disabled mode: do not create the cockpit at all
+    if (mode === 'disabled') {
+      this.data.settings.minimap.enabled = false;
+      return;
+    }
 
     // Persistent collapsed state
     if (mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
@@ -97,6 +104,15 @@ export class Dashboard {
         }
       } catch {}
     }
+    // In 'always' mode, force cockpit to be visible/enabled and pinned by default
+    if (mode === 'always') {
+      this.data.settings.minimap.enabled = true;
+      this.data.settings.minimap.collapsed = false;
+      this.data.settings.minimap.pinned = true;
+    }
+    if (mode === 'hover' && typeof this.data.settings.minimap.collapsed === 'undefined') {
+      this.data.settings.minimap.collapsed = true; // show button by default
+    }
 
     // Create the cockpit root inside main svg
     const cockpit = this.main.svg.append('g').attr('class', 'zoom-cockpit');
@@ -104,7 +120,7 @@ export class Dashboard {
     this.minimap.overlay = cockpit; // alias for existing code paths
     this.minimap.content = cockpit.append('g').attr('class', 'minimap-content');
     this.minimap.active = true;
-    this.minimap.state = { showTimer: null, hideTimer: null, interacting: false };
+    this.minimap.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
 
     // Collapsed icon (always rendered; visibility toggled)
     this.minimap.collapsedIcon = cockpit.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
@@ -125,13 +141,14 @@ export class Dashboard {
     // triangle-down shape
     this.minimap.collapseButton.append('path').attr('class', 'collapse-btn-icon').attr('d', 'M2,6 L14,6 L8,12 Z');
     this.minimap.collapseButton.on('click', () => {
-      // Hide and unpin
-      this.data.settings.minimap.pinned = false;
-      this.updatePinVisualState();
+      // Hide cockpit only; do not change pin/mode
       this.setMinimapCollapsed(true, true);
     });
 
-    this.minimap.pinButton = this.minimap.header.append('g').attr('class', 'minimap-pin-button').style('cursor', 'pointer');
+    this.minimap.pinButton = this.minimap.header.append('g').attr('class', 'minimap-pin-button').style('cursor', 'pointer')
+      .attr('role', 'button')
+      .attr('aria-label', 'Pin')
+      .attr('aria-pressed', String(!!mm.pinned));
     // Size switcher (cycles s → m → l)
     this.minimap.sizeButton = this.minimap.header.append('g').attr('class', 'minimap-size-button').style('cursor', 'pointer');
     this.minimap.sizeButton.append('rect').attr('class', 'btn-bg').attr('width', 20).attr('height', 16).attr('rx', 3).attr('ry', 3);
@@ -163,15 +180,37 @@ export class Dashboard {
         try { this.data.settings.minimap.onSizeChange({ size: nextToken, width, height }); } catch {}
       }
     });
-    this.minimap.pinButton.append('rect').attr('class', 'pin-btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
-    // simple pin icon: a circle with a small stem
-    this.minimap.pinButton.append('circle').attr('class', 'pin-btn-head').attr('cx', 8).attr('cy', 6).attr('r', 3);
-    this.minimap.pinButton.append('rect').attr('class', 'pin-btn-stem').attr('x', 7.25).attr('y', 9).attr('width', 1.5).attr('height', 5);
+    // Traditional pin/unpin icon without square background
+    // Clear previous children if any rerun occurs
+    this.minimap.pinButton.selectAll('*').remove();
+    const iconGroup = this.minimap.pinButton.append('g').attr('class', 'pin-icon');
+    // Base pushpin shape (16x16 box)
+    const pinBasePath = 'M8 2 C9.2 2 10 2.8 10 4 L10 6 L12.5 8 L9 8 L9 12 L7 12 L7 8 L3.5 8 L6 6 L6 4 C6 2.8 6.8 2 8 2 Z';
+    // Slash line for unpinned state
+    const pinSlashPath = 'M3 13 L13 3';
+    this.minimap.pinBase = iconGroup.append('path')
+      .attr('class', 'pin-base')
+      .attr('d', pinBasePath)
+      .attr('fill', 'var(--fd-border, rgba(0,0,0,0.85))');
+    this.minimap.pinSlash = iconGroup.append('path')
+      .attr('class', 'pin-slash')
+      .attr('d', pinSlashPath)
+      .attr('stroke', 'var(--fd-border, rgba(0,0,0,0.85))')
+      .attr('stroke-width', 2)
+      .attr('stroke-linecap', 'round')
+      .style('display', mm.pinned ? 'none' : 'block');
+    // Slight rotation for unpinned to further differentiate visually
+    iconGroup.attr('transform', mm.pinned ? 'rotate(0,8,8)' : 'rotate(-20,8,8)');
+    this.minimap.pinButton.append('title').text('Pin (toggle pinned / hover)');
     this.minimap.pinButton.on('click', () => {
       mm.pinned = !mm.pinned;
+      this.data.settings.minimap.mode = mm.pinned ? 'always' : 'hover';
+      // Clear any pending timers and reset interaction state on mode change
+      if (this.minimap.state.showTimer) { clearTimeout(this.minimap.state.showTimer); this.minimap.state.showTimer = null; }
+      if (this.minimap.state.hideTimer) { clearTimeout(this.minimap.state.hideTimer); this.minimap.state.hideTimer = null; }
+      this.minimap.state.interacting = false;
       this.updatePinVisualState();
-      // When pinned, ensure visible
-      if (mm.pinned) this.setMinimapCollapsed(false, true);
+      this.updateMinimapHoverBindings();
     });
 
     // Minimap svg and inner content group
@@ -234,6 +273,9 @@ export class Dashboard {
     // Invisible hit rects to stabilize hover over header/footer rows
     this.minimap.headerHitRect = this.minimap.header.append('rect').attr('class', 'minimap-header-hit').attr('fill', 'transparent');
     this.minimap.footerHitRect = this.minimap.footer.append('rect').attr('class', 'minimap-footer-hit').attr('fill', 'transparent');
+    // Ensure hit-rects sit underneath interactive controls so they don't block clicks
+    if (this.minimap.headerHitRect) this.minimap.headerHitRect.lower();
+    if (this.minimap.footerHitRect) this.minimap.footerHitRect.lower();
 
     // Ensure chrome sits on top
     if (this.minimap.header) this.minimap.header.raise();
@@ -242,46 +284,8 @@ export class Dashboard {
     // Position overlay
     this.positionEmbeddedMinimap();
 
-    // Hover behavior (attach to collapsed icon and cockpit regions)
-    if (mode === 'hover') {
-      const show = () => this.setMinimapCollapsed(false);
-      const hide = () => { if (!this.data.settings.minimap.pinned) this.setMinimapCollapsed(true); };
-
-      // Enter on collapsed icon shows cockpit
-      this.minimap.collapsedIcon
-        .on('mouseenter', () => {
-          this.minimap.state.isHover = true;
-          if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
-          this.minimap.state.showTimer = setTimeout(show, mm.hover?.showDelayMs ?? 120);
-        })
-        .on('mouseleave', () => {
-          this.minimap.state.isHover = false;
-          if (!this.data.settings.minimap.pinned)
-            this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
-        });
-
-      // Cockpit keeps itself visible while hovered or interacting
-      const cockpitNodes = [this.minimap.cockpit];
-      cockpitNodes.forEach((node) => {
-        node
-          .on('mouseenter', () => {
-            this.minimap.state.isHover = true;
-            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
-            show();
-          })
-          .on('mouseleave', () => {
-            this.minimap.state.isHover = false;
-            if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting)
-              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
-          })
-          .on('mousedown', () => { this.minimap.state.interacting = true; })
-          .on('mouseup', () => { this.minimap.state.interacting = false; })
-          .on('wheel', () => { this.minimap.state.interacting = true; if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer); });
-      });
-
-      // Touch: tap shows, then auto-hide after inactivity
-      this.minimap.svg.on('touchstart', () => { show(); setTimeout(hide, mm.touch?.autoHideAfterMs ?? 2500); });
-    }
+    // Setup hover bindings based on current mode
+    this.updateMinimapHoverBindings();
 
     // Initial collapsed state
     this.setMinimapCollapsed(mm.collapsed === true);
@@ -302,17 +306,25 @@ export class Dashboard {
       this.minimap.footer.style('display', collapsed ? 'none' : 'block');
     }
     if (this.minimap.collapsedIcon) {
-      const isHiddenMode = mm.mode === 'hidden';
+      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
       const showIcon = collapsed; // show icon only when collapsed
       this.minimap.collapsedIcon.style('display', showIcon && !isHiddenMode ? 'block' : 'none');
     }
     if (this.minimap.collapseButton) {
-      const isHiddenMode = mm.mode === 'hidden';
+      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
       this.minimap.collapseButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
     }
     if (this.minimap.pinButton) {
-      const isHiddenMode = mm.mode === 'hidden';
+      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
       this.minimap.pinButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
+    }
+    if (this.minimap.sizeButton) {
+      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
+      this.minimap.sizeButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
+    }
+    if (this.minimap.header) {
+      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
+      this.minimap.header.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
     }
     this.positionEmbeddedMinimap();
     if (persist && mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
@@ -324,6 +336,13 @@ export class Dashboard {
     const mm = this.data.settings.minimap;
     if (!this.minimap.pinButton) return;
     this.minimap.pinButton.classed('active', !!mm.pinned);
+    this.minimap.pinButton.attr('aria-pressed', String(!!mm.pinned));
+    if (this.minimap.pinBase && this.minimap.pinSlash) {
+      this.minimap.pinSlash.style('display', mm.pinned ? 'none' : 'block');
+      // rotate icon group to differentiate
+      const iconGroup = this.minimap.pinButton.select('g.pin-icon');
+      if (!iconGroup.empty()) iconGroup.attr('transform', mm.pinned ? 'rotate(0,8,8)' : 'rotate(-20,8,8)');
+    }
   }
 
   positionEmbeddedMinimap() {
@@ -353,42 +372,55 @@ export class Dashboard {
     // Place header and size its invisible hit rect
     if (this.minimap.header) {
       this.minimap.header.attr('transform', `translate(${cockpitPos.x},${cockpitPos.y})`);
-      // right-aligned header buttons
+      // right-aligned header buttons (positions relative to header origin)
       const yPad = 2;
-      let xRight = cockpitPos.x + size.width - 4;
-      if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
-      if (this.minimap.pinButton) { xRight -= 20; this.minimap.pinButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
-      if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${cockpitPos.y + yPad})`); }
-      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', cockpitPos.x).attr('y', cockpitPos.y).attr('width', size.width).attr('height', headerH);
+      let xRight = size.width - 4;
+      if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${yPad})`); }
+      if (this.minimap.pinButton) { xRight -= 20; this.minimap.pinButton.attr('transform', `translate(${xRight},${yPad})`); }
+      if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${yPad})`); }
+      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', 0).attr('y', 0).attr('width', size.width).attr('height', headerH);
     }
     // Place minimap body under header
     const mapPos = { x: cockpitPos.x, y: cockpitPos.y + headerH };
     this.minimap.svg.attr('x', mapPos.x).attr('y', mapPos.y);
     // Place footer under minimap and size its invisible hit rect
     if (this.minimap.footer) {
-      this.minimap.footer.attr('transform', `translate(${cockpitPos.x},${cockpitPos.y + headerH + size.height})`);
-      if (this.minimap.footerHitRect) this.minimap.footerHitRect.attr('x', cockpitPos.x).attr('y', cockpitPos.y + headerH + size.height).attr('width', size.width).attr('height', footerH);
+      const footerTopY = cockpitPos.y + headerH + size.height;
+      this.minimap.footer.attr('transform', `translate(${cockpitPos.x},${footerTopY})`);
+      if (this.minimap.footerHitRect) this.minimap.footerHitRect
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', size.width)
+        .attr('height', footerH);
       if (this.minimap.controls) {
         const spacing = 6;
-        const startX = 6;
-        const centerY = Math.floor(footerH / 2) - 8; // center 16px button in footer
-        this.minimap.controls.attr('transform', `translate(${startX},${centerY})`);
+        const buttonSize = 16;
+        const leftPadding = 6;
+        const rightPadding = 6;
+        const controlsStartX = leftPadding;
+        const footerCenterY = Math.floor(footerH / 2);
+        // buttons aligned to the left, vertically centered
+        this.minimap.controls.attr('transform', `translate(${controlsStartX},${footerCenterY - buttonSize / 2})`);
         this.minimap.btnZoomIn.attr('transform', 'translate(0,0)');
-        this.minimap.btnZoomOut.attr('transform', `translate(${16 + spacing},0)`);
-        this.minimap.btnReset.attr('transform', `translate(${(16 + spacing) * 2},0)`);
+        this.minimap.btnZoomOut.attr('transform', `translate(${buttonSize + spacing},0)`);
+        this.minimap.btnReset.attr('transform', `translate(${(buttonSize + spacing) * 2},0)`);
+        // scale text aligned to the right edge
+        if (this.minimap.scaleText) {
+          this.minimap.scaleText
+            .attr('x', size.width - rightPadding)
+            .attr('y', footerCenterY)
+            .style('text-anchor', 'end')
+            .style('dominant-baseline', 'middle');
+        }
       }
     }
     // Position collapsed icon at cockpit corner
     const collapsedIconPos = posToXY(corner, iconSize);
     this.minimap.collapsedIcon.attr('transform', `translate(${collapsedIconPos.x},${collapsedIconPos.y})`);
 
-    // Scale text position adjusted to cockpit coordinates
+    // Scale text position is handled with controls above when footer exists; ensure style baseline and color
     if (this.minimap.scaleText && this.minimap.footer) {
-      const padX = 10;
-      const padY = Math.floor((this.minimap.footerHeight || 20) / 2);
       this.minimap.scaleText
-        .attr('x', cockpitPos.x + size.width - padX)
-        .attr('y', cockpitPos.y + headerH + size.height + padY)
         .style('font-size', '12px')
         .style('dominant-baseline', 'middle')
         .style('fill', 'var(--minimap-scale-fg, #333)');
@@ -407,6 +439,82 @@ export class Dashboard {
       // Placeholder for bar type if needed later
       const pct = Math.round((this.main.transform.k || 1) * 100);
       this.minimap.scaleText.text(`${pct}%`);
+    }
+  }
+
+  updateMinimapHoverBindings() {
+    const mm = this.data.settings.minimap || {};
+    // Clear previous bindings
+    if (this.minimap.collapsedIcon) {
+      this.minimap.collapsedIcon
+        .on('mouseenter', null)
+        .on('mouseleave', null)
+        .on('mouseover', null)
+        .on('mouseout', null)
+        .on('touchstart', null);
+    }
+    if (this.minimap.cockpit) {
+      this.minimap.cockpit
+        .on('mouseenter', null)
+        .on('mouseleave', null)
+        .on('mouseover', null)
+        .on('mouseout', null)
+        .on('mousedown', null)
+        .on('mouseup', null)
+        .on('wheel', null);
+    }
+    if (!mm) return;
+
+    if (mm.mode === 'hover' || (mm.mode === 'always' && !mm.pinned)) {
+      const show = () => {
+        if (this.data.settings.minimap.mode !== 'hover' && this.data.settings.minimap.pinned) return;
+        // cancel pending hide and show immediately
+        if (this.minimap.state.hideTimer) { clearTimeout(this.minimap.state.hideTimer); this.minimap.state.hideTimer = null; }
+        this.setMinimapCollapsed(false);
+      };
+      const hide = () => {
+        if (!this.data.settings.minimap.pinned && this.data.settings.minimap.mode === 'hover') this.setMinimapCollapsed(true);
+      };
+
+      if (this.minimap.collapsedIcon) {
+        this.minimap.collapsedIcon
+          .on('mouseenter', () => {
+            this.minimap.state.isHover = true;
+            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
+            if (this.minimap.state.showTimer) clearTimeout(this.minimap.state.showTimer);
+            this.minimap.state.showTimer = setTimeout(show, mm.hover?.showDelayMs ?? 120);
+          })
+          .on('mouseleave', () => {
+            this.minimap.state.isHover = false;
+            if (this.minimap.state.showTimer) { clearTimeout(this.minimap.state.showTimer); this.minimap.state.showTimer = null; }
+            // If already expanded (not collapsed anymore), ignore icon mouseleave to prevent flicker
+            if (this.data.settings.minimap.collapsed !== true) return;
+            if (!this.data.settings.minimap.pinned)
+              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
+          })
+          .on('touchstart', () => { show(); setTimeout(hide, mm.touch?.autoHideAfterMs ?? 2500); });
+      }
+
+      if (this.minimap.cockpit) {
+        this.minimap.cockpit
+          .on('mouseenter', () => {
+            this.minimap.state.isHover = true;
+            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
+            show();
+          })
+          .on('mouseleave', (event) => {
+            this.minimap.state.isHover = false;
+            if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting && this.data.settings.minimap.mode === 'hover')
+              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
+          })
+          .on('mousedown', () => { this.minimap.state.interacting = true; })
+          .on('mouseup', () => { this.minimap.state.interacting = false; })
+          .on('wheel', () => {
+            this.minimap.state.interacting = true; if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
+            if (this.minimap.state.wheelTimer) clearTimeout(this.minimap.state.wheelTimer);
+            this.minimap.state.wheelTimer = setTimeout(() => { this.minimap.state.interacting = false; if (!this.data.settings.minimap.pinned && this.data.settings.minimap.mode === 'hover') hide(); }, 250);
+          });
+      }
     }
   }
 
@@ -773,7 +881,10 @@ export class Dashboard {
 
   updateMinimapVisibilityByZoom() {
     const mm = this.data.settings.minimap;
-    if (!mm || mm.mode !== 'hover') return;
+    if (!mm) return;
+    // Auto-hide in hover mode, or in always mode when unpinned
+    const autoHideActive = (mm.mode === 'hover') || (mm.mode === 'always' && !mm.pinned);
+    if (!autoHideActive) return;
     if (mm.pinned) return; // keep visible when pinned
     const threshold = mm.hover?.zoomFitThreshold ?? 1.0;
     const isZoomedOutOrFit = (this.main.transform.k || 1) <= threshold;
@@ -1323,4 +1434,85 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
   console.warn("                    - before = ", [properties[properties.length - 1]], obj[properties[properties.length - 1]]);
   obj[properties[properties.length - 1]] = value;
   console.warn("                    -  after = ", [properties[properties.length - 1]], obj[properties[properties.length - 1]]);
+
+  // Live-apply changes to the minimap cockpit so settings are reflected immediately
+  try {
+    const isMinimapChange = propertyPath.includes('minimap');
+    if (!isMinimapChange) return;
+
+    const dash = dashboardObject; // alias
+    const mm = dash.data?.settings?.minimap;
+    if (!mm || !dash.minimap?.active) return;
+
+    const recalcSize = () => {
+      const token = mm.size;
+      const width = (typeof token === 'object' && token && typeof token.width === 'number')
+        ? token.width
+        : (token === 's' ? 140 : token === 'l' ? 220 : 180);
+      const ratio = dash.main.divRatio || (dash.main.width / dash.main.height) || 16/9;
+      const height = Math.max(60, Math.round(width / ratio));
+      dash.minimap.width = width;
+      dash.minimap.height = height;
+      if (dash.minimap.svg) dash.minimap.svg.attr('width', width).attr('height', height);
+    };
+
+    if (propertyPath.endsWith('minimap.size') || propertyPath.includes('.minimap.size')) {
+      recalcSize();
+      dash.updateMinimap();
+      dash.positionEmbeddedMinimap();
+    }
+
+    if (propertyPath.endsWith('minimap.position') || propertyPath.includes('.minimap.position')) {
+      dash.positionEmbeddedMinimap();
+    }
+
+    if (propertyPath.endsWith('minimap.collapsedIcon.position') || propertyPath.includes('.minimap.collapsedIcon.position')) {
+      dash.positionEmbeddedMinimap();
+    }
+
+    if (propertyPath.endsWith('minimap.collapsed') || propertyPath.includes('.minimap.collapsed')) {
+      dash.setMinimapCollapsed(!!value, true);
+    }
+
+    if (propertyPath.endsWith('minimap.mode') || propertyPath.includes('.minimap.mode')) {
+      const newMode = (value === 'hidden') ? 'disabled' : value;
+      mm.mode = newMode;
+      if (newMode === 'always') {
+        mm.enabled = true;
+        mm.pinned = true;
+        // Do not change collapsed state when switching to always; keep visibility as-is
+      } else if (newMode === 'hover') {
+        mm.pinned = false;
+        // Do not change collapsed state when switching to hover
+      } else if (newMode === 'disabled') {
+        // Cannot destroy easily at runtime; hide cockpit
+        dash.setMinimapCollapsed(true);
+      }
+      dash.positionEmbeddedMinimap();
+      dash.updateMinimapHoverBindings();
+    }
+
+    if (propertyPath.endsWith('minimap.pinned') || propertyPath.includes('.minimap.pinned')) {
+      dash.updatePinVisualState();
+      // Pinned strictly controls mode; do not touch collapsed state
+      dash.updateMinimapVisibilityByZoom();
+      dash.updateMinimapHoverBindings();
+    }
+
+    if (propertyPath.endsWith('scaleIndicator.visible') || propertyPath.includes('.minimap.scaleIndicator.visible')) {
+      const visible = !!value;
+      if (visible) {
+        if (!dash.minimap.scaleText && dash.minimap.footer) {
+          dash.minimap.scaleText = dash.minimap.footer.append('text').attr('class', 'minimap-scale').attr('text-anchor', 'end');
+        }
+        dash.minimap.scaleText.style('display', 'block');
+      } else if (dash.minimap.scaleText) {
+        dash.minimap.scaleText.style('display', 'none');
+      }
+      dash.positionEmbeddedMinimap();
+      dash.updateMinimapScaleIndicator();
+    }
+  } catch (e) {
+    console.warn('setDashboardProperty post-update failed', e);
+  }
 }

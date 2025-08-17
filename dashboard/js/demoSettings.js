@@ -91,6 +91,36 @@ export function injectSettingsUI(options) {
             <label>L <input type="number" min="0" id="numMarginLeft" style="width:60px"></label>
           </div>
         </div>
+        <div class="settings-group">
+          <label class="settings-title">Minimap</label>
+          <div class="settings-inline">
+            <label>Mode
+              <select id="selMinimapMode" style="width:140px">
+                <option value="always" selected>Always</option>
+                <option value="hover">Hover</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </label>
+            <label style="margin-left:12px">Position
+              <select id="selMinimapPosition" style="width:160px">
+                <option value="bottom-right" selected>Bottom-right</option>
+                <option value="bottom-left">Bottom-left</option>
+                <option value="top-right">Top-right</option>
+                <option value="top-left">Top-left</option>
+              </select>
+            </label>
+            <label style="margin-left:12px">Size
+              <select id="selMinimapSize" style="width:120px">
+                <option value="s">Small</option>
+                <option value="m" selected>Medium</option>
+                <option value="l">Large</option>
+              </select>
+            </label>
+          </div>
+          <div class="settings-inline" style="margin-top:8px">
+            <label><input type="checkbox" id="chkMinimapScaleVisible" checked> Show scale</label>
+          </div>
+        </div>
         <div class="settings-actions">
           <button id="rebuildBtn" type="button">Rebuild</button>
         </div>
@@ -145,6 +175,13 @@ export function injectSettingsUI(options) {
     document.getElementById('numMarginBottom').value = get(cm, 'bottom', 8);
     document.getElementById('numMarginLeft').value = get(cm, 'left', 8);
 
+    // Minimap defaults: always visible by default
+    const mm = settings.minimap || {};
+    const modeSel = document.getElementById('selMinimapMode'); if (modeSel) modeSel.value = get(mm, 'mode', 'always');
+    const posSel = document.getElementById('selMinimapPosition'); if (posSel) posSel.value = get(mm, 'position', 'bottom-right');
+    const sizeSel = document.getElementById('selMinimapSize'); if (sizeSel) sizeSel.value = get(mm, 'size', 'm');
+    const scaleVisibleChk = document.getElementById('chkMinimapScaleVisible'); if (scaleVisibleChk) scaleVisibleChk.checked = get(mm.scaleIndicator || {}, 'visible', true) !== false;
+
     // Orientation default from dataset (first node that supports it)
     try {
       const base = typeof getBaseData === 'function' ? getBaseData() : null;
@@ -187,6 +224,15 @@ export function injectSettingsUI(options) {
     if (!Number.isNaN(mr)) s.containerMargin.right = mr;
     if (!Number.isNaN(mb)) s.containerMargin.bottom = mb;
     if (!Number.isNaN(ml)) s.containerMargin.left = ml;
+    // Minimap from UI
+    s.minimap = s.minimap || {};
+    s.minimap.mode = (document.getElementById('selMinimapMode')?.value) || 'always';
+    s.minimap.position = (document.getElementById('selMinimapPosition')?.value) || 'bottom-right';
+    s.minimap.size = (document.getElementById('selMinimapSize')?.value) || 'm';
+    // ensure enabled when not hidden
+    s.minimap.enabled = s.minimap.mode !== 'hidden';
+    s.minimap.scaleIndicator = s.minimap.scaleIndicator || {};
+    s.minimap.scaleIndicator.visible = !!(document.getElementById('chkMinimapScaleVisible')?.checked);
     return s;
   }
 
@@ -213,7 +259,8 @@ export function injectSettingsUI(options) {
   const immediateInputs = [
     'chkZoomToRoot','chkShowBoundingBox','chkShowCenterMark','chkShowConnectionPoints',
     'chkShowGhostlines','chkCurved','chkShowEdges','chkShowInnerZoneRect','numCurveMargin','numSelectorIn','numSelectorOut',
-    'numNodeSpacingH','numNodeSpacingV','numMarginTop','numMarginRight','numMarginBottom','numMarginLeft'
+    'numNodeSpacingH','numNodeSpacingV','numMarginTop','numMarginRight','numMarginBottom','numMarginLeft',
+    'selMinimapMode','selMinimapPosition','selMinimapSize','chkMinimapScaleVisible'
   ];
   immediateInputs.forEach(id => {
     const el = container.querySelector(`#${id}`);

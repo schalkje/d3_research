@@ -94,11 +94,11 @@ class ThemeScreenshotCapture:
                             }
                         """, ".demo-container")
                         if demo_rect and demo_rect.get('width') and demo_rect.get('height'):
-                            margin = 12
-                            clip_x = max(0, demo_rect['x'] - margin)
-                            clip_y = max(0, demo_rect['y'] - margin)
-                            clip_width = demo_rect['width'] + (margin * 2)
-                            clip_height = demo_rect['height'] + (margin * 2)
+                            # No margins – capture the demo-container exactly
+                            clip_x = max(0, demo_rect['x'])
+                            clip_y = max(0, demo_rect['y'])
+                            clip_width = demo_rect['width']
+                            clip_height = demo_rect['height']
 
                             # Ensure viewport is large enough
                             required_height = int(clip_y + clip_height)
@@ -118,7 +118,7 @@ class ThemeScreenshotCapture:
                                 'height': clip_height
                             }
                             await page.screenshot(path=screenshot_path, clip=clip_area)
-                            print(f"✅ Screenshot saved (demo-container + 12px margins): {screenshot_path}")
+                            print(f"✅ Screenshot saved (demo-container, no margins): {screenshot_path}")
                         else:
                             # Fallback to full page screenshot
                             await page.screenshot(path=screenshot_path, full_page=False)

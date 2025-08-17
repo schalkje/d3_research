@@ -65,6 +65,33 @@
                 </div>
             </div>
             <div class="settings-group">
+                <label class="settings-title">Minimap</label>
+                <div class="settings-inline">
+                    <label for="minimapModeSelect">Mode</label>
+                    <select id="minimapModeSelect" style="width:160px">
+                        <option value="always" selected>Always</option>
+                        <option value="hover">Hover</option>
+                        <option value="hidden">Hidden</option>
+                    </select>
+                    <label for="minimapPositionSelect" style="margin-left:12px">Position</label>
+                    <select id="minimapPositionSelect" style="width:160px">
+                        <option value="bottom-right" selected>Bottom-right</option>
+                        <option value="bottom-left">Bottom-left</option>
+                        <option value="top-right">Top-right</option>
+                        <option value="top-left">Top-left</option>
+                    </select>
+                    <label for="minimapSizeSelect" style="margin-left:12px">Size</label>
+                    <select id="minimapSizeSelect" style="width:120px">
+                        <option value="s">Small</option>
+                        <option value="m" selected>Medium</option>
+                        <option value="l">Large</option>
+                    </select>
+                </div>
+                <div class="settings-inline" style="margin-top:8px">
+                    <label style="margin-left:0"><input type="checkbox" id="minimapScaleVisible" checked> Show scale</label>
+                </div>
+            </div>
+            <div class="settings-group">
                 <label class="settings-title">Edges</label>
                 <div class="settings-inline">
                     <label>Curve margin <input type="number" step="0.05" min="0" max="0.8" id="numCurveMargin" style="width:80px"></label>
@@ -266,6 +293,11 @@
             setValue('numMarginRight', 8);
             setValue('numMarginBottom', 8);
             setValue('numMarginLeft', 8);
+            // Minimap defaults
+            const mmMode = document.getElementById('minimapModeSelect'); if (mmMode) mmMode.value = 'always';
+            const mmPos = document.getElementById('minimapPositionSelect'); if (mmPos) mmPos.value = 'bottom-right';
+            const mmSize = document.getElementById('minimapSizeSelect'); if (mmSize) mmSize.value = 'm';
+            const mmScaleVisible = document.getElementById('minimapScaleVisible'); if (mmScaleVisible) mmScaleVisible.checked = true;
             const fileSelect = document.getElementById('fileSelect');
             if (fileSelect) fileSelect.value = jsonFiles[currentFileIndex];
         }
@@ -314,6 +346,15 @@
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 // Ensure default expanded behavior regardless of file
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
+                // Apply minimap defaults from UI before init
+                const mm = dashboardData.settings.minimap || (dashboardData.settings.minimap = {});
+                mm.mode = (document.getElementById('minimapModeSelect')?.value) || 'always';
+                mm.position = (document.getElementById('minimapPositionSelect')?.value) || 'bottom-right';
+                mm.size = (document.getElementById('minimapSizeSelect')?.value) || 'm';
+                // ensure enabled when not hidden
+                mm.enabled = mm.mode !== 'hidden';
+                mm.scaleIndicator = mm.scaleIndicator || {};
+                mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph', '#minimap');
             });
@@ -377,6 +418,15 @@
                 if (!Number.isNaN(mb)) containerMargin.bottom = mb;
                 if (!Number.isNaN(ml)) containerMargin.left = ml;
                 dashboardData.settings.containerMargin = containerMargin;
+                // Minimap from UI
+                const mm = dashboardData.settings.minimap || (dashboardData.settings.minimap = {});
+                mm.mode = (document.getElementById('minimapModeSelect')?.value) || 'always';
+                mm.position = (document.getElementById('minimapPositionSelect')?.value) || 'bottom-right';
+                mm.size = (document.getElementById('minimapSizeSelect')?.value) || 'm';
+                // ensure enabled when not hidden
+                mm.enabled = mm.mode !== 'hidden';
+                mm.scaleIndicator = mm.scaleIndicator || {};
+                mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 // Keep nodes expanded by default on re-render
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
 

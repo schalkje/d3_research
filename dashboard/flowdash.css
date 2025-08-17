@@ -71,6 +71,7 @@
 /* No visible header/footer backgrounds; logical rows only */
 .minimap-scale {
   fill: var(--minimap-scale-fg, #333);
+  pointer-events: none; /* footer hit-rect takes events; text shouldn’t block hover */
 }
 .minimap-collapsed-icon .collapsed-icon-bg {
   fill: var(--fd-surface, rgba(255,255,255, 0.85));
@@ -130,7 +131,7 @@
 }
 .minimap-header-hit,
 .minimap-footer-hit {
-  pointer-events: all;
+  pointer-events: all; /* make entire rows hover sensitive */
 }
 .minimap-controls .icon {
   fill: var(--fd-border, rgba(0,0,0,0.75));
