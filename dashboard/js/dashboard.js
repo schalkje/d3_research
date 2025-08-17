@@ -561,8 +561,8 @@ export class Dashboard {
       .attr("id", "eyeball")
       .attr("x", -this.main.width / 2)
       .attr("y", -this.main.height / 2)
-      .attr("width", "100%")
-      .attr("height", "100%")
+      .attr("width", this.main.width)
+      .attr("height", this.main.height)
       .attr("class", "minimap-eyeball");
     eye
       .append("rect")
@@ -584,8 +584,8 @@ export class Dashboard {
     this.minimap.svg
       .append("rect")
       .attr("class", `eye`)
-      .attr("width", "100%")
-      .attr("height", "100%")
+      .attr("width", this.main.width)
+      .attr("height", this.main.height)
       .attr("x", -this.main.width / 2)
       .attr("y", -this.main.height / 2)
       .attr("mask", "url(#fade-mask)");

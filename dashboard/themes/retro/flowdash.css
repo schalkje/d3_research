@@ -55,7 +55,11 @@ text, .label, .rect.label { fill: var(--fd-text) !important; text-shadow: 0 0 4p
 
 /* Minimap overlays */
 .minimap-svg .eye { fill: rgba(0,255,102,0.08) !important; }
-.minimap-svg .iris { stroke: rgba(44,255,136,0.28) !important; }
+.minimap-svg .iris {
+  fill: rgba(8,16,10,0.22) !important; /* slightly greenish dark haze */
+  stroke: rgba(0,255,102,0.18) !important;
+  stroke-width: 6px !important;
+}
 
 /* Minimap size button */
 .minimap-size-button .btn-bg { fill: rgba(0,255,102,0.06) !important; stroke: var(--fd-border) !important; }
