@@ -81,8 +81,10 @@
     uiRoot.setAttribute('data-flowdash-theme-ui','root');
     uiRoot.innerHTML = `
       <style>
-        [data-flowdash-theme-ui="root"]{position:fixed;top:10px;right:10px;display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:8px;z-index:99999;background:rgba(0,0,0,.5);backdrop-filter:blur(6px)}
+        [data-flowdash-theme-ui="root"]{position:fixed;top:10px;right:10px;display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:8px;z-index:99999;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);color-scheme: dark}
         [data-flowdash-theme-ui="root"] select,[data-flowdash-theme-ui="root"] button{font:12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:6px;padding:4px 8px;cursor:pointer}
+        [data-flowdash-theme-ui="root"] select{background:var(--fd-surface);color:var(--fd-text,#fff)}
+        [data-flowdash-theme-ui="root"] select option{background:var(--fd-surface);color:var(--fd-text,#fff)}
         [data-flowdash-theme-ui="root"] button{white-space:nowrap}
       </style>
       <select aria-label="Theme select"></select>
