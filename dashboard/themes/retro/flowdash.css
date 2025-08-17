@@ -31,6 +31,8 @@ body {
 /* Ensure fullscreen dashboard does not show page background */
 #graph.flowdash-fullscreen, #graph.fullscreen { background-color: var(--fd-surface) !important; }
 #minimap { background-color: rgba(10,16,10,0.75) !important; border: 1px solid var(--fd-border) !important; }
+/* Ensure uncovered minimap background matches graph surface */
+.minimap-svg rect.background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
 svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; }
 
 /* core shapes */
@@ -50,6 +52,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; text-shadow: 0 0 4p
 
 .zoom-button:hover circle { fill: rgba(0,255,102,0.08) !important; stroke: #1e3a1e !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
+
+/* Minimap overlays */
+.minimap-svg .eye { fill: rgba(0,255,102,0.08) !important; }
+.minimap-svg .iris { stroke: rgba(44,255,136,0.28) !important; }
+
+/* Minimap size button */
+.minimap-size-button .btn-bg { fill: rgba(0,255,102,0.06) !important; stroke: var(--fd-border) !important; }
+.minimap-size-button .btn-label { fill: var(--fd-text) !important; }
 
 /* State system: retro phosphor palette */
 .shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {

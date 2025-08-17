@@ -13,6 +13,8 @@ body { background: var(--fd-bg); color: var(--fd-text); }
 /* canvases */
 #graph { background-color: var(--fd-bg); border-color: var(--fd-border); }
 #minimap { background-color: rgba(20, 24, 33, 0.7); border-color: var(--fd-border); }
+/* Ensure uncovered minimap background matches graph surface */
+.minimap-svg rect.background { fill: var(--fd-bg) !important; stroke: var(--fd-border) !important; }
 svg.canvas { border-color: var(--fd-border); box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
 
 .shape { fill: var(--fd-surface); stroke: var(--fd-border); stroke-width: 1.25px; }
@@ -25,6 +27,14 @@ text, .label, .rect.label { fill: var(--fd-text); }
 .header-text { fill: var(--fd-text); }
 .zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
 .zoom-icon { fill: var(--fd-text); }
+
+/* Minimap overlays */
+.minimap-svg .eye { fill: rgba(255,255,255,0.06) !important; }
+.minimap-svg .iris { stroke: rgba(107, 174, 255, 0.28) !important; }
+
+/* Minimap size button */
+.minimap-size-button .btn-bg { fill: #1a2230 !important; stroke: var(--fd-border) !important; }
+.minimap-size-button .btn-label { fill: var(--fd-text) !important; }
 
 
 /* status styles: restrained fills, luminous strokes for clarity on dark */

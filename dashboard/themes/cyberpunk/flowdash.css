@@ -21,6 +21,8 @@ body { background: linear-gradient(135deg, #0b0a10 0%, #11122a 100%); color: var
 
 #graph { background: radial-gradient(1200px 600px at 50% 0%, rgba(255,0,229,0.08), transparent 60%), radial-gradient(1000px 500px at 10% 80%, rgba(0,229,255,0.08), transparent 60%), var(--fd-surface) !important; border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2b2a3a, 0 0 40px rgba(255,0,229,0.2), 0 0 60px rgba(0,229,255,0.15); }
 #minimap { background-color: rgba(17,18,42,0.7) !important; border-color: var(--fd-border) !important; }
+/* Ensure uncovered minimap background matches graph surface */
+.minimap-svg rect.background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
 svg.canvas { border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2b2a3a, 0 0 24px rgba(255,0,229,0.2), 0 0 48px rgba(0,229,255,0.15) !important; }
 
 .shape { fill: #17162c !important; stroke: var(--fd-accent) !important; stroke-width: 1.5px; filter: drop-shadow(0 0 8px rgba(255,0,229,0.3)); }
@@ -33,6 +35,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 
 .zoom-button:hover circle { fill: rgba(255,0,229,0.1) !important; stroke: #3b3a5a !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
+
+/* Minimap overlays */
+.minimap-svg .eye { fill: rgba(255,0,229,0.08) !important; }
+.minimap-svg .iris { stroke: rgba(0,229,255,0.28) !important; }
+
+/* Minimap size button */
+.minimap-size-button .btn-bg { fill: rgba(255,0,229,0.08) !important; stroke: #3b3a5a !important; }
+.minimap-size-button .btn-label { fill: var(--fd-text) !important; }
 
 .container-shape.selected, .rect.shape.selected { box-shadow: 0 0 0 1px var(--fd-accent), 0 0 20px rgba(255,0,229,0.4); }
 

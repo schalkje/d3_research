@@ -102,8 +102,8 @@
 }
 
 .minimap-svg rect.background {
-  fill: rgb(190, 190, 190);
-  stroke: rgb(136, 136, 136);
+  fill: var(--fd-bg, white);
+  stroke: var(--fd-border, #2b4b7c);
 }
 
 .minimap-svg rect.boundingbox {
@@ -129,11 +129,18 @@
   fill: var(--fd-surface, rgba(255,255,255, 0.9));
   stroke: var(--fd-border, rgba(0,0,0,0.25));
 }
+.minimap-size-button .btn-bg {
+  fill: var(--fd-surface, rgba(255,255,255, 0.9));
+  stroke: var(--fd-border, rgba(0,0,0,0.25));
+}
 .minimap-header-hit,
 .minimap-footer-hit {
   pointer-events: all; /* make entire rows hover sensitive */
 }
 .minimap-controls .icon {
+  fill: var(--fd-border, rgba(0,0,0,0.75));
+}
+.minimap-size-button .btn-label {
   fill: var(--fd-border, rgba(0,0,0,0.75));
 }
 .minimap-controls .minimap-btn:hover .btn-bg,
