@@ -1,5 +1,7 @@
 # Dashboard Core Implementation
 
+For usage‑level documentation, see: [documentation/dashboard.md](documentation/dashboard.md) and [documentation/minimap.md](documentation/minimap.md)
+
 ## Overview
 
 The dashboard core (`dashboard.js`) is the main orchestrator that manages the entire visualization. It handles initialization, zoom/pan controls, minimap functionality, node selection, and overall dashboard state management.

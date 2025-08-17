@@ -157,3 +157,8 @@ Comprehensive event handling for all node interactions:
 | **FoundationNode** | Data warehouse foundations | Role-based | Yes | Yes |
 | **MartNode** | Data marts | Role-based | Yes | Yes |
 | **GroupNode** | Dynamic grouping | Bounding box | Yes | Yes | 
+
+## Dashboard UI
+
+- **[Dashboard Overview](dashboard.md)** — How to embed and use the Dashboard, features, and API
+- **[Minimap](minimap.md)** — Overview, enabling, interactions, and styling hooks
