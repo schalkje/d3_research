@@ -171,8 +171,17 @@ export class Dashboard {
       this.minimap.width = width;
       this.minimap.height = height;
       this.minimap.svg.attr('width', width).attr('height', height);
+      // Recompute minimap content scale used for drag compensation
+      this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
       this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
       this.updateMinimap();
+      // Sync eye/pupil to current main transform after resize
+      {
+        const transform = d3.zoomIdentity
+          .translate(this.main.transform.x, this.main.transform.y)
+          .scale(this.main.transform.k);
+        updateViewport(this, transform);
+      }
       this.positionEmbeddedMinimap();
       updateSizeLabel();
       // Notify via callback if provided
@@ -615,6 +624,8 @@ export class Dashboard {
       // clone dashboard to minimap
       minimap.node().appendChild(clone);
       this.minimap.container = d3.select(clone);
+      // Neutralize the main zoom/pan on the minimap content so it always shows the full scene
+      this.minimap.container.attr("transform", null);
     });
   }
 
@@ -669,6 +680,8 @@ export class Dashboard {
           this.minimap.svg.attr('width', width).attr('height', height);
         }
         this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+        // Recompute minimap content scale used for drag compensation
+        this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
         this.updateMinimap();
         const transform = d3.zoomIdentity
           .translate(this.main.transform.x, this.main.transform.y)
@@ -1459,6 +1472,8 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
     if (propertyPath.endsWith('minimap.size') || propertyPath.includes('.minimap.size')) {
       recalcSize();
       dash.updateMinimap();
+      // Recompute minimap content scale used for drag compensation
+      dash.minimap.scale = Math.min(dash.minimap.width / dash.main.width, dash.minimap.height / dash.main.height);
       dash.positionEmbeddedMinimap();
     }
 
