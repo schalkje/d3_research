@@ -114,11 +114,10 @@ text, .label, .rect.label {
 .adapter:hover > .zone-container > .container-shape,
 .mart:hover > .zone-container > .container-shape,
 .foundation:hover > .zone-container > .container-shape {
-  fill: rgba(255,255,255,0.28) !important;
-  stroke: rgba(255,255,255,0.7) !important;
+  /* Preserve state fill and stroke color; only intensify appearance */
   stroke-width: 1.8px !important;
   /* Avoid changing backdrop-filter on hover to prevent large box artifacts in some SVG renderers */
-  filter: drop-shadow(0 14px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 22px rgba(122,184,255,0.30));
+  filter: drop-shadow(0 14px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 22px rgba(122,184,255,0.30)) brightness(1.08) saturate(1.08);
   transform: translateY(-1px) scale(1.01);
 }
 
@@ -144,11 +143,10 @@ text, .label, .rect.label {
 
 /* Node hover: lift and brighten */
 .node:hover .shape, .Node:hover .shape, .rect.shape:hover {
-  fill: rgba(255,255,255,0.30) !important;
-  stroke: rgba(255,255,255,0.8) !important;
+  /* Preserve state color; only brighten and lift */
   stroke-width: 1.8px !important;
   /* Avoid changing backdrop-filter on hover to prevent large box artifacts */
-  filter: drop-shadow(0 12px 34px rgba(0,0,0,0.6)) drop-shadow(0 0 20px rgba(122,184,255,0.32));
+  filter: drop-shadow(0 12px 34px rgba(0,0,0,0.6)) drop-shadow(0 0 20px rgba(122,184,255,0.32)) brightness(1.08) saturate(1.08);
   transform: translateY(-0.5px) scale(1.01);
 }
 
