@@ -65,25 +65,8 @@ export class Dashboard {
     this.main.root.onClick = (node) => this.selectNode(node);
     this.main.root.onDblClick = (node) => this.zoomToNode(node);
 
-    // initialize minimap
-    if (minimapDivSelector) {
-      this.minimapDivSelector = minimapDivSelector;
-      const div = this.initializeSvg(minimapDivSelector);
-      this.minimap.active = true;
-      this.minimap.svg = div.svg;
-      this.minimap.width = div.width;
-      this.minimap.height = div.height;
-      this.minimap.onDragUpdate = div.onDragUpdate;
-      this.minimap.container = this.createContainer(this.minimap, "minimap");
-      this.initializeMinimap();
-      this.updateMinimap();
-      console.log("minimap", this.minimap);
-
-      // const dashboard = this;
-      // this.isMainAndMinimapSyncing = true; // why is it called directly after initializing the minimap?
-
-      // this.isMainAndMinimapSyncing = false;
-    }
+    // initialize minimap (embedded)
+    this.initializeEmbeddedMinimap();
     this.main.root.onDisplayChange = () => {
       this.onMainDisplayChange();
     };
@@ -94,6 +77,285 @@ export class Dashboard {
 
     // Initialize fullscreen toggle button after setup
     this.initializeFullscreenToggle();
+  }
+
+  initializeEmbeddedMinimap() {
+    const mm = this.data.settings.minimap;
+    if (!mm || mm.enabled === false) return;
+
+    // Determine mode defaults by environment
+    const isSmallScreen = typeof window !== 'undefined' && (window.innerWidth || 0) < 600;
+    const mode = this.data.settings.minimap.mode || (isSmallScreen ? 'hidden' : 'hover');
+    this.data.settings.minimap.mode = mode;
+
+    // Persistent collapsed state
+    if (mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
+      try {
+        const persisted = window.localStorage.getItem(mm.persistence.storageKey);
+        if (persisted !== null) {
+          this.data.settings.minimap.collapsed = persisted === 'true';
+        }
+      } catch {}
+    }
+
+    // Create an overlay group inside main svg
+    const overlay = this.main.svg.append('g').attr('class', 'minimap-overlay');
+    this.minimap.overlay = overlay;
+    this.minimap.active = true;
+    this.minimap.state = { showTimer: null, hideTimer: null, interacting: false };
+
+    // Collapsed icon (always rendered; visibility toggled)
+    this.minimap.collapsedIcon = overlay.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
+    // Simple square icon placeholder; themes can override
+    this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-bg').attr('width', 20).attr('height', 14).attr('rx', 2).attr('ry', 2);
+    this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-mini').attr('x', 4).attr('y', 3).attr('width', 12).attr('height', 8);
+    this.minimap.collapsedIcon.on('click', () => {
+      this.setMinimapCollapsed(false, true);
+    });
+
+    // Collapse and Pin buttons when expanded
+    this.minimap.collapseButton = overlay.append('g').attr('class', 'minimap-collapse-button').style('cursor', 'pointer');
+    this.minimap.collapseButton.append('rect').attr('class', 'collapse-btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
+    // triangle-down shape
+    this.minimap.collapseButton.append('path').attr('class', 'collapse-btn-icon').attr('d', 'M2,6 L14,6 L8,12 Z');
+    this.minimap.collapseButton.on('click', () => {
+      // Hide and unpin
+      this.data.settings.minimap.pinned = false;
+      this.updatePinVisualState();
+      this.setMinimapCollapsed(true, true);
+    });
+
+    this.minimap.pinButton = overlay.append('g').attr('class', 'minimap-pin-button').style('cursor', 'pointer');
+    this.minimap.pinButton.append('rect').attr('class', 'pin-btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
+    // simple pin icon: a circle with a small stem
+    this.minimap.pinButton.append('circle').attr('class', 'pin-btn-head').attr('cx', 8).attr('cy', 6).attr('r', 3);
+    this.minimap.pinButton.append('rect').attr('class', 'pin-btn-stem').attr('x', 7.25).attr('y', 9).attr('width', 1.5).attr('height', 5);
+    this.minimap.pinButton.on('click', () => {
+      mm.pinned = !mm.pinned;
+      this.updatePinVisualState();
+      // When pinned, ensure visible
+      if (mm.pinned) this.setMinimapCollapsed(false, true);
+    });
+
+    // Minimap svg and inner content group
+    this.minimap.svg = overlay.append('svg').attr('class', 'minimap-svg');
+    this.minimap.container = this.minimap.svg.append('g').attr('class', 'minimap');
+
+    // Resolve size from token or explicit
+    const tokenToSize = (token) => {
+      if (typeof token === 'object' && token) return token;
+      switch (token) {
+        case 's': return { width: 140, height: 90 };
+        case 'l': return { width: 220, height: 140 };
+        case 'm':
+        default: return { width: 180, height: 120 };
+      }
+    };
+    const resolvedSize = tokenToSize(mm.size);
+    this.minimap.width = resolvedSize.width;
+    this.minimap.height = resolvedSize.height;
+    this.minimap.svg.attr('width', resolvedSize.width).attr('height', resolvedSize.height);
+
+    // Initialize behaviors and content
+    this.initializeMinimap();
+    this.updateMinimap();
+
+    // Footer bar (controls + scale)
+    this.minimap.footer = overlay.append('g').attr('class', 'minimap-footer');
+    this.minimap.footerHeight = 20;
+    this.minimap.footerRect = this.minimap.footer.append('rect').attr('class', 'minimap-footer-bg');
+    // Scale indicator in footer
+    if (mm.scaleIndicator?.visible !== false) {
+      this.minimap.scaleText = this.minimap.footer.append('text').attr('class', 'minimap-scale').attr('text-anchor', 'end');
+    }
+
+    // Controls: zoom in/out/reset
+    const makeButton = (group, className, onClick) => {
+      const g = group.append('g').attr('class', `minimap-btn ${className}`).style('cursor', 'pointer');
+      g.append('rect').attr('class', 'btn-bg').attr('width', 16).attr('height', 16).attr('rx', 3).attr('ry', 3);
+      g.on('click', (ev) => { ev.stopPropagation(); onClick(); });
+      return g;
+    };
+    this.minimap.controls = this.minimap.footer.append('g').attr('class', 'minimap-controls');
+    // Icons as simple shapes
+    this.minimap.btnZoomIn = makeButton(this.minimap.controls, 'zoom-in', () => this.zoomIn());
+    this.minimap.btnZoomIn.append('rect').attr('class', 'icon plus-h').attr('x', 3).attr('y', 7).attr('width', 10).attr('height', 2);
+    this.minimap.btnZoomIn.append('rect').attr('class', 'icon plus-v').attr('x', 7).attr('y', 3).attr('width', 2).attr('height', 10);
+
+    this.minimap.btnZoomOut = makeButton(this.minimap.controls, 'zoom-out', () => this.zoomOut());
+    this.minimap.btnZoomOut.append('rect').attr('class', 'icon minus').attr('x', 3).attr('y', 7).attr('width', 10).attr('height', 2);
+
+    this.minimap.btnReset = makeButton(this.minimap.controls, 'reset', () => this.zoomReset());
+    this.minimap.btnReset.append('circle').attr('class', 'icon target-outer').attr('cx', 8).attr('cy', 8).attr('r', 5);
+    this.minimap.btnReset.append('circle').attr('class', 'icon target-inner').attr('cx', 8).attr('cy', 8).attr('r', 1.5);
+
+    // Ensure chrome sits on top
+    if (this.minimap.footer) this.minimap.footer.raise();
+    if (this.minimap.collapseButton) this.minimap.collapseButton.raise();
+    if (this.minimap.pinButton) this.minimap.pinButton.raise();
+
+    // Position overlay
+    this.positionEmbeddedMinimap();
+
+    // Hover behavior
+    if (mode === 'hover') {
+      const show = () => this.setMinimapCollapsed(false);
+      const hide = () => {
+        if (!this.data.settings.minimap.pinned) this.setMinimapCollapsed(true);
+      };
+      overlay
+        .on('mouseenter', () => {
+          this.minimap.state.isHover = true;
+          const s = this.minimap.state; if (s.hideTimer) clearTimeout(s.hideTimer);
+          this.minimap.state.showTimer = setTimeout(show, mm.hover?.showDelayMs ?? 120);
+        })
+        .on('mouseleave', () => {
+          this.minimap.state.isHover = false;
+          const s = this.minimap.state; if (s.showTimer) clearTimeout(s.showTimer);
+          if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting)
+            this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
+        });
+      // Interaction tracking keeps it visible
+      overlay
+        .on('mousedown', () => { this.minimap.state.interacting = true; })
+        .on('mouseup', () => { this.minimap.state.interacting = false; })
+        .on('wheel', () => { this.minimap.state.interacting = true; clearTimeout(this.minimap.state.hideTimer); })
+        .on('mouseout', () => { this.minimap.state.interacting = false; });
+      // Touch support: tap to reveal, auto hide
+      overlay.on('touchstart', () => {
+        show();
+        const timeout = mm.touch?.autoHideAfterMs ?? 2500;
+        setTimeout(hide, timeout);
+      });
+    }
+
+    // Initial collapsed state
+    this.setMinimapCollapsed(mm.collapsed === true);
+    this.updateMinimapVisibilityByZoom();
+    this.updatePinVisualState();
+  }
+
+  setMinimapCollapsed(collapsed, persist = false) {
+    const mm = this.data.settings.minimap;
+    mm.collapsed = !!collapsed;
+    if (this.minimap.svg) {
+      this.minimap.svg.style('display', collapsed ? 'none' : 'block');
+    }
+    if (this.minimap.scaleText) {
+      this.minimap.scaleText.style('display', collapsed ? 'none' : 'block');
+    }
+    if (this.minimap.footer) {
+      this.minimap.footer.style('display', collapsed ? 'none' : 'block');
+    }
+    if (this.minimap.collapsedIcon) {
+      const isHiddenMode = mm.mode === 'hidden';
+      const showIcon = collapsed; // show icon only when collapsed
+      this.minimap.collapsedIcon.style('display', showIcon && !isHiddenMode ? 'block' : 'none');
+    }
+    if (this.minimap.collapseButton) {
+      const isHiddenMode = mm.mode === 'hidden';
+      this.minimap.collapseButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
+    }
+    if (this.minimap.pinButton) {
+      const isHiddenMode = mm.mode === 'hidden';
+      this.minimap.pinButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
+    }
+    this.positionEmbeddedMinimap();
+    if (persist && mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
+      try { window.localStorage.setItem(mm.persistence.storageKey, String(mm.collapsed)); } catch {}
+    }
+  }
+
+  updatePinVisualState() {
+    const mm = this.data.settings.minimap;
+    if (!this.minimap.pinButton) return;
+    this.minimap.pinButton.classed('active', !!mm.pinned);
+  }
+
+  positionEmbeddedMinimap() {
+    if (!this.minimap.overlay) return;
+    const mm = this.data.settings.minimap;
+    const padding = 12;
+    const size = { width: this.minimap.width, height: this.minimap.height };
+    const iconSize = { width: 20, height: 14 };
+
+    const posToXY = (pos, item) => {
+      const w = this.main.width; const h = this.main.height;
+      switch (pos) {
+        case 'top-left': return { x: -w/2 + padding, y: -h/2 + padding };
+        case 'top-right': return { x: w/2 - padding - item.width, y: -h/2 + padding };
+        case 'bottom-left': return { x: -w/2 + padding, y: h/2 - padding - item.height };
+        case 'bottom-right':
+        default: return { x: w/2 - padding - item.width, y: h/2 - padding - item.height };
+      }
+    };
+
+    // Use same corner for minimap and collapsed icon
+    const corner = (mm.collapsedIcon && mm.collapsedIcon.position) || mm.position || 'bottom-right';
+    // Place minimap svg
+    const mapPos = posToXY(corner, size);
+    this.minimap.svg.attr('x', mapPos.x).attr('y', mapPos.y);
+    // Footer sizing and controls at bottom in-line
+    if (this.minimap.footer) {
+      const footerH = this.minimap.footerHeight || 20;
+      // Position footer group
+      this.minimap.footer.attr('transform', `translate(${mapPos.x},${mapPos.y + size.height - footerH})`);
+      // Footer background
+      this.minimap.footerRect.attr('x', 0).attr('y', 0).attr('width', size.width).attr('height', footerH).attr('rx', 0).attr('ry', 0);
+      // Controls block
+      if (this.minimap.controls) {
+        const spacing = 6;
+        const startX = 6;
+        const centerY = Math.floor(footerH / 2) - 8; // center 16px button in footer
+        this.minimap.controls.attr('transform', `translate(${startX},${centerY})`);
+        this.minimap.btnZoomIn.attr('transform', 'translate(0,0)');
+        this.minimap.btnZoomOut.attr('transform', `translate(${16 + spacing},0)`);
+        this.minimap.btnReset.attr('transform', `translate(${(16 + spacing) * 2},0)`);
+      }
+    }
+    // place collapse button in top-right of minimap
+    if (this.minimap.collapseButton) {
+      this.minimap.collapseButton.attr('transform', `translate(${mapPos.x + size.width - 20},${mapPos.y + 4})`);
+    }
+
+    // Place collapsed icon (may use its own position)
+    const collapsedIconPos = posToXY(corner, iconSize);
+    this.minimap.collapsedIcon.attr('transform', `translate(${collapsedIconPos.x},${collapsedIconPos.y})`);
+
+    // Place scale indicator text inside footer, right-aligned
+    if (this.minimap.scaleText && this.minimap.footer) {
+      const footerH = this.minimap.footerHeight || 20;
+      this.minimap.scaleText
+        .attr('x', mapPos.x + size.width - 8)
+        .attr('y', mapPos.y + size.height - Math.ceil(footerH / 2))
+        .style('font-size', '12px')
+        .style('dominant-baseline', 'middle')
+        .style('fill', 'var(--minimap-scale-fg, #333)');
+      this.updateMinimapScaleIndicator();
+    }
+
+    // Place collapse and pin buttons at top-right of minimap
+    if (this.minimap.collapseButton) {
+      // draw above the minimap body and footer
+      this.minimap.collapseButton.attr('transform', `translate(${mapPos.x + size.width - 18},${mapPos.y - 22})`);
+    }
+    if (this.minimap.pinButton) {
+      this.minimap.pinButton.attr('transform', `translate(${mapPos.x + size.width - 38},${mapPos.y - 22})`);
+    }
+  }
+
+  updateMinimapScaleIndicator() {
+    const mm = this.data.settings.minimap;
+    if (!this.minimap.scaleText || mm.scaleIndicator?.visible === false) return;
+    if (mm.scaleIndicator?.type === 'percent') {
+      const pct = Math.round((this.main.transform.k || 1) * 100);
+      const label = `${pct}%`;
+      this.minimap.scaleText.text(label);
+    } else {
+      // Placeholder for bar type if needed later
+      const pct = Math.round((this.main.transform.k || 1) * 100);
+      this.minimap.scaleText.text(`${pct}%`);
+    }
   }
 
   initializeMinimap() {
@@ -443,6 +705,33 @@ export class Dashboard {
 
     if (this.data.settings.zoomToRoot)
       this.zoomToRoot();
+
+    this.positionEmbeddedMinimap();
+  }
+
+  updateMinimapVisibilityByZoom() {
+    const mm = this.data.settings.minimap;
+    if (!mm || mm.mode !== 'hover') return;
+    if (mm.pinned) return; // keep visible when pinned
+    const threshold = mm.hover?.zoomFitThreshold ?? 1.0;
+    const isZoomedOutOrFit = (this.main.transform.k || 1) <= threshold;
+    // Only auto-collapse if user hasn't explicitly collapsed
+    if (mm.collapsed) {
+      // if the user is interacting or hovering, keep visible
+      if (this.minimap.state?.interacting || this.minimap.state?.isHover) {
+        this.setMinimapCollapsed(false);
+      } else {
+        this.setMinimapCollapsed(true);
+      }
+      return;
+    }
+    // When zoomed out, show icon-only; when zoomed in, show preview
+    // But keep visible while interacting/hovering
+    if (this.minimap.state?.interacting || this.minimap.state?.isHover) {
+      this.setMinimapCollapsed(false);
+    } else {
+      this.setMinimapCollapsed(isZoomedOutOrFit);
+    }
   }
 
   zoomMain(zoomEvent) {
@@ -462,11 +751,17 @@ export class Dashboard {
     // Update the viewport in the minimap
     updateViewport(this, zoomEvent.transform);
 
+    // Update scale indicator
+    this.updateMinimapScaleIndicator();
+
     // Store the current zoom level at svg level, for the next event
     if (this.minimap.active)
       this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
 
     this.isMainAndMinimapSyncing = false;
+
+    // Dynamic hover behavior (icon vs preview)
+    this.updateMinimapVisibilityByZoom();
   }
 
   zoomMinimap(zoomEvent) {
@@ -487,7 +782,13 @@ export class Dashboard {
     // Update the viewport in the minimap
     updateViewport(this, zoomEvent.transform);
 
+    // Update scale indicator
+    this.updateMinimapScaleIndicator();
+
     this.isMainAndMinimapSyncing = false;
+
+    // Dynamic hover behavior (icon vs preview)
+    this.updateMinimapVisibilityByZoom();
   }
 
   zoomIn() {
@@ -935,7 +1236,15 @@ function dragEye(dashboard, dragEvent) {
 }
 
 
-export function createAndInitDashboard(dashboardData, mainDivSelector, minimapDivSelector = null) {  
+export function createAndInitDashboard(dashboardData, mainDivSelector, thirdArg = null) {  
+  // Support both legacy minimap selector (string) and new options object
+  let minimapDivSelector = null;
+  if (thirdArg && typeof thirdArg === 'string') {
+    minimapDivSelector = thirdArg;
+  } else if (thirdArg && typeof thirdArg === 'object') {
+    const userSettings = (dashboardData && dashboardData.settings) ? dashboardData.settings : {};
+    dashboardData.settings = ConfigManager.mergeWithDefaults({ ...userSettings, ...thirdArg });
+  }
   const dashboard = new Dashboard(dashboardData);
   dashboard.initialize(mainDivSelector, minimapDivSelector);
   return dashboard;

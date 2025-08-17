@@ -59,39 +59,85 @@
   stroke: rgba(0, 160, 0, 0.5);
 }
 
-#minimap-container {
-  border: 1px solid black;
+/* Embedded Minimap Overlay */
+.minimap-overlay {
+  pointer-events: auto;
 }
-
-#minimap {
-  border: 1px solid darkblue;
-  width: 1600px;
-  height: 600px;
-  /* background-color: rgba(200, 200, 200, 0.2); */
+.minimap-svg {
+  border: 1px solid var(--fd-border, #2b4b7c);
   background-color: var(--fd-surface, rgba(255,255,255, 0.7));
 }
+.minimap { }
+.minimap-footer-bg {
+  fill: var(--fd-surface, rgba(255,255,255, 0.65));
+  stroke: none;
+}
+.minimap-scale {
+  fill: var(--minimap-scale-fg, #333);
+}
+.minimap-collapsed-icon .collapsed-icon-bg {
+  fill: var(--fd-surface, rgba(255,255,255, 0.85));
+  stroke: var(--fd-border, rgba(0,0,0,0.25));
+}
+.minimap-collapsed-icon .collapsed-icon-mini {
+  fill: var(--fd-border, rgba(0,0,0,0.35));
+}
 
-#minimap rect.background {
+.minimap-collapse-button .collapse-btn-bg {
+  fill: var(--fd-surface, rgba(255,255,255, 0.9));
+  stroke: var(--fd-border, rgba(0,0,0,0.25));
+}
+.minimap-collapse-button .collapse-btn-icon {
+  fill: var(--fd-border, rgba(0,0,0,0.6));
+}
+
+.minimap-pin-button .pin-btn-bg {
+  fill: var(--fd-surface, rgba(255,255,255, 0.9));
+  stroke: var(--fd-border, rgba(0,0,0,0.25));
+}
+.minimap-pin-button .pin-btn-head,
+.minimap-pin-button .pin-btn-stem {
+  fill: var(--fd-border, rgba(0,0,0,0.6));
+}
+.minimap-pin-button.active .pin-btn-bg {
+  stroke: var(--fd-accent, #2b4b7c);
+}
+
+.minimap-svg rect.background {
   fill: rgb(190, 190, 190);
   stroke: rgb(136, 136, 136);
 }
 
-#minimap rect.boundingbox {
+.minimap-svg rect.boundingbox {
   fill: none;
   stroke: rgba(255, 0, 0, 0.5);
   stroke-width: 4px;
 }
 
 
-#minimap .eye {
+.minimap-svg .eye {
   /* fill: rgba(238, 237, 221, 0.6) */
   fill: rgba(255, 255, 255, 0.7)
 }
 
-#minimap .iris {
+.minimap-svg .iris {
   fill: none;
   stroke: rgba(255, 0, 0, 0.2);
   stroke-width: 8px;
+}
+
+/* Minimap control buttons */
+.minimap-controls .btn-bg {
+  fill: transparent;
+  stroke: none;
+}
+.minimap-controls .icon {
+  fill: var(--fd-border, rgba(0,0,0,0.75));
+}
+.minimap-controls .minimap-btn:hover .btn-bg,
+.minimap-collapse-button:hover .collapse-btn-bg,
+.minimap-pin-button:hover .pin-btn-bg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
 }
 
 /* Minimap Element Styles */

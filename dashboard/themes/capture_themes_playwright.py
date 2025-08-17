@@ -51,16 +51,103 @@ class ThemeScreenshotCapture:
                 print(f"\n📸 Capturing {theme} theme...")
                 
                 try:
-                    # Apply theme
+                    # Apply theme using the theme manager
                     await self.apply_theme(page, theme)
                     
-                    # Wait for theme to apply
-                    await page.wait_for_timeout(2000)
+                    # Wait for theme to apply and CSS to load
+                    await page.wait_for_timeout(3000)
                     
-                    # Capture screenshot
+                    # Capture screenshot of just the dashboard area
                     screenshot_path = os.path.join(self.output_dir, theme, f"{theme}-preview.png")
-                    await page.screenshot(path=screenshot_path, full_page=False)
-                    print(f"✅ Screenshot saved: {screenshot_path}")
+                    
+                    # Try to capture just the graph container area with margin
+                    try:
+                        # Wait for the graph container to be visible
+                        await page.wait_for_selector("#graph-container", timeout=5000)
+                        
+                        # Hide the theme selector UI to keep it out of captures
+                        await page.evaluate("""
+                            const themeUI = document.querySelector('[data-flowdash-theme-ui="root"]');
+                            if (themeUI) themeUI.style.display = 'none';
+                        """)
+                        
+                        # Zoom out to 95% to get a better overview and ensure full dashboard is visible
+                        await page.evaluate("""
+                            // Try to zoom out using the dashboard's zoom controls
+                            const zoomOutBtn = document.getElementById('zoom-out');
+                            if (zoomOutBtn) {
+                                // Click zoom out a few times to get to ~95%
+                                for (let i = 0; i < 3; i++) {
+                                    zoomOutBtn.click();
+                                }
+                            }
+                        """)
+                        
+                        # Wait for zoom to settle and content to reposition
+                        await page.wait_for_timeout(2000)
+                        
+                        # Get the graph container element AFTER zooming
+                        graph_container = await page.query_selector("#graph-container")
+                        if graph_container:
+                            # Get the bounding box of the graph container (now with zoom applied)
+                            bbox = await graph_container.bounding_box()
+                            if bbox:
+                                # Get the body element to calculate the full dashboard height
+                                body_element = await page.query_selector("body")
+                                if body_element:
+                                    body_bbox = await body_element.bounding_box()
+                                    if body_bbox:
+                                        # Calculate the full height needed based on body dimensions
+                                        # Add 12px margin on all sides
+                                        margin = 12
+                                        clip_area = {
+                                            'x': bbox['x'] - margin,
+                                            'y': bbox['y'] - margin,
+                                            'width': bbox['width'] + (margin * 2),
+                                            'height': body_bbox['height'] - bbox['y'] + margin
+                                        }
+                                        
+                                        # Capture the area with proper body height and 12px margins
+                                        await page.screenshot(
+                                            path=screenshot_path,
+                                            clip=clip_area
+                                        )
+                                        print(f"✅ Screenshot saved (full body height + 12px margin): {screenshot_path}")
+                                    else:
+                                        # Fallback: use container height with margin
+                                        margin = 12
+                                        clip_area = {
+                                            'x': bbox['x'] - margin,
+                                            'y': bbox['y'] - margin,
+                                            'width': bbox['width'] + (margin * 2),
+                                            'height': bbox['height'] + (margin * 2)
+                                        }
+                                        await page.screenshot(path=screenshot_path, clip=clip_area)
+                                        print(f"✅ Screenshot saved (container height + 12px margin): {screenshot_path}")
+                                else:
+                                    # Fallback: use container height with margin
+                                    margin = 12
+                                    clip_area = {
+                                        'x': bbox['x'] - margin,
+                                        'y': bbox['y'] - margin,
+                                        'width': bbox['width'] + (margin * 2),
+                                        'height': bbox['height'] + (margin * 2)
+                                    }
+                                    await page.screenshot(path=screenshot_path, clip=clip_area)
+                                    print(f"✅ Screenshot saved (container height + 12px margin): {screenshot_path}")
+                            else:
+                                # Fallback: capture just the graph container
+                                await graph_container.screenshot(path=screenshot_path)
+                                print(f"✅ Screenshot saved (graph container): {screenshot_path}")
+                        else:
+                            # Fallback to full page screenshot
+                            await page.screenshot(path=screenshot_path, full_page=False)
+                            print(f"✅ Screenshot saved (full page): {screenshot_path}")
+                    except Exception as e:
+                        print(f"   Warning: Could not capture graph container, using full page: {e}")
+                        await page.screenshot(path=screenshot_path, full_page=False)
+                        print(f"✅ Screenshot saved (fallback): {screenshot_path}")
+                    
                     successful_captures += 1
                     
                 except Exception as e:
@@ -72,35 +159,45 @@ class ThemeScreenshotCapture:
             return successful_captures == len(self.themes)
     
     async def apply_theme(self, page, theme_name):
-        """Apply a specific theme to the dashboard"""
+        """Apply a specific theme to the dashboard using the theme manager"""
         try:
-            # Try different methods to apply the theme
+            # Use the theme manager's setTheme function
             theme_script = f"""
-            // Method 1: Check if applyTheme function exists
-            if (typeof applyTheme === 'function') {{
-                applyTheme('{theme_name}');
-                return 'function';
+            let result = 'none';
+            
+            // Check if the theme manager is available through window.flowdashTheme
+            if (window.flowdashTheme && typeof window.flowdashTheme.set === 'function') {{
+                window.flowdashTheme.set('{theme_name}');
+                result = 'theme-manager';
+            }}
+            // Fallback: Manually enable/disable CSS links
+            else {{
+                const links = document.head.querySelectorAll('link[data-flowdash-theme]');
+                links.forEach(link => {{
+                    const themeName = link.getAttribute('data-flowdash-theme');
+                    link.disabled = themeName !== '{theme_name}';
+                }});
+                document.documentElement.setAttribute('data-theme', '{theme_name}');
+                result = 'manual-css';
             }}
             
-            // Method 2: Set data-theme attribute
-            if (document.body && document.body.setAttribute) {{
-                document.body.setAttribute('data-theme', '{theme_name}');
-                return 'attribute';
-            }}
-            
-            // Method 3: Look for theme selector dropdown
-            const themeSelect = document.querySelector('select[data-theme], select[name="theme"], .theme-selector select');
-            if (themeSelect) {{
-                themeSelect.value = '{theme_name}';
-                themeSelect.dispatchEvent(new Event('change'));
-                return 'dropdown';
-            }}
-            
-            return 'none';
+            result;
             """
             
             result = await page.evaluate(theme_script)
             print(f"   Applied theme using method: {result}")
+            
+            # Additional wait to ensure CSS is loaded
+            if result == 'theme-manager':
+                # Wait for theme change event
+                try:
+                    await page.wait_for_function(
+                        'document.documentElement.getAttribute("data-theme") === "' + theme_name + '"',
+                        timeout=5000
+                    )
+                    print(f"   Theme change confirmed: {theme_name}")
+                except:
+                    print(f"   Warning: Theme change confirmation timeout")
             
         except Exception as e:
             print(f"   Warning: Theme application method failed: {e}")

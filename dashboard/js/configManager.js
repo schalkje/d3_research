@@ -9,7 +9,31 @@ export const DEFAULT_SETTINGS = {
   showConnectionPoints: false,
   showInnerZoneRect: false,
   containerMargin: { top: 8, right: 8, bottom: 8, left: 8 },
-  nodeSpacing: { horizontal: 20, vertical: 10 }
+  nodeSpacing: { horizontal: 20, vertical: 10 },
+  minimap: {
+    enabled: true,
+    // If omitted in API: desktop → hover, small screens → hidden
+    mode: "hover", // "hidden" | "always" | "hover"
+    position: "bottom-right", // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+    size: "m", // tokens: "s" | "m" | "l" or { width, height }
+    opacity: 1,
+    collapsed: false,
+    pinned: false,
+    collapsedIcon: { position: "bottom-right" },
+    hover: { showDelayMs: 120, hideDelayMs: 300, zoomFitThreshold: 1.0 },
+    touch: { autoHideAfterMs: 2500 },
+    scaleIndicator: { visible: true, type: "percent", decimals: 0 },
+    icons: {
+      zoomIn: "plus",
+      zoomOut: "minus",
+      resetView: "target",
+      mode: "eye",
+      collapse: "triangle-down",
+      expand: "minimap"
+    },
+    persistence: { persistCollapsedState: true, storageKey: "flowdash:minimap:collapsed" },
+    theme: {}
+  }
 };
 
 export class ConfigManager {
