@@ -114,7 +114,9 @@ export default class BaseEdge {
     if (!this.source) return null;
     
     let correction = 0;
-    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
+    // Skip the immediate parent inner-zone translate to avoid double counting,
+    // since we add it via getZoneTransforms(this.source) below
+    for (let i = this.sourceIndex+2; i < this.parents.source.length; i++) {
       correction += this.parents.source[i].nestedCorrection_x;
     }
     // Add cumulative container translations (group transforms) up the parent chain
@@ -144,7 +146,9 @@ export default class BaseEdge {
     if (!this.source) return null;
     
     let correction = 0;
-    for (let i = this.sourceIndex+1; i < this.parents.source.length; i++) {
+    // Skip the immediate parent inner-zone translate to avoid double counting,
+    // since we add it via getZoneTransforms(this.source) below
+    for (let i = this.sourceIndex+2; i < this.parents.source.length; i++) {
       // console.log("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       correction += this.parents.source[i].nestedCorrection_y;
     }
@@ -175,7 +179,9 @@ export default class BaseEdge {
     if (!this.target) return null;
     
     let correction = 0;
-    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
+    // Skip the immediate parent inner-zone translate to avoid double counting,
+    // since we add it via getZoneTransforms(this.target) below
+    for (let i = this.targetIndex+2; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_x;
     }
     // Add cumulative container translations (group transforms) up the parent chain
@@ -205,7 +211,9 @@ export default class BaseEdge {
     if (!this.target) return null;
     
     let correction = 0;
-    for (let i = this.targetIndex+1; i < this.parents.target.length; i++) {
+    // Skip the immediate parent inner-zone translate to avoid double counting,
+    // since we add it via getZoneTransforms(this.target) below
+    for (let i = this.targetIndex+2; i < this.parents.target.length; i++) {
       correction += this.parents.target[i].nestedCorrection_y;
     }
     // Add cumulative container translations (group transforms) up the parent chain
