@@ -136,7 +136,6 @@ Styling hooks:
 - Button element: `.fullscreen-toggle` (fixed at top-right; small, low-opacity icon; on hover it becomes a clear, high-contrast button)
 - Fullscreen class: `.flowdash-fullscreen` (applied to the main SVG). If your page uses `#graph`, the legacy `#graph.fullscreen` also applies.
 
-
 ## Basic API (high level)
 
 - `createAndInitDashboard(data, mainDivSelector)` → Dashboard instance
@@ -153,53 +152,40 @@ Common settings in your data/config influence behavior:
 - **`settings.selector`**: Neighbor/adjacency selection strategy
 - **`settings.showBoundingBox`**: Show selection bounds overlay
 
-## Graph Container Sizing
+## Initial Display and Scaling System
 
-### Initial Sizing
+### Initial Dashboard Setup
 
-When the dashboard initializes, it automatically sizes itself based on the `#graph` container:
+When the dashboard initializes, it establishes a complete coordinate system and scaling relationship:
 
-1. **Container Detection**: The dashboard uses `getBoundingClientRect()` to detect the current size of the `#graph` div
+1. **Container Detection**: Uses `getBoundingClientRect()` to detect the current size of the `#graph` div
 2. **SVG Creation**: Creates an SVG element that fills the container completely
 3. **Coordinate System**: Sets up a centered coordinate system using `viewBox` with origin at `[-width/2, -height/2, width, height]`
-4. **Aspect Ratio**: Calculates and stores the container's aspect ratio for consistent scaling
+4. **Base Scale**: Establishes the initial scaling relationship where 1 SVG unit = 1 screen pixel (at 100% zoom)
 
 ```javascript
 // The dashboard automatically detects container size on initialization
 const { width, height } = svg.node().getBoundingClientRect();
 svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+// Store dimensions for future reference
+this.main.width = width;
+this.main.height = height;
+this.main.aspectRatio = width / height;
 ```
 
-### Resize Behavior
+### Scaling Architecture
 
-The dashboard handles container resizing in two modes:
+The dashboard implements a dual-coordinate scaling system that maintains visual consistency across different container sizes and browser states:
 
-#### Normal Mode (Default)
-- **Window Resize**: Listens to browser window resize events
-- **Zoom Preservation**: Maintains current zoom level and center point when container size changes
-- **Content Stability**: The same dashboard content remains visible during resize operations
-- **Aspect Ratio Handling**: When container aspect ratio changes, one dimension maintains the same visible area while the other adjusts
-- **Smooth Transitions**: All resize operations preserve user's current view state
+#### Core Scaling Principles
 
-#### Fullscreen Mode
-- **Viewport Filling**: The SVG expands to fill the entire browser viewport
-- **Dynamic Resizing**: Automatically adapts to viewport changes (browser resize, fullscreen toggle)
-- **State Preservation**: Maintains zoom and pan state when entering/exiting fullscreen
-
-### Scaling System Requirements
-
-The dashboard implements a dual-coordinate scaling system to maintain visual consistency across different container sizes and browser states.
-
-#### Core Requirements
-
-1. **Visual Consistency**: From the user's perspective, the dashboard content should appear identical when resizing - only becoming proportionally larger or smaller
-2. **Scale Preservation**: The relationship between SVG coordinate units and screen pixels must be maintained during resize operations
-3. **View Stability**: The user's current view (zoom level, center point) must remain unchanged during resize
-4. **Minimap Behavior**: The minimap maintains constant screen pixel dimensions regardless of container size changes
+1. **Visual Consistency**: Dashboard content appears identical when resizing - only becoming proportionally larger or smaller
+2. **Scale Preservation**: The relationship between SVG coordinate units and screen pixels is maintained during resize operations
+3. **View Stability**: The user's current view (zoom level, center point) remains unchanged during resize
+4. **Minimap Independence**: The minimap maintains constant screen pixel dimensions regardless of container size changes
 
 #### Initial Scale Computation
-
-When the dashboard initializes, it establishes the base scaling relationship:
 
 ```javascript
 // 1. Detect container dimensions in screen pixels
@@ -213,9 +199,29 @@ const baseScale = 1.0;
 this.main.pixelToSvgRatio = baseScale;
 ```
 
-#### Resize Scale Adjustment
+## Resize Behavior and Scaling
 
-During resize operations, the scale relationship is recalculated:
+### Normal Mode (Default Layout)
+
+The dashboard handles container resizing while preserving the user's current view:
+
+#### Window Resize Behavior
+
+- **Zoom Preservation**: Maintains current zoom level (k-factor) during resize
+- **Center Preservation**: The center point of the user's view stays fixed
+- **Content Stability**: The same dashboard area remains visible during pure size changes
+- **Smooth Adaptation**: Automatically adjusts to new container dimensions
+
+#### Aspect Ratio Changes
+
+When container aspect ratio changes, the system intelligently adapts:
+
+- **Wider Container**: Horizontal view expands, vertical view maintains same visible area
+- **Taller Container**: Vertical view expands, horizontal view maintains same visible area
+- **Narrower Container**: Horizontal view contracts, vertical view maintains same visible area
+- **Shorter Container**: Vertical view contracts, horizontal view maintains same visible area
+
+#### Technical Implementation
 
 ```javascript
 applyResizePreserveZoom() {
@@ -224,7 +230,7 @@ applyResizePreserveZoom() {
   const newWidth = newRect.width;
   const newHeight = newRect.height;
   
-  // 2. Calculate scale adjustment factor
+  // 2. Calculate scale adjustment factors
   const widthRatio = newWidth / this.main.width;
   const heightRatio = newHeight / this.main.height;
   
@@ -246,54 +252,46 @@ applyResizePreserveZoom() {
 }
 ```
 
-#### Feature Specifications
+### Fullscreen Mode
 
-**Main Dashboard Scaling:**
-- **Content Stability**: The same dashboard area remains visible during pure size changes (no aspect ratio change)
-- **Aspect Ratio Adaptation**: When container aspect ratio changes:
-  - If container becomes wider: horizontal view expands, vertical view stays the same
-  - If container becomes taller: vertical view expands, horizontal view stays the same
-  - If container becomes narrower: horizontal view contracts, vertical view stays the same
-  - If container becomes shorter: vertical view contracts, horizontal view stays the same
-- **Zoom Preservation**: User's zoom level (k-factor) remains constant
-- **Center Preservation**: The center point of the user's view stays fixed
-- **Content Relationship**: The visual relationship between nodes, edges, and spacing is maintained
+Fullscreen mode provides an immersive viewing experience with dynamic viewport adaptation:
 
-**Minimap Scaling Behavior:**
-- **Fixed Screen Size**: Minimap maintains exact pixel dimensions (e.g., 240px × 180px) regardless of main container size
-- **Position Stability**: Remains anchored to chosen corner (default: bottom-right)
-- **Scale Independence**: Minimap size is independent of main dashboard scaling
-- **Content Synchronization**: Minimap content scales to show the same world view as the main dashboard
+#### Entering Fullscreen
 
-#### User Experience Goals
+- **Viewport Expansion**: SVG expands to fill entire browser viewport
+- **State Preservation**: Maintains current zoom level and center point
+- **Coordinate System**: Automatically recalculates viewBox for new dimensions
+- **Minimap Adaptation**: Minimap maintains consistent screen size and position
 
-1. **Seamless Resizing**: Users should not notice jarring changes during resize operations
-2. **Content Preservation**: The same part of the dashboard stays visible during resize - no more, no less content is shown
-3. **Aspect Ratio Impact**: When container aspect ratio changes, one dimension (horizontal or vertical) stays the same while the other adjusts to show more/less content
-4. **Context Preservation**: Current focus area and zoom level are maintained across all resize scenarios
-5. **Consistent Navigation**: Minimap provides consistent navigation regardless of main container size
+#### Fullscreen Resize Handling
 
-#### Technical Implementation
+- **Dynamic Adaptation**: Automatically responds to browser viewport changes
+- **Zoom Stability**: Preserves user's zoom and pan state during viewport resize
+- **Content Consistency**: Maintains visual relationship between all dashboard elements
+- **Smooth Transitions**: All resize operations use optimized algorithms for responsiveness
 
-```javascript
-// Scale factor calculation for consistent visual appearance
-const calculateScaleFactor = (oldDimensions, newDimensions) => {
-  return {
-    x: newDimensions.width / oldDimensions.width,
-    y: newDimensions.height / oldDimensions.height
-  };
-};
+#### Exiting Fullscreen
 
-// Transform adjustment to preserve user view
-const preserveUserView = (oldTransform, scaleFactor) => {
-  return d3.zoomIdentity
-    .translate(
-      oldTransform.x * scaleFactor.x,
-      oldTransform.y * scaleFactor.y
-    )
-    .scale(oldTransform.k); // Zoom level stays constant
-};
-```
+- **Layout Restoration**: Returns to normal container layout
+- **View Preservation**: Maintains current zoom and pan state
+- **Coordinate Recalculation**: Automatically adjusts viewBox for container dimensions
+- **Minimap Repositioning**: Restores minimap to normal layout position
+
+### Resize Performance Optimization
+
+The dashboard implements several optimizations to ensure smooth resize operations:
+
+#### RequestAnimationFrame Integration
+
+- **Smooth Updates**: Uses `requestAnimationFrame` for minimap updates during resize
+- **Throttled Operations**: Limits resize calculations to prevent performance degradation
+- **Batch Updates**: Groups multiple resize-related operations for efficiency
+
+#### Memory Management
+
+- **Efficient Calculations**: Minimizes object creation during resize operations
+- **Cached Values**: Stores frequently accessed dimensions and ratios
+- **Cleanup**: Properly manages event listeners and temporary objects
 
 ## Usage Tips
 
