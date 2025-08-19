@@ -24,11 +24,13 @@ export class Dashboard {
       width: 0,
       height: 0,
       divRatio: 0,
+      aspectRatio: 0,
       container: null,
       root: null,
       scale: 1,
       zoomSpeed: 0.2,
       transform: { k: 1, x: 0, y: 0 },
+      pixelToSvgRatio: 1.0,
     };
     this.minimap = {
       active: false,
@@ -56,6 +58,8 @@ export class Dashboard {
     this.main.width = div.width;
     this.main.height = div.height;
     this.main.divRatio = this.main.width / this.main.height;
+    this.main.aspectRatio = this.main.divRatio;
+    this.main.pixelToSvgRatio = 1.0; // At 100% zoom, 1 SVG unit = 1 screen pixel
     this.data.settings.divRatio ??= this.main.divRatio;
     this.main.onDragUpdate = this.onDragUpdate;
     this.main.container = this.createContainer(this.main, "dashboard");
@@ -99,7 +103,7 @@ export class Dashboard {
 
     // Get target monitor pixel dimensions
     const targetWidthPx = this.getMinimapTargetWidth(mm.size);
-    const graphAspectRatio = this.main.divRatio || (this.main.width / this.main.height) || 16/9;
+    const graphAspectRatio = this.main.aspectRatio || this.main.divRatio || (this.main.width / this.main.height) || 16/9;
     const targetHeightPx = Math.max(60, Math.round(targetWidthPx / graphAspectRatio));
 
     // Store target dimensions for reference
@@ -109,7 +113,7 @@ export class Dashboard {
     // Calculate the scaling factor to convert monitor pixels to SVG coordinate space
     const svgElement = this.main.svg.node();
     const svgRect = svgElement.getBoundingClientRect();
-    const svgScale = svgRect.width / this.main.width;
+    const svgScale = (svgRect.width && this.main.width) ? (svgRect.width / this.main.width) : 1.0;
 
     // Convert to SVG coordinate space
     const svgCoordWidth = targetWidthPx / svgScale;
@@ -285,17 +289,6 @@ export class Dashboard {
     this.minimap.svg = this.minimap.content.append('svg').attr('class', 'minimap-svg');
     this.minimap.container = this.minimap.svg.append('g').attr('class', 'minimap');
 
-    // Resolve width from token; height derived from current dashboard aspect
-    const widthFromToken = (token) => {
-      if (typeof token === 'object' && token && typeof token.width === 'number') return token.width;
-      switch (token) {
-        case 's': return 180;
-        case 'l': return 400;
-        case 'm':
-        default: return 240;
-      }
-    };
-    
     // Use unified sizing method for consistent behavior
     this.resizeMinimap();
 
@@ -812,47 +805,37 @@ export class Dashboard {
   applyResizePreserveZoom() {
     const rect = this.main.svg.node().getBoundingClientRect();
 
-    // Capture previous canvas and transform
-    const prevWidth = this.main.width;
-    const prevHeight = this.main.height;
+    // Previous canvas and transform
+    const prevWidth = this.main.width || 1;
+    const prevHeight = this.main.height || 1;
     const prevK = this.main.transform.k;
     const prevX = this.main.transform.x;
     const prevY = this.main.transform.y;
 
-    // Compute current world viewport from previous values
-    const worldLeft = (prevX + prevWidth / 2) / -prevK;
-    const worldTop = (prevY + prevHeight / 2) / -prevK;
-    const worldWidth = prevWidth / prevK;
-    const worldHeight = prevHeight / prevK;
-    const worldCenterX = worldLeft + worldWidth / 2;
-    const worldCenterY = worldTop + worldHeight / 2;
+    // Ratios for proportional adaptation
+    const newWidth = rect.width || prevWidth;
+    const newHeight = rect.height || prevHeight;
+    const widthRatio = newWidth / prevWidth;
+    const heightRatio = newHeight / prevHeight;
 
-    // Apply new canvas size
-    const newWidth = rect.width;
-    const newHeight = rect.height;
+    // Update canvas metrics and viewBox
     this.main.width = newWidth;
     this.main.height = newHeight;
     this.main.divRatio = newWidth / newHeight;
+    this.main.aspectRatio = this.main.divRatio;
     this.main.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
 
-    // Preserve previous zoom level (k) and world center; canvas shows more/less world as size changes
+    // Preserve zoom level and proportionally adapt translation
     const newK = prevK;
-    const newWorldWidth = newWidth / newK;
-    const newWorldHeight = newHeight / newK;
-    const newLeft = worldCenterX - newWorldWidth / 2;
-    const newTop = worldCenterY - newWorldHeight / 2;
-    const newTransform = d3.zoomIdentity
-      .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
-      .scale(newK);
+    const newX = prevX * widthRatio;
+    const newY = prevY * heightRatio;
+    const newTransform = d3.zoomIdentity.translate(newX, newY).scale(newK);
 
-    // Update minimap dimensions and scale
-    if (this.minimap.active) {
-      // Use unified sizing method for consistent behavior
-      this.resizeMinimap();
-    }
+    // Minimap keeps constant screen size; recalc via unified sizing
+    if (this.minimap.active) this.resizeMinimap();
 
-    // Apply transform to keep relative zoom consistent
-    this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
+    // Apply transform and propagate to zoom behaviors
+    this.main.transform = { k: newK, x: newX, y: newY };
     this.main.container.attr('transform', newTransform);
     this.main.svg.call(this.main.zoom.transform, newTransform);
 
@@ -1126,47 +1109,12 @@ export class Dashboard {
   }
 
   zoomToRoot() {
-    // console.log("zoomToRoot", this.data.settings.zoomToRoot, this);
-
-    // set the viewport to the root node
-    var width = this.main.root.data.width;
-    var height = this.main.root.data.height;
-
-    // For single nodes, ensure proper viewport size for good zoom
-    if (this.data.nodes.length === 1) {
-      const minViewportSize = 300; // Larger minimum for better zoom
-      width = Math.max(width, minViewportSize);
-      height = Math.max(height, minViewportSize);
-    }
-
-    // keep aspect ratio
-    if (width / height > this.main.divRatio) {
-      height = width / this.main.divRatio;
-    } else {
-      width = height * this.main.divRatio;
-    }
-
-    this.main.width = width;
-    this.main.height = height;
-
-    this.main.svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
-    this.main.transform.k = 1;
-    this.main.transform.x = 0;
-    this.main.transform.y = 0;
-    const transform = d3.zoomIdentity
-      .translate(this.main.transform.x, this.main.transform.y)
-      .scale(this.main.transform.k);
-    this.main.container.attr("transform", transform);
-
-    if (this.minimap.svg) {
-      // this.initializeMinimap();
-      this.minimap.svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
-      this.updateMinimap();
-      this.updateMinimapEye(-width / 2, -height / 2, width, height);
-    }
-
-    // Store the current zoom level at svg level, for the next event
-    this.main.svg.call(this.main.zoom.transform, transform);
+    // Fit the full graph content inside the current viewport using transform only
+    if (!this.main.root) return;
+    const allNodes = this.main.root.getAllNodes(false);
+    if (!allNodes || allNodes.length === 0) return;
+    const bbox = computeBoundingBox(this, allNodes);
+    this.zoomToBoundingBox(bbox);
   }
 
   zoomReset() {
@@ -1594,15 +1542,10 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
     if (!mm || !dash.minimap?.active) return;
 
     const recalcSize = () => {
-      const token = mm.size;
-      const width = (typeof token === 'object' && token && typeof token.width === 'number')
-        ? token.width
-        : (token === 's' ? 180 : token === 'l' ? 400 : 240);
-      const ratio = dash.main.divRatio || (dash.main.width / dash.main.height) || 16/9;
-      const height = Math.max(60, Math.round(width / ratio));
-      dash.minimap.width = width;
-      dash.minimap.height = height;
-      if (dash.minimap.svg) dash.minimap.svg.attr('width', width).attr('height', height);
+      // Use unified sizing so visual size is in monitor pixels
+      if (dash.minimap?.svg) {
+        dash.resizeMinimap();
+      }
     };
 
     if (propertyPath.endsWith('minimap.size') || propertyPath.includes('.minimap.size')) {
