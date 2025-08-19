@@ -49,6 +49,8 @@ export class Dashboard {
     };
 
     this.isMainAndMinimapSyncing = false; // isSyncing prevents re-entrant calls and ensures the synchronization code runs only once per zoom action.
+    this._displayChangeScheduled = false; // debounce flag for display changes
+    this.hasPerformedInitialZoomToRoot = false; // ensure zoomToRoot runs only once after init
   }
 
   // Get bounding box of all graph content in dashboard coordinates
@@ -110,8 +112,10 @@ export class Dashboard {
       this.onMainDisplayChange();
     };
 
-    if (this.data.settings.zoomToRoot)
+    if (this.data.settings.zoomToRoot) {
       this.zoomToRoot();
+      this.hasPerformedInitialZoomToRoot = true;
+    }
     console.log("dashboard - initialize - finished", this);
 
     // Initialize fullscreen toggle button after setup
@@ -1061,22 +1065,31 @@ export class Dashboard {
   }
 
   onMainDisplayChange() {
-    // console.log("#######################################");
-    // console.log("##### onMainDisplayChange", this);
-    // console.log("##### syncing=", this.isMainAndMinimapSyncing);
+    if (this._displayChangeScheduled) return;
+    this._displayChangeScheduled = true;
 
-    if (this.minimap.svg) {
-      if (this.isMainAndMinimapSyncing) return;
-      this.isMainAndMinimapSyncing = true;
-      // Update the minimap
-      this.updateMinimap();
-      this.isMainAndMinimapSyncing = false;
-    }
+    requestAnimationFrame(() => {
+      // console.log("#######################################");
+      // console.log("##### onMainDisplayChange", this);
+      // console.log("##### syncing=", this.isMainAndMinimapSyncing);
 
-    if (this.data.settings.zoomToRoot)
-      this.zoomToRoot();
+      if (this.minimap.svg) {
+        if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
+        this.isMainAndMinimapSyncing = true;
+        // Update the minimap
+        this.updateMinimap();
+        this.isMainAndMinimapSyncing = false;
+      }
 
-    this.positionEmbeddedMinimap();
+      // Only perform initial zoom once after initialization
+      if (this.data.settings.zoomToRoot && !this.hasPerformedInitialZoomToRoot) {
+        this.zoomToRoot();
+        this.hasPerformedInitialZoomToRoot = true;
+      }
+
+      this.positionEmbeddedMinimap();
+      this._displayChangeScheduled = false;
+    });
   }
 
   updateMinimapVisibilityByZoom() {
@@ -1472,7 +1485,9 @@ export function computeBoundingBox(dashboard, nodes) {
 
     // updateBounds(x, y, width, height);
     // console.log("computeBoundingBox node:", node.id, x, y, width, height, x -(width/2));
-    console.log(`                   bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
+    if (dashboard?.data?.settings?.debugMode) {
+      console.log(`computeBoundingBox bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
+    }
 
       
   });
