@@ -93,8 +93,7 @@ export const demoData = {
     ],
     
     // Edge definitions
-    edges: [
-    ]
+    edges: []
 };
 
 // Additional demo data exports for testing scenarios

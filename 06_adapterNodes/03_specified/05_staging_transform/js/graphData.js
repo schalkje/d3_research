@@ -85,16 +85,7 @@ export const demoData = {
     ],
     
     // Edge definitions (direct staging to transform flow)
-    edges: [
-        {
-            id: "edge-staging-transform-stream",
-            source: "staging-node-st",
-            target: "transform-node-st",
-            type: "dataflow",
-            flow: "streaming",
-            latency: "real-time"
-        }
-    ]
+    edges: []
 };
 
 // Additional demo data exports for testing scenarios

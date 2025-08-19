@@ -85,16 +85,7 @@ export const demoData = {
     ],
     
     // Edge definitions (direct staging to archive flow)
-    edges: [
-        {
-            id: "edge-staging-archive-direct",
-            source: "staging-node-sa",
-            target: "archive-node-sa",
-            type: "dataflow",
-            flow: "direct",
-            throughput: "high"
-        }
-    ]
+    edges: []
 };
 
 // Additional demo data exports for testing scenarios

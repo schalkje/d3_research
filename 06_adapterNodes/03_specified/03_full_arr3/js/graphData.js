@@ -95,22 +95,7 @@ export const demoData = {
     ],
     
     // Edge definitions (staging-first fan-out pattern)
-    edges: [
-        {
-            id: "edge-staging-archive-3",
-            source: "staging-node-3",
-            target: "archive-node-3",
-            type: "dataflow",
-            priority: "high"
-        },
-        {
-            id: "edge-staging-transform-3", 
-            source: "staging-node-3",
-            target: "transform-node-3",
-            type: "dataflow",
-            priority: "high"
-        }
-    ]
+    edges: []
 };
 
 // Additional demo data exports for testing scenarios

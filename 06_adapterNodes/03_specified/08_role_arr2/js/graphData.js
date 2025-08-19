@@ -6,7 +6,18 @@ export const demoData = {
         description: "Role display with arrangement 2 (transform-focused)",
         version: "1.0.0"
     },
-    settings: { demoMode: true, enableTesting: true },
+    settings: {
+        showCenterMark: false,
+        showGrid: false,
+        showGroupLabels: true,
+        showGroupTitles: true,
+        showGhostlines: false,
+        curved: false,
+        showConnectionPoints: false,
+        demoMode: true,
+        enableTesting: true,
+        debugMode: false
+    },
     nodes: [{
         id: "adapter-explicit-role-arr2",
         label: "Transform-Focused Roles",
@@ -14,13 +25,10 @@ export const demoData = {
         layout: { mode: "full", arrangement: 2, displayMode: "role" },
         status: "active",
         children: [
-            { id: "staging-role-2", label: "Staging", role: "staging", state: "Active" },
-            { id: "archive-role-2", label: "Archive", role: "archive", state: "Ready" },
-            { id: "transform-role-2", label: "Transform", role: "transform", state: "Processing" }
+            { id: "staging-role-2", label: "staging", type: "Node", role: "staging", category: "staging", width: 80, height: 44, state: "Active" },
+            { id: "archive-role-2", label: "archive", type: "Node", role: "archive", category: "archive", width: 80, height: 44, state: "Ready" },
+            { id: "transform-role-2", label: "transform", type: "Node", role: "transform", category: "transform", width: 80, height: 44, state: "Processing" }
         ]
     }],
-    edges: [
-        { id: "edge-role-2-st", source: "staging-role-2", target: "transform-role-2", type: "dataflow" },
-        { id: "edge-role-2-ta", source: "transform-role-2", target: "archive-role-2", type: "dataflow" }
-    ]
+    edges: []
 };

@@ -100,20 +100,7 @@ export const demoData = {
     ],
     
     // Edge definitions
-    edges: [
-        {
-            id: "edge-staging-archive",
-            source: "staging-node-1",
-            target: "archive-node-1",
-            type: "dataflow"
-        },
-        {
-            id: "edge-staging-transform", 
-            source: "staging-node-1",
-            target: "transform-node-1",
-            type: "dataflow"
-        }
-    ]
+    edges: []
 };
 
 // Additional demo data exports for testing scenarios

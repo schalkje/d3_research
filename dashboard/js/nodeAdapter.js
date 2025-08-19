@@ -111,7 +111,7 @@ export default class AdapterNode extends BaseContainerNode {
           label: isRoleMode ? role : `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
           role: role,
           category: role,
-          type: "node", // rectangular node type
+          type: "Node", // rectangular node type
           width: isRoleMode ? 80 : 150,
           height: 44,
         };
@@ -310,7 +310,7 @@ export default class AdapterNode extends BaseContainerNode {
           label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
           role: role,
           category: role,
-          type: "node", // Use "node" type for rectangular nodes
+          type: "Node", // Use "Node" type for rectangular nodes
           width: this.data.layout.displayMode === DisplayMode.ROLE ? 80 : 150,
           height: 44,
         };

@@ -289,6 +289,9 @@ const scenarios = [
   { name: 'Role - Arrangement 1', path: '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html', expectedEdges: 2 },
   { name: 'Role - Arrangement 2', path: '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html', expectedEdges: 2 },
   { name: 'Role - Arrangement 3', path: '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html', expectedEdges: 2 },
+  { name: 'Explicit Role - Arrangement 1', path: '/06_adapterNodes/03_specified/07_role_arr1/07_role_arr1.html', expectedEdges: 2, expectedRoles: ['staging', 'archive', 'transform'] },
+  { name: 'Explicit Role - Arrangement 2', path: '/06_adapterNodes/03_specified/08_role_arr2/08_role_arr2.html', expectedEdges: 2, expectedRoles: ['staging', 'archive', 'transform'] },
+  { name: 'Explicit Role - Arrangement 3', path: '/06_adapterNodes/03_specified/09_role_arr3/09_role_arr3.html', expectedEdges: 2, expectedRoles: ['staging', 'archive', 'transform'] },
 ];
 
 test.describe('Adapter Nodes - Clean Suite', () => {
@@ -392,8 +395,48 @@ test.describe('Adapter Nodes - Clean Suite', () => {
         expect(edges.count).toBe(s.expectedEdges);
         if (edges.count > 0) expect(edges.hasPaths).toBe(true);
       });
-  });
+    });
   }
+
+  // Additional test specifically for role mode text rendering
+  test.describe('Role Mode Text Rendering', () => {
+    const roleModePages = [
+      '/06_adapterNodes/01_single/08_role_arr1/08_role_arr1.html',
+      '/06_adapterNodes/01_single/09_role_arr2/09_role_arr2.html', 
+      '/06_adapterNodes/01_single/10_role_arr3/10_role_arr3.html',
+      '/06_adapterNodes/03_specified/07_role_arr1/07_role_arr1.html',
+      '/06_adapterNodes/03_specified/08_role_arr2/08_role_arr2.html',
+      '/06_adapterNodes/03_specified/09_role_arr3/09_role_arr3.html'
+    ];
+
+    for (const pagePath of roleModePages) {
+      test(`should show full role labels without truncation on ${pagePath}`, async ({ page }) => {
+        await gotoAndReady(page, pagePath);
+        await waitForStableAdapter(page);
+
+        // Check that role labels are displayed in full
+        const roleLabels = await page.evaluate(() => {
+          const nodes = Array.from(document.querySelectorAll('g.Node text.label'));
+          return nodes.map(text => text.textContent);
+        });
+
+        // Verify role labels are not truncated (no ellipsis)
+        for (const label of roleLabels) {
+          expect(label).not.toContain('...');
+        }
+        
+        // Verify we don't have truncated versions (like "sta..." instead of "staging")
+        expect(roleLabels).not.toContain('sta...');
+        expect(roleLabels).not.toContain('arc...');
+        expect(roleLabels).not.toContain('tra...');
+
+        // Verify we have the expected full role names
+        expect(roleLabels).toContain('staging');
+        expect(roleLabels).toContain('archive');
+        expect(roleLabels).toContain('transform');
+      });
+    }
+  });
 });
 
 

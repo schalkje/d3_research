@@ -40,46 +40,37 @@ export const demoData = {
             children: [
                 {
                     id: "staging-role-1",
-                    label: "Staging",
-                    description: "Data staging role",
+                    label: "staging",
                     type: "Node",
-                    datasetId: 701,
-                    category: "Staging",
-                    layout: null,
-                    children: [],
-                    state: "Active",
-                    role: "staging"
+                    role: "staging",
+                    category: "staging",
+                    width: 80,
+                    height: 44,
+                    state: "Active"
                 },
                 {
                     id: "archive-role-1", 
-                    label: "Archive",
-                    description: "Data archival role",
-                    type: "Node", 
-                    datasetId: 702,
-                    category: "Archive",
-                    layout: null,
-                    children: [],
-                    state: "Ready",
-                    role: "archive"
+                    label: "archive",
+                    type: "Node",
+                    role: "archive",
+                    category: "archive",
+                    width: 80,
+                    height: 44,
+                    state: "Ready"
                 },
                 {
                     id: "transform-role-1",
-                    label: "Transform",
-                    description: "Data transformation role",
+                    label: "transform",
                     type: "Node",
-                    datasetId: 703, 
-                    category: "Transform",
-                    layout: null,
-                    children: [],
-                    state: "Processing",
-                    role: "transform"
+                    role: "transform",
+                    category: "transform",
+                    width: 80,
+                    height: 44,
+                    state: "Processing"
                 }
             ]
         }
     ],
     
-    edges: [
-        { id: "edge-role-1-sa", source: "staging-role-1", target: "archive-role-1", type: "dataflow" },
-        { id: "edge-role-1-st", source: "staging-role-1", target: "transform-role-1", type: "dataflow" }
-    ]
+    edges: []
 };
