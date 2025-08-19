@@ -66,9 +66,7 @@
         <button id="zoom-node">Zoom Node</button>
     </div>
 
-    <div id="minimap-container">
-        <svg id="minimap"></svg>
-    </div>
+
 
     <script>
          // Add an event listener to update the horizontal variable when the checkbox changes
@@ -77,7 +75,7 @@
             horizontal = this.checked;
 
             const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-            dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
+            dashboard = FD.Layout.initialize(dag, layout, "#graph");
         });
 
         let horizontal = checkbox.checked; // Default to horizontal layout
@@ -90,7 +88,7 @@
             console.log("isEdgeCurved", isEdgeCurved);
 
             const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-            dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
+            dashboard = FD.Layout.initialize(dag, layout, "#graph");
         });
 
         let selectedFile = jsonFiles[1]; // Default to the first JSON file
@@ -105,7 +103,7 @@
             if (result) {
                 dag = result;
                     const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
-                    dashboard = FD.Layout.initialize(dag, layout, "#graph", "#minimap");
+                    dashboard = FD.Layout.initialize(dag, layout, "#graph");
                 }
             })
         });
@@ -114,7 +112,7 @@
         selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph', '#minimap');
+                dashboard.initialize('#graph');
             });
     </script>
 </body>

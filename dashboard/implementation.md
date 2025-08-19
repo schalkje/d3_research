@@ -67,8 +67,7 @@ import { createAndInitDashboard } from './js/dashboard.js';
 // Initialize dashboard with data and DOM selectors
 const dashboard = createAndInitDashboard(
   dashboardData, 
-  '#main-container', 
-  '#minimap-container'
+  '#main-container'
 );
 ```
 

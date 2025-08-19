@@ -8,11 +8,10 @@ See also: [Minimap](minimap.md)
 
 ## Getting Started
 
-1) Add containers to your page:
+1) Add container to your page:
 
 ```html
 <div id="graph"></div>
-<div id="minimap-container"><svg id="minimap"></svg></div>
 ```
 
 2) Initialize the dashboard:
@@ -20,8 +19,8 @@ See also: [Minimap](minimap.md)
 ```javascript
 import { createAndInitDashboard } from "../js/dashboard.js";
 
-// Pass a minimap selector to enable the minimap; omit it to disable
-const dashboard = createAndInitDashboard(data, "#graph", "#minimap");
+// Simple initialization with just the main graph container
+const dashboard = createAndInitDashboard(data, "#graph");
 ```
 
 If you are using the bundled build, initialize according to your bundling setup (examples in `flowdash-bundle.html`).
@@ -140,8 +139,8 @@ Styling hooks:
 
 ## Basic API (high level)
 
-- `createAndInitDashboard(data, mainDivSelector, minimapDivSelector?)` → Dashboard instance
-- `dashboard.initialize(mainDivSelector, minimapDivSelector?)`
+- `createAndInitDashboard(data, mainDivSelector)` → Dashboard instance
+- `dashboard.initialize(mainDivSelector)`
 - `dashboard.zoomToRoot()` / `dashboard.zoomToNode(node)` / `dashboard.zoomToBoundingBox(bbox)`
 - `dashboard.getSelectedNodes()` / `dashboard.deselectAll()`
 - `dashboard.updateNodeStatus(nodeId, status)` / `dashboard.updateDatasetStatus(datasetId, status)`
@@ -156,9 +155,9 @@ Common settings in your data/config influence behavior:
 
 ## Usage Tips
 
-- Provide stable sizes for `#graph` and `#minimap` containers to avoid resize thrash.
-- Keep minimap enabled for large graphs to improve navigation.
-- Style the minimap via theme CSS or custom overrides (see [Minimap](minimap.md)).
+- Provide stable sizes for the `#graph` container to avoid resize thrash.
+- The minimap is optional and can be configured via settings if needed for large graphs.
+- All styling is handled through the theme system under `dashboard/themes/*`.
 
 ## Navigation
 

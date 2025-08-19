@@ -91,6 +91,7 @@
                     <label style="margin-left:0"><input type="checkbox" id="minimapScaleVisible" checked> Show scale</label>
                 </div>
             </div>
+
             <div class="settings-group">
                 <label class="settings-title">Edges</label>
                 <div class="settings-inline">
@@ -356,7 +357,7 @@
                 mm.scaleIndicator = mm.scaleIndicator || {};
                 mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph', '#minimap');
+                dashboard.initialize('#graph');
             });
         }
 
@@ -431,7 +432,7 @@
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
 
                 dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph', '#minimap');
+                dashboard.initialize('#graph');
             });
         }
 
