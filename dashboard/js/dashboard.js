@@ -31,6 +31,8 @@ export class Dashboard {
       zoomSpeed: 0.2,
       transform: { k: 1, x: 0, y: 0 },
       pixelToSvgRatio: 1.0,
+      fitK: 1.0,
+      fitTransform: null,
     };
     this.minimap = {
       active: false,
@@ -47,6 +49,39 @@ export class Dashboard {
     };
 
     this.isMainAndMinimapSyncing = false; // isSyncing prevents re-entrant calls and ensures the synchronization code runs only once per zoom action.
+  }
+
+  // Get bounding box of all graph content in dashboard coordinates
+  getContentBBox() {
+    if (!this.main?.root) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
+    const nodes = this.main.root.getAllNodes(false);
+    if (!nodes || nodes.length === 0) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
+    return computeBoundingBox(this, nodes);
+  }
+
+  // Compute the fit transform for a given bounding box without mutating state
+  computeFitForBoundingBox(boundingBox) {
+    const svgWidth = this.main.width || 1;
+    const svgHeight = this.main.height || 1;
+    const scaleX = svgWidth / boundingBox.width;
+    const scaleY = svgHeight / boundingBox.height;
+    const k = Math.min(scaleX, scaleY);
+    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
+    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
+    const transform = d3.zoomIdentity.translate(x, y).scale(k);
+    return { k, x, y, transform };
+  }
+
+  // Establish or refresh the "100%" baseline fit-to-container
+  recomputeBaselineFit() {
+    if (!this.main?.root) return;
+    const nodes = this.main.root.getAllNodes(false);
+    if (!nodes || nodes.length === 0) return;
+    const bbox = computeBoundingBox(this, nodes);
+    const fit = this.computeFitForBoundingBox(bbox);
+    this.main.fitK = fit.k || 1.0;
+    this.main.fitTransform = fit.transform;
+    this.updateMinimapScaleIndicator?.();
   }
 
    initialize(mainDivSelector, minimapDivSelector = null) {
@@ -124,9 +159,10 @@ export class Dashboard {
     this.minimap.height = svgCoordHeight;
     this.minimap.svg.attr('width', svgCoordWidth).attr('height', svgCoordHeight);
 
-    // Update minimap content scale and viewBox
-    this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
-    this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+    // Update minimap content scale using content bounds and set viewBox to content bbox
+    const contentBBox = this.getContentBBox();
+    this.minimap.scale = Math.min(this.minimap.width / contentBBox.width, this.minimap.height / contentBBox.height);
+    this.updateMinimapViewboxAndMasks(contentBBox);
 
     // Update minimap content and sync with current zoom
     this.updateMinimap();
@@ -486,12 +522,14 @@ export class Dashboard {
     const mm = this.data.settings.minimap;
     if (!this.minimap.scaleText || mm.scaleIndicator?.visible === false) return;
     if (mm.scaleIndicator?.type === 'percent') {
-      const pct = Math.round((this.main.transform.k || 1) * 100);
+      const baseline = this.main.fitK || 1;
+      const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
       const label = `${pct}%`;
       this.minimap.scaleText.text(label);
     } else {
       // Placeholder for bar type if needed later
-      const pct = Math.round((this.main.transform.k || 1) * 100);
+      const baseline = this.main.fitK || 1;
+      const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
       this.minimap.scaleText.text(`${pct}%`);
     }
   }
@@ -592,14 +630,12 @@ export class Dashboard {
     this.minimap.svg.call(zoom);
     dashboard.minimap.zoom = zoom;
 
-    // comput the scale of the minimap compared to the main view
-    this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
+    // compute the scale of the minimap compared to the content bounds
+    const contentBBox = this.getContentBBox();
+    this.minimap.scale = Math.min(this.minimap.width / contentBBox.width, this.minimap.height / contentBBox.height);
 
-    // update zoom
-    this.minimap.svg.attr(
-      "viewBox",
-      `${-this.main.width / 2} ${-this.main.height / 2} ${this.main.width} ${this.main.height}`
-    );
+    // set minimap viewBox to content bounds so there's no large whitespace
+    this.updateMinimapViewboxAndMasks(contentBBox);
 
     this.minimap.eye = {
       x: -this.main.width / 2,
@@ -630,18 +666,18 @@ export class Dashboard {
     this.minimap.svg
       .insert("rect", ":first-child") // Insert as the first child
       .attr("class", `background`)
-      .attr("width", this.main.width)
-      .attr("height", this.main.height)
-      .attr("x", -this.main.width / 2)
-      .attr("y", -this.main.height / 2);
+      .attr("width", contentBBox.width)
+      .attr("height", contentBBox.height)
+      .attr("x", contentBBox.x)
+      .attr("y", contentBBox.y);
 
     this.minimap.svg
       .append("rect")
       .attr("class", `eye`)
-      .attr("width", this.main.width)
-      .attr("height", this.main.height)
-      .attr("x", -this.main.width / 2)
-      .attr("y", -this.main.height / 2)
+      .attr("width", contentBBox.width)
+      .attr("height", contentBBox.height)
+      .attr("x", contentBBox.x)
+      .attr("y", contentBBox.y)
       .attr("mask", "url(#fade-mask)");
 
     this.minimap.svg
@@ -671,6 +707,9 @@ export class Dashboard {
       this.minimap.container = d3.select(clone);
       // Neutralize the main zoom/pan on the minimap content so it always shows the full scene
       this.minimap.container.attr("transform", null);
+
+      // Ensure minimap viewBox and mask align to the content bounds
+      this.updateMinimapViewboxAndMasks(this.getContentBBox());
     });
   }
 
@@ -690,6 +729,29 @@ export class Dashboard {
 
     // If you are displaying a visible outline of the pupil, update it here as well
     this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+  }
+
+  // Set minimap viewBox and mask geometry to match content bounds
+  updateMinimapViewboxAndMasks(contentBBox) {
+    if (!this.minimap?.svg) return;
+    // Update the minimap viewBox to content bounds to avoid whitespace
+    this.minimap.svg.attr(
+      'viewBox',
+      `${contentBBox.x} ${contentBBox.y} ${contentBBox.width} ${contentBBox.height}`
+    );
+    // Update mask and background sizes if the defs exist
+    const bg = this.minimap.svg.select('rect.background');
+    if (!bg.empty()) {
+      bg.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
+    }
+    const eye = this.minimap.svg.select('rect.eye');
+    if (!eye.empty()) {
+      eye.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
+    }
+    const eyeball = this.minimap.svg.select('#eyeball');
+    if (!eyeball.empty()) {
+      eyeball.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
+    }
   }
 
   initializeFullscreenToggle() {
@@ -754,6 +816,9 @@ export class Dashboard {
       this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
       this.main.container.attr('transform', newTransform);
       this.main.svg.call(this.main.zoom.transform, newTransform);
+
+      // Recompute the fit (100%) baseline for the new viewport
+      this.recomputeBaselineFit();
 
       // Update minimap clone and eye position
       if (this.minimap.active) {
@@ -838,6 +903,9 @@ export class Dashboard {
     this.main.transform = { k: newK, x: newX, y: newY };
     this.main.container.attr('transform', newTransform);
     this.main.svg.call(this.main.zoom.transform, newTransform);
+
+    // Refresh 100% baseline for new dimensions
+    this.recomputeBaselineFit();
 
     if (this.minimap.active) {
       this.updateMinimap();
@@ -1053,7 +1121,10 @@ export class Dashboard {
     const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
     this.main.container.attr("transform", transform );
     
-    // Update the viewport in the minimap
+    // Update the viewport in the minimap. The update function expects main.width/height, but
+    // our minimap viewBox is now the content bounds. The math in updateViewport is correct if
+    // we interpret k and the main canvas size; the resulting world rect is still in main coords,
+    // which align with content coords. Then we update masks which are in content coords.
     updateViewport(this, zoomEvent.transform);
 
     // Update scale indicator
@@ -1114,32 +1185,29 @@ export class Dashboard {
     const allNodes = this.main.root.getAllNodes(false);
     if (!allNodes || allNodes.length === 0) return;
     const bbox = computeBoundingBox(this, allNodes);
+    // Establish baseline 100% for this content
+    const fit = this.computeFitForBoundingBox(bbox);
+    this.main.fitK = fit.k || 1.0;
+    this.main.fitTransform = fit.transform;
+    this.updateMinimapScaleIndicator?.();
+    // Then apply the fit transform
     this.zoomToBoundingBox(bbox);
   }
 
   zoomReset() {
-    // console.log("zoomReset", this);
-    // canvas.svg.selectAll(".boundingBox").remove();
+    // Reset to the 100% baseline (fit-to-container)
+    const target = this.main.fitTransform || d3.zoomIdentity;
     this.main.svg
       .transition()
       .duration(750)
-      .call(
-        this.main.zoom.transform,
-        d3.zoomIdentity,
-        d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
-      );
+      .call(this.main.zoom.transform, target);
     this.main.scale = 1;
-
 
     if (this.minimap.active)
       this.minimap.svg
         .transition()
         .duration(750)
-        .call(
-          this.minimap.zoom.transform,
-          d3.zoomIdentity,
-          d3.zoomTransform(this.main.svg.node()).invert([this.main.width / 2, this.main.height / 2])
-        );
+        .call(this.minimap.zoom.transform, target);
 
     this.deselectAll();
   }

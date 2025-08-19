@@ -70,6 +70,7 @@ The minimap provides synchronized overview and navigation:
 - **Interactive navigation**: Click or drag in minimap to navigate main view
 - **Viewport indicator**: Shows current visible area as overlay rectangle
 - **Consistent sizing**: Maintains fixed monitor pixel dimensions regardless of graph size
+- **At 100%**: Shows the entire dashboard content, scaled to fit the minimap
 
 ## Minimap Sizing System
 
@@ -199,6 +200,12 @@ const baseScale = 1.0;
 this.main.pixelToSvgRatio = baseScale;
 ```
 
+### Definition of 100% (Fit-to-Container)
+
+- **Initial view (100%)**: On initialization, the dashboard computes the graph's bounding box and displays it at the maximum size that fits entirely within the container without any cutoff. Depending on aspect ratio, either the left/right edges touch the container sides or the top/bottom edges touch the container bounds.
+- **Minimap at 100%**: The minimap renders the entire dashboard scene in one view (scaled overview) and mirrors the main view's center/scale.
+- **Post-resize baseline**: When the container size changes, the internal "100%" fit baseline is recomputed for the new dimensions so that returning to 100% fits the entire graph in the resized container precisely.
+
 ## Resize Behavior and Scaling
 
 ### Normal Mode (Default Layout)
@@ -211,6 +218,7 @@ The dashboard handles container resizing while preserving the user's current vie
 - **Center Preservation**: The center point of the user's view stays fixed
 - **Content Stability**: The same dashboard area remains visible during pure size changes
 - **Smooth Adaptation**: Automatically adjusts to new container dimensions
+- **100% Recalculation**: Recomputes the fit-to-container baseline so that returning to 100% (via controls or gestures) fits the entire graph in the resized container
 
 #### Aspect Ratio Changes
 
