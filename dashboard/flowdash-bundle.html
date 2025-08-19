@@ -40,7 +40,7 @@
     <select id="fileSelect"></select>
     <script>
         // Simulating an array of JSON filenames from the data folder
-        const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7a.json", "dwh-7b.json", "dwh-7.json", "dwh-8.json"];
+        const jsonFiles = ["dwh-1.json", "dwh-2.json", "dwh-3.json", "dwh-4.json", "dwh-5.json", "dwh-6.json", "dwh-7.json", "dwh-8.json"];
 
         // Populate the dropdown menu with the JSON filenames
         const fileSelect = document.getElementById("fileSelect");
@@ -56,6 +56,10 @@
 
     <div id="graph-container">
         <svg id="graph"></svg>
+        <div id="flowdash-loading" class="flowdash-loading" role="status" aria-live="polite">
+            <span class="flowdash-loading__text">Loading</span>
+            <span class="flowdash-loading__dots" aria-hidden="true"></span>
+        </div>
     </div>
 
     <div id="zoom-controls">
@@ -99,21 +103,53 @@
             selectedFile = this.value;
             console.log("Selected file:", selectedFile);
 
+            showLoading();
             FD.GraphData.fetchFileToDag(selectedFile).then(result => {
             if (result) {
                 dag = result;
                     const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
                     dashboard = FD.Layout.initialize(dag, layout, "#graph");
                 }
-            })
+            }).finally(hideLoading)
         });
 
 
         selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
+            showLoading();
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            });
+            }).finally(hideLoading);
+
+        // Loading overlay helpers
+        (function(){
+            const loadingEl = document.getElementById('flowdash-loading');
+            const loadingDotsEl = loadingEl ? loadingEl.querySelector('.flowdash-loading__dots') : null;
+            let loadingTimer = null;
+            window.showLoading = function(){
+                if(!loadingEl) return;
+                loadingEl.style.display = 'grid';
+                startDots();
+            };
+            window.hideLoading = function(){
+                if(!loadingEl) return;
+                loadingEl.style.display = 'none';
+                stopDots();
+            };
+            function startDots(){
+                if(!loadingDotsEl) return;
+                stopDots();
+                let i = 0;
+                loadingTimer = setInterval(function(){
+                    i = (i + 1) % 4; // 0..3
+                    loadingDotsEl.textContent = '.'.repeat(i);
+                }, 450);
+            }
+            function stopDots(){
+                if(loadingTimer){ clearInterval(loadingTimer); loadingTimer = null; }
+                if(loadingDotsEl) loadingDotsEl.textContent = '';
+            }
+        })();
     </script>
 </body>
 

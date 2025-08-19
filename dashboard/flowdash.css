@@ -20,6 +20,30 @@
   position: relative;
 }
 
+/* Loading overlay (themed) */
+.flowdash-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 33%;
+  min-width: 220px;
+  max-width: 520px;
+  display: none; /* toggled by JS */
+  place-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--fd-surface, rgba(255,255,255,0.92));
+  color: var(--fd-text, #111);
+  border: 1px solid var(--fd-border, rgba(0,0,0,0.2));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  z-index: 10001;
+  text-align: center;
+}
+.flowdash-loading__text { font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.flowdash-loading__dots { font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; letter-spacing: 2px; color: var(--fd-accent, #2f6feb); }
+
   .fullscreen-toggle {
       position: absolute;
       top: 12px;

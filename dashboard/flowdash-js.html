@@ -127,6 +127,10 @@
     <div class="demo-container">
         <div id="graph-container">
             <svg id="graph" class="canvas"></svg>
+            <div id="flowdash-loading" class="flowdash-loading" role="status" aria-live="polite">
+                <span class="flowdash-loading__text">Loading</span>
+                <span class="flowdash-loading__dots" aria-hidden="true"></span>
+            </div>
         </div>
 
     </div>
@@ -144,8 +148,6 @@
             "dwh-5.json",
             "dwh-6.json",
             "foundation-lane.json",
-            "dwh-7a.json",
-            "dwh-7b.json",
             "dwh-7.json",
             "dwh-8.json",
             "theme_1.json",
@@ -344,6 +346,7 @@
         function initializeDashboard() {
             console.log('initializeDashboard');
             selectedFile = document.getElementById('fileSelect').value || jsonFiles[currentFileIndex] || "dwh-1.json";
+            showLoading();
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 // Ensure default expanded behavior regardless of file
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
@@ -358,7 +361,7 @@
                 mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            });
+            }).finally(hideLoading);
         }
 
     // Function to update the graph layout
@@ -384,6 +387,7 @@
         // Function to render or re-render the dashboard
         function renderDashboard() {
             selectedFile = document.getElementById('fileSelect').value;
+            showLoading();
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
                 dashboardData.settings.zoomToRoot = zoomToRoot;
@@ -433,7 +437,35 @@
 
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            });
+            }).finally(hideLoading);
+        }
+
+        // Loading overlay helpers
+        const loadingEl = document.getElementById('flowdash-loading');
+        const loadingDotsEl = loadingEl ? loadingEl.querySelector('.flowdash-loading__dots') : null;
+        let loadingTimer = null;
+        function showLoading(){
+            if(!loadingEl) return;
+            loadingEl.style.display = 'grid';
+            startDots();
+        }
+        function hideLoading(){
+            if(!loadingEl) return;
+            loadingEl.style.display = 'none';
+            stopDots();
+        }
+        function startDots(){
+            if(!loadingDotsEl) return;
+            stopDots();
+            let i = 0;
+            loadingTimer = setInterval(()=>{
+                i = (i + 1) % 4; // 0..3
+                loadingDotsEl.textContent = '.'.repeat(i);
+            }, 450);
+        }
+        function stopDots(){
+            if(loadingTimer){ clearInterval(loadingTimer); loadingTimer = null; }
+            if(loadingDotsEl) loadingDotsEl.textContent = '';
         }
 
             </script>
