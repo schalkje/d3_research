@@ -120,6 +120,14 @@ export default class RectangularNode extends BaseNode {
     const text = this.data.label;
     const layoutMode = this.data.layout?.layoutMode || 'default';
     
+    // Special case: Never truncate text for adapter node children in role mode
+    if (this.parentNode && this.parentNode.data.type === 'adapter' && 
+        this.parentNode.data.layout?.displayMode === 'role') {
+      this.label.text(text);
+      this.removeTooltip();
+      return;
+    }
+    
     // Check if text needs truncation
     const textWidth = getTextWidth(text);
     if (textWidth <= maxWidth) {
@@ -161,7 +169,20 @@ export default class RectangularNode extends BaseNode {
     // Check layout mode
     const layoutMode = this.data.layout?.layoutMode || 'default';
     
-    if (layoutMode === 'auto-size' && label !== undefined) {
+    // Special case: For adapter node children in role mode, always show full text
+    const isAdapterRoleChild = this.parentNode && this.parentNode.data.type === 'adapter' && 
+                               this.parentNode.data.layout?.displayMode === 'role';
+    
+    if (isAdapterRoleChild) {
+      // Never truncate for adapter role mode children
+      this.element
+        .select("rect")
+        .attr("width", this.data.width)
+        .attr("x", -this.data.width / 2);
+      
+      this.label.text(this.data.label);
+      this.removeTooltip();
+    } else if (layoutMode === 'auto-size' && label !== undefined) {
       // For auto-size, recalculate width based on text
       const textWidth = getTextWidth(label);
       const newWidth = Math.max(textWidth + 20, 60); // Minimum width of 60
@@ -272,7 +293,15 @@ export default class RectangularNode extends BaseNode {
     // Check layout mode
     const layoutMode = this.data.layout?.layoutMode || 'default';
     
-    if (layoutMode === 'auto-size') {
+    // Special case: For adapter node children in role mode, always show full text
+    const isAdapterRoleChild = this.parentNode && this.parentNode.data.type === 'adapter' && 
+                               this.parentNode.data.layout?.displayMode === 'role';
+    
+    if (isAdapterRoleChild) {
+      // Never truncate for adapter role mode children
+      this.label.text(this.data.label);
+      this.removeTooltip();
+    } else if (layoutMode === 'auto-size') {
       // For auto-size, recalculate width based on text
       const textWidth = getTextWidth(this.data.label);
       const newWidth = Math.max(textWidth + 20, 60); // Minimum width of 60
@@ -322,7 +351,14 @@ export default class RectangularNode extends BaseNode {
     
     // Check layout mode for text handling
     const layoutMode = this.data.layout?.layoutMode || 'default';
-    if (layoutMode !== 'auto-size') {
+    const isAdapterRoleChild = this.parentNode && this.parentNode.data.type === 'adapter' && 
+                               this.parentNode.data.layout?.displayMode === 'role';
+    
+    if (isAdapterRoleChild) {
+      // Never truncate for adapter role mode children
+      this.label.text(this.data.label);
+      this.removeTooltip();
+    } else if (layoutMode !== 'auto-size') {
       // Only truncate for non-auto-size layouts
       this.truncateTextIfNeeded();
     }
