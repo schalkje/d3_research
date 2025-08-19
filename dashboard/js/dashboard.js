@@ -88,6 +88,65 @@ export class Dashboard {
     }
   }
 
+  /**
+   * Unified minimap sizing method - single source of truth for all minimap sizing
+   */
+  resizeMinimap() {
+    if (!this.minimap.svg) return;
+
+    const mm = this.data.settings.minimap;
+    if (!mm) return;
+
+    // Get target monitor pixel dimensions
+    const targetWidthPx = this.getMinimapTargetWidth(mm.size);
+    const graphAspectRatio = this.main.divRatio || (this.main.width / this.main.height) || 16/9;
+    const targetHeightPx = Math.max(60, Math.round(targetWidthPx / graphAspectRatio));
+
+    // Store target dimensions for reference
+    this.minimap.targetWidthPx = targetWidthPx;
+    this.minimap.targetHeightPx = targetHeightPx;
+
+    // Calculate the scaling factor to convert monitor pixels to SVG coordinate space
+    const svgElement = this.main.svg.node();
+    const svgRect = svgElement.getBoundingClientRect();
+    const svgScale = svgRect.width / this.main.width;
+
+    // Convert to SVG coordinate space
+    const svgCoordWidth = targetWidthPx / svgScale;
+    const svgCoordHeight = targetHeightPx / svgScale;
+
+    // Apply dimensions to minimap SVG
+    this.minimap.width = svgCoordWidth;
+    this.minimap.height = svgCoordHeight;
+    this.minimap.svg.attr('width', svgCoordWidth).attr('height', svgCoordHeight);
+
+    // Update minimap content scale and viewBox
+    this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
+    this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
+
+    // Update minimap content and sync with current zoom
+    this.updateMinimap();
+    const transform = d3.zoomIdentity
+      .translate(this.main.transform.x, this.main.transform.y)
+      .scale(this.main.transform.k);
+    updateViewport(this, transform);
+  }
+
+  /**
+   * Get target width in monitor pixels for minimap size token
+   */
+  getMinimapTargetWidth(sizeToken) {
+    if (typeof sizeToken === 'object' && sizeToken && typeof sizeToken.width === 'number') {
+      return sizeToken.width;
+    }
+    switch (sizeToken) {
+      case 's': return 180;
+      case 'l': return 400;
+      case 'm':
+      default: return 240;
+    }
+  }
+
   initializeEmbeddedMinimap() {
     const mm = this.data.settings.minimap;
     if (!mm || mm.enabled === false) return;
@@ -174,28 +233,19 @@ export class Dashboard {
       const idx = order.indexOf(typeof current === 'object' ? current.token : current) >= 0 ? order.indexOf(typeof current === 'object' ? current.token : current) : order.indexOf('m');
       const nextToken = order[(idx + 1) % order.length];
       this.data.settings.minimap.size = nextToken;
-      // Recalculate pixel size and reposition
-      const width = (nextToken === 's' ? 140 : nextToken === 'l' ? 220 : 180);
-      const height = Math.max(60, Math.round(width / (this.main.divRatio || (this.main.width / this.main.height) || 16/9)));
-      this.minimap.width = width;
-      this.minimap.height = height;
-      this.minimap.svg.attr('width', width).attr('height', height);
-      // Recompute minimap content scale used for drag compensation
-      this.minimap.scale = Math.min(this.minimap.width / this.main.width, this.minimap.height / this.main.height);
-      this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
-      this.updateMinimap();
-      // Sync eye/pupil to current main transform after resize
-      {
-        const transform = d3.zoomIdentity
-          .translate(this.main.transform.x, this.main.transform.y)
-          .scale(this.main.transform.k);
-        updateViewport(this, transform);
-      }
+      // Use unified sizing method for consistent behavior
+      this.resizeMinimap();
       this.positionEmbeddedMinimap();
       updateSizeLabel();
       // Notify via callback if provided
       if (typeof this.data.settings.minimap.onSizeChange === 'function') {
-        try { this.data.settings.minimap.onSizeChange({ size: nextToken, width, height }); } catch {}
+        try { 
+          this.data.settings.minimap.onSizeChange({ 
+            size: nextToken, 
+            width: this.minimap.targetWidthPx, 
+            height: this.minimap.targetHeightPx 
+          }); 
+        } catch {}
       }
     });
     // Traditional pin/unpin icon without square background
@@ -231,7 +281,7 @@ export class Dashboard {
       this.updateMinimapHoverBindings();
     });
 
-    // Minimap svg and inner content group
+    // Create minimap svg and inner content group
     this.minimap.svg = this.minimap.content.append('svg').attr('class', 'minimap-svg');
     this.minimap.container = this.minimap.svg.append('g').attr('class', 'minimap');
 
@@ -239,25 +289,18 @@ export class Dashboard {
     const widthFromToken = (token) => {
       if (typeof token === 'object' && token && typeof token.width === 'number') return token.width;
       switch (token) {
-        case 's': return 140;
-        case 'l': return 220;
+        case 's': return 180;
+        case 'l': return 400;
         case 'm':
-        default: return 180;
+        default: return 240;
       }
     };
-    const recalcPixelSize = () => {
-      const width = widthFromToken(mm.size);
-      const ratio = this.main.divRatio || (this.main.width / this.main.height) || 16/9;
-      const height = Math.max(60, Math.round(width / ratio));
-      this.minimap.width = width;
-      this.minimap.height = height;
-      this.minimap.svg.attr('width', width).attr('height', height);
-    };
-    recalcPixelSize();
+    
+    // Use unified sizing method for consistent behavior
+    this.resizeMinimap();
 
     // Initialize behaviors and content
     this.initializeMinimap();
-    this.updateMinimap();
 
     // Footer bar (controls + scale)
     this.minimap.footer = this.minimap.content.append('g').attr('class', 'minimap-footer');
@@ -708,19 +751,10 @@ export class Dashboard {
         .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
         .scale(newK);
 
-      // Minimap sizing to match new aspect
+      // Minimap sizing with fixed monitor pixel size
       if (this.minimap.active) {
-        const mm = this.data.settings.minimap;
-        if (mm) {
-          const width = (typeof mm.size === 'object' && mm.size && typeof mm.size.width === 'number') ? mm.size.width : (mm.size === 's' ? 140 : mm.size === 'l' ? 220 : 180);
-          const height = Math.max(60, Math.round(width / this.main.divRatio));
-          this.minimap.width = width;
-          this.minimap.height = height;
-          this.minimap.svg.attr('width', width).attr('height', height);
-        }
-        this.minimap.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
-        // Recompute minimap content scale used for drag compensation
-        this.minimap.scale = Math.min(this.minimap.width / newWidth, this.minimap.height / newHeight);
+        // Use unified sizing method for consistent behavior
+        this.resizeMinimap();
       }
 
       // Apply transform to keep relative zoom consistent
@@ -813,16 +847,8 @@ export class Dashboard {
 
     // Update minimap dimensions and scale
     if (this.minimap.active) {
-      const mm = this.data.settings.minimap;
-      if (mm) {
-        const width = (typeof mm.size === 'object' && mm.size && typeof mm.size.width === 'number') ? mm.size.width : (mm.size === 's' ? 140 : mm.size === 'l' ? 220 : 180);
-        const height = Math.max(60, Math.round(width / this.main.divRatio));
-        this.minimap.width = width;
-        this.minimap.height = height;
-        this.minimap.svg.attr('width', width).attr('height', height);
-      }
-      this.minimap.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
-      this.minimap.scale = Math.min(this.minimap.width / newWidth, this.minimap.height / newHeight);
+      // Use unified sizing method for consistent behavior
+      this.resizeMinimap();
     }
 
     // Apply transform to keep relative zoom consistent
@@ -1571,7 +1597,7 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
       const token = mm.size;
       const width = (typeof token === 'object' && token && typeof token.width === 'number')
         ? token.width
-        : (token === 's' ? 140 : token === 'l' ? 220 : 180);
+        : (token === 's' ? 180 : token === 'l' ? 400 : 240);
       const ratio = dash.main.divRatio || (dash.main.width / dash.main.height) || 16/9;
       const height = Math.max(60, Math.round(width / ratio));
       dash.minimap.width = width;

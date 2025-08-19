@@ -44,17 +44,93 @@ If you are using the bundled build, initialize according to your bundling setup 
 - **Theme Support**: Works with all themes under `dashboard/themes/*`.
 - **Performance**: Minimap updates and heavy operations use `requestAnimationFrame` to stay responsive.
 
+## Zoom and Pan System
+
+The dashboard provides a comprehensive zoom and pan system with consistent behavior across all scenarios.
+
+### Main View Zoom
+
+- **Mouse wheel**: Zoom in/out at cursor position
+- **Drag**: Pan the view when not zooming
+- **Zoom extent**: Configurable scale limits (default: 0.1x to 40x)
+- **Smooth transitions**: All programmatic zoom operations use smooth animations
+
+### Zoom Controls
+
+- `zoomToRoot()` - Fits the entire diagram in view
+- `zoomToNode(node)` - Centers and fits a specific node
+- `zoomToBoundingBox(bbox)` - Fits an arbitrary rectangular region
+- `zoomIn()` / `zoomOut()` - Step zoom at current center
+- `zoomReset()` - Returns to default zoom level
+
+### Minimap Integration
+
+The minimap provides synchronized overview and navigation:
+
+- **Real-time sync**: Automatically reflects main view zoom and pan
+- **Interactive navigation**: Click or drag in minimap to navigate main view
+- **Viewport indicator**: Shows current visible area as overlay rectangle
+- **Consistent sizing**: Maintains fixed monitor pixel dimensions regardless of graph size
+
+## Minimap Sizing System
+
+### Monitor Pixel Consistency
+
+The minimap uses a unified sizing system that ensures consistent visual size across different graphs and browser states:
+
+- **Target sizes**: Small (180px), Medium (240px), Large (400px) width
+- **Aspect ratio**: Automatically calculated from main graph proportions
+- **Scaling compensation**: Accounts for SVG coordinate space vs monitor pixels
+- **Resize stability**: Maintains consistent size during browser resize, fullscreen toggle, and zoom operations
+
+### Size Calculation
+
+```javascript
+// Unified sizing method ensures consistency
+resizeMinimap() {
+  // 1. Get target monitor pixel dimensions
+  const targetWidthPx = getMinimapTargetWidth(sizeToken);
+  const targetHeightPx = Math.round(targetWidthPx / graphAspectRatio);
+  
+  // 2. Calculate SVG scaling factor
+  const svgScale = svgRect.width / this.main.width;
+  
+  // 3. Convert to SVG coordinate space
+  const svgCoordWidth = targetWidthPx / svgScale;
+  const svgCoordHeight = targetHeightPx / svgScale;
+  
+  // 4. Apply dimensions and update content
+  this.minimap.svg.attr('width', svgCoordWidth).attr('height', svgCoordHeight);
+}
+```
+
+### Size Tokens
+
+- `'s'` or `{width: 180}` → 180px width
+- `'m'` or `{width: 240}` → 240px width (default)
+- `'l'` or `{width: 400}` → 400px width
+- Custom: `{width: 200}` → 200px width
+
 ## Maximize/Restore (Floating Button)
 
 - A floating button is always visible (top-right of the window) to toggle the dashboard between normal and maximized states.
 - **Maximize**: The main SVG fills the entire viewport and automatically resizes on browser resize.
 - **Restore**: Returns to the normal layout inside the page.
 
+### Resize Handling
+
+The system handles all resize scenarios consistently:
+
+1. **Browser window resize**: Preserves zoom level and center point while adapting to new dimensions
+2. **Fullscreen toggle**: Maintains zoom state while filling/restoring viewport
+3. **Minimap resize**: Uses unified sizing method for consistent behavior
+
 How it works:
 
 - A fixed-position button is injected by the Dashboard on initialization.
 - Clicking toggles a fullscreen class on the main SVG and updates the internal viewport to match the new size.
 - Window `resize` is handled to keep the viewBox and minimap in sync while maximized.
+- All resize operations use the unified `resizeMinimap()` method for consistency.
 
 Styling hooks:
 
