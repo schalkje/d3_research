@@ -1,0 +1,98 @@
+{
+  "testSuite": {
+    "name": "Full Arrangement 1 - Explicit Children",
+    "version": "1.0.0",
+    "description": "Test cases for adapter node with full mode arrangement 1 and explicit children"
+  },
+  "testCases": [
+    {
+      "id": "basic-initialization",
+      "name": "Dashboard Initialization",
+      "description": "Verify dashboard initializes correctly",
+      "expected": {
+        "flowdash": "object",
+        "initialize": "function"
+      }
+    },
+    {
+      "id": "node-rendering",
+      "name": "Node Rendering",
+      "description": "Verify nodes are rendered in DOM",
+      "expected": {
+        "nodeCount": ">= 1",
+        "adapterNodes": ">= 1"
+      }
+    },
+    {
+      "id": "explicit-children",
+      "name": "Explicit Children Validation",
+      "description": "Verify adapter has exactly 3 explicitly defined children",
+      "expected": {
+        "childrenCount": 3,
+        "hasStaging": true,
+        "hasArchive": true,
+        "hasTransform": true
+      }
+    },
+    {
+      "id": "children-states",
+      "name": "Children State Management",
+      "description": "Verify children have proper states assigned",
+      "expected": {
+        "stagingState": "Updated",
+        "archiveState": "Ready", 
+        "transformState": "Processing"
+      }
+    },
+    {
+      "id": "children-roles",
+      "name": "Children Role Assignment",
+      "description": "Verify children have correct roles assigned",
+      "expected": {
+        "stagingRole": "staging",
+        "archiveRole": "archive",
+        "transformRole": "transform"
+      }
+    },
+    {
+      "id": "data-structure",
+      "name": "Data Structure Integrity",
+      "description": "Verify data structure is valid",
+      "expected": {
+        "hasNodes": true,
+        "hasEdges": true,
+        "nodesIsArray": true
+      }
+    },
+    {
+      "id": "layout-configuration",
+      "name": "Layout Configuration",
+      "description": "Verify layout is configured for arrangement 1",
+      "expected": {
+        "mode": "full",
+        "arrangement": 1,
+        "displayMode": "full"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "default-states",
+      "name": "Default State Configuration",
+      "description": "Test with default child states",
+      "data": "demoData"
+    },
+    {
+      "id": "varied-states", 
+      "name": "Varied State Configuration",
+      "description": "Test with different child states",
+      "data": "demoDataWithStates"
+    },
+    {
+      "id": "minimal-children",
+      "name": "Minimal Children Configuration", 
+      "description": "Test with reduced children set",
+      "data": "demoDataMinimal"
+    }
+  ]
+}

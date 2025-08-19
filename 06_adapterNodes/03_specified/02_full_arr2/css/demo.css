@@ -1,0 +1,65 @@
+/* Demo-specific styling for Full Arrangement 2 (Transform-focused) */
+
+.demo-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Transform-focused layout styling */
+.node[data-type="adapter"] {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Child node state indicators for arrangement 2 */
+.node[data-state="Active"] .node-body {
+    border-left: 4px solid #8BC34A;
+}
+
+.node[data-state="Running"] .node-body {
+    border-left: 4px solid #FF5722;
+    animation: pulse 2s infinite;
+}
+
+.node[data-state="Idle"] .node-body {
+    border-left: 4px solid #9E9E9E;
+}
+
+.node[data-state="Pending"] .node-body {
+    border-left: 4px solid #FFC107;
+}
+
+/* Transform-focused role styling */
+.node[data-role="staging"] {
+    background-color: #F1F8E9;
+}
+
+.node[data-role="archive"] {
+    background-color: #FAFAFA;
+}
+
+.node[data-role="transform"] {
+    background-color: #FFF8E1;
+    border: 2px solid #FF9800;
+}
+
+/* Animation for running state */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Test status indicators */
+.test-pass {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.test-fail {
+    color: #F44336;
+    font-weight: bold;
+}

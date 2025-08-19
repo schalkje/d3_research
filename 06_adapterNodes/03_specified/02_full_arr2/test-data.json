@@ -1,0 +1,116 @@
+{
+  "testSuite": {
+    "name": "Full Arrangement 2 - Explicit Children",
+    "version": "1.0.0",
+    "description": "Test cases for adapter node with full mode arrangement 2 (transform-focused) and explicit children"
+  },
+  "testCases": [
+    {
+      "id": "basic-initialization",
+      "name": "Dashboard Initialization",
+      "description": "Verify dashboard initializes correctly",
+      "expected": {
+        "flowdash": "object",
+        "initialize": "function"
+      }
+    },
+    {
+      "id": "arrangement-2-layout",
+      "name": "Arrangement 2 Layout",
+      "description": "Verify layout is configured for arrangement 2",
+      "expected": {
+        "mode": "full",
+        "arrangement": 2,
+        "displayMode": "full"
+      }
+    },
+    {
+      "id": "transform-focused-flow",
+      "name": "Transform-Focused Data Flow",
+      "description": "Verify data flows through transform node",
+      "expected": {
+        "hasTransformFlow": true,
+        "transformCentral": true,
+        "stagingToTransform": true,
+        "transformToArchive": true
+      }
+    },
+    {
+      "id": "explicit-children",
+      "name": "Explicit Children Validation",
+      "description": "Verify adapter has exactly 3 explicitly defined children",
+      "expected": {
+        "childrenCount": 3,
+        "hasStaging": true,
+        "hasArchive": true,
+        "hasTransform": true
+      }
+    },
+    {
+      "id": "advanced-states",
+      "name": "Advanced State Management",
+      "description": "Verify children have proper advanced states",
+      "expected": {
+        "stagingState": "Active",
+        "archiveState": "Idle", 
+        "transformState": "Running"
+      }
+    },
+    {
+      "id": "transform-emphasis",
+      "name": "Transform Node Emphasis",
+      "description": "Verify transform node has enhanced properties",
+      "expected": {
+        "transformRole": "transform",
+        "hasAnalytics": true,
+        "isRunning": true
+      }
+    },
+    {
+      "id": "ml-analytics-features",
+      "name": "ML Analytics Features",
+      "description": "Verify transform includes analytics/ML capabilities",
+      "expected": {
+        "hasAnalyticsLabel": true,
+        "hasMLDescription": false,
+        "transformFocused": true
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "default-transform-focus",
+      "name": "Default Transform Focus",
+      "description": "Test with standard transform-focused configuration",
+      "data": "demoData"
+    },
+    {
+      "id": "complex-transform", 
+      "name": "Complex Transform Configuration",
+      "description": "Test with ML-enhanced transform processing",
+      "data": "demoDataWithComplexTransform"
+    }
+  ],
+  "visualTests": [
+    {
+      "id": "transform-highlighting",
+      "name": "Transform Node Highlighting",
+      "description": "Verify transform node has special visual treatment",
+      "checks": [
+        "border-styling",
+        "background-color",
+        "running-animation"
+      ]
+    },
+    {
+      "id": "arrangement-2-layout-visual",
+      "name": "Arrangement 2 Visual Layout",
+      "description": "Verify visual layout matches arrangement 2 specification",
+      "checks": [
+        "transform-prominence",
+        "staging-archive-balance",
+        "data-flow-visualization"
+      ]
+    }
+  ]
+}
