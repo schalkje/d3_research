@@ -3,7 +3,7 @@ import RectangularNode from "./nodeRect.js";
 import { createInternalEdge } from "./edge.js";
 import { getComputedDimensions } from "./utils.js";
 
-const roleWidth = 80;
+const roleWidth = 120;
 
 const DisplayMode = Object.freeze({
   FULL: 'full',
@@ -34,8 +34,11 @@ export default class MartNode extends BaseContainerNode {
     if (!nodeData.layout.mode) nodeData.layout.mode = MartMode.AUTO; // manual, auto
 
     if (nodeData.layout.displayMode === DisplayMode.ROLE) {
-      nodeData.width = roleWidth + roleWidth + 20 + 8 + 8;
-      nodeData.height = 44;
+      // Calculate width based on role widths plus spacing and margins
+      const horizontalSpacing = 20;
+      const horizontalMargins = 16; // 8px left + 8px right
+      nodeData.width = roleWidth + roleWidth + horizontalSpacing + horizontalMargins;
+      nodeData.height = 60; // Increased height for better visual balance
     }
 
     // Ensure children exist and pre-create for AUTO mode
@@ -52,7 +55,7 @@ export default class MartNode extends BaseContainerNode {
           category: role,
           type: "node",
           width: isRoleMode ? roleWidth : 150,
-          height: 44,
+          height: isRoleMode ? 44 : 44,
         };
         nodeData.children.push(child);
       }
@@ -116,7 +119,7 @@ export default class MartNode extends BaseContainerNode {
         this.reportNode.data.width +
         this.containerMargin.left +
         this.containerMargin.right,
-      height: this.containerMargin.top + this.containerMargin.bottom + 18,  //JS: why fixed 18
+      height: Math.max(this.loadNode.data.height, this.reportNode.data.height) + this.containerMargin.top + this.containerMargin.bottom,
     };
 
     this.resize(this.data.expandedSize, true);
@@ -188,6 +191,14 @@ export default class MartNode extends BaseContainerNode {
       }
       childNode.init(parentElement);
     } else {
+      // Apply role mode sizing to existing child nodes as well
+      if (this.data.layout.displayMode === DisplayMode.ROLE) {
+        childNode.data.label = childNode.data.role || childNode.data.label;
+        childNode.data.width = roleWidth;
+        if (childNode.redrawText) {
+          childNode.redrawText(childNode.data.label, childNode.data.width);
+        }
+      }
       childNode.init(parentElement);
     }
     return childNode;
@@ -337,8 +348,19 @@ export default class MartNode extends BaseContainerNode {
       
       if (loadNode && reportNode) {
         const orientation = (this.data.layout?.orientation || 'horizontal').toLowerCase();
+        
+        // Ensure role mode sizing and labels
         loadNode.data.width = roleWidth;
+        loadNode.data.label = loadNode.data.role || 'load';
+        if (loadNode.redrawText) {
+          loadNode.redrawText(loadNode.data.label, loadNode.data.width);
+        }
+        
         reportNode.data.width = roleWidth;
+        reportNode.data.label = reportNode.data.role || 'report';
+        if (reportNode.redrawText) {
+          reportNode.redrawText(reportNode.data.label, reportNode.data.width);
+        }
         switch (orientation) {
           case 'vertical':
           case 'rotate90': {
