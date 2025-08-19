@@ -169,6 +169,9 @@ export default class AdapterNode extends BaseContainerNode {
       dataChildren: this.data.children.length
     });
 
+    // Standardize child dimensions for consistent layout regardless of how they were defined
+    this.standardizeChildDimensions();
+
     this.createInternalEdges();
     this.initEdges();
     
@@ -205,6 +208,45 @@ export default class AdapterNode extends BaseContainerNode {
     this.handleDisplayChange();
     
     console.log("AdapterNode - initChildren completed for:", this.id, "with", this.childNodes.length, "children");
+  }
+
+  /**
+   * Standardize child node dimensions for consistent layout behavior
+   * This ensures explicit children have the same dimensions as auto-generated ones
+   */
+  standardizeChildDimensions() {
+    const isRoleMode = this.data.layout.displayMode === DisplayMode.ROLE;
+    const standardWidth = isRoleMode ? 80 : 150;
+    const standardHeight = 44;
+
+    console.log("AdapterNode - standardizing child dimensions:", {
+      mode: this.data.layout.displayMode,
+      standardWidth,
+      standardHeight,
+      children: this.childNodes.length
+    });
+
+    // Standardize all child node dimensions
+    [this.stagingNode, this.archiveNode, this.transformNode].forEach((child) => {
+      if (!child) return;
+
+      const oldDimensions = { width: child.data.width, height: child.data.height };
+      
+      // Set standard dimensions for layout consistency
+      child.data.width = standardWidth;
+      child.data.height = standardHeight;
+
+      // Trigger resize if the child has the resize method
+      if (typeof child.resize === 'function') {
+        child.resize({ width: standardWidth, height: standardHeight });
+      }
+
+      console.log(`Standardized ${child.data.role} node:`, {
+        id: child.id,
+        oldDimensions,
+        newDimensions: { width: child.data.width, height: child.data.height }
+      });
+    });
   }
 
   createInternalEdges() {
@@ -407,15 +449,20 @@ export default class AdapterNode extends BaseContainerNode {
     });
     
     if (stagingNode && archiveNode && transformNode) {
-      // First standardize transform node size
-      transformNode.resize({ width: 150, height: 44 });
+      // Ensure all nodes have standardized dimensions first
+      const standardHeight = 44;
+      const standardWidth = this.data.layout.displayMode === DisplayMode.ROLE ? 80 : 150;
+      
+      // Standardize staging and transform nodes 
+      stagingNode.resize({ width: standardWidth, height: standardHeight });
+      transformNode.resize({ width: standardWidth, height: standardHeight });
       
       // Calculate archive width as: transform width + horizontal spacing + (1/3) * staging width
       const horizontalSpacing = this.nodeSpacing.horizontal; // 20px
       const requiredArchiveWidth = transformNode.data.width + horizontalSpacing + (1/3) * stagingNode.data.width;
       
       // Resize archive node with calculated width
-      archiveNode.resize({ width: requiredArchiveWidth, height: 44 });
+      archiveNode.resize({ width: requiredArchiveWidth, height: standardHeight });
       
       // Calculate required dimensions based on layout constraints
       // Total height = staging height + vertical spacing + archive height
@@ -523,14 +570,22 @@ export default class AdapterNode extends BaseContainerNode {
       const contentWidth = maxX - minX;
       const contentHeight = maxY - minY;
       
+      // Ensure minimum margins for proper bottom spacing
+      const minBottomMargin = Math.max(margins.bottom, 8);
+      const adjustedMargins = {
+        ...margins,
+        bottom: minBottomMargin
+      };
+      
       const newSize = {
-        width: contentWidth + margins.left + margins.right,
-        height: headerHeight + margins.top + contentHeight + margins.bottom
+        width: contentWidth + adjustedMargins.left + adjustedMargins.right,
+        height: headerHeight + adjustedMargins.top + contentHeight + adjustedMargins.bottom
       };
       
       console.log('Arrangement container resize:', {
         contentBounds: { minX, minY, maxX, maxY, contentWidth, contentHeight },
-        margins,
+        originalMargins: margins,
+        adjustedMargins,
         headerHeight,
         newSize
       });

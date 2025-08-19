@@ -20,7 +20,7 @@ export const demoData = {
         showGrid: false,
         showGroupLabels: true,
         showGroupTitles: true,
-        showGhostlines: true,
+        showGhostlines: false,
         curved: false,
         showConnectionPoints: false,
         demoMode: true,

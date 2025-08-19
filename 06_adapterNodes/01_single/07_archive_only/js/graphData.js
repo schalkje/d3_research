@@ -26,7 +26,7 @@ export const demoData = {
         showGroupTitles: true,
         
         // Edge settings
-        showGhostlines: true,
+        showGhostlines: false,
         curved: false,
         
         // Node settings
@@ -45,8 +45,7 @@ export const demoData = {
             label: "Archive Only",
             code: "AO",
             type: "adapter",
-            x: 300,
-            y: 200,
+
             
             // Layout configuration for archive-only mode
             layout: {

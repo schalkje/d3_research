@@ -1,6 +1,6 @@
 export const demoData = {
   settings: {
-    showGhostlines: true,
+    showGhostlines: false,
     showEdges: true,
     curved: true,
     curveMargin: 0.1,

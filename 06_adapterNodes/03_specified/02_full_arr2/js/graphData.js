@@ -23,7 +23,7 @@ export const demoData = {
         showGrid: false,
         showGroupLabels: true,
         showGroupTitles: true,
-        showGhostlines: true,
+        showGhostlines: false,
         curved: false,
         showConnectionPoints: false,
         demoMode: true,
@@ -94,18 +94,6 @@ export const demoData = {
     
     // Edge definitions
     edges: [
-        {
-            id: "edge-staging-transform-2",
-            source: "staging-node-2",
-            target: "transform-node-2",
-            type: "dataflow"
-        },
-        {
-            id: "edge-transform-archive-2", 
-            source: "transform-node-2",
-            target: "archive-node-2",
-            type: "dataflow"
-        }
     ]
 };
 

@@ -26,7 +26,7 @@ export const demoData = {
         showGroupTitles: true,
         
         // Edge settings
-        showGhostlines: true,
+        showGhostlines: false,
         curved: false,
         
         // Node settings
@@ -45,8 +45,7 @@ export const demoData = {
             label: "Transform Focused (Role)",
             code: "TFR2",
             type: "adapter",
-            x: 300,
-            y: 200,
+
             
             // Layout configuration for arrangement 2 with role display
             layout: {

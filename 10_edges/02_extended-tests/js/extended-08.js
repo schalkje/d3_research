@@ -1,7 +1,7 @@
 // Arrange nodes to emphasize right-angles with current polyline routing
 export const demoData = {
   settings: {
-    showGhostlines: true,
+    showGhostlines: false,
     showEdges: true,
     curved: false,
     curveMargin: 0,

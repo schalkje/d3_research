@@ -8,7 +8,7 @@ export const demoData = {
     version: "1.0.0"
   },
   settings: {
-    showGhostlines: true,
+    showGhostlines: false,
     showGroupTitles: true,
     demoMode: true,
     enableTesting: true

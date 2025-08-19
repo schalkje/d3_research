@@ -26,7 +26,7 @@ export const demoData = {
         showGroupTitles: true,
         
         // Edge settings
-        showGhostlines: true,
+        showGhostlines: false,
         curved: false,
         
         // Node settings
