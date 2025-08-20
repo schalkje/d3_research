@@ -3,6 +3,15 @@ import BaseContainerNode from "./nodeBaseContainer.js";
 
 export function createInternalEdge(edgeData, source, target, settings)
 {
+    // Defensive: ensure valid node instances
+    if (!source || !target) {
+      console.error("createInternalEdge: Source or Target node is missing", {
+        edgeData,
+        source,
+        target
+      });
+      return;
+    }
     if ( source === target) {
       console.error("createInternalEdge - Source and Target are the same node", source);
       return;

@@ -1604,7 +1604,7 @@
                                     "description": "Node created for dataset ARC_LOAD_CDO_DAG",
                                     "type": "Node",
                                     "datasetId": 607,
-                                    "category": "Unknown",
+                                    "category": "Archive",
                                     "layout": null,
                                     "children": [],
                                     "state": "Ready"
@@ -1615,7 +1615,7 @@
                                     "description": "Node created for dataset STG_LOAD_CDO_DAG",
                                     "type": "Node",
                                     "datasetId": 335,
-                                    "category": "Unknown",
+                                    "category": "Staging",
                                     "layout": null,
                                     "children": [],
                                     "state": "Ready"
@@ -1626,7 +1626,7 @@
                                     "description": "Node created for dataset TFM_LOAD_CDO_DAG",
                                     "type": "Node",
                                     "datasetId": 468,
-                                    "category": "Unknown",
+                                    "category": "Transform",
                                     "layout": null,
                                     "children": [],
                                     "state": "Ready"

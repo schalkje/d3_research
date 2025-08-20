@@ -114,7 +114,7 @@ export default class AdapterNode extends BaseContainerNode {
             role = 'staging';
           } else if (label.includes('archive') || label.includes('arc')) {
             role = 'archive';
-          } else if (label.includes('transform') || label.includes('trf') || label.includes('trn')) {
+          } else if (label.includes('transform') || label.includes('trf') || label.includes('trn') || label.includes('tfm')) {
             role = 'transform';
           }
         }
@@ -139,11 +139,30 @@ export default class AdapterNode extends BaseContainerNode {
       });
     }
     
-    // Pre-create child data based on adapter mode so initChildren gets called
+    // Ensure required children exist for the configured mode
+    const requiredChildren = AdapterNode.getRequiredChildrenForMode(nodeData.layout.mode);
+    const isRoleMode = nodeData.layout.displayMode === DisplayMode.ROLE;
+    if (nodeData.children.length > 0) {
+      requiredChildren.forEach((role) => {
+        const exists = nodeData.children.some((c) => (c.role || '').toLowerCase() === role || (c.category || '').toLowerCase() === role);
+        if (!exists) {
+          const childData = {
+            id: `${role}_${nodeData.id}`,
+            label: isRoleMode ? role : `${role.charAt(0).toUpperCase() + role.slice(1)} ${nodeData.label}`,
+            role: role,
+            category: role,
+            type: "Node",
+            width: isRoleMode ? 80 : 150,
+            height: 44,
+          };
+          nodeData.children.push(childData);
+        }
+      });
+    }
+
+    // Pre-create child data when none were provided so initChildren gets called
     if (nodeData.children.length === 0) {
       const childrenToCreate = AdapterNode.getRequiredChildrenForMode(nodeData.layout.mode);
-      const isRoleMode = nodeData.layout.displayMode === DisplayMode.ROLE;
-      
       childrenToCreate.forEach(role => {
         const childData = {
           id: `${role}_${nodeData.id}`,
