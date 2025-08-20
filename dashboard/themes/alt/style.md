@@ -47,7 +47,7 @@ Keep the palette soft. Use saturation sparingly: states and focus should stand o
 
 body { background: var(--fd-bg); color: var(--fd-text); }
 #graph { background-color: var(--fd-surface); border-color: var(--fd-border); }
-#minimap { background-color: rgba(255,255,255,0.7); border-color: var(--fd-border); }
+.minimap-svg { background-color: rgba(255,255,255,0.7); border-color: var(--fd-border); }
 .shape, .container-shape, .rect.shape { fill: var(--fd-surface); stroke: var(--fd-border); }
 text, .label, .rect.label { fill: var(--fd-text); }
 .edge .path { stroke: var(--fd-edge); }
@@ -55,7 +55,7 @@ text, .label, .rect.label { fill: var(--fd-text); }
 ```
 
 ### Notes for Consumers
-- If your app already styles the page background, you can omit `body` overrides and set only the canvas colors (`#graph`, `#minimap`).
+- If your app already styles the page background, you can omit `body` overrides and set only the canvas colors (`#graph`, `.minimap-svg`).
 - The floating maximize/restore button should remain visible; it inherits readable contrast from the base UI. Adjust only if your background is highly custom.
 
 

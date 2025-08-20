@@ -4,7 +4,7 @@
 
 The minimap provides a scaled overview of the full diagram and a visible viewport indicator (the “eye”) that mirrors the main view. It improves orientation and enables fast navigation in large graphs.
 
-This iteration embeds the minimap directly inside the dashboard (no separate minimap container on the page). It is responsive, themable, and configurable, with clear controls and an always-visible zoom scale indicator.
+This iteration renders the minimap cockpit as a separate absolutely-positioned DIV inside the `#graph` dashboard container (not inside the main SVG). It is configurable and themable, with clear controls and an always-visible zoom scale indicator. The cockpit DIV has a fixed pixel format (size tokens or explicit px), independent of the main SVG's transforms.
 
 See also: [Dashboard Overview](dashboard.md)
 
@@ -12,7 +12,7 @@ Tip: The fullscreen toggle works seamlessly with the minimap; when maximized, th
 
 ## Requirements (Refined)
 
-- **Embedded in dashboard**: Render the minimap inside the graph container. No external `minimap` container or separate SVG is required. Default placement is bottom‑right; position is configurable.
+- **Overlay in dashboard**: Render the minimap in a separate overlay DIV inside the `#graph` container. Default placement is bottom‑right; position is configurable.
 - **Clear icon controls**: Provide recognizable, consistent icons for actions (Zoom In, Zoom Out, Reset View, Visibility Mode). Prefer a well‑known icon set and consistent metaphors to aid recognition (see design best practices on icon clarity from [Justinmind](https://www.justinmind.com/blog/best-practices-for-designing-your-search-pattern/?utm_source=openai)).
 - **Visible zoom scale**: Show a zoom indicator near the minimap. Support either a numeric percentage (e.g., 125%) or a scale bar. It should update in real time and be themeable (see examples of scale indicators in [Maxar UI docs](https://pro-docs.maxar.com/en-us/Interface/Interface_minimap.htm?utm_source=openai)).
 - **Visibility modes**:

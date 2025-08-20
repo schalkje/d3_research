@@ -83,10 +83,20 @@
   stroke: rgba(0, 160, 0, 0.5);
 }
 
-/* Embedded Minimap Overlay */
 .zoom-cockpit {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
   pointer-events: all;
 }
+
+/* Fixed positioning when dashboard is maximized */
+.flowdash-fullscreen ~ .zoom-cockpit,
+.fullscreen ~ .zoom-cockpit {
+  position: fixed;  
+  z-index: 10000;
+}
+
 .minimap-svg {
   border: 1px solid var(--fd-border, #2b4b7c);
   background-color: var(--fd-surface, rgba(255,255,255, 0.7));

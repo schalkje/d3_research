@@ -16,6 +16,7 @@ export const LoadingOverlay = {
   dotsEl: null,
   textEl: null,
   timer: null,
+  baseText: 'initializing',
   shownAt: 0,
   MIN_VISIBLE_MS: 350,
   ensure(container) {
@@ -50,30 +51,29 @@ export const LoadingOverlay = {
         placeItems: 'center'
       });
 
+      // Dots element (behind text)
+      const dots = document.createElement('span');
+      dots.className = 'flowdash-loading__dots';
+      Object.assign(dots.style, {
+        position: 'absolute',
+        inset: '0',
+        display: 'grid',
+        placeItems: 'center',
+        zIndex: '1',
+        pointerEvents: 'none'
+      });
+
       const text = document.createElement('span');
       text.className = 'flowdash-loading__text';
-      text.textContent = 'Loading';
+      text.textContent = 'initializing';
       Object.assign(text.style, {
         position: 'relative',
         zIndex: '2',
         fontSize: '16px',
         color: 'var(--fd-loading-fg, #222)'
       });
-
-      const dots = document.createElement('span');
-      dots.className = 'flowdash-loading__dots';
-      dots.setAttribute('aria-hidden', 'true');
-      Object.assign(dots.style, {
-        position: 'absolute',
-        zIndex: '1',
-        opacity: '0.35',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-        fontSize: '16px',
-        color: 'var(--fd-loading-fg, #222)'
-      });
-
+      
+      // Stack: dots behind, text in front
       inner.appendChild(dots);
       inner.appendChild(text);
       wrapper.appendChild(inner);
@@ -86,15 +86,44 @@ export const LoadingOverlay = {
       // Ensure references if element already exists in DOM
       this.dotsEl = this.el.querySelector('.flowdash-loading__dots');
       this.textEl = this.el.querySelector('.flowdash-loading__text');
+      // Ensure proper layering/styles if present, or create dots if missing
+      if (!this.dotsEl) {
+        const inner = this.el.firstElementChild || this.el;
+        const dots = document.createElement('span');
+        dots.className = 'flowdash-loading__dots';
+        Object.assign(dots.style, {
+          position: 'absolute',
+          inset: '0',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: '1',
+          pointerEvents: 'none'
+        });
+        inner.insertBefore(dots, inner.firstChild);
+        this.dotsEl = dots;
+      } else {
+        Object.assign(this.dotsEl.style, {
+          position: 'absolute',
+          inset: '0',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: '1',
+          pointerEvents: 'none'
+        });
+      }
+      if (this.textEl) {
+        this.textEl.style.position = 'relative';
+        this.textEl.style.zIndex = '2';
+      }
     }
     return this.el;
   },
   startDots() {
-    if (!this.dotsEl) return;
     this.stopDots();
     let i = 0;
     this.timer = setInterval(() => {
-      i = (i + 1) % 4;
+      if (!this.dotsEl) return;
+      i = (i % 3) + 1;
       this.dotsEl.textContent = '.'.repeat(i);
     }, 450);
   },
@@ -107,6 +136,9 @@ export const LoadingOverlay = {
     if (!el) return;
     this.shownAt = Date.now();
     el.style.display = 'grid';
+    // Ensure base label and reset text before starting dots
+    this.baseText = 'initializing';
+    if (this.textEl) this.textEl.textContent = this.baseText;
     this.startDots();
   },
   hide() {

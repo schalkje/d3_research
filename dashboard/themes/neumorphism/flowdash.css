@@ -12,7 +12,7 @@ body { background: var(--fd-bg); color: var(--fd-text); font-family: 'Segoe UI',
 
 /* soft elevated canvases */
 #graph { background-color: var(--fd-surface); border: none; box-shadow: 10px 10px 20px #c8ccd4, -10px -10px 20px #ffffff; border-radius: 16px; }
-#minimap { background-color: rgba(255,255,255,0.6); border: none; box-shadow: inset 6px 6px 12px #d0d4dc, inset -6px -6px 12px #ffffff; border-radius: 12px; }
+.minimap-svg { background-color: rgba(255,255,255,0.6); border: none; box-shadow: inset 6px 6px 12px #d0d4dc, inset -6px -6px 12px #ffffff; border-radius: 12px; }
 svg.canvas { border: none; box-shadow: 12px 12px 24px #c8ccd4, -12px -12px 24px #ffffff; border-radius: 16px; }
 
 .shape, .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface); stroke: #dfe3ea; stroke-width: 1.5px; filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9)); rx: 12; ry: 12; transition: transform 160ms ease-out, filter 160ms ease-out, stroke-width 160ms ease-out; }

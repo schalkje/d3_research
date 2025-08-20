@@ -20,7 +20,7 @@ pre, code, .monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consol
     repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 16px);
   border-color: var(--fd-border);
 }
-#minimap {
+.minimap-svg {
   background-color: rgba(255, 255, 200, 0.8);
   background-image:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 12px),

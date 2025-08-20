@@ -12,7 +12,7 @@ body { background: var(--fd-bg); color: var(--fd-text); font-family: Inter, 'Seg
 
 /* minimal, crisp canvases */
 #graph { background-color: var(--fd-surface) !important; border: 1px solid var(--fd-border) !important; border-radius: 8px; }
-#minimap { background-color: #ffffff !important; border: 1px solid var(--fd-border) !important; border-radius: 6px; }
+.minimap-svg { background-color: #ffffff !important; border: 1px solid var(--fd-border) !important; border-radius: 6px; }
 svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; border-radius: 8px; }
 
 .shape { fill: var(--fd-surface) !important; stroke: var(--fd-accent) !important; stroke-width: 2px; }

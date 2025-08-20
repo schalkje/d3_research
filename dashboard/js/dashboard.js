@@ -169,6 +169,11 @@ export class Dashboard {
 
     // Update minimap content scale using content bounds and set viewBox to content bbox
     const contentBBox = this.getContentBBox();
+    if (!this.minimap.width || !this.minimap.height) {
+      // Ensure minimap has a reasonable default size before scale compute
+      this.minimap.width = this.minimap.width || (this.minimap.targetWidthPx || 240);
+      this.minimap.height = this.minimap.height || (this.minimap.targetHeightPx || 160);
+    }
     this.minimap.scale = Math.min(this.minimap.width / contentBBox.width, this.minimap.height / contentBBox.height);
     this.updateMinimapViewboxAndMasks(contentBBox);
 
@@ -236,15 +241,19 @@ export class Dashboard {
 
     // Create overlay DIV inside the graph container (separate from main SVG)
     const graphContainer = this.main.svg.node().parentElement;
+    // Ensure host container does not cause page scrollbars when overlays are positioned
+    try {
+      graphContainer.style.position = graphContainer.style.position || 'relative';
+      graphContainer.style.overflow = 'hidden';
+    } catch {}
     const cockpitDiv = d3.select(graphContainer)
       .append('div')
-      .attr('class', 'zoom-cockpit')
-      .style('position', 'absolute')
-      .style('pointer-events', 'auto');
+      .attr('class', 'zoom-cockpit');
     this.minimap.cockpit = cockpitDiv;
     this.minimap.overlay = cockpitDiv; // alias for existing code paths
     // Create an inner SVG to host minimap UI and content
     const cockpitSvg = cockpitDiv.append('svg').attr('class', 'minimap-chrome');
+    this.minimap.chromeSvg = cockpitSvg;
     this.minimap.content = cockpitSvg.append('g').attr('class', 'minimap-content');
     this.minimap.active = true;
     this.minimap.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
@@ -458,58 +467,54 @@ export class Dashboard {
     if (!this.minimap.overlay) return;
     const mm = this.data.settings.minimap;
     const padding = 12;
-    const size = { width: this.minimap.width, height: this.minimap.height };
+    // Use monitor pixel sizing for cockpit DIV
+    const sizePx = {
+      width: this.minimap.targetWidthPx || 240,
+      height: this.minimap.targetHeightPx || 160
+    };
     const iconSize = { width: 20, height: 14 };
 
     // Position the cockpit DIV relative to the graph container
     const graphContainer = this.main.svg.node().parentElement;
-    const rect = graphContainer.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-
-    const posToXYCss = (pos, item) => {
-      switch (pos) {
-        case 'top-left': return { left: padding, top: padding };
-        case 'top-right': return { left: w - padding - item.width, top: padding };
-        case 'bottom-left': return { left: padding, top: h - padding - item.height };
-        case 'bottom-right':
-        default: return { left: w - padding - item.width, top: h - padding - item.height };
-      }
-    };
+    const w = Math.max(0, graphContainer.clientWidth || 0);
+    const h = Math.max(0, graphContainer.clientHeight || 0);
 
     const corner = (mm.collapsedIcon && mm.collapsedIcon.position) || mm.position || 'bottom-right';
     const headerH = this.minimap.headerHeight || 20;
     const footerH = this.minimap.footerHeight || 20;
-    const cockpit = { width: size.width, height: size.height + headerH + footerH };
-    const cockpitCss = posToXYCss(corner, cockpit);
+    const cockpit = { width: sizePx.width, height: sizePx.height + headerH + footerH };
 
-    // Size the outer cockpit DIV and place it
+    // Size the outer cockpit DIV (positioning handled by CSS)
     this.minimap.cockpit
-      .style('left', `${cockpitCss.left}px`)
-      .style('top', `${cockpitCss.top}px`)
       .style('width', `${cockpit.width}px`)
-      .style('height', `${cockpit.height}px`);
+      .style('height', `${cockpit.height}px`)
+      .style('display', 'block');
 
-    // Inside the cockpit, position header, body and footer using transforms
+    // Inside the cockpit, position header, body and footer using transforms, and size the chrome svg
+    if (this.minimap.chromeSvg) {
+      this.minimap.chromeSvg
+        .attr('width', cockpit.width)
+        .attr('height', cockpit.height);
+    }
     if (this.minimap.header) {
       this.minimap.header.attr('transform', `translate(${0},${0})`);
       const yPad = 2;
-      let xRight = size.width - 4;
+      let xRight = sizePx.width - 4;
       if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${yPad})`); }
       if (this.minimap.pinButton) { xRight -= 20; this.minimap.pinButton.attr('transform', `translate(${xRight},${yPad})`); }
       if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${yPad})`); }
-      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', 0).attr('y', 0).attr('width', size.width).attr('height', headerH);
+      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', 0).attr('y', 0).attr('width', sizePx.width).attr('height', headerH);
     }
     // Body SVG (minimap) positioned under header
-    this.minimap.svg.attr('x', 0).attr('y', headerH);
+    this.minimap.svg.attr('x', 0).attr('y', headerH).attr('width', sizePx.width).attr('height', sizePx.height);
     // Footer under body
     if (this.minimap.footer) {
-      const footerTopY = headerH + size.height;
+      const footerTopY = headerH + sizePx.height;
       this.minimap.footer.attr('transform', `translate(${0},${footerTopY})`);
       if (this.minimap.footerHitRect) this.minimap.footerHitRect
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', size.width)
+        .attr('width', sizePx.width)
         .attr('height', footerH);
       if (this.minimap.controls) {
         const spacing = 6;
@@ -524,17 +529,15 @@ export class Dashboard {
         this.minimap.btnReset.attr('transform', `translate(${(buttonSize + spacing) * 2},0)`);
         if (this.minimap.scaleText) {
           this.minimap.scaleText
-            .attr('x', size.width - rightPadding)
+            .attr('x', sizePx.width - rightPadding)
             .attr('y', footerCenterY)
             .style('text-anchor', 'end')
             .style('dominant-baseline', 'middle');
         }
       }
     }
-    // Collapsed icon sticks to cockpit corner within DIV
-    const collapsedIconCss = posToXYCss(corner, iconSize);
-    // Represent collapsed icon positioning as transform relative to DIV origin
-    this.minimap.collapsedIcon.attr('transform', `translate(${size.width - iconSize.width},${0})`);
+    // Collapsed icon at top-right of the cockpit
+    this.minimap.collapsedIcon.attr('transform', `translate(${sizePx.width - iconSize.width},${0})`);
 
     if (this.minimap.scaleText && this.minimap.footer) {
       this.minimap.scaleText

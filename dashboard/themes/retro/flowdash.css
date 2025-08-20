@@ -30,7 +30,7 @@ body {
 #graph { background-color: transparent !important; border: 1px solid var(--fd-border) !important; }
 /* Ensure fullscreen dashboard does not show page background */
 #graph.flowdash-fullscreen, #graph.fullscreen { background-color: var(--fd-surface) !important; }
-#minimap { background-color: rgba(10,16,10,0.75) !important; border: 1px solid var(--fd-border) !important; }
+.minimap-svg { background-color: rgba(10,16,10,0.75) !important; border: 1px solid var(--fd-border) !important; }
 /* Ensure uncovered minimap background matches graph surface */
 .minimap-svg rect.background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
 svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; }
