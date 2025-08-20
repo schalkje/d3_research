@@ -10,11 +10,25 @@ import { Minimap } from "./minimap.js";
 
 export class Dashboard {
   constructor(dashboardData) {
+    // Allow reactive reassignment of data to reinitialize minimap and scene
+    this._isInitialized = false;
+    this._data = null;
+    Object.defineProperty(this, 'data', {
+      get: () => this._data,
+      set: (value) => {
+        if (!this._isInitialized) {
+          this._data = value || {};
+          return;
+        }
+        this.setData(value);
+      },
+      configurable: true
+    });
     this.data = dashboardData;
 
     // log all attributes from data.settings to the console log (removed verbose logs)
 
-    // Use ConfigManager to merge with defaults
+    // Use ConfigManager to merge with defaults on initial construction
     this.data.settings = ConfigManager.mergeWithDefaults(this.data.settings);
     
 
@@ -78,6 +92,58 @@ export class Dashboard {
     this.minimap.updateScaleIndicator?.();
   }
 
+  // Replace the dashboard data and reinitialize the scene and minimap
+  setData(newDashboardData) {
+    // Start loading state for the new model
+    this._initialLoading = true;
+    try { this.showLoading(); } catch {}
+
+    // Merge settings with defaults without losing user overrides
+    const userSettings = (newDashboardData && newDashboardData.settings) ? newDashboardData.settings : {};
+    // Assign directly to the backing field to avoid triggering the setter recursion
+    this._data = newDashboardData || {};
+    this._data.settings = ConfigManager.mergeWithDefaults(userSettings);
+
+    // Clear main SVG and rebuild root
+    if (this.main?.svg) {
+      this.main.svg.selectAll('*').remove();
+    }
+
+    // Recreate container and dashboard content
+    this.main.container = this.createContainer(this.main, "dashboard");
+    this.main.root = this.createDashboard(this.data, this.main.container);
+
+    // Rebind interactions on the new root
+    this.main.root.onClick = (node) => this.selectNode(node);
+    this.main.root.onDblClick = (node) => this.zoomToNode(node);
+    this.main.root.onDisplayChange = () => { this.onMainDisplayChange(); };
+
+    // Ensure zoom behavior is bound to the current SVG
+    if (this.main.zoom) {
+      this.main.svg.call(this.main.zoom);
+    } else {
+      this.main.zoom = this.initializeZoom();
+    }
+
+    // Fully reset the minimap so it matches the new content
+    if (this.minimap) {
+      try { this.minimap.destroy(); } catch {}
+    }
+    this.minimap = new Minimap(this);
+    this.minimap.initializeEmbedded();
+
+    // Recompute baseline fit and optionally zoom to root
+    this.hasPerformedInitialZoomToRoot = false;
+    this.recomputeBaselineFit();
+    if (this.data.settings.zoomToRoot) {
+      this.zoomToRoot();
+      this.hasPerformedInitialZoomToRoot = true;
+    }
+
+    // Kick a display sync
+    this.onMainDisplayChange();
+  }
+
    initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
     this.mainDivSelector = mainDivSelector;
@@ -127,6 +193,8 @@ export class Dashboard {
       };
       window.addEventListener('resize', this._onWindowResize);
     }
+    // Mark component as initialized so subsequent data assignments trigger reinit
+    this._isInitialized = true;
   }
 
 

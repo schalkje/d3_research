@@ -843,6 +843,54 @@ export class Minimap {
     const height = this.dashboard.main.height / transform.k;
     this.updateEye(x, y, width, height);
   }
+
+  /**
+   * Tear down the minimap UI and detach behaviors so it can be reinitialized cleanly
+   */
+  destroy() {
+    try {
+      if (this._updateTimeout) { clearTimeout(this._updateTimeout); this._updateTimeout = null; }
+      if (this.state?.showTimer) { clearTimeout(this.state.showTimer); this.state.showTimer = null; }
+      if (this.state?.hideTimer) { clearTimeout(this.state.hideTimer); this.state.hideTimer = null; }
+      if (this.state?.wheelTimer) { clearTimeout(this.state.wheelTimer); this.state.wheelTimer = null; }
+    } catch {}
+
+    try {
+      if (this.svg) {
+        // Removing the cockpit removes the SVG and all event handlers bound to it
+        this.svg = null;
+      }
+      if (this.cockpit) {
+        this.cockpit.remove();
+      }
+    } catch {}
+
+    // Null out references
+    this.cockpit = null;
+    this.overlay = null;
+    this.chromeSvg = null;
+    this.content = null;
+    this.collapsedIcon = null;
+    this.header = null;
+    this.collapseButton = null;
+    this.pinButton = null;
+    this.pinBase = null;
+    this.pinSlash = null;
+    this.sizeButton = null;
+    this.sizeLabel = null;
+    this.footer = null;
+    this.scaleText = null;
+    this.controls = null;
+    this.btnZoomIn = null;
+    this.btnZoomOut = null;
+    this.btnReset = null;
+    this.headerHitRect = null;
+    this.footerHitRect = null;
+    this.container = null;
+    this.drag = null;
+    this.zoom = null;
+    this.active = false;
+  }
 }
 
 function dragEye(dashboard, dragEvent) {

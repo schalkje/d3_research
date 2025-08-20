@@ -383,9 +383,9 @@
         // Function to render or re-render the dashboard
         function renderDashboard() {
             selectedFile = document.getElementById('fileSelect').value;
-            // loading handled by dashboard.initialize()
+            // loading handled by dashboard.initialize()/setData()
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
-                d3.select("#graph").selectAll("*").remove();
+                // Reuse existing dashboard instance when present; dashboard handles its own cleanup
                 dashboardData.settings.zoomToRoot = zoomToRoot;
 
                 // Optional: Performance monitoring (disabled by default to avoid log spam)
@@ -447,8 +447,13 @@
                 // Keep nodes expanded by default on re-render
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
 
-                dashboard = new flowDashboard.Dashboard(dashboardData);
-                dashboard.initialize('#graph');
+                if (!dashboard) {
+                    dashboard = new flowDashboard.Dashboard(dashboardData);
+                    dashboard.initialize('#graph');
+                } else {
+                    // Assigning .data triggers a full reinitialization including the minimap
+                    dashboard.data = dashboardData;
+                }
             });
         }
 
