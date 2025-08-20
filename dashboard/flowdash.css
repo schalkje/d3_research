@@ -84,25 +84,32 @@
 }
 
 .zoom-cockpit {
-  position: absolute;
+  position: absolute !important;
   pointer-events: none;
   z-index: 10000;
-  right: 12px;
-  bottom: 12px;
-  top: auto;
-  left: auto;
+  right: 12px !important;
+  bottom: 12px !important;
+  top: auto !important;
+  left: auto !important;
   /* Themes can override positioning by targeting .zoom-cockpit */
 }
 
 /* Fixed positioning when dashboard is maximized */
 .flowdash-fullscreen ~ .zoom-cockpit,
 .fullscreen ~ .zoom-cockpit {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  top: auto;
-  left: auto;
+  position: fixed !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  top: auto !important;
+  left: auto !important;
   z-index: 10000;
+}
+
+/* Ensure correct positioning inside demo containers in normal mode */
+.demo-container { position: relative; }
+.demo-container > .zoom-cockpit {
+  right: 12px !important;
+  bottom: 12px !important;
 }
 
 .minimap-svg {

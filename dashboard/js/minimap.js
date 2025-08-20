@@ -147,14 +147,40 @@ export class Minimap {
       this.dashboard.data.settings.minimap.collapsed = true; // show button by default
     }
 
-    // Create overlay DIV inside the graph container (separate from main SVG)
+    // Create overlay host inside the graph container so offsets ignore outer padding
     const graphContainer = this.dashboard.main.svg.node().parentElement;
-    // Ensure host container does not cause page scrollbars when overlays are positioned
+    // Ensure host container has proper positioning context for absolute positioning
     try {
-      graphContainer.style.position = graphContainer.style.position || 'relative';
+      graphContainer.style.position = 'relative';
       graphContainer.style.overflow = 'hidden';
     } catch {}
-    const cockpitDiv = d3.select(graphContainer)
+
+    // Create or reuse an overlay host that fills the content box (inside padding)
+    let overlayHost = d3.select(graphContainer).select('.zoom-overlay-host');
+    if (overlayHost.empty()) {
+      overlayHost = d3.select(graphContainer)
+        .append('div')
+        .attr('class', 'zoom-overlay-host');
+    }
+    // Size and place host to account for container padding
+    try {
+      const cs = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(graphContainer) : null;
+      const padTop = cs ? parseFloat(cs.paddingTop || '0') : 0;
+      const padRight = cs ? parseFloat(cs.paddingRight || '0') : 0;
+      const padBottom = cs ? parseFloat(cs.paddingBottom || '0') : 0;
+      const padLeft = cs ? parseFloat(cs.paddingLeft || '0') : 0;
+      overlayHost
+        .style('position', 'absolute')
+        .style('top', `${padTop}px`)
+        .style('right', `${padRight}px`)
+        .style('bottom', `${padBottom}px`)
+        .style('left', `${padLeft}px`)
+        .style('pointer-events', 'none');
+    } catch {}
+    this.overlayHost = overlayHost;
+
+    // Create cockpit inside the overlay host
+    const cockpitDiv = overlayHost
       .append('div')
       .attr('class', 'zoom-cockpit');
     this.cockpit = cockpitDiv;
@@ -404,11 +430,42 @@ export class Minimap {
     const footerH = this.footerHeight || 20;
     const cockpit = { width: sizePx.width, height: sizePx.height + headerH + footerH };
 
-    // Size the cockpit DIV (positioning is handled by CSS classes)
+    // Keep overlay host in sync with container padding so offsets ignore outer padding
+    try {
+      const graphContainer = this.dashboard.main.svg.node().parentElement;
+      const cs = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(graphContainer) : null;
+      const padTop = cs ? parseFloat(cs.paddingTop || '0') : 0;
+      const padRight = cs ? parseFloat(cs.paddingRight || '0') : 0;
+      const padBottom = cs ? parseFloat(cs.paddingBottom || '0') : 0;
+      const padLeft = cs ? parseFloat(cs.paddingLeft || '0') : 0;
+      if (this.overlayHost) {
+        this.overlayHost
+          .style('top', `${padTop}px`)
+          .style('right', `${padRight}px`)
+          .style('bottom', `${padBottom}px`)
+          .style('left', `${padLeft}px`);
+      }
+    } catch {}
+
+    // Size the cockpit DIV and ensure positioning (CSS should handle this, but fallback for reliability)
+    const isFullscreen = this.dashboard.main.svg.classed('flowdash-fullscreen');
     this.cockpit
       .style('width', `${cockpit.width}px`)
       .style('height', `${cockpit.height}px`)
       .style('display', 'block');
+    
+    // Ensure positioning (CSS should handle this, but JavaScript as reliable fallback)
+    const cockpitNode = this.cockpit.node();
+    if (cockpitNode) {
+      // Always set positioning via JavaScript for reliability
+      cockpitNode.style.setProperty('position', isFullscreen ? 'fixed' : 'absolute', 'important');
+      cockpitNode.style.setProperty('right', '12px', 'important');
+      cockpitNode.style.setProperty('bottom', '12px', 'important');
+      cockpitNode.style.setProperty('top', 'auto', 'important');
+      cockpitNode.style.setProperty('left', 'auto', 'important');
+      cockpitNode.style.setProperty('z-index', '10000', 'important');
+      cockpitNode.style.setProperty('pointer-events', 'none', 'important');
+    }
 
     // Inside the cockpit, position header, body and footer using transforms, and size the chrome svg
     if (this.chromeSvg) {
