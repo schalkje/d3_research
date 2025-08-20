@@ -106,11 +106,17 @@ export default class AdapterNode extends BaseContainerNode {
       nodeData.children.forEach((child) => {
         let role = (child.role || '').toLowerCase();
         if (!role) {
+          const label = (child.label || '').toLowerCase();
           const category = (child.category || '').toLowerCase();
-          if (allowedRoles.includes(category)) role = category;
-          else if ((child.label || '').toLowerCase().includes('staging')) role = 'staging';
-          else if ((child.label || '').toLowerCase().includes('archive')) role = 'archive';
-          else if ((child.label || '').toLowerCase().includes('transform')) role = 'transform';
+          if (allowedRoles.includes(category)) {
+            role = category;
+          } else if (label.includes('staging') || label.includes('stg')) {
+            role = 'staging';
+          } else if (label.includes('archive') || label.includes('arc')) {
+            role = 'archive';
+          } else if (label.includes('transform') || label.includes('trf') || label.includes('trn')) {
+            role = 'transform';
+          }
         }
         if (!role || !allowedRoles.includes(role)) {
           console.error('AdapterNode child missing or invalid role', {
