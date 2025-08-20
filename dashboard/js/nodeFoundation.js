@@ -29,10 +29,35 @@ export default class FoundationNode extends BaseContainerNode {
     // Base sizing and layout defaults
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 44;
-    if (!nodeData.layout) nodeData.layout = {};
-    if (!nodeData.layout.displayMode) nodeData.layout.displayMode = DisplayMode.ROLE;
-    if (!nodeData.layout.orientation) nodeData.layout.orientation = Orientation.HORIZONTAL;
-    if (!nodeData.layout.mode) nodeData.layout.mode = FoundationMode.AUTO; // manual, auto
+    // Normalize layout object and defaults
+    if (!nodeData.layout || typeof nodeData.layout !== 'object') nodeData.layout = {};
+    const allowedDisplayModes = [DisplayMode.FULL, DisplayMode.ROLE];
+    const allowedOrientations = [
+      Orientation.HORIZONTAL,
+      Orientation.HORIZONTAL_LINE,
+      Orientation.VERTICAL,
+      Orientation.ROTATE_90,
+      Orientation.ROTATE_270
+    ];
+    const allowedModes = [FoundationMode.MANUAL, FoundationMode.AUTO];
+
+    // Display mode
+    let displayMode = (nodeData.layout.displayMode ?? DisplayMode.ROLE);
+    displayMode = typeof displayMode === 'string' ? displayMode.toLowerCase() : DisplayMode.ROLE;
+    if (!allowedDisplayModes.includes(displayMode)) displayMode = DisplayMode.ROLE;
+    nodeData.layout.displayMode = displayMode;
+
+    // Orientation
+    let orientation = (nodeData.layout.orientation ?? Orientation.HORIZONTAL);
+    orientation = typeof orientation === 'string' ? orientation.toLowerCase() : Orientation.HORIZONTAL;
+    if (!allowedOrientations.includes(orientation)) orientation = Orientation.HORIZONTAL;
+    nodeData.layout.orientation = orientation;
+
+    // Mode
+    let mode = (nodeData.layout.mode ?? FoundationMode.AUTO);
+    mode = typeof mode === 'string' ? mode.toLowerCase() : FoundationMode.AUTO;
+    if (!allowedModes.includes(mode)) mode = FoundationMode.AUTO; // manual, auto
+    nodeData.layout.mode = mode;
 
     // Role mode has fixed role tag widths
     if (nodeData.layout.displayMode === DisplayMode.ROLE) {
@@ -42,6 +67,23 @@ export default class FoundationNode extends BaseContainerNode {
 
     // Ensure children array exists and pre-create raw/base when in AUTO mode
     if (!nodeData.children) nodeData.children = [];
+
+    // Validate explicit children roles when provided
+    if (nodeData.children.length > 0) {
+      const allowedRoles = ['raw', 'base'];
+      nodeData.children.forEach((child) => {
+        const role = (child.role || '').toLowerCase();
+        if (!role || !allowedRoles.includes(role)) {
+          console.error('FoundationNode child missing or invalid role', {
+            parentId: nodeData.id,
+            parentLabel: nodeData.label,
+            childId: child.id,
+            childLabel: child.label,
+            role: child.role,
+          });
+        }
+      });
+    }
     const isAuto = nodeData.layout.mode === FoundationMode.AUTO;
     const ensureChild = (role) => {
       let child = nodeData.children.find((c) => c.role === role || c.category === role);
@@ -54,7 +96,7 @@ export default class FoundationNode extends BaseContainerNode {
           category: role,
           type: "node",
           width: isRoleMode ? roleWidth : 150,
-          height: 44,
+          height: 20,
         };
         nodeData.children.push(child);
       }
@@ -96,9 +138,12 @@ export default class FoundationNode extends BaseContainerNode {
       this.data.children = [];
     }
 
-    // After super created the children, reference them by role
-    this.rawNode = this.childNodes.find((child) => child?.data?.role === 'raw') || this.initializeChildNode("raw", ["raw"]);
-    this.baseNode = this.childNodes.find((child) => child?.data?.role === 'base') || this.initializeChildNode("base", ["base"]);
+    // After super created the children, always run role-aware initializer to normalize labels/sizes
+    this.rawNode = this.initializeChildNode("raw", ["raw"]);
+    this.baseNode = this.initializeChildNode("base", ["base"]);
+
+    // Standardize explicit and auto-created child dimensions so height is consistent
+    this.standardizeChildDimensions();
 
     createInternalEdge(
       {
@@ -131,6 +176,28 @@ export default class FoundationNode extends BaseContainerNode {
 
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
+  }
+
+  /**
+   * Ensure raw/base child nodes have consistent dimensions across explicit and auto-generated cases
+   */
+  standardizeChildDimensions() {
+    const isRoleMode = this.data.layout.displayMode === DisplayMode.ROLE;
+    const standardWidth = isRoleMode ? roleWidth : 150;
+    const standardHeight = 20;
+
+    [this.rawNode, this.baseNode].forEach((child) => {
+      if (!child) return;
+      child.data.width = standardWidth;
+      child.data.height = standardHeight;
+      if (typeof child.resize === 'function') {
+        child.resize({ width: standardWidth, height: standardHeight });
+      }
+      if (isRoleMode && typeof child.redrawText === 'function') {
+        const newLabel = child.data.role || child.data.label;
+        child.redrawText(newLabel, standardWidth);
+      }
+    });
   }
 
   initializeChildNode(role, labels) {
@@ -353,6 +420,17 @@ export default class FoundationNode extends BaseContainerNode {
         // Ensure fixed role widths
         rawNode.data.width = roleWidth;
         baseNode.data.width = roleWidth;
+        // Ensure role labels in ROLE mode
+        if (rawNode.data) {
+          const newLabel = rawNode.data.role || rawNode.data.label;
+          rawNode.data.label = newLabel;
+          if (typeof rawNode.redrawText === 'function') rawNode.redrawText(newLabel, rawNode.data.width);
+        }
+        if (baseNode.data) {
+          const newLabel = baseNode.data.role || baseNode.data.label;
+          baseNode.data.label = newLabel;
+          if (typeof baseNode.redrawText === 'function') baseNode.redrawText(newLabel, baseNode.data.width);
+        }
         switch (orientation) {
           case 'vertical':
           case 'rotate90': {

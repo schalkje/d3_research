@@ -100,6 +100,23 @@ export default class AdapterNode extends BaseContainerNode {
     // Ensure children array exists and pre-populate with child data
     if (!nodeData.children) nodeData.children = [];
     
+    // Validate explicit children roles when provided
+    if (nodeData.children.length > 0) {
+      const allowedRoles = ['staging', 'archive', 'transform'];
+      nodeData.children.forEach((child) => {
+        const role = (child.role || '').toLowerCase();
+        if (!role || !allowedRoles.includes(role)) {
+          console.error('AdapterNode child missing or invalid role', {
+            parentId: nodeData.id,
+            parentLabel: nodeData.label,
+            childId: child.id,
+            childLabel: child.label,
+            role: child.role,
+          });
+        }
+      });
+    }
+    
     // Pre-create child data based on adapter mode so initChildren gets called
     if (nodeData.children.length === 0) {
       const childrenToCreate = AdapterNode.getRequiredChildrenForMode(nodeData.layout.mode);

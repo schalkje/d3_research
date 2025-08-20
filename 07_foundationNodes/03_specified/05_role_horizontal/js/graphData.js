@@ -20,7 +20,7 @@ export const demoData = {
         children: [
             {
                 id: "raw-role-h",
-                label: "raw",
+                label: "raw horizontal",
                 type: "Node",
                 role: "raw",
                 category: "raw",
@@ -30,7 +30,7 @@ export const demoData = {
             },
             {
                 id: "base-role-h", 
-                label: "base",
+                label: "base horizontal",
                 type: "Node",
                 role: "base",
                 category: "base",

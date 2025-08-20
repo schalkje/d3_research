@@ -43,6 +43,23 @@ export default class MartNode extends BaseContainerNode {
 
     // Ensure children exist and pre-create for AUTO mode
     if (!nodeData.children) nodeData.children = [];
+
+    // Validate explicit children roles when provided
+    if (nodeData.children.length > 0) {
+      const allowedRoles = ['load', 'report'];
+      nodeData.children.forEach((child) => {
+        const role = (child.role || '').toLowerCase();
+        if (!role || !allowedRoles.includes(role)) {
+          console.error('MartNode child missing or invalid role', {
+            parentId: nodeData.id,
+            parentLabel: nodeData.label,
+            childId: child.id,
+            childLabel: child.label,
+            role: child.role,
+          });
+        }
+      });
+    }
     const isAuto = nodeData.layout.mode === MartMode.AUTO;
     const ensureChild = (role) => {
       let child = nodeData.children.find((c) => c.role === role || c.category === role);
