@@ -100,11 +100,18 @@ export default class AdapterNode extends BaseContainerNode {
     // Ensure children array exists and pre-populate with child data
     if (!nodeData.children) nodeData.children = [];
     
-    // Validate explicit children roles when provided
+    // Validate explicit children roles when provided and normalize when possible
     if (nodeData.children.length > 0) {
       const allowedRoles = ['staging', 'archive', 'transform'];
       nodeData.children.forEach((child) => {
-        const role = (child.role || '').toLowerCase();
+        let role = (child.role || '').toLowerCase();
+        if (!role) {
+          const category = (child.category || '').toLowerCase();
+          if (allowedRoles.includes(category)) role = category;
+          else if ((child.label || '').toLowerCase().includes('staging')) role = 'staging';
+          else if ((child.label || '').toLowerCase().includes('archive')) role = 'archive';
+          else if ((child.label || '').toLowerCase().includes('transform')) role = 'transform';
+        }
         if (!role || !allowedRoles.includes(role)) {
           console.error('AdapterNode child missing or invalid role', {
             parentId: nodeData.id,
@@ -113,6 +120,15 @@ export default class AdapterNode extends BaseContainerNode {
             childLabel: child.label,
             role: child.role,
           });
+        } else {
+          // Normalize role and label for role display mode
+          child.role = role;
+          child.category = role;
+          if (nodeData.layout.displayMode === DisplayMode.ROLE) {
+            child.label = role;
+            child.width = 80;
+            if (!child.height) child.height = 44;
+          }
         }
       });
     }

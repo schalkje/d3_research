@@ -44,11 +44,17 @@ export default class MartNode extends BaseContainerNode {
     // Ensure children exist and pre-create for AUTO mode
     if (!nodeData.children) nodeData.children = [];
 
-    // Validate explicit children roles when provided
+    // Validate explicit children roles when provided and normalize when possible
     if (nodeData.children.length > 0) {
       const allowedRoles = ['load', 'report'];
       nodeData.children.forEach((child) => {
-        const role = (child.role || '').toLowerCase();
+        let role = (child.role || '').toLowerCase();
+        if (!role) {
+          const category = (child.category || '').toLowerCase();
+          if (allowedRoles.includes(category)) role = category;
+          else if ((child.label || '').toLowerCase().includes('load')) role = 'load';
+          else if ((child.label || '').toLowerCase().includes('report') || (child.label || '').toLowerCase().includes('rprt')) role = 'report';
+        }
         if (!role || !allowedRoles.includes(role)) {
           console.error('MartNode child missing or invalid role', {
             parentId: nodeData.id,
@@ -57,6 +63,15 @@ export default class MartNode extends BaseContainerNode {
             childLabel: child.label,
             role: child.role,
           });
+        } else {
+          // Normalize role and label for role display mode
+          child.role = role;
+          child.category = role;
+          if (nodeData.layout.displayMode === DisplayMode.ROLE) {
+            child.label = role;
+            child.width = roleWidth;
+            if (!child.height) child.height = 44;
+          }
         }
       });
     }
