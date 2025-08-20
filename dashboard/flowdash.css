@@ -162,15 +162,18 @@
 }
 
 
+/* Minimap overlays (base defaults; themes override) */
 .minimap-svg .eye {
-  /* fill: rgba(238, 237, 221, 0.6) */
-  fill: rgba(255, 255, 255, 0.7)
+  fill: var(--fd-bg, #ffffff);
+  fill-opacity: 0.5;
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
 }
 
 .minimap-svg .iris {
   fill: none;
-  stroke: rgba(255, 0, 0, 0.2);
-  stroke-width: 8px;
+  stroke: var(--fd-border, rgba(0,0,0,0.35));
+  stroke-width: 6px;
 }
 
 /* Minimap control buttons */
