@@ -6,6 +6,7 @@ import { createEdges } from "./edge.js";
 import { ConfigManager } from "./configManager.js";
 import { fetchDashboardFile } from "./data.js";
 import { LoadingOverlay, showLoading as showLoader, hideLoading as hideLoader, resolveLoadingContainer as resolveLoadingHost } from "./loadingOverlay.js";
+import { Minimap } from "./minimap.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -32,14 +33,7 @@ export class Dashboard {
       fitK: 1.0,
       fitTransform: null,
     };
-    this.minimap = {
-      active: false,
-      svg: null,
-      width: 0,
-      height: 0,
-      container: null,
-      eye: { x: 0, y: 0, width: 0, height: 0 },
-    };
+    this.minimap = new Minimap(this);
     this.selection = {
       nodes: [],
       edges: [],
@@ -81,7 +75,7 @@ export class Dashboard {
     const fit = this.computeFitForBoundingBox(bbox);
     this.main.fitK = fit.k || 1.0;
     this.main.fitTransform = fit.transform;
-    this.updateMinimapScaleIndicator?.();
+    this.minimap.updateScaleIndicator?.();
   }
 
    initialize(mainDivSelector, minimapDivSelector = null) {
@@ -111,7 +105,7 @@ export class Dashboard {
     this.main.root.onDblClick = (node) => this.zoomToNode(node);
 
     // initialize minimap (embedded)
-    this.initializeEmbeddedMinimap();
+    this.minimap.initializeEmbedded();
     this.main.root.onDisplayChange = () => {
       this.onMainDisplayChange();
     };
@@ -135,70 +129,7 @@ export class Dashboard {
     }
   }
 
-  /**
-   * Unified minimap sizing method - single source of truth for all minimap sizing
-   */
-  resizeMinimap() {
-    if (!this.minimap.svg) return;
 
-    const mm = this.data.settings.minimap;
-    if (!mm) return;
-
-    // Get target monitor pixel dimensions
-    const targetWidthPx = this.getMinimapTargetWidth(mm.size);
-    const graphAspectRatio = this.main.aspectRatio || this.main.divRatio || (this.main.width / this.main.height) || 16/9;
-    const targetHeightPx = Math.max(60, Math.round(targetWidthPx / graphAspectRatio));
-
-    // Store target dimensions for reference
-    this.minimap.targetWidthPx = targetWidthPx;
-    this.minimap.targetHeightPx = targetHeightPx;
-
-    // Calculate the scaling factor to convert monitor pixels to SVG coordinate space
-    const svgElement = this.main.svg.node();
-    const svgRect = svgElement.getBoundingClientRect();
-    const svgScale = (svgRect.width && this.main.width) ? (svgRect.width / this.main.width) : 1.0;
-
-    // Convert to SVG coordinate space
-    const svgCoordWidth = targetWidthPx / svgScale;
-    const svgCoordHeight = targetHeightPx / svgScale;
-
-    // Apply dimensions to minimap SVG
-    this.minimap.width = svgCoordWidth;
-    this.minimap.height = svgCoordHeight;
-    this.minimap.svg.attr('width', svgCoordWidth).attr('height', svgCoordHeight);
-
-    // Update minimap content scale using content bounds and set viewBox to content bbox
-    const contentBBox = this.getContentBBox();
-    if (!this.minimap.width || !this.minimap.height) {
-      // Ensure minimap has a reasonable default size before scale compute
-      this.minimap.width = this.minimap.width || (this.minimap.targetWidthPx || 240);
-      this.minimap.height = this.minimap.height || (this.minimap.targetHeightPx || 160);
-    }
-    this.minimap.scale = Math.min(this.minimap.width / contentBBox.width, this.minimap.height / contentBBox.height);
-    this.updateMinimapViewboxAndMasks(contentBBox);
-
-    // Update minimap content and sync with current zoom
-    this.updateMinimap();
-    const transform = d3.zoomIdentity
-      .translate(this.main.transform.x, this.main.transform.y)
-      .scale(this.main.transform.k);
-    updateViewport(this, transform);
-  }
-
-  /**
-   * Get target width in monitor pixels for minimap size token
-   */
-  getMinimapTargetWidth(sizeToken) {
-    if (typeof sizeToken === 'object' && sizeToken && typeof sizeToken.width === 'number') {
-      return sizeToken.width;
-    }
-    switch (sizeToken) {
-      case 's': return 180;
-      case 'l': return 400;
-      case 'm':
-      default: return 240;
-    }
-  }
 
   initializeEmbeddedMinimap() {
     const mm = this.data.settings.minimap;
@@ -313,7 +244,7 @@ export class Dashboard {
       this.data.settings.minimap.size = nextToken;
       // Use unified sizing method for consistent behavior
       this.resizeMinimap();
-      this.positionEmbeddedMinimap();
+      this.minimap.position();
       updateSizeLabel();
       // Notify via callback if provided
       if (typeof this.data.settings.minimap.onSizeChange === 'function') {
@@ -356,7 +287,7 @@ export class Dashboard {
       if (this.minimap.state.hideTimer) { clearTimeout(this.minimap.state.hideTimer); this.minimap.state.hideTimer = null; }
       this.minimap.state.interacting = false;
       this.updatePinVisualState();
-      this.updateMinimapHoverBindings();
+      this.minimap.updateHoverBindings();
     });
 
     // Create minimap svg and inner content group
@@ -413,428 +344,27 @@ export class Dashboard {
     this.positionEmbeddedMinimap();
 
     // Setup hover bindings based on current mode
-    this.updateMinimapHoverBindings();
+    this.minimap.updateHoverBindings();
 
     // Initial collapsed state
-    this.setMinimapCollapsed(mm.collapsed === true);
-    this.updateMinimapVisibilityByZoom();
-    this.updatePinVisualState();
+    this.minimap.setCollapsed(mm.collapsed === true);
+    this.minimap.updateVisibilityByZoom();
+    this.minimap.updatePinVisualState();
   }
 
-  setMinimapCollapsed(collapsed, persist = false) {
-    const mm = this.data.settings.minimap;
-    mm.collapsed = !!collapsed;
-    if (this.minimap.svg) {
-      this.minimap.svg.style('display', collapsed ? 'none' : 'block');
-    }
-    if (this.minimap.scaleText) {
-      this.minimap.scaleText.style('display', collapsed ? 'none' : 'block');
-    }
-    if (this.minimap.footer) {
-      this.minimap.footer.style('display', collapsed ? 'none' : 'block');
-    }
-    if (this.minimap.collapsedIcon) {
-      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
-      const showIcon = collapsed; // show icon only when collapsed
-      this.minimap.collapsedIcon.style('display', showIcon && !isHiddenMode ? 'block' : 'none');
-    }
-    if (this.minimap.collapseButton) {
-      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
-      this.minimap.collapseButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
-    }
-    if (this.minimap.pinButton) {
-      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
-      this.minimap.pinButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
-    }
-    if (this.minimap.sizeButton) {
-      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
-      this.minimap.sizeButton.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
-    }
-    if (this.minimap.header) {
-      const isHiddenMode = mm.mode === 'hidden' || mm.mode === 'disabled';
-      this.minimap.header.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
-    }
-    this.positionEmbeddedMinimap();
-    // Re-bind hover events when state changes to ensure proper behavior
-    this.updateMinimapHoverBindings();
-    if (persist && mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
-      try { window.localStorage.setItem(mm.persistence.storageKey, String(mm.collapsed)); } catch {}
-    }
-  }
 
-  updatePinVisualState() {
-    const mm = this.data.settings.minimap;
-    if (!this.minimap.pinButton) return;
-    this.minimap.pinButton.classed('active', !!mm.pinned);
-    this.minimap.pinButton.attr('aria-pressed', String(!!mm.pinned));
-    if (this.minimap.pinBase && this.minimap.pinSlash) {
-      this.minimap.pinSlash.style('display', mm.pinned ? 'none' : 'block');
-      // rotate icon group to differentiate
-      const iconGroup = this.minimap.pinButton.select('g.pin-icon');
-      if (!iconGroup.empty()) iconGroup.attr('transform', mm.pinned ? 'rotate(0,8,8)' : 'rotate(-20,8,8)');
-    }
-  }
 
-  positionEmbeddedMinimap() {
-    if (!this.minimap.overlay) return;
-    const mm = this.data.settings.minimap;
-    const padding = 12;
-    // Use monitor pixel sizing for cockpit DIV
-    const sizePx = {
-      width: this.minimap.targetWidthPx || 240,
-      height: this.minimap.targetHeightPx || 160
-    };
-    const iconSize = { width: 20, height: 14 };
 
-    // Position the cockpit DIV relative to the graph container
-    const graphContainer = this.main.svg.node().parentElement;
-    const w = Math.max(0, graphContainer.clientWidth || 0);
-    const h = Math.max(0, graphContainer.clientHeight || 0);
 
-    const corner = (mm.collapsedIcon && mm.collapsedIcon.position) || mm.position || 'bottom-right';
-    const headerH = this.minimap.headerHeight || 20;
-    const footerH = this.minimap.footerHeight || 20;
-    const cockpit = { width: sizePx.width, height: sizePx.height + headerH + footerH };
 
-    // Size the outer cockpit DIV and ensure proper positioning
-    this.minimap.cockpit
-      .style('width', `${cockpit.width}px`)
-      .style('height', `${cockpit.height}px`)
-      .style('position', this.main.svg.classed('flowdash-fullscreen') ? 'fixed' : 'absolute')
-      .style('right', '12px')
-      .style('bottom', '12px')
-      .style('z-index', '10000')
-      .style('display', 'block')
-      .style('pointer-events', 'none'); // Let events pass through to interactive elements
 
-    // Inside the cockpit, position header, body and footer using transforms, and size the chrome svg
-    if (this.minimap.chromeSvg) {
-      this.minimap.chromeSvg
-        .attr('width', cockpit.width)
-        .attr('height', cockpit.height);
-    }
-    if (this.minimap.header) {
-      this.minimap.header.attr('transform', `translate(${0},${0})`);
-      const yPad = 2;
-      let xRight = sizePx.width - 4;
-      if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${yPad})`); }
-      if (this.minimap.pinButton) { xRight -= 20; this.minimap.pinButton.attr('transform', `translate(${xRight},${yPad})`); }
-      if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${yPad})`); }
-      if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', 0).attr('y', 0).attr('width', sizePx.width).attr('height', headerH);
-    }
-    // Body SVG (minimap) positioned under header
-    this.minimap.svg.attr('x', 0).attr('y', headerH).attr('width', sizePx.width).attr('height', sizePx.height);
-    // Footer under body
-    if (this.minimap.footer) {
-      const footerTopY = headerH + sizePx.height;
-      this.minimap.footer.attr('transform', `translate(${0},${footerTopY})`);
-      if (this.minimap.footerHitRect) this.minimap.footerHitRect
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', sizePx.width)
-        .attr('height', footerH);
-      if (this.minimap.controls) {
-        const spacing = 6;
-        const buttonSize = 16;
-        const leftPadding = 6;
-        const rightPadding = 6;
-        const controlsStartX = leftPadding;
-        const footerCenterY = Math.floor(footerH / 2);
-        this.minimap.controls.attr('transform', `translate(${controlsStartX},${footerCenterY - buttonSize / 2})`);
-        this.minimap.btnZoomIn.attr('transform', 'translate(0,0)');
-        this.minimap.btnZoomOut.attr('transform', `translate(${buttonSize + spacing},0)`);
-        this.minimap.btnReset.attr('transform', `translate(${(buttonSize + spacing) * 2},0)`);
-        if (this.minimap.scaleText) {
-          this.minimap.scaleText
-            .attr('x', sizePx.width - rightPadding)
-            .attr('y', footerCenterY)
-            .style('text-anchor', 'end')
-            .style('dominant-baseline', 'middle');
-        }
-      }
-    }
-    // Collapsed icon positioned at bottom-right of the cockpit
-    // Position it at the bottom-right corner with some padding
-    this.minimap.collapsedIcon.attr('transform', `translate(${cockpit.width - iconSize.width - 2},${cockpit.height - iconSize.height - 2})`);
 
-    if (this.minimap.scaleText && this.minimap.footer) {
-      this.minimap.scaleText
-        .style('font-size', '12px')
-        .style('dominant-baseline', 'middle')
-        .style('fill', 'var(--minimap-scale-fg, #333)');
-      this.updateMinimapScaleIndicator();
-    }
-  }
 
-  updateMinimapScaleIndicator() {
-    const mm = this.data.settings.minimap;
-    if (!this.minimap.scaleText || !this.minimap.active || mm.scaleIndicator?.visible === false) return;
 
-    const baseline = this.main.fitK || 1;
-    const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
-    const label = `${pct}%`;
-    this.minimap.scaleText.text(label);
-  }
 
-  updateMinimapHoverBindings() {
-    const mm = this.data.settings.minimap || {};
-    // Clear previous bindings
-    if (this.minimap.collapsedIcon) {
-      this.minimap.collapsedIcon
-        .on('mouseenter', null)
-        .on('mouseleave', null)
-        .on('mouseover', null)
-        .on('mouseout', null)
-        .on('touchstart', null);
-    }
-    if (this.minimap.cockpit) {
-      this.minimap.cockpit
-        .on('mouseenter', null)
-        .on('mouseleave', null)
-        .on('mouseover', null)
-        .on('mouseout', null)
-        .on('mousedown', null)
-        .on('mouseup', null)
-        .on('wheel', null);
-    }
-    if (!mm) return;
 
-    if (mm.mode === 'hover' || (mm.mode === 'always' && !mm.pinned)) {
-      const show = () => {
-        if (this.data.settings.minimap.mode !== 'hover' && this.data.settings.minimap.pinned) return;
-        // cancel pending hide and show immediately
-        if (this.minimap.state.hideTimer) { clearTimeout(this.minimap.state.hideTimer); this.minimap.state.hideTimer = null; }
-        this.setMinimapCollapsed(false);
-      };
-      const hide = () => {
-        if (!this.data.settings.minimap.pinned && this.data.settings.minimap.mode === 'hover') this.setMinimapCollapsed(true);
-      };
 
-      // Only bind hover events to the collapsed icon (the actual button)
-      // This prevents hover activation from the invisible cockpit space
-      if (this.minimap.collapsedIcon) {
-        this.minimap.collapsedIcon
-          .on('mouseenter', () => {
-            this.minimap.state.isHover = true;
-            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
-            if (this.minimap.state.showTimer) clearTimeout(this.minimap.state.showTimer);
-            this.minimap.state.showTimer = setTimeout(show, mm.hover?.showDelayMs ?? 120);
-          })
-          .on('mouseleave', () => {
-            this.minimap.state.isHover = false;
-            if (this.minimap.state.showTimer) { clearTimeout(this.minimap.state.showTimer); this.minimap.state.showTimer = null; }
-            // If already expanded (not collapsed anymore), ignore icon mouseleave to prevent flicker
-            if (this.data.settings.minimap.collapsed !== true) return;
-            if (!this.data.settings.minimap.pinned)
-              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
-          })
-          .on('touchstart', () => { show(); setTimeout(hide, mm.touch?.autoHideAfterMs ?? 2500); });
-      }
 
-      // Only bind cockpit hover events when the cockpit is actually visible (not collapsed)
-      // This prevents hover detection on invisible/inactive cockpit space
-      if (this.minimap.cockpit && !mm.collapsed) {
-        this.minimap.cockpit
-          .on('mouseenter', () => {
-            this.minimap.state.isHover = true;
-            if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
-            show();
-          })
-          .on('mouseleave', (event) => {
-            this.minimap.state.isHover = false;
-            if (!this.data.settings.minimap.pinned && !this.minimap.state.interacting && this.data.settings.minimap.mode === 'hover')
-              this.minimap.state.hideTimer = setTimeout(hide, mm.hover?.hideDelayMs ?? 300);
-          })
-          .on('mousedown', () => { this.minimap.state.interacting = true; })
-          .on('mouseup', () => { this.minimap.state.interacting = false; })
-          .on('wheel', () => {
-            this.minimap.state.interacting = true; if (this.minimap.state.hideTimer) clearTimeout(this.minimap.state.hideTimer);
-            if (this.minimap.state.wheelTimer) clearTimeout(this.minimap.state.wheelTimer);
-            this.minimap.state.wheelTimer = setTimeout(() => { this.minimap.state.interacting = false; if (!this.data.settings.minimap.pinned && this.data.settings.minimap.mode === 'hover') hide(); }, 250);
-          });
-      }
-    }
-  }
-
-  initializeMinimap() {
-    
-
-    const dashboard = this;
-
-    // Initialize drag behavior
-    const drag = d3.drag().on("drag", function (event) {
-      dragEye(dashboard, event);
-    });
-    this.minimap.svg.call(drag);
-    dashboard.minimap.drag = drag;
-
-    // Initialize zoom behavior
-    const zoom = d3
-      .zoom()
-      .scaleExtent([0.1, 40])
-      .on("zoom", (event) => this.zoomMinimap(event));
-    this.minimap.svg.call(zoom);
-    dashboard.minimap.zoom = zoom;
-
-    // compute the scale of the minimap compared to the content bounds
-    const contentBBox = this.getContentBBox();
-    this.minimap.scale = Math.min(this.minimap.width / contentBBox.width, this.minimap.height / contentBBox.height);
-
-    // set minimap viewBox to content bounds so there's no large whitespace
-    this.updateMinimapViewboxAndMasks(contentBBox);
-
-    this.minimap.eye = {
-      x: -this.main.width / 2,
-      y: -this.main.height / 2,
-      width: this.main.width,
-      height: this.main.height,
-    };
-
-    const defs = this.minimap.svg.append("defs");
-    const eye = defs.append("mask").attr("id", "fade-mask");
-    eye
-      .append("rect")
-      .attr("id", "eyeball")
-      .attr("x", -this.main.width / 2)
-      .attr("y", -this.main.height / 2)
-      .attr("width", this.main.width)
-      .attr("height", this.main.height)
-      .attr("class", "minimap-eyeball");
-    eye
-      .append("rect")
-      .attr("id", "pupil")
-      .attr("class", "minimap-pupil")
-      .attr("x", this.minimap.eye.x)
-      .attr("y", this.minimap.eye.y)
-      .attr("width", this.minimap.eye.width)
-      .attr("height", this.minimap.eye.height);
-
-    this.minimap.svg
-      .insert("rect", ":first-child") // Insert as the first child
-      .attr("class", `background`)
-      .attr("width", contentBBox.width)
-      .attr("height", contentBBox.height)
-      .attr("x", contentBBox.x)
-      .attr("y", contentBBox.y);
-
-    this.minimap.svg
-      .append("rect")
-      .attr("class", `eye`)
-      .attr("width", contentBBox.width)
-      .attr("height", contentBBox.height)
-      .attr("x", contentBBox.x)
-      .attr("y", contentBBox.y)
-      .attr("mask", "url(#fade-mask)");
-
-    this.minimap.svg
-      .append("rect")
-      .attr("class", `iris`)
-      .attr("x", this.minimap.eye.x)
-      .attr("y", this.minimap.eye.y)
-      .attr("width", this.minimap.eye.width)
-      .attr("height", this.minimap.eye.height);
-
-    // return zoom;
-    return zoom;
-  }
-
-  updateMinimap() {
-    // Use requestAnimationFrame to Wait for the Next Render Cycle
-    requestAnimationFrame(() => {
-      // Performance optimization: Only update minimap content if not collapsed
-      if (this.minimap.svg && this.minimap.svg.style('display') !== 'none') {
-        // Performance optimization: Use a lighter approach for large dashboards
-        const allNodes = this.main.root.getAllNodes(false);
-        if (allNodes.length > 100) {
-          // For large dashboards, use a simplified representation
-          this.updateMinimapSimplified(allNodes);
-        } else {
-          // For smaller dashboards, use the full clone approach
-          this.updateMinimapFullClone();
-        }
-      }
-    });
-  }
-
-  updateMinimapSimplified(allNodes) {
-    // Simplified minimap for large dashboards - just update viewBox and eye
-    const contentBBox = this.getContentBBox();
-    this.updateMinimapViewboxAndMasks(contentBBox);
-
-    // Clear existing content
-    const minimap = d3.select(".minimap");
-    minimap.selectAll("*").remove();
-
-    // Create simplified rectangles for each node
-    allNodes.forEach(node => {
-      const bbox = getBoundingBoxRelativeToParent(node.element, this.main.container);
-      minimap.append("rect")
-        .attr("x", bbox.x)
-        .attr("y", bbox.y)
-        .attr("width", bbox.width)
-        .attr("height", bbox.height)
-        .attr("fill", node.isContainer ? "#4a90e2" : "#7ed321")
-        .attr("opacity", 0.7);
-    });
-  }
-
-  updateMinimapFullClone() {
-    // Original full clone approach for smaller dashboards
-    const clone = this.main.container.node().cloneNode(true);
-    const minimap = d3.select(".minimap");
-    minimap.selectAll("*").remove();
-    minimap.node().appendChild(clone);
-    this.minimap.container = d3.select(clone);
-    this.minimap.container.attr("transform", null);
-    this.updateMinimapViewboxAndMasks(this.getContentBBox());
-  }
-
-  // Function to update the position and size of the eye
-  updateMinimapEye(x, y, width, height) {
-    if (!this.minimap.active || !this.minimap.svg) return;
-
-    // console.log("updateMinimapEye", this);
-    // Update minimap.eye properties
-    this.minimap.eye.x = x;
-    this.minimap.eye.y = y;
-    this.minimap.eye.width = width;
-    this.minimap.eye.height = height;
-
-    // Performance optimization: Batch DOM updates
-    const svg = this.minimap.svg;
-    const pupil = svg.select("#pupil");
-    const iris = svg.select(".iris");
-
-    if (!pupil.empty()) {
-      pupil.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
-    }
-    if (!iris.empty()) {
-      iris.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
-    }
-  }
-
-  // Set minimap viewBox and mask geometry to match content bounds
-  updateMinimapViewboxAndMasks(contentBBox) {
-    if (!this.minimap?.svg) return;
-    // Update the minimap viewBox to content bounds to avoid whitespace
-    this.minimap.svg.attr(
-      'viewBox',
-      `${contentBBox.x} ${contentBBox.y} ${contentBBox.width} ${contentBBox.height}`
-    );
-    // Update mask and background sizes if the defs exist
-    const bg = this.minimap.svg.select('rect.background');
-    if (!bg.empty()) {
-      bg.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
-    }
-    const eye = this.minimap.svg.select('rect.eye');
-    if (!eye.empty()) {
-      eye.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
-    }
-    const eyeball = this.minimap.svg.select('#eyeball');
-    if (!eyeball.empty()) {
-      eyeball.attr('x', contentBBox.x).attr('y', contentBBox.y).attr('width', contentBBox.width).attr('height', contentBBox.height);
-    }
-  }
 
   initializeFullscreenToggle() {
     const graphContainer = this.main.svg.node().parentElement;
@@ -902,7 +432,7 @@ export class Dashboard {
       // Minimap sizing with fixed monitor pixel size
       if (this.minimap.active) {
         // Use unified sizing method for consistent behavior
-        this.resizeMinimap();
+        this.minimap.resize();
       }
 
       // Apply transform to keep relative zoom consistent
@@ -915,9 +445,9 @@ export class Dashboard {
 
       // Update minimap clone and eye position
       if (this.minimap.active) {
-        this.updateMinimap();
-        updateViewport(this, newTransform);
-        this.positionEmbeddedMinimap();
+        this.minimap.update();
+        this.minimap.updateViewport(newTransform);
+        this.minimap.position();
       }
     };
 
@@ -943,12 +473,12 @@ export class Dashboard {
         this.main.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
         if (this.minimap.active) {
           this.minimap.svg.attr('viewBox', [-this.main.width / 2, -this.main.height / 2, this.main.width, this.main.height]);
-          this.updateMinimap();
+          this.minimap.update();
           const transform = d3.zoomIdentity
             .translate(this.main.transform.x, this.main.transform.y)
             .scale(this.main.transform.k);
-          updateViewport(this, transform);
-          this.positionEmbeddedMinimap();
+          this.minimap.updateViewport(transform);
+          this.minimap.position();
         }
         button.classList.remove('fullscreen-active');
       }
@@ -990,7 +520,7 @@ export class Dashboard {
     const newTransform = d3.zoomIdentity.translate(newX, newY).scale(newK);
 
     // Minimap keeps constant screen size; recalc via unified sizing
-    if (this.minimap.active) this.resizeMinimap();
+    if (this.minimap.active) this.minimap.resize();
 
     // Apply transform and propagate to zoom behaviors
     this.main.transform = { k: newK, x: newX, y: newY };
@@ -1001,10 +531,10 @@ export class Dashboard {
     this.recomputeBaselineFit();
 
     if (this.minimap.active) {
-      this.updateMinimap();
-      updateViewport(this, newTransform);
-      this.positionEmbeddedMinimap();
-      this.updateMinimapScaleIndicator?.();
+      this.minimap.update();
+      this.minimap.updateViewport(newTransform);
+      this.minimap.position();
+      this.minimap.updateScaleIndicator?.();
     }
   }
 
@@ -1167,7 +697,7 @@ export class Dashboard {
         if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
         this.isMainAndMinimapSyncing = true;
         // Update the minimap
-        this.updateMinimap();
+        this.minimap.update();
         this.isMainAndMinimapSyncing = false;
       }
 
@@ -1177,7 +707,7 @@ export class Dashboard {
         this.hasPerformedInitialZoomToRoot = true;
       }
 
-      this.positionEmbeddedMinimap();
+      this.minimap.position();
 
       // Hide loading once the first full draw/display cycle completes
       if (this._initialLoading) {
@@ -1189,49 +719,7 @@ export class Dashboard {
     });
   }
 
-  updateMinimapVisibilityByZoom() {
-    const mm = this.data.settings.minimap;
-    if (!mm) return;
-    // Auto-hide in hover mode, or in always mode when unpinned
-    const autoHideActive = (mm.mode === 'hover') || (mm.mode === 'always' && !mm.pinned);
-    if (!autoHideActive) return;
-    if (mm.pinned) return; // keep visible when pinned
-    const threshold = mm.hover?.zoomFitThreshold ?? 1.0;
-    const isZoomedOutOrFit = (this.main.transform.k || 1) <= threshold;
-    // Only auto-collapse if user hasn't explicitly collapsed
-    if (mm.collapsed) {
-      // if the user is interacting or hovering, keep visible
-      if (this.minimap.state?.interacting || this.minimap.state?.isHover) {
-        this.setMinimapCollapsed(false);
-      } else {
-        this.setMinimapCollapsed(true);
-      }
-      return;
-    }
-    // When zoomed out, show icon-only; when zoomed in, show preview
-    // But keep visible while interacting/hovering
-    if (this.minimap.state?.interacting || this.minimap.state?.isHover) {
-      this.setMinimapCollapsed(false);
-    } else {
-      this.setMinimapCollapsed(isZoomedOutOrFit);
-    }
-  }
 
-  scheduleMinimapUpdate(transform) {
-    // Debounced minimap updates to improve zoom performance
-    if (this._minimapUpdateTimeout) {
-      clearTimeout(this._minimapUpdateTimeout);
-    }
-
-    this._minimapUpdateTimeout = setTimeout(() => {
-      requestAnimationFrame(() => {
-        updateViewport(this, transform);
-        this.updateMinimapScaleIndicator();
-        // Avoid feeding transform into minimap zoom to reduce recursive zoom events
-        this.updateMinimapVisibilityByZoom();
-      });
-    }, 16); // ~1 frame at 60fps
-  }
 
   zoomMain(zoomEvent) {
     if (this.isMainAndMinimapSyncing) return;
@@ -1247,7 +735,7 @@ export class Dashboard {
 
     // Performance optimization: Batch minimap updates with debouncing
     if (this.minimap.active) {
-      this.scheduleMinimapUpdate(zoomEvent.transform);
+      this.minimap.scheduleUpdate(zoomEvent.transform);
     }
 
     this.isMainAndMinimapSyncing = false;
@@ -1266,7 +754,7 @@ export class Dashboard {
     this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
 
     // Performance optimization: Batch minimap updates with debouncing
-    this.scheduleMinimapUpdate(zoomEvent.transform);
+    this.minimap.scheduleUpdate(zoomEvent.transform);
 
     this.isMainAndMinimapSyncing = false;
   }
@@ -1293,7 +781,7 @@ export class Dashboard {
     const fit = this.computeFitForBoundingBox(bbox);
     this.main.fitK = fit.k || 1.0;
     this.main.fitTransform = fit.transform;
-    this.updateMinimapScaleIndicator?.();
+    this.minimap.updateScaleIndicator?.();
     // Then apply the fit transform
     this.zoomToBoundingBox(bbox);
   }
@@ -1511,7 +999,7 @@ export class Dashboard {
     this.main.container.attr("transform", transform);
 
     // Update the viewport in the minimap
-    updateViewport(this, transform);
+    this.minimap.updateViewport(transform);
 
     // Store the current zoom level at svg level, for the next event
     if (this.minimap.active)
@@ -1648,42 +1136,7 @@ function calculateScaleAndTranslate(boundingBox, dashboard) {
   };
 }
 
-function updateViewport(dashboard, transform) {
-  // console.log("updateViewport", dashboard, transform);
-  // js: is this the right function name?
-  const x = (transform.x + dashboard.main.width / 2) / -transform.k;
-  const y = (transform.y + dashboard.main.height / 2) / -transform.k;
-  const width = dashboard.main.width / transform.k;
-  const height = dashboard.main.height / transform.k;
-  dashboard.updateMinimapEye(x, y, width, height);
-}
 
-function dragEye(dashboard, dragEvent) {
-  // console.log("dragEye", dragEvent);
-  // Calculate scaled movement for the eye rectangle
-  const scaledDx = dragEvent.dx / dashboard.minimap.scale;
-  const scaledDy = dragEvent.dy / dashboard.minimap.scale;
-
-  // Calculate the new eye position based on the scaled movement
-  const newEyeX = dashboard.minimap.eye.x + scaledDx;
-  const newEyeY = dashboard.minimap.eye.y + scaledDy;
-
-  // Update the eye's position
-  dashboard.updateMinimapEye(newEyeX, newEyeY, dashboard.minimap.eye.width, dashboard.minimap.eye.height);
-
-  // Calculate the corresponding translation for the main view, maintaining the current scale
-  dashboard.main.transform.x = -newEyeX * dashboard.main.transform.k - dashboard.main.width / 2;
-  dashboard.main.transform.y = -newEyeY * dashboard.main.transform.k - dashboard.main.height / 2;
-
-  // Apply the updated transformation to the main view
-  const transform = d3.zoomIdentity
-    .translate(dashboard.main.transform.x, dashboard.main.transform.y)
-    .scale(dashboard.main.transform.k);
-  dashboard.main.container.attr("transform", transform);
-
-  // Store the current zoom level at svg level, for the next event
-  dashboard.main.svg.call(dashboard.main.zoom.transform, transform);
-}
 
 
 export function createAndInitDashboard(dashboardData, mainDivSelector, thirdArg = null) {  
@@ -1742,28 +1195,28 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
     const recalcSize = () => {
       // Use unified sizing so visual size is in monitor pixels
       if (dash.minimap?.svg) {
-        dash.resizeMinimap();
+        dash.minimap.resize();
       }
     };
 
     if (propertyPath.endsWith('minimap.size') || propertyPath.includes('.minimap.size')) {
       recalcSize();
-      dash.updateMinimap();
+      dash.minimap.update();
       // Recompute minimap content scale used for drag compensation
       dash.minimap.scale = Math.min(dash.minimap.width / dash.main.width, dash.minimap.height / dash.main.height);
-      dash.positionEmbeddedMinimap();
+      dash.minimap.position();
     }
 
     if (propertyPath.endsWith('minimap.position') || propertyPath.includes('.minimap.position')) {
-      dash.positionEmbeddedMinimap();
+      dash.minimap.position();
     }
 
     if (propertyPath.endsWith('minimap.collapsedIcon.position') || propertyPath.includes('.minimap.collapsedIcon.position')) {
-      dash.positionEmbeddedMinimap();
+      dash.minimap.position();
     }
 
     if (propertyPath.endsWith('minimap.collapsed') || propertyPath.includes('.minimap.collapsed')) {
-      dash.setMinimapCollapsed(!!value, true);
+      dash.minimap.setCollapsed(!!value, true);
     }
 
     if (propertyPath.endsWith('minimap.mode') || propertyPath.includes('.minimap.mode')) {
@@ -1778,17 +1231,17 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
         // Do not change collapsed state when switching to hover
       } else if (newMode === 'disabled') {
         // Cannot destroy easily at runtime; hide cockpit
-        dash.setMinimapCollapsed(true);
+        dash.minimap.setCollapsed(true);
       }
-      dash.positionEmbeddedMinimap();
-      dash.updateMinimapHoverBindings();
+      dash.minimap.position();
+      dash.minimap.updateHoverBindings();
     }
 
     if (propertyPath.endsWith('minimap.pinned') || propertyPath.includes('.minimap.pinned')) {
-      dash.updatePinVisualState();
+      dash.minimap.updatePinVisualState();
       // Pinned strictly controls mode; do not touch collapsed state
-      dash.updateMinimapVisibilityByZoom();
-      dash.updateMinimapHoverBindings();
+      dash.minimap.updateVisibilityByZoom();
+      dash.minimap.updateHoverBindings();
     }
 
     if (propertyPath.endsWith('scaleIndicator.visible') || propertyPath.includes('.minimap.scaleIndicator.visible')) {
@@ -1801,8 +1254,8 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
       } else if (dash.minimap.scaleText) {
         dash.minimap.scaleText.style('display', 'none');
       }
-      dash.positionEmbeddedMinimap();
-      dash.updateMinimapScaleIndicator();
+      dash.minimap.position();
+      dash.minimap.updateScaleIndicator();
     }
   } catch (e) {
     console.warn('setDashboardProperty post-update failed', e);
