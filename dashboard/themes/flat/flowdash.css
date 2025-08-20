@@ -26,6 +26,10 @@ text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 700; }
 .zoom-button:hover circle { fill: #eef2ff !important; stroke: #c7d2fe !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
+/* Minimap overlays */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.15; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris { fill: none !important; stroke: var(--fd-accent) !important; stroke-width: 6px !important; }
+
 /* Strong, flat status palette */
 .shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] { fill: #e2e8f0 !important; stroke: #cbd5e1 !important; }
 .shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] { fill: #dbeafe !important; stroke: #60a5fa !important; }

@@ -36,9 +36,10 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 .zoom-button:hover circle { fill: rgba(255,0,229,0.1) !important; stroke: #3b3a5a !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-/* Minimap overlays */
-.minimap-svg .eye { fill: rgba(255,0,229,0.08) !important; }
-.minimap-svg .iris { stroke: rgba(0,229,255,0.28) !important; }
+/* Minimap overlays: subtle magenta eye, crisp cyan iris */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.50; 
+}
+.minimap-svg .iris { fill: none !important; stroke: rgba(0,229,255,0.45) !important; stroke-width: 6px !important; filter: drop-shadow(0 0 8px rgba(0,229,255,0.35)); }
 
 /* Minimap size button */
 .minimap-size-button .btn-bg { fill: rgba(255,0,229,0.08) !important; stroke: #3b3a5a !important; }

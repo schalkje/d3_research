@@ -89,9 +89,8 @@ text, .label, .rect.label {
 .zoom-button:hover circle { fill: rgba(255,255,255,0.18) !important; stroke: rgba(255,255,255,0.45) !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-/* Minimap overlays */
-.minimap-svg .eye { fill: rgba(255,255,255,0.12) !important; }
-.minimap-svg .iris { stroke: rgba(143,211,255,0.35) !important; }
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.44; filter: blur(10px); -webkit-filter: blur(10px); }
+.minimap-svg .iris { fill: none !important; stroke: rgba(143,211,255,0.5) !important; stroke-width: 6px !important; }
 
 /* Minimap size button */
 .minimap-size-button .btn-bg { fill: rgba(255,255,255,0.16) !important; stroke: rgba(255,255,255,0.45) !important; backdrop-filter: blur(8px); }

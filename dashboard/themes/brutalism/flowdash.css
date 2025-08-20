@@ -57,6 +57,10 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 .zoom-button:hover circle { fill: #ffe066; stroke: #000; stroke-width: 2px; }
 .zoom-icon { fill: #000; }
 
+/* Minimap overlays: bold outline, faint background with blur */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.52; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris { fill: none !important; stroke: #000 !important; stroke-width: 6px !important; }
+
 /* Brutalist state overrides: vivid fills, heavy outlines, snappy motion */
 @keyframes brutal-dash {
   to { stroke-dashoffset: -64; }

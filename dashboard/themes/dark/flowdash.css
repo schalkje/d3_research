@@ -28,13 +28,8 @@ text, .label, .rect.label { fill: var(--fd-text); }
 .zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
 .zoom-icon { fill: var(--fd-text); }
 
-/* Minimap overlays */
-.minimap-svg .eye { fill: rgba(255,255,255,0.06) !important; }
-.minimap-svg .iris {
-  fill: rgba(18, 24, 33, 0.22) !important; /* subtle dark fill aligned with surface */
-  stroke: rgba(107, 182, 255, 0.28) !important; /* cool accent tint */
-  stroke-width: 6px !important;
-}
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.60; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris { fill: none !important; stroke: rgba(107, 182, 255, 0.35) !important; stroke-width: 6px !important; }
 
 /* Minimap size button */
 .minimap-size-button .btn-bg { fill: #1a2230 !important; stroke: var(--fd-border) !important; }

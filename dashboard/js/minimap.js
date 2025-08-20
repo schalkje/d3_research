@@ -38,9 +38,21 @@ export class Minimap {
     this.footerHitRect = null;
     this.drag = null;
     this.zoom = null;
+    this.useDesaturateLayering = false;
+    this.grayGroup = null;
+    this.colorGroup = null;
     
     // State management
     this.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
+  }
+
+  getActiveThemeName() {
+    try {
+      const root = (typeof document !== 'undefined') ? document.documentElement : null;
+      const body = (typeof document !== 'undefined') ? document.body : null;
+      const attr = (root && root.getAttribute('data-theme')) || (body && body.getAttribute('data-theme')) || '';
+      return String(attr || '').toLowerCase();
+    } catch { return ''; }
   }
 
   /**
@@ -649,6 +661,21 @@ export class Minimap {
     };
 
     const defs = this.svg.append("defs");
+    // Optional grayscale filter for themes that want B/W outside the eye
+    const themeName = this.getActiveThemeName();
+    this.useDesaturateLayering = themeName === 'cyberpunk';
+    if (this.useDesaturateLayering) {
+      const filt = defs.append('filter').attr('id', 'mm-desaturate');
+      filt.append('feColorMatrix').attr('type', 'saturate').attr('values', 0);
+      // ClipPath for colored pupil region
+      const pupilClip = defs.append('clipPath').attr('id', 'pupil-clip');
+      pupilClip.append('rect')
+        .attr('id', 'pupil-clip-rect')
+        .attr('x', this.eye.x)
+        .attr('y', this.eye.y)
+        .attr('width', this.eye.width)
+        .attr('height', this.eye.height);
+    }
     const eye = defs.append("mask").attr("id", "fade-mask");
     eye
       .append("rect")
@@ -674,6 +701,16 @@ export class Minimap {
       .attr("height", contentBBox.height)
       .attr("x", contentBBox.x)
       .attr("y", contentBBox.y);
+
+    // Content layering: for cyberpunk, render grayscale layer + clipped color layer
+    if (this.useDesaturateLayering) {
+      this.grayGroup = this.svg.append('g')
+        .attr('class', 'minimap minimap-gray')
+        .attr('filter', 'url(#mm-desaturate)');
+      this.colorGroup = this.svg.append('g')
+        .attr('class', 'minimap minimap-color')
+        .attr('clip-path', 'url(#pupil-clip)');
+    }
 
     this.svg
       .append("rect")
@@ -719,30 +756,57 @@ export class Minimap {
     this.updateViewboxAndMasks(contentBBox);
 
     // Clear existing content
-    const minimap = d3.select(".minimap");
-    minimap.selectAll("*").remove();
+    if (this.useDesaturateLayering) {
+      if (this.grayGroup) this.grayGroup.selectAll('*').remove();
+      if (this.colorGroup) this.colorGroup.selectAll('*').remove();
+    } else {
+      const minimap = d3.select(".minimap");
+      minimap.selectAll("*").remove();
+    }
 
     // Create simplified rectangles for each node
-    allNodes.forEach(node => {
-      const bbox = getBoundingBoxRelativeToParent(node.element, this.dashboard.main.container);
-      minimap.append("rect")
-        .attr("x", bbox.x)
-        .attr("y", bbox.y)
-        .attr("width", bbox.width)
-        .attr("height", bbox.height)
-        .attr("fill", node.isContainer ? "#4a90e2" : "#7ed321")
-        .attr("opacity", 0.7);
-    });
+    const drawRects = (groupSel) => {
+      allNodes.forEach(node => {
+        const bbox = getBoundingBoxRelativeToParent(node.element, this.dashboard.main.container);
+        groupSel.append("rect")
+          .attr("x", bbox.x)
+          .attr("y", bbox.y)
+          .attr("width", bbox.width)
+          .attr("height", bbox.height)
+          .attr("fill", node.isContainer ? "#4a90e2" : "#7ed321")
+          .attr("opacity", 0.7);
+      });
+    };
+    if (this.useDesaturateLayering) {
+      drawRects(this.grayGroup);
+      drawRects(this.colorGroup);
+    } else {
+      const minimap = d3.select(".minimap");
+      drawRects(minimap);
+    }
   }
 
   updateFullClone() {
-    // Original full clone approach for smaller dashboards
-    const clone = this.dashboard.main.container.node().cloneNode(true);
-    const minimap = d3.select(".minimap");
-    minimap.selectAll("*").remove();
-    minimap.node().appendChild(clone);
-    this.container = d3.select(clone);
-    this.container.attr("transform", null);
+    // Clone approach for smaller dashboards
+    const sourceNode = this.dashboard.main.container.node();
+    if (this.useDesaturateLayering) {
+      if (this.grayGroup) this.grayGroup.selectAll('*').remove();
+      if (this.colorGroup) this.colorGroup.selectAll('*').remove();
+      if (sourceNode) {
+        const grayClone = sourceNode.cloneNode(true);
+        const colorClone = sourceNode.cloneNode(true);
+        this.grayGroup.node().appendChild(grayClone);
+        this.colorGroup.node().appendChild(colorClone);
+      }
+      this.container = this.grayGroup; // keep a reference for compatibility
+    } else {
+      const clone = sourceNode ? sourceNode.cloneNode(true) : null;
+      const minimap = d3.select(".minimap");
+      minimap.selectAll("*").remove();
+      if (clone) minimap.node().appendChild(clone);
+      this.container = d3.select(clone);
+      if (this.container) this.container.attr("transform", null);
+    }
     this.updateViewboxAndMasks(this.dashboard.getContentBBox());
   }
 
@@ -760,12 +824,16 @@ export class Minimap {
     const svg = this.svg;
     const pupil = svg.select("#pupil");
     const iris = svg.select(".iris");
+    const pupilClipRect = svg.select('#pupil-clip-rect');
 
     if (!pupil.empty()) {
       pupil.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
     }
     if (!iris.empty()) {
       iris.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+    }
+    if (!pupilClipRect.empty()) {
+      pupilClipRect.attr('x', x).attr('y', y).attr('width', width).attr('height', height);
     }
   }
 

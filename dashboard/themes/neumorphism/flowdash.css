@@ -27,6 +27,15 @@ text, .label, .rect.label { fill: var(--fd-text); }
 .zoom-button:hover circle { fill: #f6f8fc; stroke: #d7dce5; }
 .zoom-icon { fill: var(--fd-text); }
 
+/* Minimap overlays: eye soft, iris subtle raised outline */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.6; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris {
+  fill: none !important;
+  stroke: #b8c0cc !important;
+  stroke-width: 6px !important;
+  filter: drop-shadow(3px 3px 6px rgba(0,0,0,.10)) drop-shadow(-3px -3px 6px rgba(255,255,255,.7));
+}
+
 
 /* status colors: clearer separation with soft, neomorphic tints */
 .shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {

@@ -1,0 +1,43 @@
+:root, [data-theme="alt"] {
+  --fd-bg: #fafafa;
+  --fd-surface: #ffffff;
+  --fd-text: #1b1f24;
+  --fd-muted: #6b7280;
+  --fd-accent: #3b82f6;
+  --fd-border: #e5e7eb;
+  --fd-edge: #9aa3b2;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); }
+
+/* canvases */
+#graph { background-color: var(--fd-surface) !important; border: 1px solid var(--fd-border) !important; }
+.minimap-svg { background-color: rgba(255,255,255,0.7) !important; border: 1px solid var(--fd-border) !important; border-radius: 6px; }
+/* Ensure uncovered minimap background matches graph surface */
+.minimap-svg rect.background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
+svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !important; border-radius: 8px; }
+
+/* core shapes */
+.shape, .container-shape, .rect.shape, .adapter.shape, .SSIS.shape, .circle.shape {
+  fill: var(--fd-surface) !important;
+  stroke: var(--fd-border) !important;
+  stroke-width: 1.25px;
+  rx: 6 !important; ry: 6 !important;
+}
+.header-background { fill: var(--fd-surface) !important; stroke: var(--fd-border) !important; }
+.header-text { fill: var(--fd-text) !important; }
+
+text, .label, .rect.label { fill: var(--fd-text) !important; }
+.edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; }
+
+.zoom-button:hover circle { fill: #eef2ff !important; stroke: #e5e7eb !important; }
+.zoom-icon { fill: var(--fd-text) !important; }
+
+/* Minimap overlays: understated eye, clear iris */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.52; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris { fill: none !important; stroke: var(--fd-accent) !important; stroke-width: 6px !important; }
+
+/* selection */
+.selected .shape { stroke: var(--fd-accent) !important; stroke-width: 2.25px !important; }
+
+

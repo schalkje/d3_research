@@ -53,13 +53,9 @@ text, .label, .rect.label { fill: var(--fd-text) !important; text-shadow: 0 0 4p
 .zoom-button:hover circle { fill: rgba(0,255,102,0.08) !important; stroke: #1e3a1e !important; }
 .zoom-icon { fill: var(--fd-text) !important; }
 
-/* Minimap overlays */
-.minimap-svg .eye { fill: rgba(0,255,102,0.08) !important; }
-.minimap-svg .iris {
-  fill: rgba(8,16,10,0.22) !important; /* slightly greenish dark haze */
-  stroke: rgba(0,255,102,0.18) !important;
-  stroke-width: 6px !important;
-}
+/* Minimap overlays: phosphor faint eye, crisp scanline iris */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.60; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris { fill: none !important; stroke: rgba(0,255,102,0.28) !important; stroke-width: 6px !important; filter: drop-shadow(0 0 6px rgba(0,255,102,0.25)); }
 
 /* Minimap size button */
 .minimap-size-button .btn-bg { fill: rgba(0,255,102,0.06) !important; stroke: var(--fd-border) !important; }

@@ -24,9 +24,14 @@ svg.canvas { border-color: var(--fd-border); box-shadow: 4px 3px 8px 1px #969696
 text, .label, .rect.label { fill: var(--fd-text) !important; }
 .edge .path { stroke: var(--fd-edge) !important; }
 
-/* Minimap overlays */
-.minimap-svg .eye { fill: rgba(0,0,0,0.06) !important; }
-.minimap-svg .iris { stroke: rgba(0,0,0,0.18) !important; }
+/* Minimap overlays: eye faint, towards bg, with blur; iris clear */
+.minimap-svg .eye {
+  fill: var(--fd-bg) !important;
+  fill-opacity: 0.66;
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
+}
+.minimap-svg .iris { fill: none !important; stroke: var(--fd-accent) !important; stroke-width: 6px !important; }
 
 /* Zoom button text in headers should be less heavy (match icon color) */
 .zoom-icon { fill: var(--fd-border) !important; }
