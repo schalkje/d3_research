@@ -252,14 +252,24 @@ export class Dashboard {
     this.minimap.cockpit = cockpitDiv;
     this.minimap.overlay = cockpitDiv; // alias for existing code paths
     // Create an inner SVG to host minimap UI and content
-    const cockpitSvg = cockpitDiv.append('svg').attr('class', 'minimap-chrome');
+    const cockpitSvg = cockpitDiv.append('svg')
+      .attr('class', 'minimap-chrome')
+      .style('position', 'absolute')
+      .style('top', '0')
+      .style('left', '0')
+      .style('width', '100%')
+      .style('height', '100%')
+      .style('pointer-events', 'all');
     this.minimap.chromeSvg = cockpitSvg;
     this.minimap.content = cockpitSvg.append('g').attr('class', 'minimap-content');
     this.minimap.active = true;
     this.minimap.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
 
     // Collapsed icon (always rendered; visibility toggled)
-    this.minimap.collapsedIcon = this.minimap.content.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
+    this.minimap.collapsedIcon = this.minimap.content.append('g')
+      .attr('class', 'minimap-collapsed-icon')
+      .style('cursor', 'pointer')
+      .style('pointer-events', 'all');
     // Simple square icon placeholder; themes can override
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-bg').attr('width', 20).attr('height', 14).attr('rx', 2).attr('ry', 2);
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-mini').attr('x', 4).attr('y', 3).attr('width', 12).attr('height', 8);
@@ -445,6 +455,8 @@ export class Dashboard {
       this.minimap.header.style('display', (!collapsed && !isHiddenMode) ? 'block' : 'none');
     }
     this.positionEmbeddedMinimap();
+    // Re-bind hover events when state changes to ensure proper behavior
+    this.updateMinimapHoverBindings();
     if (persist && mm.persistence && mm.persistence.persistCollapsedState && typeof window !== 'undefined') {
       try { window.localStorage.setItem(mm.persistence.storageKey, String(mm.collapsed)); } catch {}
     }
@@ -484,11 +496,16 @@ export class Dashboard {
     const footerH = this.minimap.footerHeight || 20;
     const cockpit = { width: sizePx.width, height: sizePx.height + headerH + footerH };
 
-    // Size the outer cockpit DIV (positioning handled by CSS)
+    // Size the outer cockpit DIV and ensure proper positioning
     this.minimap.cockpit
       .style('width', `${cockpit.width}px`)
       .style('height', `${cockpit.height}px`)
-      .style('display', 'block');
+      .style('position', this.main.svg.classed('flowdash-fullscreen') ? 'fixed' : 'absolute')
+      .style('right', '12px')
+      .style('bottom', '12px')
+      .style('z-index', '10000')
+      .style('display', 'block')
+      .style('pointer-events', 'none'); // Let events pass through to interactive elements
 
     // Inside the cockpit, position header, body and footer using transforms, and size the chrome svg
     if (this.minimap.chromeSvg) {
@@ -536,8 +553,9 @@ export class Dashboard {
         }
       }
     }
-    // Collapsed icon at top-right of the cockpit
-    this.minimap.collapsedIcon.attr('transform', `translate(${sizePx.width - iconSize.width},${0})`);
+    // Collapsed icon positioned at bottom-right of the cockpit
+    // Position it at the bottom-right corner with some padding
+    this.minimap.collapsedIcon.attr('transform', `translate(${cockpit.width - iconSize.width - 2},${cockpit.height - iconSize.height - 2})`);
 
     if (this.minimap.scaleText && this.minimap.footer) {
       this.minimap.scaleText
@@ -592,6 +610,8 @@ export class Dashboard {
         if (!this.data.settings.minimap.pinned && this.data.settings.minimap.mode === 'hover') this.setMinimapCollapsed(true);
       };
 
+      // Only bind hover events to the collapsed icon (the actual button)
+      // This prevents hover activation from the invisible cockpit space
       if (this.minimap.collapsedIcon) {
         this.minimap.collapsedIcon
           .on('mouseenter', () => {
@@ -611,7 +631,9 @@ export class Dashboard {
           .on('touchstart', () => { show(); setTimeout(hide, mm.touch?.autoHideAfterMs ?? 2500); });
       }
 
-      if (this.minimap.cockpit) {
+      // Only bind cockpit hover events when the cockpit is actually visible (not collapsed)
+      // This prevents hover detection on invisible/inactive cockpit space
+      if (this.minimap.cockpit && !mm.collapsed) {
         this.minimap.cockpit
           .on('mouseenter', () => {
             this.minimap.state.isHover = true;

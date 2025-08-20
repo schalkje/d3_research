@@ -88,6 +88,7 @@
   right: 12px;
   bottom: 12px;
   pointer-events: all;
+  z-index: 10000;
 }
 
 /* Fixed positioning when dashboard is maximized */
