@@ -68,11 +68,17 @@ export default class FoundationNode extends BaseContainerNode {
     // Ensure children array exists and pre-create raw/base when in AUTO mode
     if (!nodeData.children) nodeData.children = [];
 
-    // Validate explicit children roles when provided
+    // Validate explicit children roles when provided and normalize for role mode
     if (nodeData.children.length > 0) {
       const allowedRoles = ['raw', 'base'];
       nodeData.children.forEach((child) => {
-        const role = (child.role || '').toLowerCase();
+        let role = (child.role || '').toLowerCase();
+        if (!role) {
+          const category = (child.category || '').toLowerCase();
+          if (allowedRoles.includes(category)) role = category;
+          else if ((child.label || '').toLowerCase().includes('raw')) role = 'raw';
+          else if ((child.label || '').toLowerCase().includes('base')) role = 'base';
+        }
         if (!role || !allowedRoles.includes(role)) {
           console.error('FoundationNode child missing or invalid role', {
             parentId: nodeData.id,
@@ -81,6 +87,16 @@ export default class FoundationNode extends BaseContainerNode {
             childLabel: child.label,
             role: child.role,
           });
+        } else {
+          // Normalize role and label in ROLE display mode early
+          child.role = role;
+          child.category = role;
+          if (nodeData.layout.displayMode === DisplayMode.ROLE) {
+            child.label = role;
+            child.width = roleWidth;
+            // Prefer consistent default height for rectangular nodes
+            if (!child.height) child.height = 20;
+          }
         }
       });
     }
