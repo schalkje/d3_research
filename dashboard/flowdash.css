@@ -85,16 +85,23 @@
 
 .zoom-cockpit {
   position: absolute;
+  pointer-events: none;
+  z-index: 10000;
   right: 12px;
   bottom: 12px;
-  pointer-events: all;
-  z-index: 10000;
+  top: auto;
+  left: auto;
+  /* Themes can override positioning by targeting .zoom-cockpit */
 }
 
 /* Fixed positioning when dashboard is maximized */
 .flowdash-fullscreen ~ .zoom-cockpit,
 .fullscreen ~ .zoom-cockpit {
-  position: fixed;  
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  top: auto;
+  left: auto;
   z-index: 10000;
 }
 

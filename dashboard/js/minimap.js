@@ -384,7 +384,7 @@ export class Minimap {
   }
 
   position() {
-    if (!this.overlay) return;
+    if (!this.cockpit) return;
     const mm = this.dashboard.data.settings.minimap;
     const padding = 12;
     // Use monitor pixel sizing for cockpit DIV
@@ -404,16 +404,11 @@ export class Minimap {
     const footerH = this.footerHeight || 20;
     const cockpit = { width: sizePx.width, height: sizePx.height + headerH + footerH };
 
-    // Size the outer cockpit DIV and ensure proper positioning
+    // Size the cockpit DIV (positioning is handled by CSS classes)
     this.cockpit
       .style('width', `${cockpit.width}px`)
       .style('height', `${cockpit.height}px`)
-      .style('position', this.dashboard.main.svg.classed('flowdash-fullscreen') ? 'fixed' : 'absolute')
-      .style('right', '12px')
-      .style('bottom', '12px')
-      .style('z-index', '10000')
-      .style('display', 'block')
-      .style('pointer-events', 'none'); // Let events pass through to interactive elements
+      .style('display', 'block');
 
     // Inside the cockpit, position header, body and footer using transforms, and size the chrome svg
     if (this.chromeSvg) {
