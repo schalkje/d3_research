@@ -72,6 +72,7 @@
                         <option value="always" selected>Always</option>
                         <option value="hover">Hover</option>
                         <option value="hidden">Hidden</option>
+                        <option value="disabled">Disabled (Best Performance)</option>
                     </select>
                     <label for="minimapPositionSelect" style="margin-left:12px">Position</label>
                     <select id="minimapPositionSelect" style="width:160px">
@@ -127,8 +128,8 @@
     <div class="demo-container">
         <div id="graph-container">
             <svg id="graph" class="canvas"></svg>
-            <div id="flowdash-loading" class="flowdash-loading" role="status" aria-live="polite">
-                <span class="flowdash-loading__text">Loading</span>
+            <div id="flowdash-loading" class="flowdash-loading" role="status" aria-live="polite" style="display: grid;">
+                <span class="flowdash-loading__text">Initializing...</span>
                 <span class="flowdash-loading__dots" aria-hidden="true"></span>
             </div>
         </div>
@@ -386,6 +387,22 @@
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
                 dashboardData.settings.zoomToRoot = zoomToRoot;
+
+                // Optional: Performance monitoring (disabled by default to avoid log spam)
+                // Uncomment for diagnosing zoom performance
+                // let zoomEventCount = 0;
+                // const originalZoomMain = flowDashboard.Dashboard.prototype.zoomMain;
+                // flowDashboard.Dashboard.prototype.zoomMain = function(zoomEvent) {
+                //     const startTime = performance.now();
+                //     zoomEventCount++;
+                //     const result = originalZoomMain.call(this, zoomEvent);
+                //     const endTime = performance.now();
+                //     const duration = endTime - startTime;
+                //     if (duration > 8) {
+                //         console.warn(`Slow zoom event #${zoomEventCount}: ${duration.toFixed(2)}ms`);
+                //     }
+                //     return result;
+                // };
                 dashboardData.settings.showBoundingBox = showBoundingBox;
                 dashboardData.settings.showCenterMark = showCenterMark;
                 dashboardData.settings.showConnectionPoints = showConnectionPoints;

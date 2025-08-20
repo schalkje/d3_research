@@ -5,6 +5,7 @@ import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
 import { ConfigManager } from "./configManager.js";
 import { fetchDashboardFile } from "./data.js";
+import { LoadingOverlay, showLoading as showLoader, hideLoading as hideLoader, resolveLoadingContainer as resolveLoadingHost } from "./loadingOverlay.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -86,6 +87,8 @@ export class Dashboard {
    initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
     this.mainDivSelector = mainDivSelector;
+    // Show loading overlay immediately before anything else
+    try { this.showLoading(); } catch {}
     const div = this.initializeSvg(mainDivSelector);
     this.main.svg = div.svg;
     this.main.width = div.width;
@@ -194,7 +197,11 @@ export class Dashboard {
 
   initializeEmbeddedMinimap() {
     const mm = this.data.settings.minimap;
-    if (!mm || mm.enabled === false) return;
+    if (!mm || mm.enabled === false) {
+      // Performance optimization: Skip minimap entirely if disabled
+      this.minimap.active = false;
+      return;
+    }
 
     // Determine mode defaults by environment
     const isSmallScreen = typeof window !== 'undefined' && (window.innerWidth || 0) < 600;
@@ -227,16 +234,23 @@ export class Dashboard {
       this.data.settings.minimap.collapsed = true; // show button by default
     }
 
-    // Create the cockpit root inside main svg
-    const cockpit = this.main.svg.append('g').attr('class', 'zoom-cockpit');
-    this.minimap.cockpit = cockpit;
-    this.minimap.overlay = cockpit; // alias for existing code paths
-    this.minimap.content = cockpit.append('g').attr('class', 'minimap-content');
+    // Create overlay DIV inside the graph container (separate from main SVG)
+    const graphContainer = this.main.svg.node().parentElement;
+    const cockpitDiv = d3.select(graphContainer)
+      .append('div')
+      .attr('class', 'zoom-cockpit')
+      .style('position', 'absolute')
+      .style('pointer-events', 'auto');
+    this.minimap.cockpit = cockpitDiv;
+    this.minimap.overlay = cockpitDiv; // alias for existing code paths
+    // Create an inner SVG to host minimap UI and content
+    const cockpitSvg = cockpitDiv.append('svg').attr('class', 'minimap-chrome');
+    this.minimap.content = cockpitSvg.append('g').attr('class', 'minimap-content');
     this.minimap.active = true;
     this.minimap.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
 
     // Collapsed icon (always rendered; visibility toggled)
-    this.minimap.collapsedIcon = cockpit.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
+    this.minimap.collapsedIcon = this.minimap.content.append('g').attr('class', 'minimap-collapsed-icon').style('cursor', 'pointer');
     // Simple square icon placeholder; themes can override
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-bg').attr('width', 20).attr('height', 14).attr('rx', 2).attr('ry', 2);
     this.minimap.collapsedIcon.append('rect').attr('class', 'collapsed-icon-mini').attr('x', 4).attr('y', 3).attr('width', 12).attr('height', 8);
@@ -447,27 +461,38 @@ export class Dashboard {
     const size = { width: this.minimap.width, height: this.minimap.height };
     const iconSize = { width: 20, height: 14 };
 
-    const posToXY = (pos, item) => {
-      const w = this.main.width; const h = this.main.height;
+    // Position the cockpit DIV relative to the graph container
+    const graphContainer = this.main.svg.node().parentElement;
+    const rect = graphContainer.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    const posToXYCss = (pos, item) => {
       switch (pos) {
-        case 'top-left': return { x: -w/2 + padding, y: -h/2 + padding };
-        case 'top-right': return { x: w/2 - padding - item.width, y: -h/2 + padding };
-        case 'bottom-left': return { x: -w/2 + padding, y: h/2 - padding - item.height };
+        case 'top-left': return { left: padding, top: padding };
+        case 'top-right': return { left: w - padding - item.width, top: padding };
+        case 'bottom-left': return { left: padding, top: h - padding - item.height };
         case 'bottom-right':
-        default: return { x: w/2 - padding - item.width, y: h/2 - padding - item.height };
+        default: return { left: w - padding - item.width, top: h - padding - item.height };
       }
     };
 
-    // Use same corner for cockpit (header + minimap + footer + collapsed icon)
     const corner = (mm.collapsedIcon && mm.collapsedIcon.position) || mm.position || 'bottom-right';
     const headerH = this.minimap.headerHeight || 20;
     const footerH = this.minimap.footerHeight || 20;
     const cockpit = { width: size.width, height: size.height + headerH + footerH };
-    const cockpitPos = posToXY(corner, cockpit);
-    // Place header and size its invisible hit rect
+    const cockpitCss = posToXYCss(corner, cockpit);
+
+    // Size the outer cockpit DIV and place it
+    this.minimap.cockpit
+      .style('left', `${cockpitCss.left}px`)
+      .style('top', `${cockpitCss.top}px`)
+      .style('width', `${cockpit.width}px`)
+      .style('height', `${cockpit.height}px`);
+
+    // Inside the cockpit, position header, body and footer using transforms
     if (this.minimap.header) {
-      this.minimap.header.attr('transform', `translate(${cockpitPos.x},${cockpitPos.y})`);
-      // right-aligned header buttons (positions relative to header origin)
+      this.minimap.header.attr('transform', `translate(${0},${0})`);
       const yPad = 2;
       let xRight = size.width - 4;
       if (this.minimap.collapseButton) { xRight -= 16; this.minimap.collapseButton.attr('transform', `translate(${xRight},${yPad})`); }
@@ -475,13 +500,12 @@ export class Dashboard {
       if (this.minimap.sizeButton) { xRight -= 24; this.minimap.sizeButton.attr('transform', `translate(${xRight},${yPad})`); }
       if (this.minimap.headerHitRect) this.minimap.headerHitRect.attr('x', 0).attr('y', 0).attr('width', size.width).attr('height', headerH);
     }
-    // Place minimap body under header
-    const mapPos = { x: cockpitPos.x, y: cockpitPos.y + headerH };
-    this.minimap.svg.attr('x', mapPos.x).attr('y', mapPos.y);
-    // Place footer under minimap and size its invisible hit rect
+    // Body SVG (minimap) positioned under header
+    this.minimap.svg.attr('x', 0).attr('y', headerH);
+    // Footer under body
     if (this.minimap.footer) {
-      const footerTopY = cockpitPos.y + headerH + size.height;
-      this.minimap.footer.attr('transform', `translate(${cockpitPos.x},${footerTopY})`);
+      const footerTopY = headerH + size.height;
+      this.minimap.footer.attr('transform', `translate(${0},${footerTopY})`);
       if (this.minimap.footerHitRect) this.minimap.footerHitRect
         .attr('x', 0)
         .attr('y', 0)
@@ -494,12 +518,10 @@ export class Dashboard {
         const rightPadding = 6;
         const controlsStartX = leftPadding;
         const footerCenterY = Math.floor(footerH / 2);
-        // buttons aligned to the left, vertically centered
         this.minimap.controls.attr('transform', `translate(${controlsStartX},${footerCenterY - buttonSize / 2})`);
         this.minimap.btnZoomIn.attr('transform', 'translate(0,0)');
         this.minimap.btnZoomOut.attr('transform', `translate(${buttonSize + spacing},0)`);
         this.minimap.btnReset.attr('transform', `translate(${(buttonSize + spacing) * 2},0)`);
-        // scale text aligned to the right edge
         if (this.minimap.scaleText) {
           this.minimap.scaleText
             .attr('x', size.width - rightPadding)
@@ -509,11 +531,11 @@ export class Dashboard {
         }
       }
     }
-    // Position collapsed icon at cockpit corner
-    const collapsedIconPos = posToXY(corner, iconSize);
-    this.minimap.collapsedIcon.attr('transform', `translate(${collapsedIconPos.x},${collapsedIconPos.y})`);
+    // Collapsed icon sticks to cockpit corner within DIV
+    const collapsedIconCss = posToXYCss(corner, iconSize);
+    // Represent collapsed icon positioning as transform relative to DIV origin
+    this.minimap.collapsedIcon.attr('transform', `translate(${size.width - iconSize.width},${0})`);
 
-    // Scale text position is handled with controls above when footer exists; ensure style baseline and color
     if (this.minimap.scaleText && this.minimap.footer) {
       this.minimap.scaleText
         .style('font-size', '12px')
@@ -525,18 +547,12 @@ export class Dashboard {
 
   updateMinimapScaleIndicator() {
     const mm = this.data.settings.minimap;
-    if (!this.minimap.scaleText || mm.scaleIndicator?.visible === false) return;
-    if (mm.scaleIndicator?.type === 'percent') {
-      const baseline = this.main.fitK || 1;
-      const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
-      const label = `${pct}%`;
-      this.minimap.scaleText.text(label);
-    } else {
-      // Placeholder for bar type if needed later
-      const baseline = this.main.fitK || 1;
-      const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
-      this.minimap.scaleText.text(`${pct}%`);
-    }
+    if (!this.minimap.scaleText || !this.minimap.active || mm.scaleIndicator?.visible === false) return;
+
+    const baseline = this.main.fitK || 1;
+    const pct = Math.round(((this.main.transform.k || 1) / baseline) * 100);
+    const label = `${pct}%`;
+    this.minimap.scaleText.text(label);
   }
 
   updateMinimapHoverBindings() {
@@ -700,27 +716,57 @@ export class Dashboard {
   updateMinimap() {
     // Use requestAnimationFrame to Wait for the Next Render Cycle
     requestAnimationFrame(() => {
-      // clone the dashboard container elements to the minimap
-      const clone = this.main.container.node().cloneNode(true);
-
-      // remove old minimap
-      const minimap = d3.select(".minimap");
-      minimap.selectAll("*").remove();
-
-      // clone dashboard to minimap
-      minimap.node().appendChild(clone);
-      this.minimap.container = d3.select(clone);
-      // Neutralize the main zoom/pan on the minimap content so it always shows the full scene
-      this.minimap.container.attr("transform", null);
-
-      // Ensure minimap viewBox and mask align to the content bounds
-      this.updateMinimapViewboxAndMasks(this.getContentBBox());
+      // Performance optimization: Only update minimap content if not collapsed
+      if (this.minimap.svg && this.minimap.svg.style('display') !== 'none') {
+        // Performance optimization: Use a lighter approach for large dashboards
+        const allNodes = this.main.root.getAllNodes(false);
+        if (allNodes.length > 100) {
+          // For large dashboards, use a simplified representation
+          this.updateMinimapSimplified(allNodes);
+        } else {
+          // For smaller dashboards, use the full clone approach
+          this.updateMinimapFullClone();
+        }
+      }
     });
+  }
+
+  updateMinimapSimplified(allNodes) {
+    // Simplified minimap for large dashboards - just update viewBox and eye
+    const contentBBox = this.getContentBBox();
+    this.updateMinimapViewboxAndMasks(contentBBox);
+
+    // Clear existing content
+    const minimap = d3.select(".minimap");
+    minimap.selectAll("*").remove();
+
+    // Create simplified rectangles for each node
+    allNodes.forEach(node => {
+      const bbox = getBoundingBoxRelativeToParent(node.element, this.main.container);
+      minimap.append("rect")
+        .attr("x", bbox.x)
+        .attr("y", bbox.y)
+        .attr("width", bbox.width)
+        .attr("height", bbox.height)
+        .attr("fill", node.isContainer ? "#4a90e2" : "#7ed321")
+        .attr("opacity", 0.7);
+    });
+  }
+
+  updateMinimapFullClone() {
+    // Original full clone approach for smaller dashboards
+    const clone = this.main.container.node().cloneNode(true);
+    const minimap = d3.select(".minimap");
+    minimap.selectAll("*").remove();
+    minimap.node().appendChild(clone);
+    this.minimap.container = d3.select(clone);
+    this.minimap.container.attr("transform", null);
+    this.updateMinimapViewboxAndMasks(this.getContentBBox());
   }
 
   // Function to update the position and size of the eye
   updateMinimapEye(x, y, width, height) {
-    if (!this.minimap.active) return;
+    if (!this.minimap.active || !this.minimap.svg) return;
 
     // console.log("updateMinimapEye", this);
     // Update minimap.eye properties
@@ -729,11 +775,17 @@ export class Dashboard {
     this.minimap.eye.width = width;
     this.minimap.eye.height = height;
 
-    // Select and update the 'pupil' rectangle in the mask for the clear area
-    this.minimap.svg.select("#pupil").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+    // Performance optimization: Batch DOM updates
+    const svg = this.minimap.svg;
+    const pupil = svg.select("#pupil");
+    const iris = svg.select(".iris");
 
-    // If you are displaying a visible outline of the pupil, update it here as well
-    this.minimap.svg.select(".iris").attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+    if (!pupil.empty()) {
+      pupil.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+    }
+    if (!iris.empty()) {
+      iris.attr("x", x).attr("y", y).attr("width", width).attr("height", height);
+    }
   }
 
   // Set minimap viewBox and mask geometry to match content bounds
@@ -760,14 +812,25 @@ export class Dashboard {
   }
 
   initializeFullscreenToggle() {
-    const container = document.querySelector('#graph-container') || document.body;
-    let button = container.querySelector('.fullscreen-toggle');
+    const graphContainer = this.main.svg.node().parentElement;
+    // Create a separate overlay DIV for fullscreen toggle
+    let host = graphContainer.querySelector('.fullscreen-overlay');
+    if (!host) {
+      host = document.createElement('div');
+      host.className = 'fullscreen-overlay';
+      host.style.position = 'absolute';
+      host.style.right = '12px';
+      host.style.top = '12px';
+      host.style.pointerEvents = 'auto';
+      graphContainer.appendChild(host);
+    }
+    let button = host.querySelector('.fullscreen-toggle');
     if (!button) {
       button = document.createElement('button');
       button.className = 'fullscreen-toggle';
       button.setAttribute('aria-label', 'Toggle fullscreen');
       button.title = 'Maximize / Restore';
-      container.appendChild(button);
+      host.appendChild(button);
     }
 
     const updateIcon = () => {
@@ -1031,7 +1094,7 @@ export class Dashboard {
   }
 
   initializeZoom() {
-    
+
     const dag = null; // todo: remove
 
     // const svg = this.dashboard.container;
@@ -1039,6 +1102,10 @@ export class Dashboard {
     const zoom = d3
       .zoom()
       .scaleExtent([0.1, 40])
+      .wheelDelta(event => {
+        // Custom wheel delta for smoother zooming
+        return -event.deltaY * (event.deltaMode ? 120 : 1) * 0.002;
+      })
       .on("zoom", (event) => this.zoomMain(event));
 
     this.main.svg.call(zoom);
@@ -1125,6 +1192,22 @@ export class Dashboard {
     }
   }
 
+  scheduleMinimapUpdate(transform) {
+    // Debounced minimap updates to improve zoom performance
+    if (this._minimapUpdateTimeout) {
+      clearTimeout(this._minimapUpdateTimeout);
+    }
+
+    this._minimapUpdateTimeout = setTimeout(() => {
+      requestAnimationFrame(() => {
+        updateViewport(this, transform);
+        this.updateMinimapScaleIndicator();
+        // Avoid feeding transform into minimap zoom to reduce recursive zoom events
+        this.updateMinimapVisibilityByZoom();
+      });
+    }, 16); // ~1 frame at 60fps
+  }
+
   zoomMain(zoomEvent) {
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
@@ -1134,35 +1217,20 @@ export class Dashboard {
     this.main.transform.y = zoomEvent.transform.y;
 
     // Apply transform to the main view
-    // console.log("zoomMain", zoomEvent.transform, this.main.transform);
-    // this.main.container.attr("transform", zoomEvent.transform);
     const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
     this.main.container.attr("transform", transform );
-    
-    // Update the viewport in the minimap. The update function expects main.width/height, but
-    // our minimap viewBox is now the content bounds. The math in updateViewport is correct if
-    // we interpret k and the main canvas size; the resulting world rect is still in main coords,
-    // which align with content coords. Then we update masks which are in content coords.
-    updateViewport(this, zoomEvent.transform);
 
-    // Update scale indicator
-    this.updateMinimapScaleIndicator();
-
-    // Store the current zoom level at svg level, for the next event
-    if (this.minimap.active)
-      this.minimap.svg.call(this.minimap.zoom.transform, zoomEvent.transform);
+    // Performance optimization: Batch minimap updates with debouncing
+    if (this.minimap.active) {
+      this.scheduleMinimapUpdate(zoomEvent.transform);
+    }
 
     this.isMainAndMinimapSyncing = false;
-
-    // Dynamic hover behavior (icon vs preview)
-    this.updateMinimapVisibilityByZoom();
   }
 
   zoomMinimap(zoomEvent) {
     if (this.isMainAndMinimapSyncing) return;
     this.isMainAndMinimapSyncing = true;
-
-    // console.log("zoomMinimap", this, zoomEvent, zoomEvent.transform);
 
     this.main.transform.x = zoomEvent.transform.x;
     this.main.transform.y = zoomEvent.transform.y;
@@ -1170,19 +1238,12 @@ export class Dashboard {
 
     // Apply transform to the main view
     this.main.container.attr("transform", zoomEvent.transform);
-    // Store the current zoom level at svg level, for the next event
     this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
 
-    // Update the viewport in the minimap
-    updateViewport(this, zoomEvent.transform);
-
-    // Update scale indicator
-    this.updateMinimapScaleIndicator();
+    // Performance optimization: Batch minimap updates with debouncing
+    this.scheduleMinimapUpdate(zoomEvent.transform);
 
     this.isMainAndMinimapSyncing = false;
-
-    // Dynamic hover behavior (icon vs preview)
-    this.updateMinimapVisibilityByZoom();
   }
 
   zoomIn() {
@@ -1436,7 +1497,7 @@ export class Dashboard {
 
   // Instance helpers to control a loading overlay
   showLoading() {
-    const container = resolveLoadingContainer(this.main?.svg);
+    const container = resolveLoadingHost(this.main?.svg);
     LoadingOverlay.show(container);
   }
   hideLoading() {
@@ -1724,98 +1785,5 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
 }
 
 // Centralized Loading Overlay (shared utility)
-const LoadingOverlay = {
-  el: null,
-  dotsEl: null,
-  timer: null,
-  shownAt: 0,
-  MIN_VISIBLE_MS: 350,
-  ensure(container) {
-    const host = container || resolveLoadingContainer();
-    if (!host) return null;
-    if (!this.el) {
-      this.el = host.querySelector('#flowdash-loading') || document.getElementById('flowdash-loading');
-      if (!this.el) {
-        const wrapper = document.createElement('div');
-        wrapper.id = 'flowdash-loading';
-        wrapper.className = 'flowdash-loading';
-        wrapper.setAttribute('role', 'status');
-        wrapper.setAttribute('aria-live', 'polite');
-        const text = document.createElement('span');
-        text.className = 'flowdash-loading__text';
-        text.textContent = 'Loading';
-        const dots = document.createElement('span');
-        dots.className = 'flowdash-loading__dots';
-        dots.setAttribute('aria-hidden', 'true');
-        wrapper.appendChild(text);
-        wrapper.appendChild(dots);
-        host.appendChild(wrapper);
-        this.el = wrapper;
-      }
-      this.dotsEl = this.el.querySelector('.flowdash-loading__dots');
-    }
-    return this.el;
-  },
-  startDots() {
-    if (!this.dotsEl) return;
-    this.stopDots();
-    let i = 0;
-    this.timer = setInterval(() => {
-      i = (i + 1) % 4;
-      this.dotsEl.textContent = '.'.repeat(i);
-    }, 450);
-  },
-  stopDots() {
-    if (this.timer) { clearInterval(this.timer); this.timer = null; }
-    if (this.dotsEl) this.dotsEl.textContent = '';
-  },
-  show(container) {
-    const el = this.ensure(container);
-    if (!el) return;
-    this.shownAt = Date.now();
-    el.style.display = 'grid';
-    this.startDots();
-  },
-  hide() {
-    if (!this.el) return;
-    const elapsed = Date.now() - this.shownAt;
-    const delay = Math.max(0, this.MIN_VISIBLE_MS - elapsed);
-    setTimeout(() => {
-      if (!this.el) return;
-      this.el.style.display = 'none';
-      this.stopDots();
-    }, delay);
-  }
-};
-
-function resolveLoadingContainer(svgSelection) {
-  const explicit = document.querySelector('#graph-container');
-  if (explicit) return explicit;
-  try {
-    const node = svgSelection && svgSelection.node ? svgSelection.node() : null;
-    if (node && node.parentElement) return node.parentElement;
-  } catch {}
-  return document.body;
-}
-
-// Named exports usable from pages
-export function showLoading(containerOrSelector = null) {
-  try {
-    const container = typeof containerOrSelector === 'string'
-      ? document.querySelector(containerOrSelector)
-      : containerOrSelector;
-    LoadingOverlay.show(container || resolveLoadingContainer());
-  } catch {}
-}
-
-export function hideLoading() {
-  try { LoadingOverlay.hide(); } catch {}
-}
-
-// Also expose simple globals for legacy pages if a bundler doesn't include module exports
-try {
-  if (typeof window !== 'undefined') {
-    window.showLoading = function(container){ try { showLoading(container); } catch {} };
-    window.hideLoading = function(){ try { hideLoading(); } catch {} };
-  }
-} catch {}
+// Re-export loading helpers from the component for external usage
+export { showLoader as showLoading, hideLoader as hideLoading };

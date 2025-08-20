@@ -1,16 +1,25 @@
-import * as data from './data.js';
-import * as node from './node.js';
+// Public API aggregator and eager loading overlay
 import * as dashboard from './dashboard.js';
+import * as data from './data.js';
+import { showLoading } from './loadingOverlay.js';
 
-const flowDashboard = {
-    ...data,
-    ...dashboard,
+// Show the loading overlay as soon as the bundle is evaluated
+try { showLoading(); } catch {}
+
+// Default export combines commonly used namespaces
+const api = {
+  ...dashboard,
+  ...data,
 };
 
-// Attach to the global `window` object if not in a module environment
+// Named re-exports for tree-shaking/named imports
+export * from './dashboard.js';
+export * from './data.js';
+
+// Attach to global for non-module usage
 if (typeof window !== 'undefined') {
-    window.flowDashboard = flowDashboard;
+  window.flowDashboard = api;
 }
 
-export default flowDashboard;
+export default api;
  
