@@ -90,14 +90,7 @@ export class InnerContainerZone extends BaseZone {
       const rectX = -rectWidth / 2; // Center horizontally
       const rectY = -rectHeight / 2; // Center vertically around (0,0) in zone coordinates
       
-      // Debug: Log the values used for positioning
-      console.log(`InnerContainerZone ${this.name} updateSize:`, {
-        nodeHeight: this.node.data.height,
-        headerHeight: this.getHeaderHeight(),
-        margins: this.manager.getZone('margin')?.getMargins() || { top: 8, bottom: 8, left: 8, right: 8 },
-        rectY,
-        childContentSize
-      });
+      // Debug logs removed for performance
       
       this.borderElement
         .attr('width', rectWidth)
@@ -434,10 +427,9 @@ export class InnerContainerZone extends BaseZone {
    * Update child visibility based on container state
    */
   updateChildVisibility(visible) {
-    console.log(`InnerContainerZone updateChildVisibility: setting ${this.childNodes.length} children to visible=${visible}`);
     this.childNodes.forEach(childNode => {
       childNode.visible = visible;
-      console.log(`  Child ${childNode.id}: visible = ${childNode.visible}, collapsed = ${childNode.collapsed}`);
+      
       
       // For container children, only propagate visibility if the container is not collapsed
       // When making containers visible, their children should only become visible if the container is expanded

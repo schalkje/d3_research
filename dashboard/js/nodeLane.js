@@ -22,14 +22,14 @@ export default class LaneNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log(`LaneNode ${this.id} updateChildren called`);
+    
     
     // Always call layoutLane to recalculate size and positioning
     this.layoutLane();
   }
 
   updateChildrenWithZoneSystem() {
-    console.log(`LaneNode ${this.id} updateChildrenWithZoneSystem called`);
+    
     
     // Call layoutLane to recalculate size and positioning when using zone system
     this.layoutLane();
@@ -69,20 +69,7 @@ export default class LaneNode extends BaseContainerNode {
       return;
     }
 
-    // Debug: Log child visibility states
-    const debugVisibleChildren = this.childNodes.filter(node => node.visible);
-    console.log(`LaneNode ${this.id} layoutLane:`, {
-      totalChildren: this.childNodes.length,
-      visibleChildren: debugVisibleChildren.length,
-      childStates: this.childNodes.map(node => ({
-        id: node.id,
-        visible: node.visible,
-        collapsed: node.collapsed,
-        height: node.data.height,
-        minimumSize: node.minimumSize
-      })),
-      visibleChildIds: debugVisibleChildren.map(node => node.id)
-    });
+    // Debug logs removed
 
 		// Set vertical stacking layout algorithm centered around (0,0)
 		innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
@@ -124,21 +111,7 @@ export default class LaneNode extends BaseContainerNode {
       return effectiveWidth;
     })) : 0;
     
-    // Debug: Log size calculation
-    console.log(`LaneNode ${this.id} size calculation:`, {
-      visibleChildrenCount: visibleChildren.length,
-      totalChildHeight,
-      totalSpacing,
-      maxChildWidth,
-      currentSize: { width: this.data.width, height: this.data.height },
-      visibleChildrenDetails: visibleChildren.map(node => ({
-        id: node.id,
-        height: node.data.height,
-        effectiveHeight: node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height,
-        collapsed: node.collapsed,
-        minimumSize: node.minimumSize
-      }))
-    });
+    // Debug logs removed
     
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
@@ -185,7 +158,7 @@ export default class LaneNode extends BaseContainerNode {
 
 
   arrange() {
-    console.log("Arranging LaneNode:", this.id);
+    
     this.updateChildren();
   }
 }

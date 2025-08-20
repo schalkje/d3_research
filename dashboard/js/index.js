@@ -13,5 +13,4 @@ if (typeof window !== 'undefined') {
 }
 
 export default flowDashboard;
-
-console.log('Webpack flowdash loaded');
+ 

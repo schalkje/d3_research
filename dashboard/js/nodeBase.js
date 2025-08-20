@@ -198,7 +198,6 @@ export default class BaseNode {
       try {
         if (this.settings.isDebug) {
           const bbox = this.element?.node()?.getBBox?.();
-          console.log(`[CP/INIT] ${this.id} (${this.data.type}) using data size`, { width: this.data.width, height: this.data.height, bbox });
         }
       } catch {}
     }
@@ -228,7 +227,6 @@ export default class BaseNode {
         } catch {}
       }
       if (this.settings.isDebug) {
-        console.log(`[CP/UPDATE] ${this.id} (${this.data.type}) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
       }
 
       const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
@@ -247,19 +245,17 @@ export default class BaseNode {
             cx: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cx')),
             cy: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cy')),
           });
-          console.log(`[CP/READ] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
+          
         }
       } catch {}
     }
   }
   
   handleClicked(event, node = this) {
-    console.log("handleClicked:", this.id, event);
     EventManager.handleNodeClick(this, event);
   }
 
   handleDblClicked(event, node = this) {
-    console.log("handleDblClicked:", this.id, event);
     EventManager.handleNodeDblClick(this, event);
   }
 

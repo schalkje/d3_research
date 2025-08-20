@@ -72,7 +72,6 @@ export default class RectangularNode extends BaseNode {
       try {
         if (this.settings.isDebug) {
           const bbox = this.element?.node()?.getBBox?.();
-          console.log(`[CP/DRAW] ${this.id} (rect) using data size`, { width, height, bbox });
         }
       } catch {}
       const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
@@ -260,7 +259,6 @@ export default class RectangularNode extends BaseNode {
         try {
           if (this.settings.isDebug) {
             const bbox = this.element?.node()?.getBBox?.();
-            console.log(`[CP/UPDATE-RECT] ${this.id} (rect) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
           }
         } catch {}
         const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
@@ -277,7 +275,6 @@ export default class RectangularNode extends BaseNode {
               cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),
               cy: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cy')),
             });
-            console.log(`[CP/READ-RECT] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
           }
         } catch {}
       }
@@ -372,7 +369,6 @@ export default class RectangularNode extends BaseNode {
         try {
           if (this.settings.isDebug) {
             const bbox = this.element?.node()?.getBBox?.();
-            console.log(`[CP/RESIZE-RECT] ${this.id} (rect) width/height used`, { width, height, data: { width: this.data.width, height: this.data.height }, bbox });
           }
         } catch {}
         const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
@@ -389,7 +385,6 @@ export default class RectangularNode extends BaseNode {
               cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),
               cy: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cy')),
             });
-            console.log(`[CP/READ-RESIZE-RECT] ${this.id}`, [read('top'), read('right'), read('bottom'), read('left')]);
           }
         } catch {}
       }

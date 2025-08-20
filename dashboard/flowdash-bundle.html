@@ -100,7 +100,6 @@
 
         curveCheckbox.addEventListener('change', function () {
             isEdgeCurved = this.checked;
-            console.log("isEdgeCurved", isEdgeCurved);
 
             const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
             dashboard = FD.Layout.initialize(dag, layout, "#graph");
@@ -110,55 +109,61 @@
 
         // Event listener to update selected filename from the dropdown
         fileSelect.addEventListener("change", function () {
-            console.log("Old Selected file:", selectedFile);
             selectedFile = this.value;
-            console.log("Selected file:", selectedFile);
 
-            showLoading();
+            // loading handled by dashboard.initialize()
             FD.GraphData.fetchFileToDag(selectedFile).then(result => {
             if (result) {
                 dag = result;
                     const layout = { horizontal: horizontal, isEdgeCurved: isEdgeCurved };
                     dashboard = FD.Layout.initialize(dag, layout, "#graph");
                 }
-            }).finally(hideLoading)
+            })
         });
 
 
         selectedFile = document.getElementById('fileSelect').value || "dwh-1.json";
-            showLoading();
+            // loading handled by dashboard.initialize()
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            }).finally(hideLoading);
+            });
 
-        // Loading overlay helpers
+        // Loading overlay handled by flowDashboard (centralized); lightweight fallback if not available in dist
         (function(){
-            const loadingEl = document.getElementById('flowdash-loading');
-            const loadingDotsEl = loadingEl ? loadingEl.querySelector('.flowdash-loading__dots') : null;
-            let loadingTimer = null;
-            window.showLoading = function(){
-                if(!loadingEl) return;
-                loadingEl.style.display = 'grid';
-                startDots();
-            };
-            window.hideLoading = function(){
-                if(!loadingEl) return;
-                loadingEl.style.display = 'none';
-                stopDots();
-            };
-            function startDots(){
-                if(!loadingDotsEl) return;
-                stopDots();
-                let i = 0;
-                loadingTimer = setInterval(function(){
-                    i = (i + 1) % 4; // 0..3
-                    loadingDotsEl.textContent = '.'.repeat(i);
-                }, 450);
-            }
-            function stopDots(){
-                if(loadingTimer){ clearInterval(loadingTimer); loadingTimer = null; }
-                if(loadingDotsEl) loadingDotsEl.textContent = '';
+            if (!window.flowDashboard || typeof window.flowDashboard.showLoading !== 'function') {
+                const loadingEl = document.getElementById('flowdash-loading');
+                const loadingDotsEl = loadingEl ? loadingEl.querySelector('.flowdash-loading__dots') : null;
+                let loadingTimer = null;
+                let loadingShownAt = 0;
+                const MIN_VISIBLE_MS = 350;
+                window.flowDashboard = window.flowDashboard || {};
+                window.flowDashboard.showLoading = function(){
+                    if(!loadingEl) return;
+                    loadingShownAt = Date.now();
+                    loadingEl.style.display = 'grid';
+                    if (loadingDotsEl) {
+                        if (loadingTimer) clearInterval(loadingTimer);
+                        let i = 0;
+                        loadingTimer = setInterval(function(){
+                            i = (i + 1) % 4;
+                            loadingDotsEl.textContent = '.'.repeat(i);
+                        }, 450);
+                    }
+                };
+                window.flowDashboard.hideLoading = function(){
+                    if(!loadingEl) return;
+                    const elapsed = Date.now() - loadingShownAt;
+                    const delay = Math.max(0, MIN_VISIBLE_MS - elapsed);
+                    setTimeout(function(){
+                        loadingEl.style.display = 'none';
+                        if (loadingDotsEl) {
+                            if (loadingTimer) clearInterval(loadingTimer);
+                            loadingTimer = null;
+                            loadingDotsEl.textContent = '';
+                        }
+                    }, delay);
+                };
             }
         })();
     </script>

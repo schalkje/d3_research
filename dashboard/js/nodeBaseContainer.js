@@ -533,7 +533,7 @@ export default class BaseContainerNode extends BaseNode {
       return;
     }
 
-    console.log("BaseContainer - initChildren", this.data.label, this.data.children.length, "children");
+    
 
     if (this.data.children.length == 0) {
       // no rendering of the children, but this renders a placeholder rect
@@ -551,28 +551,17 @@ export default class BaseContainerNode extends BaseNode {
     {
       // Get child container from zone system
       const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.element;
-      console.log("Child container:", childContainer ? "found" : "not found", "Zone manager:", this.zoneManager ? "available" : "not available");
       
       for (const node of this.data.children) {
-        console.log("Processing child node:", node.id, node.label);
         // Create the childComponent instance based on node type
         var childComponent = this.getNode(node.id);
         if (childComponent == null) {
-          console.log("Creating new child component for:", node.id);
-          console.log("  createNode parameters:", {
-            nodeData: node,
-            container: childContainer,
-            settings: this.settings,
-            parentNode: this,
-            parentNodeType: this.constructor.name,
-            parentNodeId: this.id
-          });
+          
           childComponent = this.createNode(node, childContainer, this.settings, this);
           this.childNodes.push(childComponent);
 
           // Add child to zone system
           if (this.zoneManager?.innerContainerZone) {
-            console.log("Adding child to zone system:", node.id);
             this.zoneManager.innerContainerZone.addChild(childComponent);
           } else {
             console.warn("Zone system not available for child:", node.id);
@@ -582,12 +571,10 @@ export default class BaseContainerNode extends BaseNode {
         }
 
         childComponent.init(childContainer);
-        console.log("Child initialized:", node.id, "Total children:", this.childNodes.length);
       }
       
       // Trigger child positioning after all children are initialized
       if (this.zoneManager?.innerContainerZone) {
-        console.log("Triggering child positioning for", this.childNodes.length, "children");
         this.zoneManager.innerContainerZone.forceUpdateChildPositions();
       }
     }

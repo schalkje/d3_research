@@ -252,7 +252,6 @@ export default class EdgeDemoNode extends BaseContainerNode {
 
   resizeToFitChildren() {
     const containerDimensions = getComputedDimensions(this.container);
-    console.log("    Resize to fit children:", containerDimensions);
     containerDimensions.width += this.containerMargin.left + this.containerMargin.right;
     containerDimensions.height += this.containerMargin.top + this.containerMargin.bottom;
     this.resize(containerDimensions);
@@ -274,8 +273,7 @@ export default class EdgeDemoNode extends BaseContainerNode {
       x + (this.containerMargin.left - this.containerMargin.right) / 2,
       y + (this.containerMargin.top - this.containerMargin.bottom) / 2
     );    
-
-    console.log(">>>> Created Child:", this.centerNode);
+    
     // create edge
     if (sourceNode) {
       createInternalEdge(

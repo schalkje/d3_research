@@ -27,14 +27,14 @@ export default class ColumnsNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    console.log(`ColumnsNode ${this.id} updateChildren called`);
+    
     
     // Always call layoutColumns to recalculate size and positioning
     this.layoutColumns();
   }
 
   updateChildrenWithZoneSystem() {
-    console.log(`ColumnsNode ${this.id} updateChildrenWithZoneSystem called`);
+    
     
     // Call layoutColumns to recalculate size and positioning when using zone system
     this.layoutColumns();
@@ -74,21 +74,7 @@ export default class ColumnsNode extends BaseContainerNode {
       return;
     }
 
-    // Debug: Log child visibility states
-    const debugVisibleChildren = this.childNodes.filter(node => node.visible);
-    console.log(`ColumnsNode ${this.id} layoutColumns:`, {
-      totalChildren: this.childNodes.length,
-      visibleChildren: debugVisibleChildren.length,
-      childStates: this.childNodes.map(node => ({
-        id: node.id,
-        visible: node.visible,
-        collapsed: node.collapsed,
-        width: node.data.width,
-        height: node.data.height,
-        minimumSize: node.minimumSize
-      })),
-      visibleChildIds: debugVisibleChildren.map(node => node.id)
-    });
+    // Debug logs removed
 
     // Set horizontal row layout algorithm
     innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
@@ -114,13 +100,6 @@ export default class ColumnsNode extends BaseContainerNode {
     const totalChildWidth = visibleChildren.reduce((sum, node) => {
       // Let each child report its effective width
       const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
-      console.log(`ColumnsNode ${this.id} child ${node.id} width calculation:`, {
-        nodeId: node.id,
-        dataWidth: node.data.width,
-        effectiveWidth: effectiveWidth,
-        collapsed: node.collapsed,
-        minimumSize: node.minimumSize
-      });
       return sum + effectiveWidth;
     }, 0);
     // Calculate spacing between ALL visible children (including collapsed ones)
@@ -133,23 +112,7 @@ export default class ColumnsNode extends BaseContainerNode {
         }))
       : 0;
     
-    // Debug: Log size calculation
-    console.log(`ColumnsNode ${this.id} size calculation:`, {
-      visibleChildrenCount: visibleChildren.length,
-      totalChildWidth,
-      totalSpacing,
-      maxChildHeight,
-      currentSize: { width: this.data.width, height: this.data.height },
-      visibleChildrenDetails: visibleChildren.map(node => ({
-        id: node.id,
-        width: node.data.width,
-        height: node.data.height,
-        effectiveWidth: node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width,
-        effectiveHeight: node.getEffectiveHeight ? node.getEffectiveHeight() : node.data.height,
-        collapsed: node.collapsed,
-        minimumSize: node.minimumSize
-      }))
-    });
+    // Debug logs removed
     
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
@@ -196,7 +159,7 @@ export default class ColumnsNode extends BaseContainerNode {
 
 
   arrange() {
-    console.log("Arranging ColumnsNode:", this.id);
+    
     this.updateChildren();
   }
 }

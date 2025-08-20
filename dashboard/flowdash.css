@@ -38,7 +38,7 @@
   color: var(--fd-text, #111);
   border: 1px solid var(--fd-border, rgba(0,0,0,0.2));
   box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-  z-index: 10001;
+  z-index: 20001;
   text-align: center;
 }
 .flowdash-loading__text { font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }

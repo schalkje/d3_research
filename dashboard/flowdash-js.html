@@ -203,8 +203,7 @@
 
         window.setStatus = function(status) {
     const structure = dashboard.getStructure();
-    console.log('setStatus', status);
-    console.log('structure', structure.Nodes);
+    
 
     if (structure && structure.Nodes) {
         const updatePromises = structure.Nodes.map((node, index) => {
@@ -342,9 +341,8 @@
 
         // Function to initialize the dashboard with default settings
         function initializeDashboard() {
-            console.log('initializeDashboard');
             selectedFile = document.getElementById('fileSelect').value || jsonFiles[currentFileIndex] || "dwh-1.json";
-            showLoading();
+            // loading handled by dashboard.initialize()
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 // Ensure default expanded behavior regardless of file
                 dashboardData.settings.toggleCollapseOnStatusChange = false;
@@ -359,7 +357,7 @@
                 mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            }).finally(hideLoading);
+            });
         }
 
     // Function to update the graph layout
@@ -378,14 +376,13 @@
     }
         // Function to update graph data when a new file is selected
         function updateGraphData() {
-            console.log('updateGraphData');
             renderDashboard();
         }
 
         // Function to render or re-render the dashboard
         function renderDashboard() {
             selectedFile = document.getElementById('fileSelect').value;
-            showLoading();
+            // loading handled by dashboard.initialize()
             flowDashboard.fetchDashboardFile(selectedFile).then(dashboardData => {
                 d3.select("#graph").selectAll("*").remove();
                 dashboardData.settings.zoomToRoot = zoomToRoot;
@@ -435,36 +432,10 @@
 
                 dashboard = new flowDashboard.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
-            }).finally(hideLoading);
+            });
         }
 
-        // Loading overlay helpers
-        const loadingEl = document.getElementById('flowdash-loading');
-        const loadingDotsEl = loadingEl ? loadingEl.querySelector('.flowdash-loading__dots') : null;
-        let loadingTimer = null;
-        function showLoading(){
-            if(!loadingEl) return;
-            loadingEl.style.display = 'grid';
-            startDots();
-        }
-        function hideLoading(){
-            if(!loadingEl) return;
-            loadingEl.style.display = 'none';
-            stopDots();
-        }
-        function startDots(){
-            if(!loadingDotsEl) return;
-            stopDots();
-            let i = 0;
-            loadingTimer = setInterval(()=>{
-                i = (i + 1) % 4; // 0..3
-                loadingDotsEl.textContent = '.'.repeat(i);
-            }, 450);
-        }
-        function stopDots(){
-            if(loadingTimer){ clearInterval(loadingTimer); loadingTimer = null; }
-            if(loadingDotsEl) loadingDotsEl.textContent = '';
-        }
+        // Loading overlay handled by flowDashboard (centralized)
 
             </script>
 </body>

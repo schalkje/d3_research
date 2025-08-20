@@ -17,7 +17,7 @@ import BaseNode from "./nodeBase.js";
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
     super.init(parentElement);
-    console.log('nodeCircle - init - Rendering Circle Node:', this.id);
+    
 
     // Draw the node shape
     this.element

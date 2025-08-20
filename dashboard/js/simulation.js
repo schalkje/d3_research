@@ -19,7 +19,7 @@ export default class Simulation {
 
   // Method to initialize the force simulation
   init() {
-    console.log(`simulation - init - Simulation init for ${this.containerNode.data.id}`);
+    
     return new Promise((resolve) => {
     // make everything ready to run the simulation
     this.tickCounter = 0;
@@ -35,7 +35,6 @@ export default class Simulation {
     this.simulation = d3.forceSimulation(this.containerNode.childNodes)
       .force('center', d3.forceCenter(0, 0))
       .force('link', d3.forceLink(this.links).id(d => d.id).distance(d => {
-        console.log('distance',d);
         // return Math.min(d.source.width/2 + d.target.width/2,d.source.height/2 + d.target.height/2);
         return 100;
     }))
@@ -93,20 +92,20 @@ export default class Simulation {
     }
     else
     {
-      console.log('!!!!!!!!!!!!!!!!!!! No container to resize', this.containerNode);
+      
     }
   }
 
   // Method to perform the final resize when the simulation ends
   end(resolve) {
-    console.log(`Simulation ended for ${this.containerNode.data.id}`);
+    
     resolve();
     this.resizeBoundingContainer();
   }
 
   // Method to stop the simulation
   stop(resolve) {
-    console.log('>>>>     Stop simulation     <<<<');
+    
     if (this.simulation) {
       this.simulation.stop();
       this.resizeBoundingContainer();

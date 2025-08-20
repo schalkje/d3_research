@@ -17,7 +17,7 @@ export default class GroupNode extends BaseContainerNode {
   }
 
   updateChildrenWithZoneSystem() {
-    console.log(`GroupNode ${this.id} updateChildrenWithZoneSystem called`);
+    
     
     // Call layoutGroup to recalculate size and positioning when using zone system
     this.layoutGroup();

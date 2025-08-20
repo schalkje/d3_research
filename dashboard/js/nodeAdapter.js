@@ -31,7 +31,6 @@ export default class AdapterNode extends BaseContainerNode {
     }
   }
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
-    console.log("AdapterNode constructor called for:", nodeData.id, nodeData.label);
     
     try {
       // Initialize node data before calling super (static method)
@@ -48,7 +47,7 @@ export default class AdapterNode extends BaseContainerNode {
         vertical: (this.settings?.nodeSpacing?.vertical ?? 10)
       };
       
-      console.log("AdapterNode constructor completed for:", this.id, "mode:", this.data.layout.mode, "arrangement:", this.data.layout.arrangement);
+      
     } catch (error) {
       console.error("AdapterNode constructor failed:", error);
       throw error;
@@ -56,7 +55,6 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   static initializeNodeDataStatic(nodeData) {
-    console.log("Initializing adapter node data for:", nodeData.id);
     
     if (!nodeData.width) nodeData.width = 334;
     if (!nodeData.height) nodeData.height = 74;
@@ -177,15 +175,7 @@ export default class AdapterNode extends BaseContainerNode {
       });
     }
     
-    console.log("Adapter node data initialized:", {
-      id: nodeData.id,
-      mode: nodeData.layout.mode,
-      arrangement: nodeData.layout.arrangement,
-      displayMode: nodeData.layout.displayMode,
-      width: nodeData.width,
-      height: nodeData.height,
-      childrenCount: nodeData.children.length
-    });
+    
     
     return nodeData;
   }
@@ -200,16 +190,14 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initChildren() {
-    console.log("AdapterNode - initChildren called for:", this.id, this.data.label);
     this.suspenseDisplayChange = true;
 
     // Ensure children array exists
     if (!this.data.children || this.data.children.length === 0) {
       this.data.children = [];
-      console.log("AdapterNode - initialized empty children array");
     }
 
-    console.log("AdapterNode - calling super.initChildren to process pre-created child data...");
+    
     
     // First call super.initChildren to let BaseContainerNode handle the child data we pre-created
     super.initChildren();
@@ -219,13 +207,7 @@ export default class AdapterNode extends BaseContainerNode {
     this.stagingNode = this.childNodes.find(child => child.data.role === "staging");
     this.transformNode = this.childNodes.find(child => child.data.role === "transform");
 
-    console.log("AdapterNode - child nodes assigned:", {
-      staging: !!this.stagingNode,
-      archive: !!this.archiveNode,
-      transform: !!this.transformNode,
-      totalChildren: this.childNodes.length,
-      dataChildren: this.data.children.length
-    });
+    
 
     // Standardize child dimensions for consistent layout regardless of how they were defined
     this.standardizeChildDimensions();
@@ -251,7 +233,6 @@ export default class AdapterNode extends BaseContainerNode {
     if (!this.collapsed) {
       // Trigger child positioning after all children are initialized
       if (this.zoneManager?.innerContainerZone) {
-        console.log("AdapterNode - triggering child positioning");
         this.zoneManager.innerContainerZone.forceUpdateChildPositions();
       } else {
         console.warn("AdapterNode - zone system not available for positioning");
@@ -265,7 +246,7 @@ export default class AdapterNode extends BaseContainerNode {
     this.suspenseDisplayChange = false;
     this.handleDisplayChange();
     
-    console.log("AdapterNode - initChildren completed for:", this.id, "with", this.childNodes.length, "children");
+    
   }
 
   /**
@@ -277,12 +258,7 @@ export default class AdapterNode extends BaseContainerNode {
     const standardWidth = isRoleMode ? 80 : 150;
     const standardHeight = 44;
 
-    console.log("AdapterNode - standardizing child dimensions:", {
-      mode: this.data.layout.displayMode,
-      standardWidth,
-      standardHeight,
-      children: this.childNodes.length
-    });
+    
 
     // Standardize all child node dimensions
     [this.stagingNode, this.archiveNode, this.transformNode].forEach((child) => {
@@ -299,11 +275,7 @@ export default class AdapterNode extends BaseContainerNode {
         child.resize({ width: standardWidth, height: standardHeight });
       }
 
-      console.log(`Standardized ${child.data.role} node:`, {
-        id: child.id,
-        oldDimensions,
-        newDimensions: { width: child.data.width, height: child.data.height }
-      });
+      
     });
   }
 
@@ -345,7 +317,7 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   initializeChildNode(role, labels) {
-    console.log(`Initializing child node for role: ${role}`);
+    
     
     let node = this.childNodes.find(
       (child) => child.data.category != null && 
@@ -362,7 +334,6 @@ export default class AdapterNode extends BaseContainerNode {
     if (!node) {
       let childData = this.data.children.find((child) => child.category === role || child.role === role);
       if (!childData && this.shouldCreateChildNode(role)) {
-        console.log(`Creating child data for role: ${role}`);
         childData = {
           id: `${role}_${this.data.id}`,
           label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
@@ -373,15 +344,13 @@ export default class AdapterNode extends BaseContainerNode {
           height: 44,
         };
         this.data.children.push(childData);
-        console.log(`Added child data:`, childData);
       }
       
       if (childData) {
         node = this.initChildNode(childData, null);
-        console.log(`Created node for role ${role}:`, node ? 'success' : 'failed');
       }
     } else {
-      console.log(`Found existing node for role ${role}`);
+      
       if (this.data.layout.displayMode === DisplayMode.ROLE) {
         node.data.role = role;
         node.data.width = 80;
@@ -432,11 +401,10 @@ export default class AdapterNode extends BaseContainerNode {
         
         // Initialize the child node immediately
         childNode.init(parentElement);
-        console.log("Created and initialized child node:", copyChild.id, copyChild.label || copyChild.role);
       } else {
         // Re-init existing child node
         childNode.init(parentElement);
-        console.log("Re-initialized existing child node:", childNode.id, childNode.data.label);
+        
       }
     }
     return childNode;
@@ -456,7 +424,7 @@ export default class AdapterNode extends BaseContainerNode {
     // If still unavailable, skip to avoid errors (e.g., when not yet fully initialized)
     if (!this.zoneManager?.innerContainerZone) return;
 
-    console.log('Using zone system for adapter node positioning:', this.id);
+    
     
     // Set layout algorithm based on arrangement
     const innerContainerZone = this.zoneManager.innerContainerZone;
@@ -499,12 +467,7 @@ export default class AdapterNode extends BaseContainerNode {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    console.log('Layout algorithm 1 (archive-focused) - found nodes:', {
-      staging: !!stagingNode,
-      archive: !!archiveNode,
-      transform: !!transformNode,
-      coordinateSystem
-    });
+    
     
     if (stagingNode && archiveNode && transformNode) {
       // Ensure all nodes have standardized dimensions first
@@ -547,14 +510,7 @@ export default class AdapterNode extends BaseContainerNode {
       const stagingCenterY = totalContentHeight / 2 - stagingNode.data.height / 2;
       const transformCenterY = stagingCenterY; // Same Y as staging
       
-      console.log('Y positioning calculation:', {
-        totalContentHeight,
-        verticalSpacing,
-        archiveCenterY,
-        stagingCenterY,
-        transformCenterY,
-        expectedVerticalGap: stagingCenterY - archiveCenterY
-      });
+      
       
       // Staging positioning: Bottom left, positioned to center the overall layout
       const stagingCenterX = layoutCenterX - (contentWidth / 2) + (stagingNode.data.width / 2);
@@ -581,20 +537,7 @@ export default class AdapterNode extends BaseContainerNode {
       // Trigger container resize for proper fitting
       this.resizeArrangementContainer(stagingNode, archiveNode, transformNode);
       
-      console.log('Positioning complete (arrangement 1 - archive-focused):', {
-        staging: { x: stagingCenterX, y: stagingCenterY, leftEdge: stagingCenterX - stagingNode.data.width/2, rightEdge: stagingCenterX + stagingNode.data.width/2 },
-        archive: { x: archiveCenterX, y: archiveCenterY, leftEdge: archiveCenterX - archiveNode.data.width/2, rightEdge: archiveCenterX + archiveNode.data.width/2 },
-        transform: { x: transformCenterX, y: transformCenterY, leftEdge: transformCenterX - transformNode.data.width/2, rightEdge: transformCenterX + transformNode.data.width/2 },
-        constraints: {
-          expectedArchiveLeftEdge,
-          actualArchiveLeftEdge: archiveCenterX - archiveNode.data.width / 2,
-          archiveLeftConstraintMet: Math.abs((archiveCenterX - archiveNode.data.width / 2) - expectedArchiveLeftEdge) < 5,
-          rightEdgeAlignment,
-          archiveRightConstraintMet: rightEdgeAlignment < 5,
-          verticalGap: stagingCenterY - archiveCenterY,
-          horizontalSpacing: (transformCenterX - transformNode.data.width/2) - (stagingCenterX + stagingNode.data.width/2)
-        }
-      });
+      
     }
   }
 
@@ -640,13 +583,7 @@ export default class AdapterNode extends BaseContainerNode {
         height: headerHeight + adjustedMargins.top + contentHeight + adjustedMargins.bottom
       };
       
-      console.log('Arrangement container resize:', {
-        contentBounds: { minX, minY, maxX, maxY, contentWidth, contentHeight },
-        originalMargins: margins,
-        adjustedMargins,
-        headerHeight,
-        newSize
-      });
+      
       
       this._isResizing = true;
       this.resize(newSize);
@@ -678,11 +615,7 @@ export default class AdapterNode extends BaseContainerNode {
           height: (maxY - minY) + padding * 2
         };
         
-        console.log('InnerContainer sizing around children:', {
-          childBounds: { minX, minY, maxX, maxY },
-          innerContainerSize,
-          padding
-        });
+        
         
         // Resize the innerContainer zone to contain the positioned children
         innerContainerZone.resize(innerContainerSize.width, innerContainerSize.height);
@@ -726,20 +659,16 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   layoutAlgorithm3_full_staging(childNodes, coordinateSystem) {
-    console.log('layoutAlgorithm3_full_staging called with coordinateSystem:', coordinateSystem);
+    
     
     const stagingNode = childNodes.find(node => node.data.role === 'staging');
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     const transformNode = childNodes.find(node => node.data.role === 'transform');
     
-    console.log('Layout algorithm 3 - found nodes:', {
-      staging: !!stagingNode,
-      archive: !!archiveNode,
-      transform: !!transformNode
-    });
+    
     
     if (stagingNode && transformNode && archiveNode) {
-      console.log('Found all three nodes, positioning them...');
+      
       
       // Ensure sizes
       archiveNode.resize({ width: 150, height: 44 });
@@ -782,12 +711,7 @@ export default class AdapterNode extends BaseContainerNode {
       otherNode = transformNode;
     }
     
-    console.log('Layout algorithm 4 - found nodes:', {
-      staging: !!stagingNode,
-      other: !!otherNode,
-      mode: this.data.layout.mode,
-      coordinateSystem
-    });
+    
     
     if (stagingNode && otherNode) {
       // Center the two nodes horizontally within the zone coordinate system
@@ -803,12 +727,7 @@ export default class AdapterNode extends BaseContainerNode {
       stagingNode.move(stagingX, y);
       otherNode.move(otherX, y);
       
-      console.log('Positioning complete (horizontal line, centered):', {
-        staging: { x: stagingX, y },
-        other: { x: otherX, y },
-        totalWidth,
-        coordinateSystemSize: coordinateSystem?.size
-      });
+      
       
       // Resize container to fit both nodes properly (like archive-only mode)
       this.resizeTwoNodeContainer(stagingNode, otherNode);
@@ -818,10 +737,7 @@ export default class AdapterNode extends BaseContainerNode {
   layoutAlgorithm5(childNodes, coordinateSystem) {
     const archiveNode = childNodes.find(node => node.data.role === 'archive');
     
-    console.log('Layout algorithm 5 - found nodes:', {
-      archive: !!archiveNode,
-      coordinateSystem
-    });
+    
     
     if (archiveNode) {
       // Center the archive node within the innerContainer zone
@@ -831,10 +747,7 @@ export default class AdapterNode extends BaseContainerNode {
       
       archiveNode.move(x, y);
       
-      console.log('Positioning complete (archive-only, centered):', {
-        archive: { x, y },
-        coordinateSystemSize: coordinateSystem?.size
-      });
+      
       
       // Resize container to fit archive node properly (like lane/column nodes do)
       this.resizeArchiveOnlyContainer(archiveNode);
@@ -861,16 +774,7 @@ export default class AdapterNode extends BaseContainerNode {
         height: headerHeight + margins.top + contentHeight + margins.bottom
       };
       
-      console.log('Two-node container resize calculation:', {
-        stagingNode: { width: stagingNode.data.width, height: stagingNode.data.height },
-        otherNode: { width: otherNode.data.width, height: otherNode.data.height },
-        spacing: this.nodeSpacing.horizontal,
-        margins,
-        headerHeight,
-        contentSize: { width: contentWidth, height: contentHeight },
-        newSize,
-        currentSize: { width: this.data.width, height: this.data.height }
-      });
+      
       
       // Resize if the calculated size is different
       if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
@@ -914,13 +818,7 @@ export default class AdapterNode extends BaseContainerNode {
         height: headerHeight + margins.top + contentHeight + margins.bottom
       };
       
-      console.log('Archive-only container resize calculation:', {
-        archiveNode: { width: archiveNode.data.width, height: archiveNode.data.height },
-        margins,
-        headerHeight,
-        newSize,
-        currentSize: { width: this.data.width, height: this.data.height }
-      });
+      
       
       // Resize if the calculated size is different
       if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
@@ -981,14 +879,7 @@ export default class AdapterNode extends BaseContainerNode {
         height: Math.max(this.data.height, headerHeight + margins.top + contentHeight + margins.bottom)
       };
       
-      console.log('Arrangement 3 size calculation:', {
-        childBounds: { minX, minY, maxX, maxY },
-        contentSize: { width: contentWidth, height: contentHeight },
-        headerHeight,
-        margins,
-        requiredSize,
-        currentSize: { width: this.data.width, height: this.data.height }
-      });
+      
       
       // Resize if needed
       if (requiredSize.width !== this.data.width || requiredSize.height !== this.data.height) {
@@ -1054,14 +945,7 @@ export default class AdapterNode extends BaseContainerNode {
       height: Math.max(this.data.height, headerHeight + margins.top + contentHeight + margins.bottom)
     };
     
-    console.log('resizeToFitChildren calculation:', {
-      childBounds: { minX, minY, maxX, maxY },
-      contentSize: { width: contentWidth, height: contentHeight },
-      headerHeight,
-      margins,
-      newSize,
-      currentSize: { width: this.data.width, height: this.data.height }
-    });
+    
     
     // Resize container to accommodate all children
     if (newSize.width !== this.data.width || newSize.height !== this.data.height) {

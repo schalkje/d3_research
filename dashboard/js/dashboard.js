@@ -4,16 +4,13 @@ import { getBoundingBoxRelativeToParent } from "./utils.js";
 import { createMarkers } from "./markers.js";
 import { createEdges } from "./edge.js";
 import { ConfigManager } from "./configManager.js";
+import { fetchDashboardFile } from "./data.js";
 
 export class Dashboard {
   constructor(dashboardData) {
     this.data = dashboardData;
 
-    // log all attributes from data.settings to the console log
-    console.log("Dashboard - constructor", this.data.settings);
-    for (const [key, value] of Object.entries(this.data.settings)) {
-      console.log("Dashboard - constructor - settings", key, value);
-    }
+    // log all attributes from data.settings to the console log (removed verbose logs)
 
     // Use ConfigManager to merge with defaults
     this.data.settings = ConfigManager.mergeWithDefaults(this.data.settings);
@@ -87,7 +84,6 @@ export class Dashboard {
   }
 
    initialize(mainDivSelector, minimapDivSelector = null) {
-    console.log("dashboard - initialize", this);
     // initialize dashboard
     this.mainDivSelector = mainDivSelector;
     const div = this.initializeSvg(mainDivSelector);
@@ -99,6 +95,11 @@ export class Dashboard {
     this.main.pixelToSvgRatio = 1.0; // At 100% zoom, 1 SVG unit = 1 screen pixel
     this.data.settings.divRatio ??= this.main.divRatio;
     this.main.onDragUpdate = this.onDragUpdate;
+
+    // Show loading as soon as rendering a new model starts
+    this._initialLoading = true;
+    this.showLoading();
+
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root =  this.createDashboard(this.data, this.main.container);
 
@@ -116,7 +117,7 @@ export class Dashboard {
       this.zoomToRoot();
       this.hasPerformedInitialZoomToRoot = true;
     }
-    console.log("dashboard - initialize - finished", this);
+    
 
     // Initialize fullscreen toggle button after setup
     this.initializeFullscreenToggle();
@@ -615,7 +616,7 @@ export class Dashboard {
   }
 
   initializeMinimap() {
-    console.log("initializeMinimap", this);
+    
 
     const dashboard = this;
 
@@ -920,7 +921,7 @@ export class Dashboard {
   }
 
   updateNodeStatus(nodeId, status) {
-    console.log("updateNodeStatus", nodeId, status);
+    
     const node = this.main.root.getNode(nodeId);
     if (node) {
       node.status = status;
@@ -966,15 +967,12 @@ export class Dashboard {
   }
 
   createDashboard(dashboard, container) {
-    console.log("dashboard - createDashboard", dashboard, container);
-    console.log("Registered node types:", getRegisteredNodeTypes());
+    
     createMarkers(container);
 
     var root;
     if (dashboard.nodes.length == 1) {
-      console.log("Creating single node:", dashboard.nodes[0]);
       root = createNode(dashboard.nodes[0], container, dashboard.settings);
-      console.log("Created node result:", root);
       
       // For single nodes, ensure they are positioned at the center of the dashboard
       if (root) {
@@ -1015,7 +1013,7 @@ export class Dashboard {
         .attr("stroke-width", 2);
     }
 
-    console.log("dashboard - createDashboard - finish", dashboard, container);
+    
     return root;
   }
 
@@ -1033,7 +1031,7 @@ export class Dashboard {
   }
 
   initializeZoom() {
-    console.log("intializeZoom", this);
+    
     const dag = null; // todo: remove
 
     // const svg = this.dashboard.container;
@@ -1061,7 +1059,7 @@ export class Dashboard {
   }
 
   onDragUpdate() {
-    console.log("Drag Update");
+    
   }
 
   onMainDisplayChange() {
@@ -1088,6 +1086,13 @@ export class Dashboard {
       }
 
       this.positionEmbeddedMinimap();
+
+      // Hide loading once the first full draw/display cycle completes
+      if (this._initialLoading) {
+        this._initialLoading = false;
+        this.hideLoading();
+      }
+
       this._displayChangeScheduled = false;
     });
   }
@@ -1241,10 +1246,9 @@ export class Dashboard {
   }
 
   zoomToNodeById(nodeId) {
-    console.log("zoomToNodeById", nodeId);
+    
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      console.log("node=", node);
       return this.zoomToNode(node);
     }
 
@@ -1253,10 +1257,9 @@ export class Dashboard {
   }
 
   setStatusToNodeById(nodeId, status) {
-    console.log("setStatusToNodeById", nodeId);
+    
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      console.log("node=", node);
       node.status = status;
     }
 
@@ -1268,12 +1271,11 @@ export class Dashboard {
     // todo: remove dag; and get nodes from this.main.root
     const nodes = dashboard.main.root.getAllNodes();
     const node = nodes[Math.floor(Math.random() * nodes.length)];
-    console.log("random node=", node.data.label, node);
     return this.zoomToNode(node);
   }
 
   selectNode(node) {
-    console.log("dashboard - selectNode", node.selected, node);
+    
     node.selected = !node.selected;
 
     // // test status updates:
@@ -1431,6 +1433,15 @@ export class Dashboard {
 
     this.isMainAndMinimapSyncing = false;
   }
+
+  // Instance helpers to control a loading overlay
+  showLoading() {
+    const container = resolveLoadingContainer(this.main?.svg);
+    LoadingOverlay.show(container);
+  }
+  hideLoading() {
+    LoadingOverlay.hide();
+  }
 }
 
 
@@ -1486,7 +1497,7 @@ export function computeBoundingBox(dashboard, nodes) {
     // updateBounds(x, y, width, height);
     // console.log("computeBoundingBox node:", node.id, x, y, width, height, x -(width/2));
     if (dashboard?.data?.settings?.debugMode) {
-      console.log(`computeBoundingBox bounds: ${minX}, ${minY}, ${maxX}, ${maxY}`);
+      
     }
 
       
@@ -1603,6 +1614,24 @@ export function createAndInitDashboard(dashboardData, mainDivSelector, thirdArg 
   return dashboard;
 }
 
+// Fetch + init with built-in loading start; instance hides when first draw completes
+export async function loadDashboardFromFile(mainDivSelector, selectedFile, applySettings) {
+  let dashboard = null;
+  try {
+    showLoading();
+    const dashboardData = await fetchDashboardFile(selectedFile);
+    if (typeof applySettings === 'function') {
+      try { applySettings(dashboardData); } catch {}
+    }
+    dashboard = new Dashboard(dashboardData);
+    dashboard.initialize(mainDivSelector);
+    return dashboard;
+  } catch (e) {
+    hideLoading();
+    throw e;
+  }
+}
+
 export function setDashboardProperty(dashboardObject, propertyPath, value) {
   console.warn("setDashboardProperty", dashboardObject, propertyPath, value);
   const properties = propertyPath.split('.');
@@ -1693,3 +1722,100 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
     console.warn('setDashboardProperty post-update failed', e);
   }
 }
+
+// Centralized Loading Overlay (shared utility)
+const LoadingOverlay = {
+  el: null,
+  dotsEl: null,
+  timer: null,
+  shownAt: 0,
+  MIN_VISIBLE_MS: 350,
+  ensure(container) {
+    const host = container || resolveLoadingContainer();
+    if (!host) return null;
+    if (!this.el) {
+      this.el = host.querySelector('#flowdash-loading') || document.getElementById('flowdash-loading');
+      if (!this.el) {
+        const wrapper = document.createElement('div');
+        wrapper.id = 'flowdash-loading';
+        wrapper.className = 'flowdash-loading';
+        wrapper.setAttribute('role', 'status');
+        wrapper.setAttribute('aria-live', 'polite');
+        const text = document.createElement('span');
+        text.className = 'flowdash-loading__text';
+        text.textContent = 'Loading';
+        const dots = document.createElement('span');
+        dots.className = 'flowdash-loading__dots';
+        dots.setAttribute('aria-hidden', 'true');
+        wrapper.appendChild(text);
+        wrapper.appendChild(dots);
+        host.appendChild(wrapper);
+        this.el = wrapper;
+      }
+      this.dotsEl = this.el.querySelector('.flowdash-loading__dots');
+    }
+    return this.el;
+  },
+  startDots() {
+    if (!this.dotsEl) return;
+    this.stopDots();
+    let i = 0;
+    this.timer = setInterval(() => {
+      i = (i + 1) % 4;
+      this.dotsEl.textContent = '.'.repeat(i);
+    }, 450);
+  },
+  stopDots() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    if (this.dotsEl) this.dotsEl.textContent = '';
+  },
+  show(container) {
+    const el = this.ensure(container);
+    if (!el) return;
+    this.shownAt = Date.now();
+    el.style.display = 'grid';
+    this.startDots();
+  },
+  hide() {
+    if (!this.el) return;
+    const elapsed = Date.now() - this.shownAt;
+    const delay = Math.max(0, this.MIN_VISIBLE_MS - elapsed);
+    setTimeout(() => {
+      if (!this.el) return;
+      this.el.style.display = 'none';
+      this.stopDots();
+    }, delay);
+  }
+};
+
+function resolveLoadingContainer(svgSelection) {
+  const explicit = document.querySelector('#graph-container');
+  if (explicit) return explicit;
+  try {
+    const node = svgSelection && svgSelection.node ? svgSelection.node() : null;
+    if (node && node.parentElement) return node.parentElement;
+  } catch {}
+  return document.body;
+}
+
+// Named exports usable from pages
+export function showLoading(containerOrSelector = null) {
+  try {
+    const container = typeof containerOrSelector === 'string'
+      ? document.querySelector(containerOrSelector)
+      : containerOrSelector;
+    LoadingOverlay.show(container || resolveLoadingContainer());
+  } catch {}
+}
+
+export function hideLoading() {
+  try { LoadingOverlay.hide(); } catch {}
+}
+
+// Also expose simple globals for legacy pages if a bundler doesn't include module exports
+try {
+  if (typeof window !== 'undefined') {
+    window.showLoading = function(container){ try { showLoading(container); } catch {} };
+    window.hideLoading = function(){ try { hideLoading(); } catch {} };
+  }
+} catch {}
