@@ -179,13 +179,22 @@ export default class FoundationNode extends BaseContainerNode {
 
     this.initEdges();
 
+    // Compute expanded width from children and ensure it's at least the header minimum width
+    const headerZone = this.zoneManager?.headerZone;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+    const headerBuffer = 2;
     this.data.expandedSize = {
       width:
-        this.rawNode.data.width +
-        this.nodeSpacing.horizontal +
-        this.baseNode.data.width +
-        this.containerMargin.left +
-        this.containerMargin.right,
+        Math.max(
+          headerMinWidth + headerBuffer,
+          this.rawNode.data.width +
+          this.nodeSpacing.horizontal +
+          this.baseNode.data.width +
+          this.containerMargin.left +
+          this.containerMargin.right
+        ),
       height: this.containerMargin.top + this.containerMargin.bottom + 18, //JS: why fixed 18
     };
 

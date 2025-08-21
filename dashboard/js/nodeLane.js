@@ -42,7 +42,7 @@ export default class LaneNode extends BaseContainerNode {
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
       const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
         ? headerZone.getMinimumWidth()
-        : headerHeight * 8 + 36;
+        : 50;
 
       if (!this._isResizing) {
         const newSize = {

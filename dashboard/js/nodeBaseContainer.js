@@ -252,11 +252,16 @@ export default class BaseContainerNode extends BaseNode {
 
         // FINAL: Recompute container size from actual child content and resize
         if (!this.collapsed) {
-          const headerHeight = this.zoneManager?.headerZone ? this.zoneManager.headerZone.getHeaderHeight() : 20;
+          const headerZone = this.zoneManager?.headerZone;
+          const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
           const margins = this.zoneManager?.marginZone ? this.zoneManager.marginZone.getMargins() : { top: 8, right: 8, bottom: 8, left: 8 };
           const contentSize = innerZone.calculateChildContentSize();
           const widthFromContent = contentSize.width + margins.left + margins.right;
-          const newWidth = Math.max(this.data.width, this.minimumSize.width, widthFromContent);
+          const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+            ? headerZone.getMinimumWidth()
+            : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+          const headerBuffer = 2; // small extra to avoid tight fit
+          const newWidth = Math.max(this.data.width, this.minimumSize.width, widthFromContent, headerMinWidth + headerBuffer);
           const newHeight = Math.max(this.minimumSize.height, headerHeight + margins.top + contentSize.height + margins.bottom);
           this.resize({ width: newWidth, height: newHeight }, true);
           // Ensure zones reflect final size
@@ -377,6 +382,10 @@ export default class BaseContainerNode extends BaseNode {
 
     // Apply collapsed size
     this.resize({ width: collapsedWidth, height: collapsedHeight }, true);
+    // Ensure zones reflect the new collapsed dimensions so header/background match text
+    if (this.zoneManager) {
+      try { this.zoneManager.resize(collapsedWidth, collapsedHeight); } catch {}
+    }
 
     if (this.parentNode) this.parentNode.update();
     this.suspenseDisplayChange = false;
@@ -560,6 +569,27 @@ export default class BaseContainerNode extends BaseNode {
 
     // you cannot move the g node,, move the child elements in stead
     this.element.attr("transform", `translate(${this.x}, ${this.y})`);
+
+    // Post-initialization: defer one re-measure to stabilize header width after fonts/styles
+    if (!this._didPostInitMeasure) {
+      this._didPostInitMeasure = true;
+      setTimeout(() => {
+        try {
+          const headerZone = this.zoneManager?.headerZone;
+          if (!headerZone) return;
+          const headerMinWidth = (typeof headerZone.getMinimumWidth === 'function')
+            ? headerZone.getMinimumWidth()
+            : (headerZone.getSize?.().width || 0);
+          const width = Math.max(this.data.width || 0, this.minimumSize?.width || 0, headerMinWidth || 0);
+          if (width > (this.data.width || 0)) {
+            const size = { width, height: this.data.height };
+            this.resize(size, true);
+            if (this.zoneManager) this.zoneManager.resize(size.width, size.height);
+            this.update();
+          }
+        } catch {}
+      }, 0);
+    }
   }
 
   initChildren() {

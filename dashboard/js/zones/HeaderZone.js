@@ -145,21 +145,21 @@ export class HeaderZone extends BaseZone {
   /**
    * Resolve header text sizing configuration from settings
    * Supported settings (either flat or nested under headerText):
-   * - headerTextMode: 'full-text' | 'truncate'
+   * - headerTextMode: 'full' | 'truncate'
    * - headerTextMinWidth: number (default 150)
    * - headerTextMaxWidth: number (default 300)
    */
   getHeaderTextConfig() {
     const settings = this.node?.settings || {};
     const nested = settings.headerText || {};
-    let mode = (settings.headerTextMode ?? nested.mode ?? 'full-text');
-    mode = typeof mode === 'string' ? mode.toLowerCase() : 'full-text';
-    if (mode === 'full') mode = 'full-text';
-    if (mode !== 'full-text' && mode !== 'truncate') mode = 'full-text';
+    const defaultMode = 'truncate';
+    let mode = (settings.headerTextMode ?? nested.mode ?? defaultMode);
+    mode = typeof mode === 'string' ? mode.toLowerCase() : defaultMode;
+    if (mode !== 'full' && mode !== 'truncate') mode = defaultMode;
 
     const minWidth = Number.isFinite(settings.headerTextMinWidth)
       ? settings.headerTextMinWidth
-      : (Number.isFinite(nested.minWidth) ? nested.minWidth : 150);
+      : (Number.isFinite(nested.minWidth) ? nested.minWidth : 50);
     const maxWidth = Number.isFinite(settings.headerTextMaxWidth)
       ? settings.headerTextMaxWidth
       : (Number.isFinite(nested.maxWidth) ? nested.maxWidth : 300);
@@ -185,6 +185,10 @@ export class HeaderZone extends BaseZone {
         const rect = tempElement.getBoundingClientRect();
         textWidth = rect.width;
         document.body.removeChild(tempElement);
+        // Fallback if off-DOM measurement yields 0
+        if (!textWidth && this.textElement?.node()?.getComputedTextLength) {
+          try { textWidth = this.textElement.node().getComputedTextLength(); } catch {}
+        }
       } else {
         textWidth = text.length * 8; // Fallback approximation
       }
@@ -212,7 +216,7 @@ export class HeaderZone extends BaseZone {
     // Apply sizing mode constraints
     const { mode, minWidth: cfgMin, maxWidth: cfgMax } = this.getHeaderTextConfig();
     // Guard for invalid config values
-    const safeMin = Number.isFinite(cfgMin) ? cfgMin : 150;
+    const safeMin = Number.isFinite(cfgMin) ? cfgMin : 50;
     const safeMax = Number.isFinite(cfgMax) ? cfgMax : 300;
 
     let constrainedWidth = baseWidth;
@@ -221,6 +225,9 @@ export class HeaderZone extends BaseZone {
     // Only enforce max when truncating
     if (mode === 'truncate') {
       constrainedWidth = Math.min(constrainedWidth, safeMax);
+    } else {
+      // In full mode, ensure the header spans the full-text width (no truncation)
+      // This already holds because baseWidth uses measured text width.
     }
 
     // Debug logging
@@ -302,6 +309,24 @@ export class HeaderZone extends BaseZone {
 
     // Apply text sizing mode: when truncate, cap the text drawing width to configured max
     const { mode, maxWidth: cfgMax } = this.getHeaderTextConfig();
+
+    // In 'full' mode, never truncate: render full text and clear tooltip/cursor
+    if (mode === 'full') {
+      if (text.length > 0) {
+        this.textElement.text(text);
+      } else {
+        this.textElement.text('');
+      }
+      this.textElement.select('title').remove();
+      this.textElement.style('cursor', 'default');
+      // Position text - align with header position (zone is already at top of container)
+      const textHeight = this.calculateTextHeight();
+      this.textElement
+        .attr('x', -this.size.width / 2 + this.padding)
+        .attr('y', textHeight / 2);
+      return;
+    }
+
     if (mode === 'truncate' && Number.isFinite(cfgMax)) {
       // Ensure we also respect right-reserved area and left padding
       const allowedWidth = Math.max(0, cfgMax - this.padding - reservedRight);

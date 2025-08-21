@@ -411,8 +411,21 @@ export default class AdapterNode extends BaseContainerNode {
   }
 
   updateChildren() {
-    // When collapsed, do not run child layout; container size is handled elsewhere
-    if (this.collapsed) return;
+    // When collapsed, set container width/height to header minimums and skip child layout
+    if (this.collapsed) {
+      const headerZone = this.zoneManager?.headerZone;
+      const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? (headerZone.getSize?.().width || 0) : this.data.width);
+      const collapsedWidth = Math.max(this.minimumSize.width, headerMinWidth);
+      const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
+      this.resize({ width: collapsedWidth, height: collapsedHeight });
+      if (this.zoneManager) {
+        try { this.zoneManager.resize(collapsedWidth, collapsedHeight); } catch {}
+      }
+      return;
+    }
 
     // Ensure inner container zone exists (it may be lazily created on expand)
     if (!this.zoneManager?.innerContainerZone) {
