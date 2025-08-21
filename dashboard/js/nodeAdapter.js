@@ -548,6 +548,9 @@ export default class AdapterNode extends BaseContainerNode {
     const marginZone = this.zoneManager.marginZone;
     const headerZone = this.zoneManager.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
     
     if (marginZone) {
       const margins = marginZone.getMargins();
@@ -579,7 +582,7 @@ export default class AdapterNode extends BaseContainerNode {
       };
       
       const newSize = {
-        width: contentWidth + adjustedMargins.left + adjustedMargins.right,
+        width: Math.max(this.minimumSize.width, headerMinWidth, contentWidth + adjustedMargins.left + adjustedMargins.right),
         height: headerHeight + adjustedMargins.top + contentHeight + adjustedMargins.bottom
       };
       
@@ -761,6 +764,9 @@ export default class AdapterNode extends BaseContainerNode {
     const marginZone = this.zoneManager.marginZone;
     const headerZone = this.zoneManager.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
     
     if (marginZone) {
       const margins = marginZone.getMargins();
@@ -770,7 +776,7 @@ export default class AdapterNode extends BaseContainerNode {
       const contentHeight = Math.max(stagingNode.data.height, otherNode.data.height);
       
       const newSize = {
-        width: contentWidth + margins.left + margins.right,
+        width: Math.max(this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
         height: headerHeight + margins.top + contentHeight + margins.bottom
       };
       
@@ -805,6 +811,9 @@ export default class AdapterNode extends BaseContainerNode {
     const marginZone = this.zoneManager.marginZone;
     const headerZone = this.zoneManager.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
     
     if (marginZone) {
       const margins = marginZone.getMargins();
@@ -814,7 +823,7 @@ export default class AdapterNode extends BaseContainerNode {
       const contentHeight = archiveNode.data.height;
       
       const newSize = {
-        width: contentWidth + margins.left + margins.right,
+        width: Math.max(this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
         height: headerHeight + margins.top + contentHeight + margins.bottom
       };
       
@@ -869,13 +878,16 @@ export default class AdapterNode extends BaseContainerNode {
       // Get header height
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
       
       // Get margins
       const marginZone = this.zoneManager?.marginZone;
       const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
       
       const requiredSize = {
-        width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+        width: Math.max(this.data.width, this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
         height: Math.max(this.data.height, headerHeight + margins.top + contentHeight + margins.bottom)
       };
       
@@ -935,13 +947,16 @@ export default class AdapterNode extends BaseContainerNode {
     // Get header height
     const headerZone = this.zoneManager?.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
     
     // Get margin zone for proper sizing
     const marginZone = this.zoneManager?.marginZone;
     const margins = marginZone ? marginZone.getMargins() : { top: 8, bottom: 8, left: 8, right: 8 };
     
     const newSize = {
-      width: Math.max(this.data.width, contentWidth + margins.left + margins.right),
+      width: Math.max(this.data.width, this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
       height: Math.max(this.data.height, headerHeight + margins.top + contentHeight + margins.bottom)
     };
     

@@ -117,6 +117,9 @@ export default class LaneNode extends BaseContainerNode {
     const marginZone = this.zoneManager?.marginZone;
     const headerZone = this.zoneManager?.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
+      ? headerZone.getMinimumWidth()
+      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
 
     if (marginZone && !this._isResizing) {
       let newSize;
@@ -124,8 +127,8 @@ export default class LaneNode extends BaseContainerNode {
       if (this.collapsed) {
         // When collapsed, only use header height (no margins or content)
         newSize = {
-          width: Math.max(this.data.width, headerHeight * 8 + 36), // Minimum width based on label
-          height: headerHeight // Only header height when collapsed
+          width: Math.max(this.minimumSize.width, headerMinWidth),
+          height: Math.max(this.minimumSize.height, headerHeight)
         };
       } else {
         // When expanded, use margin zone calculation with correct margins
@@ -135,7 +138,7 @@ export default class LaneNode extends BaseContainerNode {
         const contentHeight = totalChildHeight + totalSpacing;
         
         newSize = {
-          width: Math.max(this.minimumSize.width, contentWidth + margins.left + margins.right),
+          width: Math.max(this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
           height: headerHeight + margins.top + contentHeight + margins.bottom
         };
       }
