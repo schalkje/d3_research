@@ -315,16 +315,29 @@ export class HeaderZone extends BaseZone {
       // Check if text needs ellipsis
       const textLength = this.textElement.node().getComputedTextLength();
       if (textLength > maxWidth) {
-        // Truncate text with ellipsis
+        // Truncate text with ellipsis; trim trailing spaces before adding '...'
         let truncatedText = text;
+        const rtrim = (s) => s.replace(/\s+$/,'');
         while (truncatedText.length > 0 && 
-               this.textElement.text(truncatedText + '...').node().getComputedTextLength() > maxWidth) {
+               this.textElement.text(rtrim(truncatedText) + '...').node().getComputedTextLength() > maxWidth) {
           truncatedText = truncatedText.slice(0, -1);
         }
-        this.textElement.text(truncatedText + '...');
+        const finalText = rtrim(truncatedText) + '...';
+        this.textElement.text(finalText);
+        // Always add tooltip with full text when truncated
+        const titleSel = this.textElement.select('title');
+        if (titleSel.empty()) this.textElement.append('title').text(text);
+        else titleSel.text(text);
+        this.textElement.style('cursor', 'help');
+      } else {
+        // No truncation → remove any tooltip
+        this.textElement.select('title').remove();
+        this.textElement.style('cursor', 'default');
       }
     } else {
       this.textElement.text('');
+      this.textElement.select('title').remove();
+      this.textElement.style('cursor', 'default');
     }
     
     // Position text - align with header position (zone is already at top of container)

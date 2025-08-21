@@ -136,17 +136,16 @@ export default class RectangularNode extends BaseNode {
       return;
     }
 
-    // Truncate text with ellipsis
+    // Truncate text with ellipsis (trim trailing spaces before adding '...')
     let truncatedText = text;
+    const rtrim = (s) => s.replace(/\s+$/,'');
     while (truncatedText.length > 0) {
-      const testText = truncatedText + '...';
+      const testText = rtrim(truncatedText) + '...';
       const testWidth = getTextWidth(testText);
       if (testWidth <= maxWidth) {
         this.label.text(testText);
-        // Add tooltip for fixed-size mode when text is truncated
-        if (layoutMode === 'fixed-size') {
-          this.addTooltip(text);
-        }
+        // Always add tooltip when truncated
+        this.addTooltip(text);
         return;
       }
       truncatedText = truncatedText.slice(0, -1);
@@ -154,10 +153,8 @@ export default class RectangularNode extends BaseNode {
 
     // If even single character with ellipsis is too wide, show just ellipsis
     this.label.text('...');
-    // Add tooltip for fixed-size mode even when showing just ellipsis
-    if (layoutMode === 'fixed-size') {
-      this.addTooltip(text);
-    }
+    // Always add tooltip when truncated
+    this.addTooltip(text);
   }
 
   redrawText(label, width) {
