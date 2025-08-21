@@ -118,7 +118,6 @@ export default class MartNode extends BaseContainerNode {
 
   initChildren() {
     this.suspenseDisplayChange = true;
-    // console.log("    nodeMart - initChildren - Create Children for Mart:", this.data.label, this.data.children);
 
     super.initChildren();
 
@@ -186,10 +185,8 @@ export default class MartNode extends BaseContainerNode {
     else
     {
       if (this.data.layout.displayMode == DisplayMode.ROLE) {
-        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
         node.data.role = role;
         node.data.width = roleWidth;
-        // console.log("                                            Replaced role:", node.data.role);
         node.redrawText(node.data.role, node.data.width);
       }
 
@@ -296,8 +293,6 @@ export default class MartNode extends BaseContainerNode {
   }
 
    updateRole() {
-    // JS: TODO: use code as label; need rerendering of the children
-    // console.log("    Layout Code for Adapter:", this.id);
     
     // Account for the container transform that's applied in BaseContainerNode.updateChildren()
     // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)

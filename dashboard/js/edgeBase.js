@@ -1,10 +1,4 @@
-// import { line } from "d3";
 import { generateDirectEdge, generateEdgePath, generateGhostEdge, getZoneTransforms } from "./utilPath.js";
-
-// const EdgeType = Object.freeze({
-//     FULL: 'full',
-//     CODE: 'code'
-//   });
 
 export const EdgeStatus = Object.freeze({
   READY: "ready",
@@ -17,7 +11,6 @@ export const EdgeStatus = Object.freeze({
 
 export default class BaseEdge {
   constructor(edgeData, parents, settings) {
-    // console.log("Creating Base Edge:", edgeData, parents, settings);
     this.data = edgeData;
     this.parents = parents;
     this.settings = settings;
@@ -29,24 +22,16 @@ export default class BaseEdge {
     this.element = null;
     this.ghostElement = null;
 
-    // default data settings
     this.data.active ??= true;
     this.data.type ??= "unknown";
 
-    // default settings
     if (!this.settings) this.settings = {};
     this.settings.showGhostlines ??= false;
     this.settings.showEdges ??= true;
     this.settings.curved ??= false;
     this.settings.curveMargin ??= this.settings.curved ? 0.1 : 0;
 
-    // console.log(`Creating Base Edge `, this.source, this.target);
-    // console.log(`Creating Base Edge - source ${this.source.id}`, this.source, this.source.id);
-    // console.log(`Creating Base Edge - target ${this.target.id}`, this.target, this.target.id);
-    // console.log(`Creating Base Edge - data ${this.data.type}`, this.data);
-    // console.log(`Creating Base Edge - id`, this.id);
     this.id ??= `${this.source.id}--${this.data.type}--${this.target.id}`;
-    // console.log(`Creating Base Edge - ->`, this.id);
   }
 
   get label() {
@@ -54,7 +39,6 @@ export default class BaseEdge {
   }
 
   get parent() {
-    // log error if no parents or no container
     if (!this.parents || !this.parents.container) {
       console.error("No parent or container for edge:", this.id);
       return null;
@@ -63,7 +47,6 @@ export default class BaseEdge {
   }
 
   get sourceIndex() {
-    // take the lowest expanded parent
     for (let i = this.parents.source.length-1; i > 0; i--) {
       if (this.parents.source[i].collapsed) return i;
     }
@@ -76,7 +59,6 @@ export default class BaseEdge {
   }
 
   get targetIndex() {
-    // take the lowest expanded parent
     for (let i = this.parents.target.length-1; i > 0; i--) {
       if (this.parents.target[i].collapsed) return i;
     }
@@ -143,7 +125,6 @@ export default class BaseEdge {
     // Skip the immediate parent inner-zone translate to avoid double counting,
     // since we add it via getZoneTransforms(this.source) below
     for (let i = this.sourceIndex+2; i < this.parents.source.length; i++) {
-      // console.log("            y1:", this.parents.source[i].id, this.parents.source[i].y, this.parents.source[i].data.height, this.parents.source[i].nestedCorrection_y);
       correction += this.parents.source[i].nestedCorrection_y;
     }
     // Add cumulative container translations (group transforms) up the parent chain
@@ -216,7 +197,6 @@ export default class BaseEdge {
   }
 
   get sourcePoint() {
-    // console.log("    Getting Source Point:", this.x1, this.y1);
     return [this.x1, this.y1];
   }
 
@@ -226,7 +206,6 @@ export default class BaseEdge {
 
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    // console.log("edgeBase - init", this.label);
 
     // Create ghostlines
     if (this.settings.showGhostlines) {
@@ -257,11 +236,6 @@ export default class BaseEdge {
   }
 
   update() {
-    // console.log("edgeBase - update", this.label);
-    // console.log("----------------------------------------------------------------------------------------------");
-    // console.log("--     Updating Render for EDGE BASE:", this.id);
-    // console.log("--     Updating Render for EDGE BASE:", this.label);
-
     if (this.settings.showGhostlines) {
       const ghostEdge = generateGhostEdge(this);
       const ghostLine = this.ghostlineGenerator();
@@ -272,10 +246,8 @@ export default class BaseEdge {
     // Draw edges
     if (this.settings.showEdges) {
       const edge = generateEdgePath(this);
-      // const line = d3.line().curve(d3.curveBasis);
       const line = this.lineGenerator();
 
-      // console.log("    Updating Edge:", this.element, edge);
       this.element.select(".path").attr("d", line(edge));
     }
   }
@@ -291,9 +263,6 @@ export default class BaseEdge {
       return d3.line();
     }
   }
-  //   getDefaultLineGenerator(layout) {
-  //     return layout.isEdgeCurved ? d3.line().curve(d3.curveBasis) : d3.line();
-  //   }
 
   handleClicked(event, edge = this) {
 

@@ -1,6 +1,5 @@
 import BaseNode, { NodeStatus } from "./nodeBase.js";
 import { getComputedDimensions } from "./utils.js";
-// ZoomButton is now handled by HeaderZone in the zone system
 import { StatusManager } from "./statusManager.js";
 import { GeometryManager } from "./geometryManager.js";
 import { ConfigManager } from "./configManager.js";
@@ -82,7 +81,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   set collapsed(value) {
-    // console.log("    BaseContainerNode - Setting collapsed", value, this.data.label);
     if (value === this._collapsed) return;
     super.collapsed = value;
 
@@ -117,7 +115,7 @@ export default class BaseContainerNode extends BaseNode {
   set visible(value) {
     if (value === this._visible) return;
     super.visible = value;
-    // JS: todo - change visibility of the children
+
   }
 
   get status() {
@@ -150,7 +148,7 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   resize(size, forced = false) {
-    // console.log("    BaseContainerNode - resize", this.data.label, Math.round(size.width), Math.round(size.height));
+
 
     // make sure the size of the element doesn't go below minimum size
     size.width = Math.max(size.width, this.minimumSize.width);
@@ -163,22 +161,13 @@ export default class BaseContainerNode extends BaseNode {
   resizeContainer(size, forced = false) {
     size.width += this.containerMargin.left + this.containerMargin.right;
     size.height += this.containerMargin.top + this.containerMargin.bottom;
-    // console.log(
-    //   `    BaseContainerNode - resizeContainer ${this.data.label}: ${Math.round(this.data.width)}x${Math.round(
-    //     this.data.height
-    //   )} --> ${Math.round(size.width)}x${Math.round(size.height)}`
-    // );
+
 
     this.resize(size, forced);
   }
 
   expand() {
-    // console.warn(
-    //   `    BaseContainerNode - expand ${Math.round(this.data.width)}x${Math.round(this.data.height)} -> ${Math.round(
-    //     this.data.expandedSize.width
-    //   )}x${Math.round(this.data.expandedSize.height)}`,
-    //   this.data.label
-    // );
+
 
     // you can only expand a container if it's parent is already expanded
     // expand parent first when not expanded
@@ -315,7 +304,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   collapse() {
-    // console.log("    BaseContainerNode - collapse", this.data.label);
     this.suspenseDisplayChange = true;
     // store the expanded size before collapsing
     if (this.data.height > this.minimumSize.height + 5 || this.data.width > this.minimumSize.width + 5)
@@ -392,16 +380,10 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   getNode(nodeId) {
-    // console.log("    nodeBaseContainer getNode:", this.id, nodeId, this.id == nodeId);
-    // console.log("                              :", this.childNodes.length, this.childNodes);
-    // console.log("                              :", this.data);
-    // console.log("                              :", this.childNodes[0]);
     if (this.id == nodeId) {
-      // console.log("    nodeBaseContainer getNode found:", this.id, nodeId);
       return this;
     }
     for (const childNode of this.childNodes) {
-      // console.log("    nodeBaseContainer getNode check child:", this.id, childNode.id, nodeId);
       const foundNode = childNode.getNode(nodeId);
       if (foundNode) {
         return foundNode;
@@ -411,7 +393,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   getNodesByDatasetId(datasetId) {
-    // console.log("    nodeBaseContainer getNodesByDatasetId:", this.id, datasetId);
     var nodes = [];
     if (this.data.datasetId == datasetId) {
       nodes.push(this);
@@ -439,7 +420,7 @@ export default class BaseContainerNode extends BaseNode {
 
   initEdges(propagate = false) {
     if (this.collapsed) return;
-    // console.log("nodeBaseContainer - initEdges:", this.id, this.childEdges);
+
     if (this.childEdges.length > 0) {
       // create container for ghost lines first (so they appear behind edges)
       if (this.settings.showGhostlines)
@@ -459,7 +440,6 @@ export default class BaseContainerNode extends BaseNode {
       }
       else
       {
-        // console.log("                   clean cont:", this.id, this.childEdges);
         this.edgesContainer.selectAll("*").remove();
       }
 
@@ -474,7 +454,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   updateEdges() {
-    // console.log("    BaseContainerNode - updateEdges", this.id, this.childEdges.length);
     if (!this.visible) return;
     if (this.collapsed) return;
 
@@ -497,7 +476,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   getAllEdges(onlySelected = false, allEdges = []) {
-    // console.log("    getAllEdges BaseContainerNode:", this.id, onlySelected, allEdges.length);
     super.getAllEdges(onlySelected, allEdges);
 
     if (this.childNodes) {
@@ -509,7 +487,7 @@ export default class BaseContainerNode extends BaseNode {
 
   init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    // console.log("    BaseContainerNode - init", this.id);
+
     super.init(parentElement);
 
     // Zone manager is already initialized in BaseNode.init()
@@ -630,8 +608,6 @@ export default class BaseContainerNode extends BaseNode {
           } else {
             console.warn("Zone system not available for child:", node.id);
           }
-
-          // console.log("      nodeColumns - initChildren - Creating Node:", node.id, childComponent);
         }
 
         childComponent.init(childContainer);
@@ -655,7 +631,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   update() {
-    // console.log(`    BaseContainerNode - update ${this.data.width}x${this.data.height}`, this.data.label);
     super.update();
 
     // Shape drawing is now handled by ContainerZone in the zone system
@@ -676,29 +651,7 @@ export default class BaseContainerNode extends BaseNode {
     }
   }
 
-  // // Method to update rendering based on interaction state
-  // updateLayout() {
-  //   console.log("    BaseContainerNode - updateLayout", this.data.label, this.collapsed);
-  //   super.updateLayout();
-
-  //   this.childNodes.forEach((childNode) => {
-  //     childNode.visible = !this.collapsed;
-  //   });
-
-  //   if (this.collapsed) {
-  //     this.renderCollapsed();
-  //   } else {
-  //     this.renderExpanded();
-  //   }
-
-  //   this.cascadeUpdate();
-
-  //   this.updateEdges();
-  // }
-
   updateChildren() {
-    // console.log("BaseContainer - updateChildren", this.data.label, this.data.children);
-
     // Use zone system for child positioning if available
     if (this.zoneManager) {
       // Zone system handles positioning automatically
@@ -717,7 +670,6 @@ export default class BaseContainerNode extends BaseNode {
 
   // Method to remove child nodes from the SVG
   cleanContainer(propagate = true) {
-    // console.log("    Removing Children for:", this.data.label);
     this.element.selectAll("*").remove();
     this.edgesContainer = null;
     for (const childNode of this.childNodes) {
@@ -864,7 +816,6 @@ export default class BaseContainerNode extends BaseNode {
   }
 
   applyMinimumSize() {
-    // console.error("    BaseContainerNode - applyRatioToMinimumSize", this.data.label, this.data.layout.minimumSize.useRootRatio, this);
     if (this.minimumSize.width < this.data.layout.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
     if (this.minimumSize.height < this.data.layout.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
 
@@ -883,6 +834,5 @@ export default class BaseContainerNode extends BaseNode {
     } else {
       this.minimumSize.width = this.minimumSize.height * ratio;
     }
-    // console.log("    BaseContainerNode - applyRatioToMinimumSize", this.minimumSize.width, this.minimumSize.height);
   }
 }

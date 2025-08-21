@@ -148,7 +148,6 @@ export default class FoundationNode extends BaseContainerNode {
 
   initChildren() {
     this.suspenseDisplayChange = true;
-    // console.log("    nodeFoundation - initChildren - Create Children for Foundation:", this.data.label, this.data.children);
 
     // Let BaseContainerNode create child components from pre-created child data
     super.initChildren();
@@ -252,10 +251,8 @@ export default class FoundationNode extends BaseContainerNode {
     else
     {
       if (this.data.layout.displayMode == DisplayMode.ROLE) {
-        // console.log("        nodeAdapter - initializeChildNode - Found Node:", node.data.label, node.data.role);
         node.data.role = role;
         node.data.width = roleWidth;
-        // console.log("                                            Replaced role:", node.data.role);
         node.redrawText(node.data.role, node.data.width);
       }
 
@@ -367,8 +364,7 @@ export default class FoundationNode extends BaseContainerNode {
   }
 
    updateRole() {
-    // JS: TODO: use code as label; need rerendering of the children
-    // console.log("    Layout Code for Adapter:", this.id);
+
     
     // Account for the container transform that's applied in BaseContainerNode.updateChildren()
     // The container is offset by: (containerMargin.left - containerMargin.right, containerMargin.top - containerMargin.bottom)

@@ -112,8 +112,6 @@ export default class ColumnsNode extends BaseContainerNode {
         }))
       : 0;
     
-    // Debug logs removed
-    
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;
     const headerZone = this.zoneManager?.headerZone;

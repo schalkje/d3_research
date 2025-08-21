@@ -4,7 +4,6 @@ import { LayoutManager } from "./layoutManager.js";
 
 export default class LaneNode extends BaseContainerNode {
   constructor(nodeData, parentElement, createNode, settings, parentNode = null) {
-    // console.log("LaneNode constructor", nodeData);
     super(nodeData, parentElement, createNode, settings, parentNode);
     
     // Prevent infinite recursion during resize operations
@@ -69,8 +68,6 @@ export default class LaneNode extends BaseContainerNode {
       return;
     }
 
-    // Debug logs removed
-
 		// Set vertical stacking layout algorithm centered around (0,0)
 		innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
 			if (childNodes.length === 0) return;
@@ -110,8 +107,6 @@ export default class LaneNode extends BaseContainerNode {
       const effectiveWidth = node.getEffectiveWidth ? node.getEffectiveWidth() : node.data.width;
       return effectiveWidth;
     })) : 0;
-    
-    // Debug logs removed
     
     // Get margin zone for size calculations
     const marginZone = this.zoneManager?.marginZone;

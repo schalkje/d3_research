@@ -5,7 +5,7 @@ import { ConfigManager } from "./configManager.js";
 import { ZoneManager } from "./zones/index.js";
 
 export const NodeStatus = Object.freeze({
-  UNDETERMINED: 'Undetermined', // technically not a status, but used in the status determination logic
+  UNDETERMINED: 'Undetermined',
   UNKNOWN: 'Unknown',
   DISABLED: 'Disabled',
   // process states
@@ -45,7 +45,7 @@ export default class BaseNode {
 
     this.element = null;
     this.simulation = null;
-    this.layoutDebug = true;
+
     this.zoneManager = null;
 
     // Set default values for x, y, width, and height
@@ -61,7 +61,7 @@ export default class BaseNode {
 
   set visible(value) {
     if (value === this._visible) return;
-    // console.log("nodeBase - Setting visible", this.data.label, value);
+
     this._visible = value;
     
     // Actually hide/show the DOM element
@@ -110,19 +110,16 @@ export default class BaseNode {
   }
 
   set selected(value) {
-    // console.log("nodeBase - Setting selected", value);
+
     this._selected = value;
     this.element.classed("selected", this._selected);
   }
 
   handleDisplayChange() {
     if (this.suspenseDisplayChange) {
-      // console.log(`          > skip handleDisplayChange ${this.data.label}`);
       return;
     }
-    // console.log(`          > handleDisplayChange ${this.id}`, this.onDisplayChange, this);
     if (this.onDisplayChange) {
-      // console.log(`          > calling handleDisplayChange ${this.data.label}`);
       this.onDisplayChange();
     } else {
       if (this.parentNode && typeof this.parentNode.handleDisplayChange === 'function') {
@@ -132,7 +129,6 @@ export default class BaseNode {
   }
 
   move(x, y) {
-    // console.log(`          > move ${this.id}, (x:${Math.round(this.x)},y:${Math.round(this.y)}) -> (x:${Math.round(x)},y:${Math.round(y)})`);
     this.x = x;
     this.y = y;
     
@@ -149,7 +145,6 @@ export default class BaseNode {
 
    init(parentElement = null) {
     if (parentElement) this.parentElement = parentElement;
-    // console.log("nodeBase - init", this.data.label);
 
     this.element = this.parentElement
       .append("g")
@@ -208,7 +203,6 @@ export default class BaseNode {
 
   // function to put all the elements in the correct place
    update() {
-    // console.log("nodeBase - update", this.data.label);
 
     // Update zones only for container nodes
     if (this.isContainer && this.zoneManager) {
@@ -266,7 +260,6 @@ export default class BaseNode {
     // node base has no elements of it's own, so just update the data
     if  (forced || this.data.width !== size.width || this.data.height !== size.height)
     {
-      // console.log(`nodeBase - resize`, this.data.label, Math.round(this.data.width), Math.round(this.data.height), Math.round(size.width), Math.round(size.height)); 
       this.data.width = size.width;
       this.data.height = size.height;
 
@@ -279,22 +272,17 @@ export default class BaseNode {
 
       this.handleDisplayChange();
     }
-    // else console.log("SKIPPED - nodeBase - resize", this.data.label, size, this.data.width, this.data.height);   
   }
 
   getNode(nodeId) {
-    // console.log("    nodeBase getNode:", this.id, nodeId, this.id == nodeId);
     if (this.id == nodeId) {
-      // console.log("    nodeBase getNode: return this", this);
       return this;
     }
     return null;
   }
 
   getNodesByDatasetId(datasetId) {
-    // console.log("    nodeBase getNodesByDatasetId:", this.id, datasetId, this.data.datasetId == datasetId);
     if (this.data.datasetId == datasetId) {
-      // console.log("    nodeBase getNodesByDatasetId: return this", this);
       return [this];
     }
     return [];
@@ -308,11 +296,9 @@ export default class BaseNode {
 
   // function to return all the nodes in the graph
   getAllEdges(onlySelected = false, allEdges = []) {
-    // console.log("    getAllEdges:", this.id, onlySelected, allEdges);
     this.edges.incoming.forEach((edge) => {
       if (!onlySelected || edge.selected) 
       {
-        // console.log("    getAllEdges: incoming", edge, allEdges.indexOf(edge));
         if (allEdges.indexOf(edge) === -1) {
           allEdges.push(edge);
         } 
@@ -340,7 +326,6 @@ export default class BaseNode {
   }
 
   getNeighbors(selector = { incomming: 1, outgoing: 1 }) {
-    // console.log("    getNeighbors:", this.id, selector);
     const neighbors = {nodes:[],edges:[]};
 
     // Add the incoming neighbors
@@ -378,7 +363,6 @@ export default class BaseNode {
   }
 
   getParents() {
-    // console.log("    getParents:", this.id, this.parentNode);
     if (!this.parentNode) {
       return [];
     }
@@ -390,11 +374,9 @@ export default class BaseNode {
       if (Array.isArray(parentParents)) {
         return [this.parentNode, ...parentParents];
       } else {
-        console.warn(`getParents: parentNode.getParents() returned non-array for node ${this.id}:`, parentParents);
         return [this.parentNode];
       }
     } else {
-      console.warn(`getParents: parentNode does not have getParents method for node ${this.id}, parentNode:`, this.parentNode);
       return [this.parentNode];
     }
   }

@@ -59,7 +59,7 @@ export function createMarkers(container) {
 
 defs
 .append("marker")
-.attr("id", "debugcircle")
+
 .attr("class", "marker circle")
 .attr("viewBox", "-7 -7 14 14")
 .attr("refX", 0)

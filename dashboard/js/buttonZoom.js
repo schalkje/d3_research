@@ -1,10 +1,8 @@
 export default class ZoomButton {
   constructor(parentElement, position, onClick, size = 14, isToggled = false) {
     this.position = position;
-    // State to track minimized/maximized
     this.isToggled = isToggled;
 
-    // Attach the button to the specified D3 selection (nodeGroup)
     this.buttonGroup = parentElement
       .append("g")
       .attr("class", "zoom-button")
@@ -13,7 +11,6 @@ export default class ZoomButton {
     this.size = size;
     this.bar = { width: this.size - 4, height: 2 };
     
-    // Circle for hover effect
     const r = this.size / 2;
     this.buttonGroup
       .append("circle")
@@ -21,7 +18,6 @@ export default class ZoomButton {
       .attr("cx", position.x + r / 2)
       .attr("cy", position.y + r / 2);
 
-    // initialize the button icon
     if (this.isToggled) {
       this.setPlusIcon();
     } else {
@@ -30,7 +26,6 @@ export default class ZoomButton {
   }
 
   toggle(collapsed = null) {
-    // Toggle between plus and minus
     if (collapsed !== null) {
       this.isToggled = collapsed;
     } else {
@@ -61,8 +56,6 @@ export default class ZoomButton {
   setPlusIcon() {
     this.buttonGroup.selectAll(".icon").remove();
 
-    // Adjust icon to look like a plus
-    // add vertical bar
     this.buttonGroup
       .append("rect")
       .attr("class", "icon plus")
@@ -71,7 +64,6 @@ export default class ZoomButton {
       .attr("width", this.bar.height)
       .attr("height", this.bar.width);
 
-    // Add horizontal bar
     this.buttonGroup
       .append("rect") 
       .attr("class", "icon plus")
@@ -82,8 +74,7 @@ export default class ZoomButton {
   }
 
   setMinusIcon() {
-    this.buttonGroup.selectAll(".icon").remove(); // Remove extra bar for plus
-    // Adjust icon to look like a minus
+    this.buttonGroup.selectAll(".icon").remove();
     this.buttonGroup
       .append("rect")
       .attr("class", "icon minus")
