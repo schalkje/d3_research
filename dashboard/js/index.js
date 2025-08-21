@@ -1,10 +1,13 @@
-// Public API aggregator and eager loading overlay
+// Public API aggregator
 import * as dashboard from './dashboard.js';
 import * as data from './data.js';
 import { showLoading } from './loadingOverlay.js';
 
-// Show the loading overlay as soon as the bundle is evaluated (eager show)
-try { showLoading(); } catch {}
+// Provide a function to show loading when dashboard starts loading
+// This ensures loading is shown immediately when needed, not when module loads
+if (typeof window !== 'undefined') {
+  window.showFlowDashLoading = showLoading;
+}
 
 // Default export combines commonly used namespaces
 const api = {

@@ -201,6 +201,9 @@ export default class BaseNode {
         }
       } catch {}
     }
+    
+    // Trigger display change after initialization to ensure loading overlay is hidden
+    this.handleDisplayChange();
   }
 
   // function to put all the elements in the correct place

@@ -155,8 +155,18 @@ export class Dashboard {
    initialize(mainDivSelector, minimapDivSelector = null) {
     // initialize dashboard
     this.mainDivSelector = mainDivSelector;
-    // Show loading overlay immediately before anything else
-    try { this.showLoading(); } catch {}
+    
+    // Show loading overlay immediately when dashboard starts initializing
+    // This ensures users see loading state right away
+    try { 
+      // Try to use the global function first, then fall back to instance method
+      if (typeof window !== 'undefined' && window.showFlowDashLoading) {
+        window.showFlowDashLoading();
+      } else {
+        this.showLoading();
+      }
+    } catch {}
+    
     const div = this.initializeSvg(mainDivSelector);
     this.main.svg = div.svg;
     this.main.width = div.width;
@@ -167,12 +177,17 @@ export class Dashboard {
     this.data.settings.divRatio ??= this.main.divRatio;
     this.main.onDragUpdate = this.onDragUpdate;
 
-    // Show loading as soon as rendering a new model starts
+    // Mark that we're in initial loading state
     this._initialLoading = true;
-    this.showLoading();
 
     this.main.container = this.createContainer(this.main, "dashboard");
-    this.main.root =  this.createDashboard(this.data, this.main.container);
+    
+    // Create a temporary callback that will be set on the root node
+    const tempDisplayChangeCallback = () => {
+      this.onMainDisplayChange();
+    };
+    
+    this.main.root =  this.createDashboard(this.data, this.main.container, tempDisplayChangeCallback);
 
     this.main.zoom = this.initializeZoom();
     this.main.root.onClick = (node) => this.selectNode(node);
@@ -180,9 +195,7 @@ export class Dashboard {
 
     // initialize minimap (embedded)
     this.minimap.initializeEmbedded();
-    this.main.root.onDisplayChange = () => {
-      this.onMainDisplayChange();
-    };
+    // The callback is already set up in createDashboard
 
     if (this.data.settings.zoomToRoot) {
       this.zoomToRoot();
@@ -660,7 +673,7 @@ export class Dashboard {
     return { svg, width, height, onDragUpdate };
   }
 
-  createDashboard(dashboard, container) {
+  createDashboard(dashboard, container, displayChangeCallback = null) {
     
     createMarkers(container);
 
@@ -687,6 +700,11 @@ export class Dashboard {
     if (!root) {
       console.error("Failed to create node - root is null");
       return null;
+    }
+
+    // Set up the display change callback BEFORE calling init() so handleDisplayChange can trigger it
+    if (displayChangeCallback) {
+      root.onDisplayChange = displayChangeCallback;
     }
 
     root.init();
