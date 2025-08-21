@@ -214,15 +214,25 @@ export default class BaseContainerNode extends BaseNode {
             this.layoutLane();
           } else if (typeof this.layoutColumns === 'function') {
             this.layoutColumns();
-          } else if (typeof this.updateChildren === 'function') {
-            this.updateChildren();
+          } else if (typeof this.updateChildren === 'function' && !this._updating) {
+            this._updating = true;
+            try {
+              this.updateChildren();
+            } finally {
+              this._updating = false;
+            }
           }
         }
         
         // CRITICAL: Update children BEFORE reattaching to ensure proper sizing
         // This ensures the container knows its proper dimensions before positioning children
-        if (typeof this.updateChildren === 'function') {
-          this.updateChildren();
+        if (typeof this.updateChildren === 'function' && !this._updating) {
+          this._updating = true;
+          try {
+            this.updateChildren();
+          } finally {
+            this._updating = false;
+          }
         }
         
         // Ensure zones reflect current size and coordinate systems
@@ -279,8 +289,13 @@ export default class BaseContainerNode extends BaseNode {
       }
       
       // Update parent container if this container's size changed
-      if (this.parentNode) {
-        this.parentNode.updateChildren();
+      if (this.parentNode && !this.parentNode._updating) {
+        this.parentNode._updating = true;
+        try {
+          this.parentNode.updateChildren();
+        } finally {
+          this.parentNode._updating = false;
+        }
       }
       
       this.initEdges();
@@ -579,7 +594,15 @@ export default class BaseContainerNode extends BaseNode {
       }
     }
 
-    this.updateChildren();
+    // Only call updateChildren if we're not already in an update cycle
+    if (!this._updating) {
+      this._updating = true;
+      try {
+        this.updateChildren();
+      } finally {
+        this._updating = false;
+      }
+    }
   }
 
   update() {
@@ -588,9 +611,16 @@ export default class BaseContainerNode extends BaseNode {
 
     // Shape drawing is now handled by ContainerZone in the zone system
 
-    // Always call updateChildren to recalculate size and positioning
-    // (even when collapsed, we need to recalculate based on child sizes)
-    this.updateChildren();
+    // Only call updateChildren if we're not already in an update cycle
+    // This prevents infinite loops between the zone system and node updates
+    if (!this._updating) {
+      this._updating = true;
+      try {
+        this.updateChildren();
+      } finally {
+        this._updating = false;
+      }
+    }
 
     if (!this.collapsed) {
       this.updateEdges();
@@ -712,8 +742,13 @@ export default class BaseContainerNode extends BaseNode {
           
           // CRITICAL: Update children BEFORE calling updateChildPositions
           // This ensures the nested container has proper dimensions
-          if (!childNode.collapsed && typeof childNode.updateChildren === 'function') {
-            childNode.updateChildren();
+          if (!childNode.collapsed && typeof childNode.updateChildren === 'function' && !childNode._updating) {
+            childNode._updating = true;
+            try {
+              childNode.updateChildren();
+            } finally {
+              childNode._updating = false;
+            }
           }
           
           // Now that children are updated, position them
@@ -744,8 +779,13 @@ export default class BaseContainerNode extends BaseNode {
             if (childNode.zoneManager) childNode.zoneManager.update();
             
             // CRITICAL: Update children BEFORE positioning them
-            if (!childNode.collapsed && typeof childNode.updateChildren === 'function') {
-              childNode.updateChildren();
+            if (!childNode.collapsed && typeof childNode.updateChildren === 'function' && !childNode._updating) {
+              childNode._updating = true;
+              try {
+                childNode.updateChildren();
+              } finally {
+                childNode._updating = false;
+              }
             }
             
             // Now position children after they're updated

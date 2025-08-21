@@ -71,6 +71,7 @@ export class ZoneManager {
    * Resize all zones based on new dimensions
    */
   resize(width, height) {
+    console.log(`ZoneManager resize - ${this.node?.data?.id}:`, { width, height });
     this.zones.forEach(zone => zone.resize(width, height));
   }
 

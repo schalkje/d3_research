@@ -183,6 +183,19 @@ export class HeaderZone extends BaseZone {
       buttonDiameter +
       rightPadding;
 
+    // Debug logging
+    console.log(`HeaderZone getMinimumWidth - ${this.node?.data?.id}:`, {
+      text,
+      textWidth,
+      leftPadding,
+      gapBetweenTextAndIcons,
+      indicatorDiameter,
+      gapBetweenIndicatorAndButton,
+      buttonDiameter,
+      rightPadding,
+      minWidth: Math.ceil(minWidth)
+    });
+
     return Math.ceil(minWidth);
   }
 

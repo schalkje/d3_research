@@ -41,9 +41,15 @@
   z-index: 20001;
   text-align: center;
 }
-.flowdash-loading__text { font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-.flowdash-loading__dots { font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; letter-spacing: 2px; color: var(--fd-accent, #2f6feb); }
+.flowdash-loading__text {
+  font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
 
+.flowdash-loading__dots {
+  font: 600 16px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 2px;
+  color: var(--fd-accent, #2f6feb);
+}
   .fullscreen-toggle {
       position: absolute;
       top: 12px;
