@@ -767,12 +767,21 @@ export class Minimap {
     // Create simplified rectangles for each node
     const drawRects = (groupSel) => {
       allNodes.forEach(node => {
-        const bbox = getBoundingBoxRelativeToParent(node.element, this.dashboard.main.container);
+        let bbox = null;
+        try { bbox = getBoundingBoxRelativeToParent(node.element, this.dashboard.main.container); } catch {}
+        if (!bbox || !isFinite(bbox.width) || !isFinite(bbox.height)) {
+          // Fallback to node data when DOM is missing (e.g., collapsed)
+          const nx = (typeof node.x === 'number') ? node.x : 0;
+          const ny = (typeof node.y === 'number') ? node.y : 0;
+          const nw = (node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0);
+          const nh = (node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0);
+          bbox = { x: nx - nw / 2, y: ny - nh / 2, width: nw, height: nh };
+        }
         groupSel.append("rect")
           .attr("x", bbox.x)
           .attr("y", bbox.y)
-          .attr("width", bbox.width)
-          .attr("height", bbox.height)
+          .attr("width", Math.max(0, bbox.width))
+          .attr("height", Math.max(0, bbox.height))
           .attr("fill", node.isContainer ? "#4a90e2" : "#7ed321")
           .attr("opacity", 0.7);
       });

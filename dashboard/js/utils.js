@@ -86,25 +86,35 @@ export function computeBoundingBox(nodes, horizontal = false) {
 
 
   export function getBoundingBoxRelativeToParent(element, parentElement) {
-    // Get the bounding box of the element relative to its immediate parent
-    const bbox = element.node().getBBox();
+	// Guard against missing elements (collapsed containers may detach DOM)
+	if (!element || typeof element.node !== 'function' || !element.node()) {
+		return { x: 0, y: 0, width: 0, height: 0 };
+	}
+	// Get the bounding box of the element relative to its immediate parent
+	const bbox = element.node().getBBox?.() || { x: 0, y: 0, width: 0, height: 0 };
 
-    // Get the transformation matrix of the element
-    const elementCTM = element.node().getCTM();
+	// If parent element is missing, return bbox in element coordinates
+	if (!parentElement || typeof parentElement.node !== 'function' || !parentElement.node()) {
+		return { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+	}
 
-    // Get the transformation matrix of the specified parent element
-    const parentCTM = parentElement.node().getCTM();
+	// Get the transformation matrix of the element
+	const elementCTM = element.node().getCTM?.();
+	const parentCTM = parentElement.node().getCTM?.();
+	if (!elementCTM || !parentCTM) {
+		return { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+	}
 
-    // Calculate the relative transformation matrix from element to parent
-    const relativeCTM = parentCTM.inverse().multiply(elementCTM);
+	// Calculate the relative transformation matrix from element to parent
+	const relativeCTM = parentCTM.inverse().multiply(elementCTM);
 
-    // Calculate the bounding box coordinates relative to the specified parent
-    const relativeDimensions = {
-        x: relativeCTM.e + bbox.x * relativeCTM.a + bbox.y * relativeCTM.c,
-        y: relativeCTM.f + bbox.x * relativeCTM.b + bbox.y * relativeCTM.d,
-        width: bbox.width,
-        height: bbox.height
-    };
+	// Calculate the bounding box coordinates relative to the specified parent
+	const relativeDimensions = {
+		x: relativeCTM.e + bbox.x * relativeCTM.a + bbox.y * relativeCTM.c,
+		y: relativeCTM.f + bbox.x * relativeCTM.b + bbox.y * relativeCTM.d,
+		width: bbox.width,
+		height: bbox.height
+	};
 
-    return relativeDimensions;
+	return relativeDimensions;
 }

@@ -143,6 +143,31 @@ export class HeaderZone extends BaseZone {
   }
 
   /**
+   * Resolve header text sizing configuration from settings
+   * Supported settings (either flat or nested under headerText):
+   * - headerTextMode: 'full-text' | 'truncate'
+   * - headerTextMinWidth: number (default 150)
+   * - headerTextMaxWidth: number (default 300)
+   */
+  getHeaderTextConfig() {
+    const settings = this.node?.settings || {};
+    const nested = settings.headerText || {};
+    let mode = (settings.headerTextMode ?? nested.mode ?? 'full-text');
+    mode = typeof mode === 'string' ? mode.toLowerCase() : 'full-text';
+    if (mode === 'full') mode = 'full-text';
+    if (mode !== 'full-text' && mode !== 'truncate') mode = 'full-text';
+
+    const minWidth = Number.isFinite(settings.headerTextMinWidth)
+      ? settings.headerTextMinWidth
+      : (Number.isFinite(nested.minWidth) ? nested.minWidth : 150);
+    const maxWidth = Number.isFinite(settings.headerTextMaxWidth)
+      ? settings.headerTextMaxWidth
+      : (Number.isFinite(nested.maxWidth) ? nested.maxWidth : 300);
+
+    return { mode, minWidth, maxWidth };
+  }
+
+  /**
    * Calculate the minimum width required by the header contents
    * Includes: left/right padding + full text width + status indicator + zoom button (if container) + small gaps
    */
@@ -174,7 +199,8 @@ export class HeaderZone extends BaseZone {
     const gapBetweenTextAndIcons = (indicatorDiameter > 0 || buttonDiameter > 0) ? 8 : 0;
     const gapBetweenIndicatorAndButton = (indicatorDiameter > 0 && buttonDiameter > 0) ? 4 : 0;
 
-    const minWidth =
+    // Base width needed to fit full text + icons
+    const baseWidth =
       leftPadding +
       textWidth +
       gapBetweenTextAndIcons +
@@ -182,6 +208,20 @@ export class HeaderZone extends BaseZone {
       gapBetweenIndicatorAndButton +
       buttonDiameter +
       rightPadding;
+
+    // Apply sizing mode constraints
+    const { mode, minWidth: cfgMin, maxWidth: cfgMax } = this.getHeaderTextConfig();
+    // Guard for invalid config values
+    const safeMin = Number.isFinite(cfgMin) ? cfgMin : 150;
+    const safeMax = Number.isFinite(cfgMax) ? cfgMax : 300;
+
+    let constrainedWidth = baseWidth;
+    // Always enforce minimum width
+    constrainedWidth = Math.max(constrainedWidth, safeMin);
+    // Only enforce max when truncating
+    if (mode === 'truncate') {
+      constrainedWidth = Math.min(constrainedWidth, safeMax);
+    }
 
     // Debug logging
     console.log(`HeaderZone getMinimumWidth - ${this.node?.data?.id}:`, {
@@ -193,10 +233,14 @@ export class HeaderZone extends BaseZone {
       gapBetweenIndicatorAndButton,
       buttonDiameter,
       rightPadding,
-      minWidth: Math.ceil(minWidth)
+      mode,
+      configMinWidth: safeMin,
+      configMaxWidth: safeMax,
+      baseWidth: Math.ceil(baseWidth),
+      minWidth: Math.ceil(constrainedWidth)
     });
 
-    return Math.ceil(minWidth);
+    return Math.ceil(constrainedWidth);
   }
 
   /**
@@ -254,7 +298,15 @@ export class HeaderZone extends BaseZone {
     const text = this.node.data.label || this.node.data.name || '';
     // Reserve space on the right for icons + gaps + right padding so text never overlaps
     const reservedRight = this.getReservedRightWidth();
-    const maxWidth = Math.max(0, this.size.width - this.padding - reservedRight);
+    let maxWidth = Math.max(0, this.size.width - this.padding - reservedRight);
+
+    // Apply text sizing mode: when truncate, cap the text drawing width to configured max
+    const { mode, maxWidth: cfgMax } = this.getHeaderTextConfig();
+    if (mode === 'truncate' && Number.isFinite(cfgMax)) {
+      // Ensure we also respect right-reserved area and left padding
+      const allowedWidth = Math.max(0, cfgMax - this.padding - reservedRight);
+      maxWidth = Math.min(maxWidth, allowedWidth);
+    }
     
     // Handle text overflow with ellipsis
     if (text.length > 0) {

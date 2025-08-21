@@ -1148,7 +1148,24 @@ export function computeBoundingBox(dashboard, nodes) {
     // } = node;
 
     // const dimensions = getRelativeBBox(node.element)
-    const dimensions = getBoundingBoxRelativeToParent(node.element, dashboard.main.container);
+    // If the node has no DOM element (e.g., collapsed container children), fallback to data metrics
+    let dimensions;
+    try {
+      dimensions = getBoundingBoxRelativeToParent(node.element, dashboard.main.container);
+    } catch {
+      dimensions = null;
+    }
+    if (!dimensions || !isFinite(dimensions.width) || !isFinite(dimensions.height)) {
+      const nx = (typeof node.x === 'number') ? node.x : 0;
+      const ny = (typeof node.y === 'number') ? node.y : 0;
+      const nw = (node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0);
+      const nh = (node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0);
+      minX = Math.min(minX, nx - nw / 2);
+      minY = Math.min(minY, ny - nh / 2);
+      maxX = Math.max(maxX, nx + nw / 2);
+      maxY = Math.max(maxY, ny + nh / 2);
+      return;
+    }
     // const dimensions = node.element.node().getBBox();
     // minX = Math.min(minX, dimensions.x - dashboard.main.width / 2);
     // minY = Math.min(minY, dimensions.y - dashboard.main.height / 2);
