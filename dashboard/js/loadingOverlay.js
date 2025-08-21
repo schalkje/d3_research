@@ -23,61 +23,37 @@ export const LoadingOverlay = {
     const host = container || resolveLoadingContainer();
     if (!host) return null;
 
+    // Ensure host can position absolute children relative to itself
+    try {
+      const cs = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(host) : null;
+      if (cs && cs.position === 'static') host.style.position = 'relative';
+    } catch {}
+
+    // Prefer the shared overlay host if present to match other overlays
+    let overlayParent = host.querySelector('.zoom-overlay-host') || host;
+
     // Reuse existing element if found
-    this.el = host.querySelector('#flowdash-loading') || document.getElementById('flowdash-loading');
+    this.el = overlayParent.querySelector('#flowdash-loading') || document.getElementById('flowdash-loading');
     if (!this.el) {
       const wrapper = document.createElement('div');
       wrapper.id = 'flowdash-loading';
       wrapper.className = 'flowdash-loading';
       wrapper.setAttribute('role', 'status');
       wrapper.setAttribute('aria-live', 'polite');
+      // Minimal inline style: let CSS control layout/visuals, keep pointer events disabled
+      wrapper.style.pointerEvents = 'none';
 
-      // Overlay layout styles
-      Object.assign(wrapper.style, {
-        position: 'absolute',
-        inset: '0',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: '1000',
-        pointerEvents: 'none',
-        background: 'transparent'
-      });
-
-      // Create a relative container for z-index layering
-      const inner = document.createElement('div');
-      Object.assign(inner.style, {
-        position: 'relative',
-        display: 'grid',
-        placeItems: 'center'
-      });
-
-      // Dots element (behind text)
-      const dots = document.createElement('span');
-      dots.className = 'flowdash-loading__dots';
-      Object.assign(dots.style, {
-        position: 'absolute',
-        inset: '0',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: '1',
-        pointerEvents: 'none'
-      });
-
+      // Create text and dots spans side-by-side; CSS provides spacing and fonts
       const text = document.createElement('span');
       text.className = 'flowdash-loading__text';
       text.textContent = 'initializing';
-      Object.assign(text.style, {
-        position: 'relative',
-        zIndex: '2',
-        fontSize: '16px',
-        color: 'var(--fd-loading-fg, #222)'
-      });
-      
-      // Stack: dots behind, text in front
-      inner.appendChild(dots);
-      inner.appendChild(text);
-      wrapper.appendChild(inner);
-      host.appendChild(wrapper);
+
+      const dots = document.createElement('span');
+      dots.className = 'flowdash-loading__dots';
+
+      wrapper.appendChild(text);
+      wrapper.appendChild(dots);
+      overlayParent.appendChild(wrapper);
 
       this.el = wrapper;
       this.dotsEl = dots;
@@ -86,35 +62,37 @@ export const LoadingOverlay = {
       // Ensure references if element already exists in DOM
       this.dotsEl = this.el.querySelector('.flowdash-loading__dots');
       this.textEl = this.el.querySelector('.flowdash-loading__text');
-      // Ensure proper layering/styles if present, or create dots if missing
-      if (!this.dotsEl) {
-        const inner = this.el.firstElementChild || this.el;
-        const dots = document.createElement('span');
-        dots.className = 'flowdash-loading__dots';
-        Object.assign(dots.style, {
-          position: 'absolute',
-          inset: '0',
-          display: 'grid',
-          placeItems: 'center',
-          zIndex: '1',
-          pointerEvents: 'none'
-        });
-        inner.insertBefore(dots, inner.firstChild);
-        this.dotsEl = dots;
-      } else {
-        Object.assign(this.dotsEl.style, {
-          position: 'absolute',
-          inset: '0',
-          display: 'grid',
-          placeItems: 'center',
-          zIndex: '1',
-          pointerEvents: 'none'
-        });
-      }
-      if (this.textEl) {
-        this.textEl.style.position = 'relative';
-        this.textEl.style.zIndex = '2';
-      }
+      // If overlay host now exists and the element isn't inside it, move it
+      try {
+        if (overlayParent && this.el.parentElement !== overlayParent) {
+          overlayParent.appendChild(this.el);
+        }
+      } catch {}
+      // Normalize any legacy inline styles from previous versions so CSS controls visuals
+      try {
+        // Clear wrapper full-bleed positioning/background if previously set
+        const ws = this.el.style;
+        ws.inset = ''; ws.top = ''; ws.left = ''; ws.right = ''; ws.bottom = '';
+        ws.transform = ''; ws.background = ''; ws.zIndex = '';
+        // Keep pointer-events none
+        ws.pointerEvents = 'none';
+        if (!this.dotsEl) {
+          const dots = document.createElement('span');
+          dots.className = 'flowdash-loading__dots';
+          this.el.appendChild(dots);
+          this.dotsEl = dots;
+        }
+        if (!this.textEl) {
+          const text = document.createElement('span');
+          text.className = 'flowdash-loading__text';
+          text.textContent = 'initializing';
+          this.el.insertBefore(text, this.el.firstChild);
+          this.textEl = text;
+        }
+        // Remove absolute/stacking inline styles from children so they lay out inline
+        const ds = this.dotsEl.style; ds.position = ''; ds.inset = ''; ds.display = ''; ds.placeItems = ''; ds.zIndex = '';
+        const ts = this.textEl.style; ts.position = ''; ts.zIndex = ''; ts.fontSize = ''; ts.color = '';
+      } catch {}
     }
     return this.el;
   },
@@ -123,8 +101,8 @@ export const LoadingOverlay = {
     let i = 0;
     this.timer = setInterval(() => {
       if (!this.dotsEl) return;
-      i = (i % 3) + 1;
-      this.dotsEl.textContent = '.'.repeat(i);
+      i = (i + 1) % 4; // 0 → 3
+      this.dotsEl.textContent = i === 0 ? '' : Array.from({ length: i }).map(() => '.').join(' ');
     }, 450);
   },
   stopDots() {

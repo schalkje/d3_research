@@ -3,7 +3,7 @@ import * as dashboard from './dashboard.js';
 import * as data from './data.js';
 import { showLoading } from './loadingOverlay.js';
 
-// Show the loading overlay as soon as the bundle is evaluated
+// Show the loading overlay as soon as the bundle is evaluated (eager show)
 try { showLoading(); } catch {}
 
 // Default export combines commonly used namespaces
