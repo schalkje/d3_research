@@ -103,6 +103,14 @@ export class Dashboard {
     // Assign directly to the backing field to avoid triggering the setter recursion
     this._data = newDashboardData || {};
     this._data.settings = ConfigManager.mergeWithDefaults(userSettings);
+    // Ensure aspect ratio is available for nodes that rely on it during sizing
+    // Use current main.divRatio when present to avoid NaN computations in nodes
+    try {
+      const fallbackRatio = (this.main && this.main.divRatio) ? this.main.divRatio : (16 / 9);
+      if (!this._data.settings.divRatio || !(this._data.settings.divRatio > 0)) {
+        this._data.settings.divRatio = fallbackRatio;
+      }
+    } catch {}
 
     // Clear main SVG and rebuild root
     if (this.main?.svg) {

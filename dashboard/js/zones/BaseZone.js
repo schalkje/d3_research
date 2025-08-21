@@ -93,8 +93,11 @@ export class BaseZone {
    * Resize the zone
    */
   resize(width, height) {
-    this.size.width = width;
-    this.size.height = height;
+    // Defensive: prevent NaN from propagating to DOM attributes
+    const safeWidth = Number.isFinite(width) && width >= 0 ? width : 0;
+    const safeHeight = Number.isFinite(height) && height >= 0 ? height : 0;
+    this.size.width = safeWidth;
+    this.size.height = safeHeight;
     this.update();
   }
 

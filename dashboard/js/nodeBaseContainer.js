@@ -772,16 +772,20 @@ export default class BaseContainerNode extends BaseNode {
     if (this.minimumSize.width < this.data.layout.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
     if (this.minimumSize.height < this.data.layout.minimumSize.height) this.minimumSize.height = this.data.layout.minimumSize.height;
 
-    if ( !this.data.layout.minimumSize.useRootRatio) return;
+    if (!this.data.layout.minimumSize.useRootRatio) return;
 
+    // Guard: ensure we have a valid ratio to avoid NaN during early layout passes
+    const ratio = (this.settings && this.settings.divRatio && this.settings.divRatio > 0)
+      ? this.settings.divRatio
+      : 16 / 9;
 
-    if (this.minimumSize.width / this.height > this.settings.divRatio)
-    {
-      this.minimumSize.height = this.minimumSize.width / this.settings.divRatio;
-    }
-    else
-    {
-        this.minimumSize.width = this.minimumSize.height * this.settings.divRatio;
+    // Use current node data.height as reference; avoid undefined "this.height"
+    const currentHeight = this.data.height || this.minimumSize.height || 1;
+
+    if (this.minimumSize.width / currentHeight > ratio) {
+      this.minimumSize.height = this.minimumSize.width / ratio;
+    } else {
+      this.minimumSize.width = this.minimumSize.height * ratio;
     }
     // console.log("    BaseContainerNode - applyRatioToMinimumSize", this.minimumSize.width, this.minimumSize.height);
   }

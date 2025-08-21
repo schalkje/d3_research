@@ -7,6 +7,7 @@ $outputPath = 'index.html'
 
 # Exclude the output file from the list
 $files = $files | Where-Object { $_ -notlike "*$outputPath" }
+$files = $files | Where-Object { $_ -notlike "*index.html" }
 $files = $files | ForEach-Object { $_.Replace($scriptLocation + "\", "") }
 
 $groups = $files | Group-Object { ($_ -split "\\")[0] }
@@ -60,7 +61,13 @@ $htmlContent = @"
             if(toggleBtn){toggleBtn.addEventListener('click',function(){app.classList.toggle('sidebar-collapsed');localStorage.setItem('sidebarCollapsed',app.classList.contains('sidebar-collapsed')?'1':'0')})}
             document.querySelectorAll('details[data-key]').forEach(function(d){var key='open:'+d.dataset.key;var saved=localStorage.getItem(key);if(saved==='0'){d.removeAttribute('open')}if(saved==='1'){d.setAttribute('open','open')}d.addEventListener('toggle',function(){localStorage.setItem(key,d.open?'1':'0')})});
             document.addEventListener('click',function(e){var a=e.target.closest('a[data-load]');if(!a)return;e.preventDefault();var p=a.getAttribute('data-path');loadPage(p);document.querySelectorAll('.file-li a[data-load].active').forEach(function(el){el.classList.remove('active')});a.classList.add('active')});
-            if(location.hash&&location.hash.length>1){try{var initial=decodeURIComponent(location.hash.slice(1));loadPage(initial)}catch(e){}}
+            // Load flowdash-bundle.html by default
+            loadPage('dashboard/flowdash-bundle.html');
+            // Set the dashboard link as active by default
+            var dashboardLink = document.querySelector('a[data-path="dashboard/flowdash-bundle.html"]');
+            if(dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
         });
     </script>
 </head>
@@ -97,14 +104,20 @@ foreach ($group in $groups) {
         $groupName = "<span class='number'>$($matches[1])</span>$($matches[2])"
     }
     $desc = $sectionDescriptions[$groupKey]
-    $htmlContent += "<details class='group' data-key='group/$groupKey' open>"
+    
+    # Only dashboard should be expanded by default
+    $isOpen = if ($groupKey -eq 'dashboard') { 'open' } else { '' }
+    
+    $htmlContent += "<details class='group' data-key='group/$groupKey' $isOpen>"
     $htmlContent += "<summary>$groupName</summary>`n"
     if ($desc) { $htmlContent += "<div class='group-desc'>$desc</div>" }
     # Group files by folder within the group
     $folders = $group.Group | Group-Object { ($_ -split "\\")[1] }
     foreach ($folder in $folders) {
         $folderName = $folder.Name
-        $htmlContent += "<details class='folder' data-key='folder/$groupKey/$folderName' open>"
+        # Only expand dashboard folders by default
+        $folderOpen = if ($groupKey -eq 'dashboard') { 'open' } else { '' }
+        $htmlContent += "<details class='folder' data-key='folder/$groupKey/$folderName' $folderOpen>"
         $htmlContent += "<summary><span class='folder'>$folderName/</span></summary>"
         $htmlContent += "<ul class='file-list'>"
 
