@@ -505,17 +505,29 @@ export default class BaseContainerNode extends BaseNode {
 
     // Zone manager is already initialized in BaseNode.init()
 
-    // Calculate minimum size based on label and zone system
+    // Calculate minimum size using header zone metrics when available
     const labelText = this.data.label || '';
-    const labelWidth = labelText.length * 8 + 36; // Approximate text width
-    
-    // Use zone system header height if available, otherwise fallback to default
-    let labelHeight = 20; // Default fallback
+    const fallbackLabelWidth = labelText.length * 8 + 36; // Fallback approximation
+
+    let minHeaderWidth = fallbackLabelWidth;
+    let headerHeight = 20; // Default fallback
     if (this.zoneManager?.headerZone) {
-      labelHeight = this.zoneManager.headerZone.getHeaderHeight();
+      const headerZone = this.zoneManager.headerZone;
+      // Prefer precise header minimum width (text + indicator + button + paddings)
+      if (typeof headerZone.getMinimumWidth === 'function') {
+        try {
+          minHeaderWidth = headerZone.getMinimumWidth();
+        } catch {}
+      } else {
+        // Fallback to current header size width (may be larger than minimum)
+        const headerSize = headerZone.getSize?.();
+        if (headerSize?.width) minHeaderWidth = headerSize.width;
+      }
+      // Use header's measured height if available
+      headerHeight = headerZone.getHeaderHeight?.() ?? headerHeight;
     }
-    
-    const defaultSize = { width: labelWidth, height: labelHeight };
+
+    const defaultSize = { width: minHeaderWidth, height: headerHeight };
     this.minimumSize = GeometryManager.calculateMinimumSize([], defaultSize);
     
     if (this.data.layout.minimumSize.width > this.minimumSize.width) this.minimumSize.width = this.data.layout.minimumSize.width;
