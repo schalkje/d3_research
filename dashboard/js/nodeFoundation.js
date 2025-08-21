@@ -136,6 +136,9 @@ export default class FoundationNode extends BaseContainerNode {
       horizontal: (this.settings?.nodeSpacing?.horizontal ?? 20),
       vertical: (this.settings?.nodeSpacing?.vertical ?? 10)
     };
+    
+    // Cache for header minimum width to avoid repeated calculations
+    this._cachedHeaderMinWidth = undefined;
   }
 
   get nestedCorrection_y() {
@@ -291,9 +294,18 @@ export default class FoundationNode extends BaseContainerNode {
     if (this.collapsed) {
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
-      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-        ? headerZone.getMinimumWidth()
-        : (headerZone ? headerZone.getSize().width : this.data.width);
+      
+      // Use cached header width if available, otherwise calculate once
+      let headerMinWidth;
+      if (this._cachedHeaderMinWidth !== undefined) {
+        headerMinWidth = this._cachedHeaderMinWidth;
+      } else if (headerZone && typeof headerZone.getMinimumWidth === 'function') {
+        headerMinWidth = headerZone.getMinimumWidth();
+        this._cachedHeaderMinWidth = headerMinWidth; // Cache for future use
+      } else {
+        headerMinWidth = headerZone ? headerZone.getSize().width : this.data.width;
+      }
+      
       const collapsedWidth = Math.max(this.minimumSize.width, headerMinWidth);
       const collapsedHeight = Math.max(this.minimumSize.height, headerHeight);
       this.resize({ width: collapsedWidth, height: collapsedHeight });
@@ -485,9 +497,26 @@ export default class FoundationNode extends BaseContainerNode {
     innerContainerZone.updateChildPositions();
   }
 
+  /**
+   * Clear the cached header minimum width when header content changes
+   */
+  clearHeaderWidthCache() {
+    this._cachedHeaderMinWidth = undefined;
+  }
+
+  /**
+   * Override resize to clear header width cache when node is resized
+   */
+  resize(size, forced = false) {
+    // Clear header width cache when resizing
+    this.clearHeaderWidthCache();
+    super.resize(size, forced);
+  }
+
   // Resize container to fit two children according to zone-system sizing
   resizeTwoNodeContainer(firstNode, secondNode, direction = 'horizontal') {
     if (!this.zoneManager || this._isResizing) return;
+    
     const marginZone = this.zoneManager.marginZone;
     const headerZone = this.zoneManager.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 10;
@@ -503,16 +532,37 @@ export default class FoundationNode extends BaseContainerNode {
       contentHeight = Math.max(firstNode.data.height, secondNode.data.height);
     }
 
+    // For both role and full modes, ensure the width is at least as wide as the header content
+    let finalWidth = contentWidth + margins.left + margins.right;
+    
+    // Cache header minimum width to avoid repeated calculations
+    if (headerZone && !this._cachedHeaderMinWidth) {
+      this._cachedHeaderMinWidth = headerZone.getMinimumWidth ? headerZone.getMinimumWidth() : 0;
+    }
+    
+    if (this._cachedHeaderMinWidth !== undefined) {
+      finalWidth = Math.max(finalWidth, this._cachedHeaderMinWidth);
+    }
+
     const newSize = {
-      width: contentWidth + margins.left + margins.right,
+      width: finalWidth,
       height: headerHeight + margins.top + contentHeight + margins.bottom,
     };
 
+    // Only resize if dimensions actually changed
     if (newSize.width !== this.data.width || newSize.height !== this.data.height) {
       this._isResizing = true;
       try {
         this.resize(newSize);
-        if (this.zoneManager) this.zoneManager.resize(newSize.width, newSize.height);
+        // Only call zone manager resize if we're not already in a resize cycle
+        if (this.zoneManager && !this.zoneManager._resizing) {
+          this.zoneManager._resizing = true;
+          try {
+            this.zoneManager.resize(newSize.width, newSize.height);
+          } finally {
+            this.zoneManager._resizing = false;
+          }
+        }
         this.handleDisplayChange();
       } finally {
         this._isResizing = false;

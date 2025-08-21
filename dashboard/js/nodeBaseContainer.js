@@ -260,7 +260,14 @@ export default class BaseContainerNode extends BaseNode {
           const newHeight = Math.max(this.minimumSize.height, headerHeight + margins.top + contentSize.height + margins.bottom);
           this.resize({ width: newWidth, height: newHeight }, true);
           // Ensure zones reflect final size
-          if (this.zoneManager) this.zoneManager.resize(newWidth, newHeight);
+          if (this.zoneManager && !this.zoneManager._resizing) {
+            this.zoneManager._resizing = true;
+            try {
+              this.zoneManager.resize(newWidth, newHeight);
+            } finally {
+              this.zoneManager._resizing = false;
+            }
+          }
           this.zoneManager.update();
           // And update child positions once more relative to final coordinate system
           innerZone.updateChildPositions();
@@ -730,8 +737,15 @@ export default class BaseContainerNode extends BaseNode {
             // Only initialize nested inner zones if the nested container is expanded
             if (!childNode.collapsed) {
               childNode.zoneManager.innerContainerZone.init();
-              // Ensure nested zones have correct size from child node
+                        // Ensure nested zones have correct size from child node
+          if (childNode.zoneManager && !childNode.zoneManager._resizing) {
+            childNode.zoneManager._resizing = true;
+            try {
               childNode.zoneManager.resize(childNode.data.width, childNode.data.height);
+            } finally {
+              childNode.zoneManager._resizing = false;
+            }
+          }
               childNode.zoneManager.innerContainerZone.update();
             }
           }
