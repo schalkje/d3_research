@@ -200,6 +200,26 @@ export class HeaderZone extends BaseZone {
   }
 
   /**
+   * Compute the reserved width on the right side (icons + gaps + right padding)
+   * Must stay in sync with getMinimumWidth() and icon positioning
+   */
+  getReservedRightWidth() {
+    const rightPadding = this.padding || 0;
+    const indicatorDiameter = 6; // Matches updateStatusIndicatorPosition()
+    const buttonDiameter = this.node?.isContainer ? 16 : 0; // Matches updateZoomButtonPosition()
+    const gapBetweenTextAndIcons = (indicatorDiameter > 0 || buttonDiameter > 0) ? 8 : 0;
+    const gapBetweenIndicatorAndButton = (indicatorDiameter > 0 && buttonDiameter > 0) ? 4 : 0;
+
+    return (
+      gapBetweenTextAndIcons +
+      indicatorDiameter +
+      gapBetweenIndicatorAndButton +
+      buttonDiameter +
+      rightPadding
+    );
+  }
+
+  /**
    * Calculate text height based on content
    */
   calculateTextHeight() {
@@ -232,7 +252,9 @@ export class HeaderZone extends BaseZone {
     if (!this.textElement) return;
     
     const text = this.node.data.label || this.node.data.name || '';
-    const maxWidth = this.size.width - this.padding * 2;
+    // Reserve space on the right for icons + gaps + right padding so text never overlaps
+    const reservedRight = this.getReservedRightWidth();
+    const maxWidth = Math.max(0, this.size.width - this.padding - reservedRight);
     
     // Handle text overflow with ellipsis
     if (text.length > 0) {
