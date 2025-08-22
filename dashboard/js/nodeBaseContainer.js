@@ -496,6 +496,39 @@ export default class BaseContainerNode extends BaseNode {
 
     // Zone manager is already initialized in BaseNode.init()
 
+    // Ensure containers are selectable when clicking their background:
+    // - Remove default bubble-phase handlers to avoid double toggles
+    // - Add capture-phase handlers that select this container when the click
+    //   is not originating from a child node element
+    if (this.element) {
+      // Remove default bubble listeners attached in BaseNode.init
+      this.element.on('click', null);
+      this.element.on('dblclick', null);
+
+      const isFromChildNode = (evt) => {
+        const rootEl = this.element.node();
+        let el = evt?.target;
+        while (el && el !== rootEl) {
+          const n = el.__node;
+          if (n && n !== this) return true; // clicked inside a different child node
+          el = el.parentNode;
+        }
+        return false;
+      };
+
+      // Capture-phase click: select this container on background clicks
+      this.element.on('click.container-capture', (event) => {
+        if (isFromChildNode(event)) return; // let child node handle it
+        this.handleClicked(event, this);
+      }, true);
+
+      // Capture-phase dblclick: forward to this container (zoom to container)
+      this.element.on('dblclick.container-capture', (event) => {
+        if (isFromChildNode(event)) return; // let child node handle it
+        this.handleDblClicked(event, this);
+      }, true);
+    }
+
     // Calculate minimum size using header zone metrics when available
     const labelText = this.data.label || '';
     const fallbackLabelWidth = labelText.length * 8 + 36; // Fallback approximation
