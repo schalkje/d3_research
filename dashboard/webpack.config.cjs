@@ -22,6 +22,10 @@ module.exports = (env, argv) => {
                 module: true,
             }
         },
+        // Externalize D3.js to reduce bundle size
+        externals: {
+            'd3': 'd3'
+        },
         // Enable tree shaking and optimizations
         mode: 'production',
         optimization: {

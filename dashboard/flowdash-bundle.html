@@ -5,9 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flow Dashboard</title>
+    <!-- Load D3.js separately - this will be externalized from the bundle -->
     <script src="libs/d3.min.js"></script>
     <script src="libs/d3-shape.min.js"></script>
     <script src="libs/d3-dag.iife.min.js"></script>
+    <!-- Load the bundle after D3.js is available -->
     <script src="dist/flowdash.min.js"></script>
     <link rel="stylesheet" href="flowdash.css">
     <link rel="stylesheet" href="flowdash-demo.css">

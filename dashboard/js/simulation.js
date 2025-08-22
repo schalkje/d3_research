@@ -1,16 +1,15 @@
 // Responsible for setting up and managing force-directed simulations using D3.js
-import '../libs/d3.min.js';
+// D3.js is now externalized and loaded separately
 import { getComputedDimensions,computeBoundingBox } from './utils.js';
 import { rectCollide } from './forceRectCollide.js';
 
-export default class Simulation {
+export class ForceSimulation {
   constructor(containerNode) {
 
     this.containerNode = containerNode;
+    this.links = [];
     this.simulation = null;
-    this.tickCounter = 0; // Counter to control resizing frequency
-    this.resizeFrequency = 10; // Resize every 10 ticks
-    this.links=[];
+    this.isRunning = false;
   }
 
   // Method to initialize the force simulation
@@ -89,3 +88,6 @@ export default class Simulation {
     }
   }
 }
+
+// Export default for backward compatibility
+export default ForceSimulation;
