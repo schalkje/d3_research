@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "build": "webpack --mode production",
+    "build:analyze": "webpack --mode production --env analyze",
     "start": "webpack serve --open --mode development"
   },
   "author": "Jeroen Schalken",
@@ -28,6 +29,7 @@
     "@types/node": "^24.0.14",
     "babel-loader": "^9",
     "webpack": "^5",
+    "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5"
   }
 }
