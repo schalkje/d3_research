@@ -28,6 +28,7 @@
     "@playwright/test": "^1.54.1",
     "@types/node": "^24.0.14",
     "babel-loader": "^9",
+    "core-js": "^3.45.1",
     "webpack": "^5",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5"

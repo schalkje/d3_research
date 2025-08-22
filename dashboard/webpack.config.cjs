@@ -12,6 +12,42 @@ module.exports = (env, argv) => {
             filename: 'flowdash.min.js', // The bundled file name        
             path: path.resolve(__dirname, 'dist'), // The output directory
             library: 'flowdash',
+            // Enable tree shaking
+            environment: {
+                arrowFunction: true,
+                const: true,
+                destructuring: true,
+                dynamicImport: true,
+                forOf: true,
+                module: true,
+            }
+        },
+        // Enable tree shaking and optimizations
+        mode: 'production',
+        optimization: {
+            // Enable tree shaking
+            usedExports: true,
+            sideEffects: false,
+            // Enable minification
+            minimize: true,
+            // Enable module concatenation
+            concatenateModules: true,
+            // Enable dead code elimination
+            removeAvailableModules: true,
+            removeEmptyChunks: true,
+            // Split vendor chunks for better caching
+            splitChunks: {
+                chunks: 'all',
+                cacheGroups: {
+                    vendor: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: 'vendors',
+                        chunks: 'all',
+                        priority: 10,
+                        enforce: true
+                    },
+                },
+            },
         },
         plugins: [
             new webpack.BannerPlugin({
@@ -27,7 +63,23 @@ module.exports = (env, argv) => {
                     use: {
                         loader: 'babel-loader',
                         options: {
-                            presets: ['@babel/preset-env']
+                            presets: [
+                                ['@babel/preset-env', {
+                                    // Enable tree shaking
+                                    modules: false,
+                                    // Target modern browsers for smaller bundles
+                                    targets: {
+                                        browsers: [
+                                            'last 2 versions',
+                                            '> 1%',
+                                            'not dead'
+                                        ]
+                                    },
+                                    // Use built-ins to reduce bundle size
+                                    useBuiltIns: 'usage',
+                                    corejs: 3
+                                }]
+                            ]
                         }
                     }
                 }
