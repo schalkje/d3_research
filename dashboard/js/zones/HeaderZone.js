@@ -6,6 +6,26 @@ import { BaseZone } from './BaseZone.js';
  * Handles text rendering, overflow, and styling
  * Manages header-specific interactions (click, hover)
  * Supports status indicators, icons, and zoom buttons
+ * 
+ * PERFORMANCE OPTIMIZATIONS:
+ * 
+ * 1. CACHING: getMinimumWidth() caches results and only recalculates when text changes
+ * 2. THROTTLING: getMinimumWidthThrottled() provides immediate cached results during rapid updates
+ * 3. BATCHING: Rapid calls are batched to reduce expensive DOM operations
+ * 4. MONITORING: Performance warnings when called too frequently
+ * 
+ * USAGE RECOMMENDATIONS:
+ * 
+ * - Use getMinimumWidth() for normal operations (initial layout, text changes)
+ * - Use getMinimumWidthThrottled() during rapid updates (resizing, animations, force simulation)
+ * - The throttled version returns cached values immediately and schedules background updates
+ * - Performance warnings will suggest when to switch to throttled version
+ * 
+ * CACHE INVALIDATION:
+ * 
+ * - Cache is automatically cleared when text content changes
+ * - Call clearMinWidthCache() manually if node properties change
+ * - Call recalculateMinWidth() to force fresh calculation
  */
 export class HeaderZone extends BaseZone {
   constructor(node) {
@@ -16,6 +36,17 @@ export class HeaderZone extends BaseZone {
     this.zoomButton = null;
     this.minHeight = 10; // Minimum height constraint
     this.padding = 4; // Left padding for text
+    
+    // Performance optimization: batch updates and throttling
+    this._cachedMinWidth = null;
+    this._lastTextContent = null;
+    this._updateBatchTimer = null;
+    this._pendingMinWidthUpdate = false;
+    
+    // Performance monitoring (can be disabled in production)
+    this._callCount = 0;
+    this._lastCallTime = 0;
+    this._performanceWarningThreshold = 10; // Warn if called more than 10 times in 100ms
   }
 
   /**
@@ -170,36 +201,69 @@ export class HeaderZone extends BaseZone {
   /**
    * Calculate the minimum width required by the header contents
    * Includes: left/right padding + full text width + status indicator + zoom button (if container) + small gaps
+   * Optimized with caching to avoid expensive recalculations
    */
   getMinimumWidth() {
-    const text = this.node?.data?.label || this.node?.data?.name || '';
+    // Performance monitoring
+    this._callCount++;
+    const now = Date.now();
+    if (now - this._lastCallTime > 100) {
+      // Reset counter every 100ms
+      if (this._callCount > this._performanceWarningThreshold) {
+        console.warn(`HeaderZone ${this.node?.data?.id}: getMinimumWidth called ${this._callCount} times in 100ms. Consider using getMinimumWidthThrottled() for rapid updates.`);
+      }
+      this._callCount = 1;
+      this._lastCallTime = now;
+    }
+    
+    // Check if we have a cached result and the text hasn't changed
+    const currentText = this.node?.data?.label || this.node?.data?.name || '';
+    const currentIsContainer = this.node?.isContainer || false;
+    
+    // Cache key includes text content and container state
+    const cacheKey = `${currentText}|${currentIsContainer}`;
+    
+    // Return cached result if available and valid
+    if (this._cachedMinWidth && this._cachedMinWidth.key === cacheKey) {
+      return this._cachedMinWidth.value;
+    }
+
+    // Calculate text width more efficiently
     let textWidth = 0;
     try {
       if (this.textElement && typeof this.textElement.node === 'function') {
-        const tempElement = this.textElement.node().cloneNode(true);
-        tempElement.textContent = text;
-        tempElement.style.position = 'absolute';
-        tempElement.style.left = '-99999px';
-        tempElement.style.top = '-99999px';
-        document.body.appendChild(tempElement);
-        const rect = tempElement.getBoundingClientRect();
-        textWidth = rect.width;
-        document.body.removeChild(tempElement);
-        // Fallback if off-DOM measurement yields 0
-        if (!textWidth && this.textElement?.node()?.getComputedTextLength) {
-          try { textWidth = this.textElement.node().getComputedTextLength(); } catch {}
+        // Use getComputedTextLength first (most efficient)
+        try {
+          textWidth = this.textElement.node().getComputedTextLength();
+        } catch {
+          // Fallback to DOM measurement only if necessary
+          const tempElement = this.textElement.node().cloneNode(true);
+          tempElement.textContent = currentText;
+          tempElement.style.position = 'absolute';
+          tempElement.style.left = '-99999px';
+          tempElement.style.top = '-99999px';
+          tempElement.style.visibility = 'hidden'; // More efficient than off-screen positioning
+          document.body.appendChild(tempElement);
+          const rect = tempElement.getBoundingClientRect();
+          textWidth = rect.width;
+          document.body.removeChild(tempElement);
+        }
+        
+        // Fallback if measurement yields 0
+        if (!textWidth) {
+          textWidth = currentText.length * 8; // Fallback approximation
         }
       } else {
-        textWidth = text.length * 8; // Fallback approximation
+        textWidth = currentText.length * 8; // Fallback approximation
       }
     } catch {
-      textWidth = text.length * 8; // Fallback approximation
+      textWidth = currentText.length * 8; // Fallback approximation
     }
 
     const leftPadding = this.padding || 0;
     const rightPadding = this.padding || 0;
     const indicatorDiameter = 6; // Matches updateStatusIndicatorPosition()
-    const buttonDiameter = this.node?.isContainer ? 16 : 0; // Matches updateZoomButtonPosition()
+    const buttonDiameter = currentIsContainer ? 16 : 0; // Matches updateZoomButtonPosition()
     const gapBetweenTextAndIcons = (indicatorDiameter > 0 || buttonDiameter > 0) ? 8 : 0;
     const gapBetweenIndicatorAndButton = (indicatorDiameter > 0 && buttonDiameter > 0) ? 4 : 0;
 
@@ -230,9 +294,98 @@ export class HeaderZone extends BaseZone {
       // This already holds because baseWidth uses measured text width.
     }
 
-    // Debug logging removed to reduce console spam
+    const result = Math.ceil(constrainedWidth);
+    
+    // Cache the result for future calls
+    this._cachedMinWidth = {
+      key: cacheKey,
+      value: result,
+      timestamp: Date.now()
+    };
 
-    return Math.ceil(constrainedWidth);
+    return result;
+  }
+
+  /**
+   * Clear the cached minimum width when text content changes
+   * Call this method when node data (label/name) is updated
+   */
+  clearMinWidthCache() {
+    this._cachedMinWidth = null;
+  }
+
+  /**
+   * Force recalculation of minimum width (clears cache and recalculates)
+   * Use this when you need to ensure fresh calculation
+   */
+  recalculateMinWidth() {
+    this._cachedMinWidth = null;
+    return this.getMinimumWidth();
+  }
+
+  /**
+   * Throttled version of getMinimumWidth for use during rapid updates
+   * Returns cached value immediately if available, schedules update if not
+   */
+  getMinimumWidthThrottled() {
+    // If we have a valid cache, return it immediately
+    if (this._cachedMinWidth && this._cachedMinWidth.key === this._getCurrentCacheKey()) {
+      return this._cachedMinWidth.value;
+    }
+    
+    // If no update is pending, schedule one
+    if (!this._pendingMinWidthUpdate) {
+      this._pendingMinWidthUpdate = true;
+      
+      // Clear any existing timer
+      if (this._updateBatchTimer) {
+        clearTimeout(this._updateBatchTimer);
+      }
+      
+      // Schedule update after a short delay to batch rapid calls
+      this._updateBatchTimer = setTimeout(() => {
+        this._pendingMinWidthUpdate = false;
+        this._updateBatchTimer = null;
+        // Force a fresh calculation
+        this.getMinimumWidth();
+      }, 16); // ~60fps
+    }
+    
+    // Return cached value or fallback
+    return this._cachedMinWidth ? this._cachedMinWidth.value : this._getFallbackMinWidth();
+  }
+
+  /**
+   * Get fallback minimum width when cache is not available
+   */
+  _getFallbackMinWidth() {
+    const text = this.node?.data?.label || this.node?.data?.name || '';
+    const textWidth = text.length * 8; // Rough approximation
+    const leftPadding = this.padding || 0;
+    const rightPadding = this.padding || 0;
+    const indicatorDiameter = 6;
+    const buttonDiameter = this.node?.isContainer ? 16 : 0;
+    const gapBetweenTextAndIcons = (indicatorDiameter > 0 || buttonDiameter > 0) ? 8 : 0;
+    const gapBetweenIndicatorAndButton = (indicatorDiameter > 0 && buttonDiameter > 0) ? 4 : 0;
+    
+    return Math.ceil(
+      leftPadding +
+      textWidth +
+      gapBetweenTextAndIcons +
+      indicatorDiameter +
+      gapBetweenIndicatorAndButton +
+      buttonDiameter +
+      rightPadding
+    );
+  }
+
+  /**
+   * Get current cache key for comparison
+   */
+  _getCurrentCacheKey() {
+    const currentText = this.node?.data?.label || this.node?.data?.name || '';
+    const currentIsContainer = this.node?.isContainer || false;
+    return `${currentText}|${currentIsContainer}`;
   }
 
   /**
@@ -288,6 +441,12 @@ export class HeaderZone extends BaseZone {
     if (!this.textElement) return;
     
     const text = this.node.data.label || this.node.data.name || '';
+    
+    // Clear cache if text content has changed
+    if (this._lastTextContent !== text) {
+      this.clearMinWidthCache();
+      this._lastTextContent = text;
+    }
     // Reserve space on the right for icons + gaps + right padding so text never overlaps
     const reservedRight = this.getReservedRightWidth();
     let maxWidth = Math.max(0, this.size.width - this.padding - reservedRight);
@@ -522,5 +681,23 @@ export class HeaderZone extends BaseZone {
     this.size.width = width;
     this.size.height = this.calculateTextHeight();
     this.update();
+  }
+
+  /**
+   * Clean up resources when zone is destroyed
+   */
+  destroy() {
+    // Clear any pending timers
+    if (this._updateBatchTimer) {
+      clearTimeout(this._updateBatchTimer);
+      this._updateBatchTimer = null;
+    }
+    
+    // Clear cache
+    this._cachedMinWidth = null;
+    this._pendingMinWidthUpdate = false;
+    
+    // Call parent destroy
+    super.destroy();
   }
 } 
