@@ -46,7 +46,7 @@ export class Dashboard {
     this.selection = {
       nodes: [],
       edges: [],
-      boundingBox: { x: 0, y: 0, width: 0, height: 0 },
+      neighborhood: null, // { nodes, edges, boundingBox }
     };
 
     this.isMainAndMinimapSyncing = false;
@@ -105,8 +105,8 @@ export class Dashboard {
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root = this.createDashboard(this.data, this.main.container);
 
-    this.main.root.onClick = (node) => this.selectNode(node);
-    this.main.root.onDblClick = (node) => this.zoomToNode(node);
+  this.main.root.onClick = (node) => this.selectNode(node);
+  this.main.root.onDblClick = (node) => this.handleNodeDblClick(node);
     this.main.root.onDisplayChange = () => { this.onMainDisplayChange(); };
 
     if (this.main.zoom) {
@@ -160,11 +160,11 @@ export class Dashboard {
       this.onMainDisplayChange();
     };
     
-    this.main.root =  this.createDashboard(this.data, this.main.container, tempDisplayChangeCallback);
+  this.main.root =  this.createDashboard(this.data, this.main.container, tempDisplayChangeCallback);
 
-    this.main.zoom = this.initializeZoom();
-    this.main.root.onClick = (node) => this.selectNode(node);
-    this.main.root.onDblClick = (node) => this.zoomToNode(node);
+  this.main.zoom = this.initializeZoom();
+  this.main.root.onClick = (node) => this.selectNode(node);
+  this.main.root.onDblClick = (node) => this.handleNodeDblClick(node);
 
     this.minimap.initializeEmbedded();
 
@@ -820,9 +820,11 @@ export class Dashboard {
   }
 
   selectNode(node) {
-    
-    node.selected = !node.selected;
-
+  // Exclusive single selection: clear previous and select only this node
+  this.deselectAll();
+  node.selected = true;
+  // Clear any previous neighborhood when manually selecting
+  this.selection.neighborhood = null;
   }
 
   getSelectedNodes() {
@@ -861,6 +863,8 @@ export class Dashboard {
     this.main.root.getAllEdges(true, edges);
     edges.forEach((edge) => edge.selected = false);
 
+    // Clear neighborhood selection context
+    this.selection.neighborhood = null;
   }
 
   
@@ -872,6 +876,13 @@ export class Dashboard {
     neighbors.edges.forEach((edge) => edge.selected = true);
 
     const boundingBox = computeBoundingBox(this, neighbors.nodes);
+
+    // Store neighborhood context for subsequent dblclick handling
+    this.selection.neighborhood = {
+      nodes: neighbors.nodes,
+      edges: neighbors.edges,
+      boundingBox
+    };
 
     if (this.data.settings.showBoundingBox) {
       const borderWidth = 2;
@@ -898,6 +909,32 @@ export class Dashboard {
     this.zoomToBoundingBox(boundingBox);
 
     return this.main.boundingbox;
+  }
+
+  // Double-click behavior:
+  // - If a neighborhood bbox is active and the dblclick is inside it, zoom to bbox
+  // - Otherwise zoom to node
+  handleNodeDblClick(node, event) {
+    const nb = this.selection.neighborhood;
+    if (nb && nb.boundingBox) {
+      // If an event is available, determine pointer in SVG coordinates
+      // Fallback: if the node is part of the neighborhood, consider it inside
+      const insideByNode = nb.nodes && nb.nodes.indexOf(node) !== -1;
+      let insideByPoint = false;
+      try {
+        if (event && this.main.svg) {
+          const [px, py] = d3.pointer(event, this.main.container.node());
+          const b = nb.boundingBox;
+          insideByPoint = px >= b.x && px <= b.x + b.width && py >= b.y && py <= b.y + b.height;
+        }
+      } catch {}
+      if (insideByPoint || insideByNode) {
+        this.zoomToBoundingBox(nb.boundingBox);
+        return;
+      }
+    }
+    // Default: zoom to the specific node
+    this.zoomToNode(node);
   }
 
   zoomToBoundingBox(boundingBox) {

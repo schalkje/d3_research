@@ -45,10 +45,17 @@ If you are using the bundled build, initialize according to your bundling setup 
 
 ## Interactions: selection and double‑click zoom
 
-The default interaction model ties selection and zoom together for quick navigation:
+### Interactions: selection and double‑click zoom
 
-- Click on a node: selects the node (and applies selection styling). Neighbor selection behavior is configurable via `settings.selector`.
-- Double‑click on a node: zooms to that node. In practice, the first click selects the node, and the double‑click then performs a smooth zoom/center using `zoomToNode(node)`.
+Default interaction model:
+
+- Single click: exclusive selection of exactly one item (either a base node or a container). Clicking another item clears the previous selection.
+- Double‑click on a node (no active neighborhood): computes the node’s neighborhood (using `settings.selector`), selects it, stores it as the active Selection Neighborhood, and zooms to its bounding box.
+- Double‑click within an active neighborhood’s bounding box: zooms to the neighborhood’s bounding box again (without recomputing). Double‑clicking outside the active bounding box on any node creates a new neighborhood for that node and zooms to it.
+- Zoom to root: if `settings.zoomToRoot` is true, the dashboard initially fits all nodes.
+- Customization: you can override handlers after initialization:
+  - `dashboard.main.root.onClick = (node) => { ... }` for single‑click selection.
+  - `dashboard.main.root.onDblClick = (node, event) => { ... }` for double‑click behavior. The default uses the active neighborhood (if any) and falls back to `zoomToNode(node)`.
 
 Notes and customization:
 
