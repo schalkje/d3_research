@@ -43,6 +43,27 @@ If you are using the bundled build, initialize according to your bundling setup 
 - **Theme Support**: Works with all themes under `dashboard/themes/*`.
 - **Performance**: Minimap updates and heavy operations use `requestAnimationFrame` to stay responsive.
 
+## Interactions: selection and double‑click zoom
+
+### Interactions: selection and double‑click zoom
+
+Default interaction model:
+
+- Single click: exclusive selection of exactly one item (either a base node or a container). Clicking another item clears the previous selection.
+- Double‑click on a node (no active neighborhood): computes the node’s neighborhood (using `settings.selector`), selects it, stores it as the active Selection Neighborhood, and zooms to its bounding box.
+- Double‑click within an active neighborhood’s bounding box: zooms to the neighborhood’s bounding box again (without recomputing). Double‑clicking outside the active bounding box on any node creates a new neighborhood for that node and zooms to it.
+- Zoom to root: if `settings.zoomToRoot` is true, the dashboard initially fits all nodes.
+- Customization: you can override handlers after initialization:
+  - `dashboard.main.root.onClick = (node) => { ... }` for single‑click selection.
+  - `dashboard.main.root.onDblClick = (node, event) => { ... }` for double‑click behavior. The default uses the active neighborhood (if any) and falls back to `zoomToNode(node)`.
+
+Notes and customization:
+
+- Initial fit: enable `settings.zoomToRoot = true` to auto‑fit the full diagram on load.
+- Programmatic control: call `dashboard.zoomToNode(node)` yourself to focus a node.
+- Override behavior: you can customize double‑click handling by setting `dashboard.main.root.onDblClick = (node) => { /* your logic */ }` after initialization. By default it calls `zoomToNode(node)`; click selection is handled by `onClick`.
+- Edges: double‑click on edges has no special default behavior; you may register a handler per edge type if needed.
+
 ## Zoom and Pan System
 
 The dashboard provides a comprehensive zoom and pan system with consistent behavior across all scenarios.
