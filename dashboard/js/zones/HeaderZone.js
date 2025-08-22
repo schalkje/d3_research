@@ -230,22 +230,7 @@ export class HeaderZone extends BaseZone {
       // This already holds because baseWidth uses measured text width.
     }
 
-    // Debug logging
-    console.log(`HeaderZone getMinimumWidth - ${this.node?.data?.id}:`, {
-      text,
-      textWidth,
-      leftPadding,
-      gapBetweenTextAndIcons,
-      indicatorDiameter,
-      gapBetweenIndicatorAndButton,
-      buttonDiameter,
-      rightPadding,
-      mode,
-      configMinWidth: safeMin,
-      configMaxWidth: safeMax,
-      baseWidth: Math.ceil(baseWidth),
-      minWidth: Math.ceil(constrainedWidth)
-    });
+    // Debug logging removed to reduce console spam
 
     return Math.ceil(constrainedWidth);
   }

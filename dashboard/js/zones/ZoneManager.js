@@ -73,11 +73,10 @@ export class ZoneManager {
   resize(width, height) {
     // Prevent repeated resizes with the same dimensions to avoid infinite loops
     if (this._lastResize && this._lastResize.width === width && this._lastResize.height === height) {
-      console.log(`ZoneManager resize skipped - ${this.node?.data?.id}: Same dimensions already applied`, { width, height });
       return;
     }
     
-    console.log(`ZoneManager resize - ${this.node?.data?.id}:`, { width, height });
+    // Resize logging removed to reduce console spam
     this._lastResize = { width, height };
     this.zones.forEach(zone => zone.resize(width, height));
   }
