@@ -43,6 +43,20 @@ If you are using the bundled build, initialize according to your bundling setup 
 - **Theme Support**: Works with all themes under `dashboard/themes/*`.
 - **Performance**: Minimap updates and heavy operations use `requestAnimationFrame` to stay responsive.
 
+## Interactions: selection and double‑click zoom
+
+The default interaction model ties selection and zoom together for quick navigation:
+
+- Click on a node: selects the node (and applies selection styling). Neighbor selection behavior is configurable via `settings.selector`.
+- Double‑click on a node: zooms to that node. In practice, the first click selects the node, and the double‑click then performs a smooth zoom/center using `zoomToNode(node)`.
+
+Notes and customization:
+
+- Initial fit: enable `settings.zoomToRoot = true` to auto‑fit the full diagram on load.
+- Programmatic control: call `dashboard.zoomToNode(node)` yourself to focus a node.
+- Override behavior: you can customize double‑click handling by setting `dashboard.main.root.onDblClick = (node) => { /* your logic */ }` after initialization. By default it calls `zoomToNode(node)`; click selection is handled by `onClick`.
+- Edges: double‑click on edges has no special default behavior; you may register a handler per edge type if needed.
+
 ## Zoom and Pan System
 
 The dashboard provides a comprehensive zoom and pan system with consistent behavior across all scenarios.
