@@ -45,9 +45,11 @@ export default class ColumnsNode extends BaseContainerNode {
     if (this.collapsed) {
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
-      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-        ? headerZone.getMinimumWidth()
-        : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+        ? headerZone.getMinimumWidthThrottled()
+        : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+          ? headerZone.getMinimumWidth()
+          : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
 
       if (!this._isResizing) {
         const newSize = {
@@ -122,9 +124,11 @@ export default class ColumnsNode extends BaseContainerNode {
       
       if (this.collapsed) {
         // When collapsed, only use header height (no margins or content)
-        const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-          ? headerZone.getMinimumWidth()
-          : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+        const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+          ? headerZone.getMinimumWidthThrottled()
+          : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+            ? headerZone.getMinimumWidth()
+            : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
         newSize = {
           width: Math.max(this.minimumSize.width, headerMinWidth),
           height: Math.max(this.minimumSize.height, headerHeight)
@@ -136,9 +140,11 @@ export default class ColumnsNode extends BaseContainerNode {
         const contentWidth = totalChildWidth + totalSpacing;
         const contentHeight = Math.max(maxChildHeight, 0);
         
-        const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-          ? headerZone.getMinimumWidth()
-          : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+        const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+          ? headerZone.getMinimumWidthThrottled()
+          : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+            ? headerZone.getMinimumWidth()
+            : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
         newSize = {
           width: Math.max(this.minimumSize.width, headerMinWidth, contentWidth + margins.left + margins.right),
           height: headerHeight + margins.top + Math.max(contentHeight, 0) + margins.bottom

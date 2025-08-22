@@ -246,9 +246,11 @@ export default class BaseContainerNode extends BaseNode {
           const margins = this.zoneManager?.marginZone ? this.zoneManager.marginZone.getMargins() : { top: 8, right: 8, bottom: 8, left: 8 };
           const contentSize = innerZone.calculateChildContentSize();
           const widthFromContent = contentSize.width + margins.left + margins.right;
-          const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-            ? headerZone.getMinimumWidth()
-            : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+          const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+            ? headerZone.getMinimumWidthThrottled()
+            : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+              ? headerZone.getMinimumWidth()
+              : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
           const headerBuffer = 2; // small extra to avoid tight fit
           const newWidth = Math.max(this.data.width, this.minimumSize.width, widthFromContent, headerMinWidth + headerBuffer);
           const newHeight = Math.max(this.minimumSize.height, headerHeight + margins.top + contentSize.height + margins.bottom);
@@ -354,7 +356,9 @@ export default class BaseContainerNode extends BaseNode {
     let headerHeight = this.minimumSize.height;
     if (this.zoneManager?.headerZone) {
       // Prefer precise header minimum width calculation when available
-      if (typeof this.zoneManager.headerZone.getMinimumWidth === 'function') {
+      if (typeof this.zoneManager.headerZone.getMinimumWidthThrottled === 'function') {
+        headerMinWidth = this.zoneManager.headerZone.getMinimumWidthThrottled();
+      } else if (typeof this.zoneManager.headerZone.getMinimumWidth === 'function') {
         headerMinWidth = this.zoneManager.headerZone.getMinimumWidth();
       } else {
         // Fallback to current header size width (may be larger than minimum)
@@ -501,7 +505,11 @@ export default class BaseContainerNode extends BaseNode {
     if (this.zoneManager?.headerZone) {
       const headerZone = this.zoneManager.headerZone;
       // Prefer precise header minimum width (text + indicator + button + paddings)
-      if (typeof headerZone.getMinimumWidth === 'function') {
+      if (typeof headerZone.getMinimumWidthThrottled === 'function') {
+        try {
+          minHeaderWidth = headerZone.getMinimumWidthThrottled();
+        } catch {}
+      } else if (typeof headerZone.getMinimumWidth === 'function') {
         try {
           minHeaderWidth = headerZone.getMinimumWidth();
         } catch {}
@@ -555,9 +563,11 @@ export default class BaseContainerNode extends BaseNode {
         try {
           const headerZone = this.zoneManager?.headerZone;
           if (!headerZone) return;
-          const headerMinWidth = (typeof headerZone.getMinimumWidth === 'function')
-            ? headerZone.getMinimumWidth()
-            : (headerZone.getSize?.().width || 0);
+          const headerMinWidth = (typeof headerZone.getMinimumWidthThrottled === 'function')
+            ? headerZone.getMinimumWidthThrottled()
+            : (typeof headerZone.getMinimumWidth === 'function')
+              ? headerZone.getMinimumWidth()
+              : (headerZone.getSize?.().width || 0);
           const width = Math.max(this.data.width || 0, this.minimumSize?.width || 0, headerMinWidth || 0);
           if (width > (this.data.width || 0)) {
             const size = { width, height: this.data.height };

@@ -39,9 +39,11 @@ export default class LaneNode extends BaseContainerNode {
     if (this.collapsed) {
       const headerZone = this.zoneManager?.headerZone;
       const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
-      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-        ? headerZone.getMinimumWidth()
-        : 50;
+      const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+        ? headerZone.getMinimumWidthThrottled()
+        : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+          ? headerZone.getMinimumWidth()
+          : 50;
 
       if (!this._isResizing) {
         const newSize = {
@@ -112,9 +114,11 @@ export default class LaneNode extends BaseContainerNode {
     const marginZone = this.zoneManager?.marginZone;
     const headerZone = this.zoneManager?.headerZone;
     const headerHeight = headerZone ? headerZone.getHeaderHeight() : 20;
-    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-      ? headerZone.getMinimumWidth()
-      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+      ? headerZone.getMinimumWidthThrottled()
+      : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
 
     if (marginZone && !this._isResizing) {
       let newSize;

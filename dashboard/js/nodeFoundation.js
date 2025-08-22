@@ -180,9 +180,11 @@ export default class FoundationNode extends BaseContainerNode {
 
     // Compute expanded width from children and ensure it's at least the header minimum width
     const headerZone = this.zoneManager?.headerZone;
-    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidth === 'function')
-      ? headerZone.getMinimumWidth()
-      : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
+    const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')
+      ? headerZone.getMinimumWidthThrottled()
+      : (headerZone && typeof headerZone.getMinimumWidth === 'function')
+        ? headerZone.getMinimumWidth()
+        : (headerZone ? (headerZone.getSize?.().width || 0) : 0);
     const headerBuffer = 2;
     this.data.expandedSize = {
       width:
@@ -305,6 +307,9 @@ export default class FoundationNode extends BaseContainerNode {
       let headerMinWidth;
       if (this._cachedHeaderMinWidth !== undefined) {
         headerMinWidth = this._cachedHeaderMinWidth;
+      } else if (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function') {
+        headerMinWidth = headerZone.getMinimumWidthThrottled();
+        this._cachedHeaderMinWidth = headerMinWidth; // Cache for future use
       } else if (headerZone && typeof headerZone.getMinimumWidth === 'function') {
         headerMinWidth = headerZone.getMinimumWidth();
         this._cachedHeaderMinWidth = headerMinWidth; // Cache for future use
@@ -542,7 +547,8 @@ export default class FoundationNode extends BaseContainerNode {
     
     // Cache header minimum width to avoid repeated calculations
     if (headerZone && !this._cachedHeaderMinWidth) {
-      this._cachedHeaderMinWidth = headerZone.getMinimumWidth ? headerZone.getMinimumWidth() : 0;
+      this._cachedHeaderMinWidth = headerZone.getMinimumWidthThrottled ? headerZone.getMinimumWidthThrottled() : 
+                                   (headerZone.getMinimumWidth ? headerZone.getMinimumWidth() : 0);
     }
     
     if (this._cachedHeaderMinWidth !== undefined) {
