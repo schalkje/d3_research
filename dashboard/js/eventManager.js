@@ -13,6 +13,7 @@ export class EventManager {
     if (handlers.onDblClick) {
       element.on("dblclick", (event) => {
         event.stopPropagation();
+  try { event.preventDefault?.(); } catch {}
         handlers.onDblClick(event, node);
       });
     }
@@ -38,8 +39,9 @@ export class EventManager {
     
     element.on("dblclick", (event) => {
       event.stopPropagation();
-  // Pass the original node through so bubbling preserves the clicked target
-  node.handleDblClicked(event, node);
+      try { event.preventDefault?.(); } catch {}
+      // Pass the original node through so bubbling preserves the clicked target
+      node.handleDblClicked(event, node);
     });
   }
   

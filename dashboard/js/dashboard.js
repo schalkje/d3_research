@@ -76,6 +76,21 @@ export class Dashboard {
     try { this.main.container.selectAll('.boundingBox').remove(); } catch {}
   }
 
+  // Compute a DOM-accurate bounding box for a single node and enforce a minimum
+  // on-screen size to avoid extreme zooming. Returns a bbox in parent coordinates.
+  computeSaneNodeBoundingBox(node) {
+    // Start from DOM-based bbox for accuracy
+    let bbox = computeBoundingBox(this, [node]);
+    const k = this.main.transform.k || 1;
+    const minPx = 80; // minimum visual size in pixels
+    const minWorld = minPx / k;
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+    const w = Math.max(bbox.width, minWorld);
+    const h = Math.max(bbox.height, minWorld);
+    return { x: cx - w / 2, y: cy - h / 2, width: w, height: h };
+  }
+
   getContentBBox() {
     if (!this.main?.root) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
     const nodes = this.main.root.getAllNodes(false);
@@ -671,6 +686,8 @@ export class Dashboard {
     const dashboard = this;
     const zoom = d3
       .zoom()
+  // Disable default double-click zoom; custom handlers manage dblclicks
+  .filter((event) => event?.type !== 'dblclick')
       .scaleExtent([0.1, 40])
       .wheelDelta(event => {
         return -event.deltaY * (event.deltaMode ? 120 : 1) * 0.002;
@@ -862,9 +879,6 @@ export class Dashboard {
     bbox = { x: cx - w / 2, y: cy - h / 2, width: w, height: h };
   }
   this.renderSelectionBoundingBox(bbox);
-  if (hasNoEdges) {
-    this.zoomToBoundingBox(bbox);
-  }
   }
 
   getSelectedNodes() {
@@ -923,16 +937,7 @@ export class Dashboard {
       ? neighbors.nodes.every(n => n === node)
       : true;
     if (onlySelf) {
-      // Derive node size and center; pad to a minimum pixel size to prevent extreme zooming
-      const minPx = 80; // minimum visual size
-      let w = node.data?.width || 60;
-      let h = node.data?.height || 60;
-      // Ensure minimum dimension for zoom stability
-      w = Math.max(w, (minPx / (this.main.transform.k || 1)));
-      h = Math.max(h, (minPx / (this.main.transform.k || 1)));
-      const x = (typeof node.x === 'number') ? node.x - w / 2 : -w / 2;
-      const y = (typeof node.y === 'number') ? node.y - h / 2 : -h / 2;
-      boundingBox = { x, y, width: w, height: h };
+      boundingBox = this.computeSaneNodeBoundingBox(node);
     }
 
     // Store neighborhood context for subsequent dblclick handling
@@ -987,14 +992,7 @@ export class Dashboard {
       ? neighbors.nodes.every(n => n === node)
       : true;
     if (onlySelf) {
-      let w = node.data?.width || 60;
-      let h = node.data?.height || 60;
-      const minPx = 80;
-      w = Math.max(w, (minPx / (this.main.transform.k || 1)));
-      h = Math.max(h, (minPx / (this.main.transform.k || 1)));
-      const x = (typeof node.x === 'number') ? node.x - w / 2 : -w / 2;
-      const y = (typeof node.y === 'number') ? node.y - h / 2 : -h / 2;
-      const bbox = { x, y, width: w, height: h };
+      const bbox = this.computeSaneNodeBoundingBox(node);
       this.deselectAll();
       node.selected = true;
       this.selection.neighborhood = { nodes: [node], edges: [], boundingBox: bbox };
@@ -1006,28 +1004,22 @@ export class Dashboard {
   }
 
   zoomToBoundingBox(boundingBox) {
-    const svgWidth = this.main.width;
-    const svgHeight = this.main.height;
+    const svgWidth = this.main.width || 1;
+    const svgHeight = this.main.height || 1;
 
     const scaleX = svgWidth / boundingBox.width;
     const scaleY = svgHeight / boundingBox.height;
-    const scale = Math.min(scaleX, scaleY);
+    const k = Math.min(scaleX, scaleY);
 
-    this.main.transform.x = (-boundingBox.width * scale) / 2 - boundingBox.x * scale;
-    this.main.transform.y = (-boundingBox.height * scale) / 2 - boundingBox.y * scale;
-    this.main.transform.k = scale;
+    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
+    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
+    const target = d3.zoomIdentity.translate(x, y).scale(k);
 
-    const transform = d3.zoomIdentity
-      .translate(this.main.transform.x, this.main.transform.y)
-      .scale(this.main.transform.k);
-    this.main.container.attr("transform", transform);
-
-    this.minimap.updateViewport(transform);
-
-    if (this.minimap.active)
-      this.minimap.svg.call(this.minimap.zoom.transform, transform);
-
-    this.isMainAndMinimapSyncing = false;
+    // Animate via the zoom behavior so internal state and minimap stay in sync
+    this.main.svg
+      .transition()
+      .duration(500)
+      .call(this.main.zoom.transform, target);
   }
 
   showLoading() {
