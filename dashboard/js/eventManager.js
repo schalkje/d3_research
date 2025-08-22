@@ -32,12 +32,14 @@ export class EventManager {
     
     element.on("click", (event) => {
       event.stopPropagation();
-      node.handleClicked(event);
+  // Pass the original node through so bubbling preserves the clicked target
+  node.handleClicked(event, node);
     });
     
     element.on("dblclick", (event) => {
       event.stopPropagation();
-      node.handleDblClicked(event);
+  // Pass the original node through so bubbling preserves the clicked target
+  node.handleDblClicked(event, node);
     });
   }
   
@@ -58,23 +60,25 @@ export class EventManager {
     }
   }
   
-  static handleNodeClick(node, event) {
+  static handleNodeClick(node, event, originalNode = node) {
+    // Always invoke handlers with the originally clicked node
     if (node.onClick) {
-      node.onClick(node);
+      node.onClick(originalNode);
     } else if (node.parentNode) {
-      node.parentNode.handleClicked(event, node);
+      this.handleNodeClick(node.parentNode, event, originalNode);
     } else {
-      console.warn(`No onClicked handler, node ${node.id} clicked!`);
+      console.warn(`No onClicked handler, node ${originalNode.id} clicked!`);
     }
   }
   
-  static handleNodeDblClick(node, event) {
+  static handleNodeDblClick(node, event, originalNode = node) {
+    // Always invoke handlers with the originally double-clicked node
     if (node.onDblClick) {
-      node.onDblClick(node);
+      node.onDblClick(originalNode);
     } else if (node.parentNode) {
-      node.parentNode.handleDblClicked(event, node);
+      this.handleNodeDblClick(node.parentNode, event, originalNode);
     } else {
-      console.warn(`No onDblClicked handler, node ${node.id} double-clicked!`);
+      console.warn(`No onDblClicked handler, node ${originalNode.id} double-clicked!`);
     }
   }
 } 

@@ -249,11 +249,13 @@ export default class BaseNode {
   }
   
   handleClicked(event, node = this) {
-    EventManager.handleNodeClick(this, event);
+    // Forward the originally clicked node so bubbling preserves the true target
+    EventManager.handleNodeClick(this, event, node);
   }
 
   handleDblClicked(event, node = this) {
-    EventManager.handleNodeDblClick(this, event);
+    // Forward the originally double-clicked node so bubbling preserves the true target
+    EventManager.handleNodeDblClick(this, event, node);
   }
 
    resize(size, forced = false) {
