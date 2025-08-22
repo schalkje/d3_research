@@ -57,6 +57,8 @@ export class Dashboard {
   // --- Selection bounding box helpers ---
   renderSelectionBoundingBox(bbox) {
     try {
+      // Respect settings: if disabled, just clear and return
+      if (!this.data?.settings?.showBoundingBox) { this.clearSelectionBoundingBox(); return; }
       this.main.container.selectAll('.boundingBox').remove();
       this.main.container
         .append('rect')
@@ -1176,6 +1178,27 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
   obj[properties[properties.length - 1]] = value;
 
   try {
+    // Handle immediate visual updates for non-minimap properties
+    if (propertyPath.endsWith('showBoundingBox') || propertyPath.includes('.showBoundingBox')) {
+      const dash = dashboardObject;
+      const show = !!value;
+      if (!show) {
+        dash.clearSelectionBoundingBox?.();
+      } else {
+        // Re-render bbox for current selection if present
+        const nb = dash.selection?.neighborhood;
+        if (nb?.boundingBox) {
+          dash.renderSelectionBoundingBox(nb.boundingBox);
+        } else if (typeof dash.getSelectedNodes === 'function') {
+          const sel = dash.getSelectedNodes();
+          if (sel && sel.length) {
+            const bbox = computeBoundingBox(dash, sel);
+            dash.renderSelectionBoundingBox(bbox);
+          }
+        }
+      }
+    }
+
     const isMinimapChange = propertyPath.includes('minimap');
     if (!isMinimapChange) return;
 
