@@ -54,6 +54,28 @@ export class Dashboard {
     this.hasPerformedInitialZoomToRoot = false;
   }
 
+  // --- Selection bounding box helpers ---
+  renderSelectionBoundingBox(bbox) {
+    try {
+      this.main.container.selectAll('.boundingBox').remove();
+      this.main.container
+        .append('rect')
+        .attr('class', 'boundingBox')
+        .attr('x', bbox.x)
+        .attr('y', bbox.y)
+        .attr('width', bbox.width)
+        .attr('height', bbox.height)
+        .attr('fill', 'none')
+        .attr('stroke', 'var(--fd-border, rgba(0,0,0,0.85))')
+        .attr('stroke-width', 2)
+        .attr('pointer-events', 'none');
+    } catch {}
+  }
+
+  clearSelectionBoundingBox() {
+    try { this.main.container.selectAll('.boundingBox').remove(); } catch {}
+  }
+
   getContentBBox() {
     if (!this.main?.root) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
     const nodes = this.main.root.getAllNodes(false);
@@ -106,7 +128,7 @@ export class Dashboard {
     this.main.root = this.createDashboard(this.data, this.main.container);
 
   this.main.root.onClick = (node) => this.selectNode(node);
-  this.main.root.onDblClick = (node) => this.handleNodeDblClick(node);
+  this.main.root.onDblClick = (node, event) => this.handleNodeDblClick(node, event);
     this.main.root.onDisplayChange = () => { this.onMainDisplayChange(); };
 
     if (this.main.zoom) {
@@ -164,7 +186,7 @@ export class Dashboard {
 
   this.main.zoom = this.initializeZoom();
   this.main.root.onClick = (node) => this.selectNode(node);
-  this.main.root.onDblClick = (node) => this.handleNodeDblClick(node);
+  this.main.root.onDblClick = (node, event) => this.handleNodeDblClick(node, event);
 
     this.minimap.initializeEmbedded();
 
@@ -825,6 +847,24 @@ export class Dashboard {
   node.selected = true;
   // Clear any previous neighborhood when manually selecting
   this.selection.neighborhood = null;
+  // Draw bounding box for the single selected node
+  let bbox = computeBoundingBox(this, [node]);
+  // If node has no incoming or outgoing edges, also zoom to a sane bbox
+  const hasNoEdges = (!node.edges || ((node.edges.incoming?.length || 0) === 0 && (node.edges.outgoing?.length || 0) === 0));
+  if (hasNoEdges) {
+    const k = this.main.transform.k || 1;
+    const minPx = 80; // minimum size on screen to avoid over-zooming
+    const minWorld = minPx / k;
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+    const w = Math.max(bbox.width, minWorld);
+    const h = Math.max(bbox.height, minWorld);
+    bbox = { x: cx - w / 2, y: cy - h / 2, width: w, height: h };
+  }
+  this.renderSelectionBoundingBox(bbox);
+  if (hasNoEdges) {
+    this.zoomToBoundingBox(bbox);
+  }
   }
 
   getSelectedNodes() {
@@ -865,6 +905,8 @@ export class Dashboard {
 
     // Clear neighborhood selection context
     this.selection.neighborhood = null;
+  // Remove any selection bounding box
+  this.clearSelectionBoundingBox();
   }
 
   
@@ -875,7 +917,23 @@ export class Dashboard {
     neighbors.nodes.forEach((node) => node.selected = true);
     neighbors.edges.forEach((edge) => edge.selected = true);
 
-    const boundingBox = computeBoundingBox(this, neighbors.nodes);
+    // If the node has no neighbors beyond itself, compute a sane bbox to avoid over-zoom
+    let boundingBox = computeBoundingBox(this, neighbors.nodes);
+    const onlySelf = neighbors && neighbors.nodes && neighbors.nodes.length > 0
+      ? neighbors.nodes.every(n => n === node)
+      : true;
+    if (onlySelf) {
+      // Derive node size and center; pad to a minimum pixel size to prevent extreme zooming
+      const minPx = 80; // minimum visual size
+      let w = node.data?.width || 60;
+      let h = node.data?.height || 60;
+      // Ensure minimum dimension for zoom stability
+      w = Math.max(w, (minPx / (this.main.transform.k || 1)));
+      h = Math.max(h, (minPx / (this.main.transform.k || 1)));
+      const x = (typeof node.x === 'number') ? node.x - w / 2 : -w / 2;
+      const y = (typeof node.y === 'number') ? node.y - h / 2 : -h / 2;
+      boundingBox = { x, y, width: w, height: h };
+    }
 
     // Store neighborhood context for subsequent dblclick handling
     this.selection.neighborhood = {
@@ -884,18 +942,8 @@ export class Dashboard {
       boundingBox
     };
 
-    if (this.data.settings.showBoundingBox) {
-      const borderWidth = 2;
-      this.main.container.selectAll(".boundingBox").remove();
-      this.main.container
-        .append("rect")
-        .attr("class", "boundingBox")
-        .attr("stroke-width", borderWidth)
-        .attr("x", boundingBox.x)
-        .attr("y", boundingBox.y)
-        .attr("width", boundingBox.width)
-        .attr("height", boundingBox.height);
-    }
+  // Always draw selection bounding box for neighborhood selection
+  this.renderSelectionBoundingBox(boundingBox);
 
     this.main.boundingbox = {
       boundingBox: boundingBox,
@@ -922,7 +970,7 @@ export class Dashboard {
       const insideByNode = nb.nodes && nb.nodes.indexOf(node) !== -1;
       let insideByPoint = false;
       try {
-        if (event && this.main.svg) {
+        if (event && this.main.container) {
           const [px, py] = d3.pointer(event, this.main.container.node());
           const b = nb.boundingBox;
           insideByPoint = px >= b.x && px <= b.x + b.width && py >= b.y && py <= b.y + b.height;
@@ -933,8 +981,28 @@ export class Dashboard {
         return;
       }
     }
-    // Default: zoom to the specific node
-    this.zoomToNode(node);
+    // Default: zoom to the specific node; if node has no neighbors, ensure a sane bbox
+    const neighbors = node.getNeighbors(this.data.settings.selector);
+    const onlySelf = neighbors && neighbors.nodes && neighbors.nodes.length > 0
+      ? neighbors.nodes.every(n => n === node)
+      : true;
+    if (onlySelf) {
+      let w = node.data?.width || 60;
+      let h = node.data?.height || 60;
+      const minPx = 80;
+      w = Math.max(w, (minPx / (this.main.transform.k || 1)));
+      h = Math.max(h, (minPx / (this.main.transform.k || 1)));
+      const x = (typeof node.x === 'number') ? node.x - w / 2 : -w / 2;
+      const y = (typeof node.y === 'number') ? node.y - h / 2 : -h / 2;
+      const bbox = { x, y, width: w, height: h };
+      this.deselectAll();
+      node.selected = true;
+      this.selection.neighborhood = { nodes: [node], edges: [], boundingBox: bbox };
+  this.renderSelectionBoundingBox(bbox);
+      this.zoomToBoundingBox(bbox);
+    } else {
+      this.zoomToNode(node);
+    }
   }
 
   zoomToBoundingBox(boundingBox) {

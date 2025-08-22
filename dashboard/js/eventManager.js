@@ -74,7 +74,7 @@ export class EventManager {
   static handleNodeDblClick(node, event, originalNode = node) {
     // Always invoke handlers with the originally double-clicked node
     if (node.onDblClick) {
-      node.onDblClick(originalNode);
+      node.onDblClick(originalNode, event);
     } else if (node.parentNode) {
       this.handleNodeDblClick(node.parentNode, event, originalNode);
     } else {
