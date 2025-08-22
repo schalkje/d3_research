@@ -72,7 +72,7 @@ svg.canvas { border: 2px solid var(--fd-border); border-radius: var(--fd-radius)
 .header-background { fill: #ffffff !important; stroke: var(--fd-border) !important; }
 .header-text { fill: var(--fd-text) !important; }
 text, .rect.label { fill: var(--fd-text) !important; }
-.label { font-size: 12px; font-weight: normal; fill: var(--fd-accent) !important; opacity: 1; text-anchor: start; dominant-baseline: hanging; }
+.label { font-size: 12px; font-weight: normal; fill: var(--fd-accent) !important; opacity: 1; }
 .Node.label { stroke: none; font-size: 14px; font-weight: bold; fill: var(--fd-text) !important; opacity: 1; text-anchor: middle; dominant-baseline: middle; }
 .edge .path { stroke: var(--fd-edge) !important; }
 

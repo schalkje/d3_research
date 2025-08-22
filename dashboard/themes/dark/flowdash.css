@@ -74,6 +74,11 @@ text, .label, .rect.label { fill: var(--fd-text); }
   stroke: #d4b100;
 }
 
+.rect[status="Skipped"] text {
+  fill: #292929d6 !important;
+}
+
+
 /* Delayed — vivid orange */
 .shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
   fill: #ff9c3a;
@@ -85,7 +90,6 @@ text, .label, .rect.label { fill: var(--fd-text); }
   fill: #ff6b4d;
   stroke: #ffb454;
 }
-
 /* Error — vivid danger red */
 .shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
   fill: #ff3b4e;
