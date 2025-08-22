@@ -1,0 +1,44 @@
+{
+    "demoName": "02_collapsed-mode",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Collapsed Rendering",
+            "description": "Test that collapsed lane node renders correctly with hidden children",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 4,
+                "nodeTypes": ["lane", "rect"],
+                "laneVisible": true,
+                "childrenHidden": true
+            }
+        },
+        {
+            "name": "Data Structure",
+            "description": "Test data structure integrity with collapsed state",
+            "type": "structural",
+            "expected": {
+                "hasMetadata": true,
+                "hasSettings": true,
+                "hasNodes": true,
+                "hasLaneNode": true,
+                "hasChildNodes": true,
+                "collapsedState": true
+            }
+        },
+        {
+            "name": "Collapse Functionality",
+            "description": "Test that lane collapse functionality works correctly",
+            "type": "functional",
+            "expected": {
+                "collapsed": true,
+                "childrenInvisible": true,
+                "laneVisible": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

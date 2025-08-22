@@ -1,0 +1,126 @@
+{
+  "testSuite": {
+    "name": "Full Arrangement 3 - Explicit Children",
+    "version": "1.0.0",
+    "description": "Test cases for adapter node with full mode arrangement 3 (staging-focused) and explicit children"
+  },
+  "testCases": [
+    {
+      "id": "arrangement-3-layout",
+      "name": "Arrangement 3 Layout",
+      "description": "Verify layout is configured for arrangement 3",
+      "expected": {
+        "mode": "full",
+        "arrangement": 3,
+        "displayMode": "full"
+      }
+    },
+    {
+      "id": "staging-focus",
+      "name": "Staging-Focused Configuration", 
+      "description": "Verify staging node has primary focus",
+      "expected": {
+        "stagingState": "Ingesting",
+        "stagingVolume": "high",
+        "stagingPriority": "primary"
+      }
+    },
+    {
+      "id": "fan-out-flow",
+      "name": "Fan-out Data Flow",
+      "description": "Verify data flows from staging to both archive and transform",
+      "expected": {
+        "stagingToArchive": true,
+        "stagingToTransform": true,
+        "fanOutPattern": true
+      }
+    },
+    {
+      "id": "explicit-children",
+      "name": "Explicit Children Validation",
+      "description": "Verify adapter has exactly 3 explicitly defined children",
+      "expected": {
+        "childrenCount": 3,
+        "hasStaging": true,
+        "hasArchive": true,
+        "hasTransform": true
+      }
+    },
+    {
+      "id": "staging-states",
+      "name": "Staging-Specific States",
+      "description": "Verify children have staging-focused states",
+      "expected": {
+        "stagingState": "Ingesting",
+        "archiveState": "Storing", 
+        "transformState": "Cleaning"
+      }
+    },
+    {
+      "id": "high-volume-features",
+      "name": "High Volume Features",
+      "description": "Verify staging includes high-volume capabilities",
+      "expected": {
+        "hasVolumeAttribute": true,
+        "supportHighVolume": true,
+        "hasIngestionDescription": true
+      }
+    },
+    {
+      "id": "priority-routing",
+      "name": "Priority-Based Routing",
+      "description": "Verify edges have priority attributes for staging flow",
+      "expected": {
+        "edgesHavePriority": true,
+        "stagingEdgesHighPriority": true
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "standard-staging",
+      "name": "Standard Staging Operations",
+      "description": "Test with normal staging volume",
+      "data": "demoData"
+    },
+    {
+      "id": "high-volume-staging", 
+      "name": "High Volume Staging",
+      "description": "Test with high-volume data ingestion",
+      "data": "demoDataWithHighVolume"
+    }
+  ],
+  "visualTests": [
+    {
+      "id": "staging-prominence",
+      "name": "Staging Node Prominence",
+      "description": "Verify staging node has enhanced visual treatment",
+      "checks": [
+        "enhanced-border",
+        "larger-size",
+        "ingesting-animation",
+        "volume-glow-effect"
+      ]
+    },
+    {
+      "id": "fan-out-visualization",
+      "name": "Fan-out Flow Visualization",
+      "description": "Verify visual representation of fan-out pattern",
+      "checks": [
+        "staging-to-archive-edge",
+        "staging-to-transform-edge",
+        "branching-pattern"
+      ]
+    },
+    {
+      "id": "volume-indicators",
+      "name": "Volume Indicator Styling",
+      "description": "Verify volume-aware visual indicators",
+      "checks": [
+        "high-volume-glow",
+        "very-high-volume-emphasis",
+        "volume-scaling"
+      ]
+    }
+  ]
+}

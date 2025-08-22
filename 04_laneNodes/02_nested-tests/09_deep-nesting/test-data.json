@@ -1,0 +1,50 @@
+{
+    "demoName": "09_deep-nesting",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Deep Nesting Rendering",
+            "description": "Test that deep nested lane structure with 3 levels renders correctly",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 10,
+                "nodeTypes": ["lane", "rect"],
+                "level1Visible": true,
+                "level2Visible": true,
+                "level3Visible": true,
+                "childElementsVisible": true
+            }
+        },
+        {
+            "name": "Deep Hierarchy Structure",
+            "description": "Test that deep nested hierarchy is properly structured",
+            "type": "structural",
+            "expected": {
+                "hasMetadata": true,
+                "hasSettings": true,
+                "hasNodes": true,
+                "hasLevel1Lane": true,
+                "hasLevel2Lanes": true,
+                "hasLevel3Lanes": true,
+                "hasChildElements": true,
+                "properDeepHierarchy": true
+            }
+        },
+        {
+            "name": "Deep Layout Management",
+            "description": "Test that deep nesting maintains proper layout and spacing",
+            "type": "layout",
+            "expected": {
+                "verticalStacking": true,
+                "horizontalCentering": true,
+                "properSpacing": true,
+                "deepNestedAlignment": true,
+                "hierarchyIndentation": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "demoName": "basic",
+    "nodeType": "mart",
+    "testCases": [
+        {
+            "name": "Basic Rendering",
+            "description": "Test that mart renders correctly",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 1,
+                "nodeTypes": ["mart"],
+                "visible": true
+            }
+        },
+        {
+            "name": "Data Structure",
+            "description": "Test data structure integrity",
+            "type": "structural",
+            "expected": {
+                "hasMetadata": true,
+                "hasSettings": true,
+                "hasNodes": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

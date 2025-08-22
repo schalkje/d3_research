@@ -1,0 +1,41 @@
+{
+    "demoName": "04_fixed-size-labels",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Fixed-Size Rendering",
+            "description": "Test that fixed-size nodes render correctly with dynamic labels",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 4,
+                "nodeTypes": ["lane", "rect"],
+                "fixedSizeEnabled": true,
+                "dynamicLabels": true
+            }
+        },
+        {
+            "name": "Label Toggle Functionality",
+            "description": "Test that label toggle button changes node labels without size change",
+            "type": "functional",
+            "expected": {
+                "toggleButtonExists": true,
+                "labelChanges": true,
+                "sizeRemainsFixed": true
+            }
+        },
+        {
+            "name": "Fixed-Size Behavior",
+            "description": "Test that nodes maintain fixed size regardless of label length",
+            "type": "layout",
+            "expected": {
+                "fixedSizing": true,
+                "labelTruncation": true,
+                "consistentSpacing": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

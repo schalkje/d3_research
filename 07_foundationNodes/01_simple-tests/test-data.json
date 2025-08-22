@@ -1,0 +1,20 @@
+{
+	"tests": [
+		{
+			"id": "render-basic",
+			"description": "Foundation node renders",
+			"expect": {
+				"nodesMin": 1
+			}
+		},
+		{
+			"id": "has-internal-edge",
+			"description": "Internal edge between raw and base exists in full mode",
+			"onlyFor": "01_full-mode",
+			"expect": {
+				"edgesMin": 1
+			}
+		}
+	]
+}
+

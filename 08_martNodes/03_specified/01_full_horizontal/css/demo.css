@@ -1,0 +1,121 @@
+/* Demo-specific styling for MartNode Full Horizontal */
+
+.demo-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* MartNode specific styling */
+.node[data-type="mart"] {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Child node state indicators for mart nodes */
+.node[data-state="Loading"] .node-body {
+    border-left: 4px solid #4CAF50;
+    animation: loading 2s infinite;
+}
+
+.node[data-state="Generating"] .node-body {
+    border-left: 4px solid #2196F3;
+    animation: generating 1.5s infinite;
+}
+
+.node[data-state="Loaded"] .node-body {
+    border-left: 4px solid #8BC34A;
+}
+
+.node[data-state="Published"] .node-body {
+    border-left: 4px solid #FF9800;
+}
+
+.node[data-state="High-Volume-Loading"] .node-body {
+    border-left: 4px solid #F44336;
+    animation: highVolumeLoad 1s infinite;
+}
+
+.node[data-state="Auto-Generating"] .node-body {
+    border-left: 4px solid #9C27B0;
+    animation: autoGen 0.8s infinite;
+}
+
+/* Role-based styling for mart children */
+.node[data-role="load"] {
+    background-color: #E8F5E8;
+    border: 1px solid #4CAF50;
+}
+
+.node[data-role="report"] {
+    background-color: #E3F2FD;
+    border: 1px solid #2196F3;
+}
+
+/* Volume indicators */
+.node[data-volume="medium"] {
+    min-width: 120px;
+}
+
+.node[data-volume="high"] {
+    min-width: 140px;
+    box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);
+}
+
+/* Format indicators */
+.node[data-format="dashboard"] .node-body::after {
+    content: "📊";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+.node[data-format="real-time-dashboard"] .node-body::after {
+    content: "📊⚡";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+/* Horizontal orientation specific styles */
+.node[data-orientation="horizontal"] {
+    flex-direction: row;
+}
+
+/* Animations */
+@keyframes loading {
+    0% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    100% { transform: translateX(-2px); }
+}
+
+@keyframes generating {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes highVolumeLoad {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes autoGen {
+    0% { background-color: #E3F2FD; }
+    50% { background-color: #BBDEFB; }
+    100% { background-color: #E3F2FD; }
+}
+
+/* Test status indicators */
+.test-pass {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.test-fail {
+    color: #F44336;
+    font-weight: bold;
+}

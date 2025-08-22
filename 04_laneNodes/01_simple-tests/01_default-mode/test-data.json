@@ -1,0 +1,43 @@
+{
+    "demoName": "01_default-mode",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Basic Rendering",
+            "description": "Test that lane node renders correctly with 3 child rectangles",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 4,
+                "nodeTypes": ["lane", "rect"],
+                "visible": true,
+                "childCount": 3
+            }
+        },
+        {
+            "name": "Data Structure",
+            "description": "Test data structure integrity",
+            "type": "structural",
+            "expected": {
+                "hasMetadata": true,
+                "hasSettings": true,
+                "hasNodes": true,
+                "hasLaneNode": true,
+                "hasChildNodes": true
+            }
+        },
+        {
+            "name": "Lane Layout",
+            "description": "Test that lane arranges children vertically with horizontal centering",
+            "type": "layout",
+            "expected": {
+                "verticalStacking": true,
+                "horizontalCentering": true,
+                "properSpacing": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

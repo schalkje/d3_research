@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adapter Node Layout Combinations - Navigation</title>
+    
+    <!-- Standard CSS -->
+    <link rel="stylesheet" href="../dashboard/flowdash.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .intro {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .layout-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+            transition: box-shadow 0.2s ease;
+        }
+        
+        .layout-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .layout-card h3 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        
+        .layout-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .layout-card a {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .layout-card a:hover {
+            background: #0056b3;
+        }
+        
+        .section-title {
+            color: #333;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+            margin: 30px 0 20px 0;
+        }
+        
+        .feature-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+            color: #555;
+        }
+        
+        .mode-full { border-left: 4px solid #28a745; }
+        .mode-staging-archive { border-left: 4px solid #ffc107; }
+        .mode-staging-transform { border-left: 4px solid #fd7e14; }
+        .mode-archive-only { border-left: 4px solid #6f42c1; }
+        .mode-role { border-left: 4px solid #20c997; }
+        
+        .comparison-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .quick-links {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+        
+        .quick-links h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        
+        .quick-links a {
+            color: #856404;
+            text-decoration: none;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>window.FLOWDASH_THEME = { default: 'light' };</script>
+    <script src="../dashboard/js/themeManager.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Adapter Node Layout Combinations</h1>
+        
+        <div class="intro">
+            <h3>📋 Complete Layout Testing Suite</h3>
+            <p>This page provides access to individual test pages for every possible adapter node layout combination. Each page demonstrates a specific mode and arrangement, allowing for detailed testing and validation.</p>
+        </div>
+        
+        <div class="quick-links">
+            <h4>🚀 Quick Access</h4>
+            <a href="01_single/01_single.html">01 - Original Single</a>
+            <a href="02_layouts_full/02_layouts_full.html">Multiple Layouts</a>
+            <a href="#full-mode">Full Mode Layouts</a>
+            <a href="#specialized-modes">Specialized Modes</a>
+            <a href="#role-display">Role Display</a>
+        </div>
+        
+        <!-- Full Mode Layouts Section -->
+        <h2 id="full-mode" class="section-title">Full Mode Layouts (3 Child Nodes)</h2>
+        <div class="layout-grid">
+            <div class="layout-card mode-full">
+                <h3>Full Mode - Arrangement 1</h3>
+                <p><strong>Focus:</strong> Archive-focused layout</p>
+                <p><strong>Description:</strong> Staging bottom-left, archive top-right, transform bottom-right</p>
+                <div>
+                    <span class="feature-tag">Archive-focused</span>
+                    <span class="feature-tag">Full display</span>
+                    <span class="feature-tag">Arrangement 1</span>
+                </div>
+                <a href="01_single/02_full_arr1/02_full_arr1.html">02 - Full Arr1</a>
+            </div>
+            
+            <div class="layout-card mode-full">
+                <h3>Full Mode - Arrangement 2</h3>
+                <p><strong>Focus:</strong> Transform-focused layout</p>
+                <p><strong>Description:</strong> Staging/archive top row, transform bottom spanning</p>
+                <div>
+                    <span class="feature-tag">Transform-focused</span>
+                    <span class="feature-tag">Full display</span>
+                    <span class="feature-tag">Arrangement 2</span>
+                </div>
+                <a href="01_single/03_full_arr2/03_full_arr2.html">03 - Full Arr2</a>
+            </div>
+            
+            <div class="layout-card mode-full">
+                <h3>Full Mode - Arrangement 3</h3>
+                <p><strong>Focus:</strong> Staging-focused layout</p>
+                <p><strong>Description:</strong> Staging left spanning, archive/transform stacked right</p>
+                <div>
+                    <span class="feature-tag">Staging-focused</span>
+                    <span class="feature-tag">Full display</span>
+                    <span class="feature-tag">Arrangement 3</span>
+                </div>
+                <a href="01_single/04_full_arr3/04_full_arr3.html">04 - Full Arr3</a>
+            </div>
+        </div>
+        
+        <!-- Specialized Modes Section -->
+        <h2 id="specialized-modes" class="section-title">Specialized Modes (Reduced Child Nodes)</h2>
+        <div class="layout-grid">
+            <div class="layout-card mode-staging-archive">
+                <h3>Staging-Archive Mode</h3>
+                <p><strong>Nodes:</strong> Staging + Archive only</p>
+                <p><strong>Description:</strong> Two-node horizontal layout for staging and archive operations</p>
+                <div>
+                    <span class="feature-tag">Two-node</span>
+                    <span class="feature-tag">Staging + Archive</span>
+                    <span class="feature-tag">Arrangement 4</span>
+                </div>
+                <a href="01_single/05_staging_archive/05_staging_archive.html">05 - Staging Archive</a>
+            </div>
+            
+            <div class="layout-card mode-staging-transform">
+                <h3>Staging-Transform Mode</h3>
+                <p><strong>Nodes:</strong> Staging + Transform only</p>
+                <p><strong>Description:</strong> Two-node horizontal layout for staging and transform operations</p>
+                <div>
+                    <span class="feature-tag">Two-node</span>
+                    <span class="feature-tag">Staging + Transform</span>
+                    <span class="feature-tag">Arrangement 4</span>
+                </div>
+                <a href="01_single/06_staging_transform/06_staging_transform.html">06 - Staging Transform</a>
+            </div>
+            
+            <div class="layout-card mode-archive-only">
+                <h3>Archive-Only Mode</h3>
+                <p><strong>Nodes:</strong> Archive only</p>
+                <p><strong>Description:</strong> Single node centered layout for archive-only operations</p>
+                <div>
+                    <span class="feature-tag">Single-node</span>
+                    <span class="feature-tag">Archive only</span>
+                    <span class="feature-tag">Arrangement 5</span>
+                </div>
+                <a href="01_single/07_archive_only/07_archive_only.html">07 - Archive Only</a>
+            </div>
+        </div>
+        
+        <!-- Role Display Mode Section -->
+        <h2 id="role-display" class="section-title">Role Display Mode Variations</h2>
+        <div class="layout-grid">
+            <div class="layout-card mode-role">
+                <h3>Role Display - Arrangement 1</h3>
+                <p><strong>Display:</strong> Role-based text display</p>
+                <p><strong>Layout:</strong> Archive-focused with role names</p>
+                <div>
+                    <span class="feature-tag">Role display</span>
+                    <span class="feature-tag">Archive-focused</span>
+                    <span class="feature-tag">Arrangement 1</span>
+                </div>
+                <a href="01_single/08_role_arr1/08_role_arr1.html">08 - Role Arr1</a>
+            </div>
+            
+            <div class="layout-card mode-role">
+                <h3>Role Display - Arrangement 2</h3>
+                <p><strong>Display:</strong> Role-based text display</p>
+                <p><strong>Layout:</strong> Transform-focused with role names</p>
+                <div>
+                    <span class="feature-tag">Role display</span>
+                    <span class="feature-tag">Transform-focused</span>
+                    <span class="feature-tag">Arrangement 2</span>
+                </div>
+                <a href="01_single/09_role_arr2/09_role_arr2.html">09 - Role Arr2</a>
+            </div>
+            
+            <div class="layout-card mode-role">
+                <h3>Role Display - Arrangement 3</h3>
+                <p><strong>Display:</strong> Role-based text display</p>
+                <p><strong>Layout:</strong> Staging-focused with role names</p>
+                <div>
+                    <span class="feature-tag">Role display</span>
+                    <span class="feature-tag">Staging-focused</span>
+                    <span class="feature-tag">Arrangement 3</span>
+                </div>
+                <a href="01_single/10_role_arr3/10_role_arr3.html">10 - Role Arr3</a>
+            </div>
+        </div>
+        
+        <!-- Comparison and Summary -->
+        <div class="comparison-section">
+            <h3>📊 Layout Comparison Summary</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Layout Type</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Mode</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Arrangement</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Child Nodes</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Display Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Full Arrangement 1</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">1</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, archive, transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Full Arrangement 2</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">2</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, archive, transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Full Arrangement 3</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">3</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, archive, transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Staging-Archive</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging-archive</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">4</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, archive</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Staging-Transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging-transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">4</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Archive-Only</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">archive-only</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">5</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">archive</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Role Arrangement 1-3</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">full</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">1, 2, 3</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">staging, archive, transform</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">role</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center; color: #666; font-size: 14px;">
+            <p>📝 <strong>Note:</strong> Each demo page includes interactive testing capabilities and detailed layout validation.</p>
+            <p>🔍 Use these individual pages to test specific layout combinations in isolation.</p>
+        </div>
+    </div>
+</body>
+</html>

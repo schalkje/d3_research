@@ -1,0 +1,47 @@
+{
+    "demoName": "07_nested-lanes",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Nested Lane Rendering",
+            "description": "Test that nested lane structure renders correctly with proper hierarchy",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 7,
+                "nodeTypes": ["lane", "rect"],
+                "mainLaneVisible": true,
+                "subLanesVisible": true,
+                "childElementsVisible": true
+            }
+        },
+        {
+            "name": "Hierarchy Structure",
+            "description": "Test that nested lane hierarchy is properly structured",
+            "type": "structural",
+            "expected": {
+                "hasMetadata": true,
+                "hasSettings": true,
+                "hasNodes": true,
+                "hasMainLane": true,
+                "hasSubLanes": true,
+                "hasChildElements": true,
+                "properHierarchy": true
+            }
+        },
+        {
+            "name": "Nested Layout",
+            "description": "Test that nested lanes maintain proper layout and spacing",
+            "type": "layout",
+            "expected": {
+                "verticalStacking": true,
+                "horizontalCentering": true,
+                "properSpacing": true,
+                "nestedAlignment": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

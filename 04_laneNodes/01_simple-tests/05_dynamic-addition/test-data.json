@@ -1,0 +1,40 @@
+{
+    "demoName": "05_dynamic-addition",
+    "nodeType": "lane",
+    "testCases": [
+        {
+            "name": "Initial Rendering",
+            "description": "Test that lane node renders correctly with initial single child",
+            "type": "visual",
+            "expected": {
+                "nodeCount": 2,
+                "nodeTypes": ["lane", "rect"],
+                "childCount": 1
+            }
+        },
+        {
+            "name": "Add Node Functionality",
+            "description": "Test that add node button adds new child nodes",
+            "type": "functional",
+            "expected": {
+                "addButtonExists": true,
+                "nodeAddition": true,
+                "layoutUpdate": true
+            }
+        },
+        {
+            "name": "Dynamic Layout",
+            "description": "Test that layout adjusts when new nodes are added",
+            "type": "layout",
+            "expected": {
+                "verticalStacking": true,
+                "properSpacing": true,
+                "horizontalCentering": true
+            }
+        }
+    ],
+    "performance": {
+        "maxRenderTime": 1000,
+        "maxMemoryUsage": 50
+    }
+}

@@ -1,0 +1,95 @@
+:root, [data-theme="neumorphism"] {
+  --fd-bg: #e6e9ef;
+  --fd-surface: #eef1f7;
+  --fd-text: #2d3142;
+  --fd-muted: #6b7280;
+  --fd-accent: #6b9cff;
+  --fd-border: #d1d5db;
+  --fd-edge: #8892a6;
+}
+
+body { background: var(--fd-bg); color: var(--fd-text); font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+
+/* soft elevated canvases */
+#graph { background-color: var(--fd-surface); border: none; box-shadow: 10px 10px 20px #c8ccd4, -10px -10px 20px #ffffff; border-radius: 16px; }
+.minimap-svg { background-color: rgba(255,255,255,0.6); border: none; box-shadow: inset 6px 6px 12px #d0d4dc, inset -6px -6px 12px #ffffff; border-radius: 12px; }
+svg.canvas { border: none; box-shadow: 12px 12px 24px #c8ccd4, -12px -12px 24px #ffffff; border-radius: 16px; }
+
+.shape, .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface); stroke: #dfe3ea; stroke-width: 1.5px; filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9)); rx: 12; ry: 12; transition: transform 160ms ease-out, filter 160ms ease-out, stroke-width 160ms ease-out; }
+.shape:hover, .rect.shape:hover, .container-shape:hover { filter: drop-shadow(10px 10px 20px rgba(0,0,0,.14)) drop-shadow(-10px -10px 20px rgba(255,255,255,.95)); }
+.container-shape.selected, .rect.shape.selected { filter: drop-shadow(12px 12px 24px rgba(0,0,0,.18)) drop-shadow(-12px -12px 24px rgba(255,255,255,.98)); }
+.header-background { fill: var(--fd-surface); stroke: #e5e9f0; }
+.header-text { fill: var(--fd-text); font-weight: 600; }
+
+text, .label, .rect.label { fill: var(--fd-text); }
+.edge .path { stroke: var(--fd-edge); stroke-width: 2.25px; }
+
+.zoom-button:hover circle { fill: #f6f8fc; stroke: #d7dce5; }
+.zoom-icon { fill: var(--fd-text); }
+
+/* Minimap overlays: eye soft, iris subtle raised outline */
+.minimap-svg .eye { fill: var(--fd-bg) !important; fill-opacity: 0.6; filter: blur(8px); -webkit-filter: blur(8px); }
+.minimap-svg .iris {
+  fill: none !important;
+  stroke: #b8c0cc !important;
+  stroke-width: 6px !important;
+  filter: drop-shadow(3px 3px 6px rgba(0,0,0,.10)) drop-shadow(-3px -3px 6px rgba(255,255,255,.7));
+}
+
+
+/* status colors: clearer separation with soft, neomorphic tints */
+.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
+  fill: #eef2f7; /* cool gray */
+  stroke: #d5dbe5;
+}
+.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
+  fill: #e3f0ff; /* gentle blue */
+  stroke: #bad7ff;
+}
+.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
+  fill: #ddf8eb; /* soothing green */
+  stroke: #9fe9c9;
+}
+.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
+  fill: #f6f2de; /* pale sand */
+  stroke: #eadb9c;
+}
+.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
+  fill: #ffe7c2; /* deeper amber */
+  stroke: #ffcc87;
+}
+.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
+  fill: #ffeab0; /* brighter warning */
+  stroke: #ffd06b;
+}
+.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
+  fill: #ffd4d9; /* stronger red tint */
+  stroke: #ff5a6b; /* more assertive stroke */
+  stroke-width: 2.75px;
+}
+
+/* Updating: warm tint with soft pulse and slight lift — keeps neomorphic feel */
+@keyframes neumo-update-pulse {
+  0%, 100% {
+    fill: #ffe4b8; /* base warm */
+    stroke-width: 2.25px;
+    filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9));
+    transform: scale(1);
+  }
+  50% {
+    fill: #ffdca0; /* slightly richer */
+    stroke-width: 3px;
+    filter: drop-shadow(9px 9px 18px rgba(0,0,0,.14)) drop-shadow(-9px -9px 18px rgba(255,255,255,.95));
+    transform: scale(1.012);
+  }
+}
+.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+  fill: #ffe4b8;
+  stroke: #ffbf4d;
+  stroke-width: 2.25px;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: neumo-update-pulse 1.2s ease-in-out infinite;
+}
+
+
