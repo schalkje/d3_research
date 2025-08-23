@@ -19,6 +19,8 @@ The **dashboard** folder contains the production-ready FlowDash application:
 
 **Quick Start**: Open `dashboard/flowdash-bundle.html` in your browser to see the dashboard in action.
 
+![FlowDash demo flow](./dashboard/documentation/flowdash-flow.png)
+
 ---
 
 ## 📚 Documentation Structure
@@ -27,6 +29,9 @@ The **dashboard** folder contains the production-ready FlowDash application:
 - **`dashboard/readme.md`** - Dashboard overview and quick start
 - **`dashboard/documentation/`** - Comprehensive implementation guides
 - **`dashboard/implementation-*.md`** - Technical implementation details
+
+### Visual Themes
+- **[`dashboard/themes/themes.md`](dashboard/themes/themes.md)** - Collection of FlowDash dashboard themes and usage guide
 
 ### Learning & Examples
 - **`d3_basics/`** - Introductory D3.js examples and learning modules

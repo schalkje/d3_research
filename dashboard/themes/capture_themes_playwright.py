@@ -15,7 +15,7 @@ class ThemeScreenshotCapture:
         self.dashboard_url = dashboard_url
         self.themes = [
             "light", "dark", "brutalism", "cyberpunk", 
-            "flat", "glassmorphism", "neumorphism", "retro", "alt"
+            "flat", "glassmorphism", "neumorphism", "retro"
         ]
         self.output_dir = "."  # Current directory since we're running from themes folder
     
@@ -194,7 +194,7 @@ async def main():
         return
     
     # Create theme directories if they don't exist
-    themes = ["light", "dark", "brutalism", "cyberpunk", "flat", "glassmorphism", "neumorphism", "retro", "alt"]
+    themes = ["light", "dark", "brutalism", "cyberpunk", "flat", "glassmorphism", "neumorphism", "retro"]
     for theme in themes:
         theme_dir = os.path.join(base_dir, theme)
         if not os.path.exists(theme_dir):

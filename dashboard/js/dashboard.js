@@ -46,12 +46,51 @@ export class Dashboard {
     this.selection = {
       nodes: [],
       edges: [],
-      boundingBox: { x: 0, y: 0, width: 0, height: 0 },
+      neighborhood: null, // { nodes, edges, boundingBox }
     };
 
     this.isMainAndMinimapSyncing = false;
     this._displayChangeScheduled = false;
     this.hasPerformedInitialZoomToRoot = false;
+  }
+
+  // --- Selection bounding box helpers ---
+  renderSelectionBoundingBox(bbox) {
+    try {
+      // Respect settings: if disabled, just clear and return
+      if (!this.data?.settings?.showBoundingBox) { this.clearSelectionBoundingBox(); return; }
+      this.main.container.selectAll('.boundingBox').remove();
+      this.main.container
+        .append('rect')
+        .attr('class', 'boundingBox')
+        .attr('x', bbox.x)
+        .attr('y', bbox.y)
+        .attr('width', bbox.width)
+        .attr('height', bbox.height)
+        .attr('fill', 'none')
+        .attr('stroke', 'var(--fd-border, rgba(0,0,0,0.85))')
+        .attr('stroke-width', 2)
+        .attr('pointer-events', 'none');
+    } catch {}
+  }
+
+  clearSelectionBoundingBox() {
+    try { this.main.container.selectAll('.boundingBox').remove(); } catch {}
+  }
+
+  // Compute a DOM-accurate bounding box for a single node and enforce a minimum
+  // on-screen size to avoid extreme zooming. Returns a bbox in parent coordinates.
+  computeSaneNodeBoundingBox(node) {
+    // Start from DOM-based bbox for accuracy
+    let bbox = computeBoundingBox(this, [node]);
+    const k = this.main.transform.k || 1;
+    const minPx = 80; // minimum visual size in pixels
+    const minWorld = minPx / k;
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+    const w = Math.max(bbox.width, minWorld);
+    const h = Math.max(bbox.height, minWorld);
+    return { x: cx - w / 2, y: cy - h / 2, width: w, height: h };
   }
 
   getContentBBox() {
@@ -105,8 +144,8 @@ export class Dashboard {
     this.main.container = this.createContainer(this.main, "dashboard");
     this.main.root = this.createDashboard(this.data, this.main.container);
 
-    this.main.root.onClick = (node) => this.selectNode(node);
-    this.main.root.onDblClick = (node) => this.zoomToNode(node);
+  this.main.root.onClick = (node) => this.selectNode(node);
+  this.main.root.onDblClick = (node, event) => this.handleNodeDblClick(node, event);
     this.main.root.onDisplayChange = () => { this.onMainDisplayChange(); };
 
     if (this.main.zoom) {
@@ -160,11 +199,11 @@ export class Dashboard {
       this.onMainDisplayChange();
     };
     
-    this.main.root =  this.createDashboard(this.data, this.main.container, tempDisplayChangeCallback);
+  this.main.root =  this.createDashboard(this.data, this.main.container, tempDisplayChangeCallback);
 
-    this.main.zoom = this.initializeZoom();
-    this.main.root.onClick = (node) => this.selectNode(node);
-    this.main.root.onDblClick = (node) => this.zoomToNode(node);
+  this.main.zoom = this.initializeZoom();
+  this.main.root.onClick = (node) => this.selectNode(node);
+  this.main.root.onDblClick = (node, event) => this.handleNodeDblClick(node, event);
 
     this.minimap.initializeEmbedded();
 
@@ -649,6 +688,8 @@ export class Dashboard {
     const dashboard = this;
     const zoom = d3
       .zoom()
+  // Disable default double-click zoom; custom handlers manage dblclicks
+  .filter((event) => event?.type !== 'dblclick')
       .scaleExtent([0.1, 40])
       .wheelDelta(event => {
         return -event.deltaY * (event.deltaMode ? 120 : 1) * 0.002;
@@ -820,9 +861,26 @@ export class Dashboard {
   }
 
   selectNode(node) {
-    
-    node.selected = !node.selected;
-
+  // Exclusive single selection: clear previous and select only this node
+  this.deselectAll();
+  node.selected = true;
+  // Clear any previous neighborhood when manually selecting
+  this.selection.neighborhood = null;
+  // Draw bounding box for the single selected node
+  let bbox = computeBoundingBox(this, [node]);
+  // If node has no incoming or outgoing edges, also zoom to a sane bbox
+  const hasNoEdges = (!node.edges || ((node.edges.incoming?.length || 0) === 0 && (node.edges.outgoing?.length || 0) === 0));
+  if (hasNoEdges) {
+    const k = this.main.transform.k || 1;
+    const minPx = 80; // minimum size on screen to avoid over-zooming
+    const minWorld = minPx / k;
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+    const w = Math.max(bbox.width, minWorld);
+    const h = Math.max(bbox.height, minWorld);
+    bbox = { x: cx - w / 2, y: cy - h / 2, width: w, height: h };
+  }
+  this.renderSelectionBoundingBox(bbox);
   }
 
   getSelectedNodes() {
@@ -861,6 +919,10 @@ export class Dashboard {
     this.main.root.getAllEdges(true, edges);
     edges.forEach((edge) => edge.selected = false);
 
+    // Clear neighborhood selection context
+    this.selection.neighborhood = null;
+  // Remove any selection bounding box
+  this.clearSelectionBoundingBox();
   }
 
   
@@ -871,20 +933,24 @@ export class Dashboard {
     neighbors.nodes.forEach((node) => node.selected = true);
     neighbors.edges.forEach((edge) => edge.selected = true);
 
-    const boundingBox = computeBoundingBox(this, neighbors.nodes);
-
-    if (this.data.settings.showBoundingBox) {
-      const borderWidth = 2;
-      this.main.container.selectAll(".boundingBox").remove();
-      this.main.container
-        .append("rect")
-        .attr("class", "boundingBox")
-        .attr("stroke-width", borderWidth)
-        .attr("x", boundingBox.x)
-        .attr("y", boundingBox.y)
-        .attr("width", boundingBox.width)
-        .attr("height", boundingBox.height);
+    // If the node has no neighbors beyond itself, compute a sane bbox to avoid over-zoom
+    let boundingBox = computeBoundingBox(this, neighbors.nodes);
+    const onlySelf = neighbors && neighbors.nodes && neighbors.nodes.length > 0
+      ? neighbors.nodes.every(n => n === node)
+      : true;
+    if (onlySelf) {
+      boundingBox = this.computeSaneNodeBoundingBox(node);
     }
+
+    // Store neighborhood context for subsequent dblclick handling
+    this.selection.neighborhood = {
+      nodes: neighbors.nodes,
+      edges: neighbors.edges,
+      boundingBox
+    };
+
+  // Always draw selection bounding box for neighborhood selection
+  this.renderSelectionBoundingBox(boundingBox);
 
     this.main.boundingbox = {
       boundingBox: boundingBox,
@@ -900,29 +966,62 @@ export class Dashboard {
     return this.main.boundingbox;
   }
 
+  // Double-click behavior:
+  // - If a neighborhood bbox is active and the dblclick is inside it, zoom to bbox
+  // - Otherwise zoom to node
+  handleNodeDblClick(node, event) {
+    const nb = this.selection.neighborhood;
+    if (nb && nb.boundingBox) {
+      // If an event is available, determine pointer in SVG coordinates
+      // Fallback: if the node is part of the neighborhood, consider it inside
+      const insideByNode = nb.nodes && nb.nodes.indexOf(node) !== -1;
+      let insideByPoint = false;
+      try {
+        if (event && this.main.container) {
+          const [px, py] = d3.pointer(event, this.main.container.node());
+          const b = nb.boundingBox;
+          insideByPoint = px >= b.x && px <= b.x + b.width && py >= b.y && py <= b.y + b.height;
+        }
+      } catch {}
+      if (insideByPoint || insideByNode) {
+        this.zoomToBoundingBox(nb.boundingBox);
+        return;
+      }
+    }
+    // Default: zoom to the specific node; if node has no neighbors, ensure a sane bbox
+    const neighbors = node.getNeighbors(this.data.settings.selector);
+    const onlySelf = neighbors && neighbors.nodes && neighbors.nodes.length > 0
+      ? neighbors.nodes.every(n => n === node)
+      : true;
+    if (onlySelf) {
+      const bbox = this.computeSaneNodeBoundingBox(node);
+      this.deselectAll();
+      node.selected = true;
+      this.selection.neighborhood = { nodes: [node], edges: [], boundingBox: bbox };
+  this.renderSelectionBoundingBox(bbox);
+      this.zoomToBoundingBox(bbox);
+    } else {
+      this.zoomToNode(node);
+    }
+  }
+
   zoomToBoundingBox(boundingBox) {
-    const svgWidth = this.main.width;
-    const svgHeight = this.main.height;
+    const svgWidth = this.main.width || 1;
+    const svgHeight = this.main.height || 1;
 
     const scaleX = svgWidth / boundingBox.width;
     const scaleY = svgHeight / boundingBox.height;
-    const scale = Math.min(scaleX, scaleY);
+    const k = Math.min(scaleX, scaleY);
 
-    this.main.transform.x = (-boundingBox.width * scale) / 2 - boundingBox.x * scale;
-    this.main.transform.y = (-boundingBox.height * scale) / 2 - boundingBox.y * scale;
-    this.main.transform.k = scale;
+    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
+    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
+    const target = d3.zoomIdentity.translate(x, y).scale(k);
 
-    const transform = d3.zoomIdentity
-      .translate(this.main.transform.x, this.main.transform.y)
-      .scale(this.main.transform.k);
-    this.main.container.attr("transform", transform);
-
-    this.minimap.updateViewport(transform);
-
-    if (this.minimap.active)
-      this.minimap.svg.call(this.minimap.zoom.transform, transform);
-
-    this.isMainAndMinimapSyncing = false;
+    // Animate via the zoom behavior so internal state and minimap stay in sync
+    this.main.svg
+      .transition()
+      .duration(500)
+      .call(this.main.zoom.transform, target);
   }
 
   showLoading() {
@@ -1079,6 +1178,27 @@ export function setDashboardProperty(dashboardObject, propertyPath, value) {
   obj[properties[properties.length - 1]] = value;
 
   try {
+    // Handle immediate visual updates for non-minimap properties
+    if (propertyPath.endsWith('showBoundingBox') || propertyPath.includes('.showBoundingBox')) {
+      const dash = dashboardObject;
+      const show = !!value;
+      if (!show) {
+        dash.clearSelectionBoundingBox?.();
+      } else {
+        // Re-render bbox for current selection if present
+        const nb = dash.selection?.neighborhood;
+        if (nb?.boundingBox) {
+          dash.renderSelectionBoundingBox(nb.boundingBox);
+        } else if (typeof dash.getSelectedNodes === 'function') {
+          const sel = dash.getSelectedNodes();
+          if (sel && sel.length) {
+            const bbox = computeBoundingBox(dash, sel);
+            dash.renderSelectionBoundingBox(bbox);
+          }
+        }
+      }
+    }
+
     const isMinimapChange = propertyPath.includes('minimap');
     if (!isMinimapChange) return;
 

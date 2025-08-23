@@ -51,7 +51,6 @@ The script will create preview images in each theme folder:
 - `glassmorphism/glassmorphism-preview.png`
 - `neumorphism/neumorphism-preview.png`
 - `retro/retro-preview.png`
-- `alt/alt-preview.png`
 
 ## 🔧 How It Works
 

@@ -72,13 +72,7 @@ A comprehensive collection of visual themes for the FlowDash dashboard system. E
 
 ---
 
-### Alt Theme
-![Alt Theme Preview](./alt/alt-preview.png)
-**Alternative & Experimental** - A unique take on dashboard design with unconventional styling and creative visual approaches.
-
-[View Details →](./alt/style.md) | [CSS File](./alt/flowdash.css)
-
----
+ 
 
 ## 🚀 Quick Start
 
