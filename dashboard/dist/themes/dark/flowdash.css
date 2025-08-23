@@ -41,54 +41,58 @@ text, .label, .rect.label { fill: var(--fd-text); }
   to { stroke-dashoffset: -80; }
 }
 
-/* Unknown */
+/* Unknown — stronger violet to stand out on dark */
 .shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
-  fill: #141a22;
-  stroke: #364254;
+  fill: #bda7ff;   /* vivid lavender */
+  stroke: #d9ccff; /* lighter outline */
 }
 
-/* Ready */
+/* Ready — bright cyan/blue */
 .shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
-  fill: #0f2232;
-  stroke: #4db4ff;
+  fill: #4db4ff;   /* vivid */
+  stroke: #1a8cff; /* stronger edge */
 }
 
-/* Updating */
+/* Updating — vivid green with animated stroke */
 .shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
-  fill: #241c0e;
-  stroke: #ffb84d;
+  fill: #39d98a;
+  stroke: #00c853;
   stroke-width: 2.5px;
   stroke-dasharray: 12 8;
   animation: dark-dash 1s linear infinite;
 }
 
-/* Updated */
+/* Updated — bright success green */
 .shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
-  fill: #0f241c;
+  fill: #18c418;
   stroke: #22e28a;
 }
 
-/* Skipped */
+/* Skipped — saturated yellow */
 .shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
-  fill: #232015;
-  stroke: #e8d37a;
+  fill: #fff176;
+  stroke: #d4b100;
 }
 
-/* Delayed */
+.rect[status="Skipped"] text {
+  fill: #292929d6 !important;
+}
+
+
+/* Delayed — vivid orange */
 .shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
-  fill: #2a1f10;
-  stroke: #ff9c3a;
+  fill: #ff9c3a;
+  stroke: #ff7f11;
 }
 
-/* Warning */
+/* Warning — strong red-orange */
 .shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
-  fill: #2f1b0e;
+  fill: #ff6b4d;
   stroke: #ffb454;
 }
-
-/* Error */
+/* Error — vivid danger red */
 .shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
-  fill: #2a1216;
+  fill: #ff3b4e;
   stroke: #ff5c70;
   stroke-width: 2.5px;
   filter: drop-shadow(0 0 8px rgba(255,92,112,0.25));
