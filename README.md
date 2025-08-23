@@ -79,6 +79,46 @@ The **dashboard** folder contains the production-ready FlowDash application:
 - **Component Tests**: `npm run test:adapter`, `npm run test:foundation`, etc.
 - **Development Server**: `npm start` - Development mode with webpack
 
+### Build Tools & Scripts
+
+#### CSS Distribution Script
+The `scripts/copy-flowdash-css.ps1` PowerShell script manages CSS distribution for the FlowDash dashboard:
+
+**Purpose**: Copies FlowDash CSS files and themes to a distribution directory for deployment or packaging.
+
+**Usage**:
+```powershell
+# Basic usage - copies to dashboard/dist/
+.\scripts\copy-flowdash-css.ps1
+
+# Specify custom destination
+.\scripts\copy-flowdash-css.ps1 -DistRoot "C:\my-deployment\css"
+
+# Clean existing files before copying
+.\scripts\copy-flowdash-css.ps1 -Clean
+
+# Use repository root from different location
+.\scripts\copy-flowdash-css.ps1 -RepoRoot "C:\other-repo"
+```
+
+**What it does**:
+- Copies `dashboard/flowdash.css` to the distribution root as `flowdash.css`
+- Recursively copies all `.css` files from `dashboard/themes/` to `dist/themes/`
+- Preserves the original folder structure
+- Creates destination directories as needed
+- Optionally cleans existing CSS files before copying
+
+**Parameters**:
+- `-RepoRoot`: Source repository root (defaults to script's parent directory)
+- `-DistRoot`: Destination directory (defaults to `dashboard/dist`)
+- `-Clean`: Remove existing CSS files before copying
+
+**Use Cases**:
+- Preparing CSS files for production deployment
+- Creating clean distribution packages
+- Syncing CSS changes to external systems
+- Automated build processes
+
 ---
 
 ## 📖 Learn More
