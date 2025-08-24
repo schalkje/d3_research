@@ -958,6 +958,37 @@ export class Dashboard {
     return { Nodes: structureNodes, Edges: structureEdges };
   }
 
+  /**
+   * Re-evaluate and apply status-based collapse logic to all nodes
+   * This method is called when toggleCollapseOnStatusChange setting changes
+   */
+  updateStatusBasedCollapse() {
+    if (!this.main.root) return;
+    
+    const nodes = this.main.root.getAllNodes(false, true);
+    if (!nodes || nodes.length === 0) return;
+
+    // Re-evaluate collapse state for each node based on current status and new setting
+    nodes.forEach(node => {
+      if (node && typeof node.status !== 'undefined') {
+        const shouldCollapse = this.data.settings.toggleCollapseOnStatusChange && 
+          ['Ready', 'Disabled', 'Updated', 'Skipped'].includes(node.status);
+        
+        // Only change state if it's different from current
+        if (shouldCollapse !== node.collapsed) {
+          if (shouldCollapse) {
+            node.collapsed = true;
+          } else {
+            node.collapsed = false;
+          }
+        }
+      }
+    });
+
+    // Trigger display update to reflect changes
+    this.onMainDisplayChange();
+  }
+
   deselectAll() {
     const nodes = this.getSelectedNodes();
     nodes.forEach((node) => node.selected = false);

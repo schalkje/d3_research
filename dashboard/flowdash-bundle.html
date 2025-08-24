@@ -406,7 +406,16 @@
             showConnectionPoints = document.getElementById('showConnectionPointsCheckbox').checked;
             zoomToRoot = document.getElementById('zoomToRoot').checked;
 
+            // Check if status behavior settings changed
+            const toggleCollapseChanged = document.getElementById('toggleCollapseOnStatusChange').checked !== dashboard?.data?.settings?.toggleCollapseOnStatusChange;
+            const cascadeChanged = document.getElementById('cascadeOnStatusChange').checked !== dashboard?.data?.settings?.cascadeOnStatusChange;
+
             renderDashboard();
+
+            // If toggleCollapseOnStatusChange changed, update the display immediately
+            if (toggleCollapseChanged && dashboard && typeof dashboard.updateStatusBasedCollapse === 'function') {
+                dashboard.updateStatusBasedCollapse();
+            }
         }
 
         // Function to update graph data when a new file is selected

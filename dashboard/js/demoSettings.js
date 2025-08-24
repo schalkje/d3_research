@@ -8,6 +8,7 @@ export function injectSettingsUI(options) {
     getVariations = null,
     getBaseData,
     buildDashboard,
+    onDashboardRebuilt = null,
   } = options;
 
   const container = document.querySelector(containerSelector) || document.body;
@@ -281,7 +282,43 @@ export function injectSettingsUI(options) {
     el && el.addEventListener('change', () => {
       const base = typeof getBaseData === 'function' ? getBaseData() : null;
       const dataset = buildDatasetFromUI(base);
-      if (dataset && typeof buildDashboard === 'function') buildDashboard(dataset);
+      if (dataset && typeof buildDashboard === 'function') {
+        buildDashboard(dataset);
+        
+        // Special handling for status behavior settings
+        if (id === 'chkToggleCollapseOnStatusChange' || id === 'chkCascadeOnStatusChange') {
+          // After rebuilding, check if we need to update status-based collapse
+          // We need to wait a bit for the dashboard to be fully initialized
+          setTimeout(() => {
+            // Try to find the dashboard instance and call updateStatusBasedCollapse if available
+            const dashboardInstance = container.querySelector('#graph')?.__dashboard__ || 
+                                   container.querySelector('[data-dashboard]')?.__dashboard__ ||
+                                   window.dashboard ||
+                                   window.flowdash;
+            
+            if (dashboardInstance && typeof dashboardInstance.updateStatusBasedCollapse === 'function') {
+              dashboardInstance.updateStatusBasedCollapse();
+            }
+            
+            // Call the optional callback if provided
+            if (onDashboardRebuilt && typeof onDashboardRebuilt === 'function') {
+              onDashboardRebuilt(dashboardInstance);
+            }
+          }, 100);
+        } else {
+          // For non-status behavior settings, call the callback immediately
+          setTimeout(() => {
+            const dashboardInstance = container.querySelector('#graph')?.__dashboard__ || 
+                                   container.querySelector('[data-dashboard]')?.__dashboard__ ||
+                                   window.dashboard ||
+                                   window.flowdash;
+            
+            if (onDashboardRebuilt && typeof onDashboardRebuilt === 'function') {
+              onDashboardRebuilt(dashboardInstance);
+            }
+          }, 100);
+        }
+      }
     });
   });
   // Orientation triggers rebuild
