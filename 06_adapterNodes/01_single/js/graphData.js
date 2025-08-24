@@ -61,7 +61,7 @@ export const singleAdapter = {
             
             // Node properties
             status: "active",
-            state: "ready",
+            state: "Ready",
             
             // Auto-generated children (staging, archive, transform)
             // These will be created automatically by the AdapterNode class

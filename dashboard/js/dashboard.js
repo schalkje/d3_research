@@ -7,6 +7,7 @@ import { ConfigManager } from "./configManager.js";
 import { fetchDashboardFile } from "./data.js";
 import { LoadingOverlay, showLoading as showLoader, hideLoading as hideLoader, resolveLoadingContainer as resolveLoadingHost } from "./loadingOverlay.js";
 import { Minimap } from "./minimap.js";
+import { NodeStatus } from "./nodeBase.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -630,7 +631,11 @@ export class Dashboard {
     
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      node.status = status;
+      try {
+        node.status = status;
+      } catch (e) {
+        console.warn('updateNodeStatus: Failed to update status for node:', nodeId, e);
+      }
     } else {
       console.error("updateNodeStatus: Node not found:", nodeId);
     }
@@ -641,8 +646,12 @@ export class Dashboard {
     const nodes = this.main.root.getNodesByDatasetId(datasetId);
     if (nodes && nodes.length > 0) {
       for (const node of nodes) {
-        node.status = status;
-        stateUpdated = true;
+        try {
+          node.status = status;
+          stateUpdated = true;
+        } catch (e) {
+          console.warn('updateDatasetStatus: Failed to update status for node:', node.id, e);
+        }
       }
     }
     return stateUpdated; 
@@ -722,8 +731,19 @@ export class Dashboard {
     var allNodes = node.getAllNodes();
 
     for (var i = allNodes.length - 1; i >= 0; i--) {
-      if (allNodes[i].isContainer && (allNodes[i].status == null || allNodes[i].status == "" || allNodes[i].status == "Unknown")) {
-        allNodes[i].determineStatusBasedOnChildren();
+      const currentNode = allNodes[i];
+      // Safety check: only process nodes with valid elements
+      if (!currentNode.element) {
+        console.warn('initializeChildrenStatusses: Node has null element, skipping:', currentNode.id);
+        continue;
+      }
+      
+      if (currentNode.isContainer && (currentNode.status == null || currentNode.status == "" || currentNode.status == "Unknown")) {
+        try {
+          currentNode.determineStatusBasedOnChildren();
+        } catch (e) {
+          console.warn('initializeChildrenStatusses: Failed to determine status for node:', currentNode.id, e);
+        }
       } 
     }
   }
@@ -892,7 +912,11 @@ export class Dashboard {
     
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      node.status = status;
+      try {
+        node.status = status;
+      } catch (e) {
+        console.warn('setStatusToNodeById: Failed to update status for node:', nodeId, e);
+      }
     }
     else {
       console.error("setStatusToNodeById: Node not found:", nodeId);
@@ -968,22 +992,47 @@ export class Dashboard {
     const nodes = this.main.root.getAllNodes(false, true);
     if (!nodes || nodes.length === 0) return;
 
+    let hasChanges = false;
+
     // Re-evaluate collapse state for each node based on current status and new setting
     nodes.forEach(node => {
       if (node && typeof node.status !== 'undefined') {
+        // Safety check: only process nodes with valid elements
+        if (!node.element) {
+          console.warn('Skipping node with null element in updateStatusBasedCollapse:', node.id);
+          return;
+        }
+        
+        // Determine if this node should be collapsed based on current status
         const shouldCollapse = this.data.settings.toggleCollapseOnStatusChange && 
-          ['Ready', 'Disabled', 'Updated', 'Skipped'].includes(node.status);
+          [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED, NodeStatus.SKIPPED].includes(node.status);
         
         // Only change state if it's different from current
         if (shouldCollapse !== node.collapsed) {
-          if (shouldCollapse) {
-            node.collapsed = true;
-          } else {
-            node.collapsed = false;
+          hasChanges = true;
+          console.log(`Status-based collapse change for node ${node.id}: status=${node.status}, shouldCollapse=${shouldCollapse}, current=${node.collapsed}`);
+          
+          // Use the collapsed setter to ensure proper state management and trigger expand/collapse methods
+          try {
+            node.collapsed = shouldCollapse;
+            console.log(`Successfully set node ${node.id} collapsed to ${shouldCollapse}`);
+          } catch (e) {
+            console.warn('Failed to change collapse state for node:', node.id, e);
           }
         }
       }
     });
+
+    // If there were changes, restart the simulation to recalculate the layout
+    if (hasChanges && this.main.root) {
+      console.log('Status-based collapse changes detected, restarting simulation and updating layout');
+      
+      // Restart simulation to recalculate layout with new collapsed/expanded states
+      this.main.root.cascadeRestartSimulation();
+      
+      // Update the display to show the new layout
+      this.main.root.update();
+    }
 
     // Trigger display update to reflect changes
     this.onMainDisplayChange();

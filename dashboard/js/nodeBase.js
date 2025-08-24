@@ -47,6 +47,7 @@ export default class BaseNode {
     this.simulation = null;
 
     this.zoneManager = null;
+    this._updatingCollapseState = false;
 
     // Set default values for x, y, width, and height
     this.x ??= 0;
@@ -80,10 +81,19 @@ export default class BaseNode {
 
   set collapsed(value) {
     if (value === this._collapsed) return;
+    
+    console.log(`BaseNode.collapsed setter: Setting ${this.id} collapsed to ${value}, _updatingCollapseState: ${this._updatingCollapseState}`);
+    
     this._collapsed = value;
 
-    this.element.classed("collapsed", this.collapsed);
-    this.element.classed("expanded", !this.collapsed);
+    // Always update DOM classes if element exists
+    if (this.element) {
+      console.log(`BaseNode.collapsed setter: Updating DOM classes for ${this.id}`);
+      this.element.classed("collapsed", this.collapsed);
+      this.element.classed("expanded", !this.collapsed);
+    } else {
+      console.log(`BaseNode.collapsed setter: Skipping DOM update for ${this.id} - element: ${!!this.element}`);
+    }
   }
 
   get status() {
@@ -96,8 +106,28 @@ export default class BaseNode {
       this.element.attr("status", value);
     }
 
-    if (StatusManager.shouldCollapseOnStatus(value, this.settings)) {
-      this.collapsed = true;
+    // Auto collapse/expand based on status when enabled, avoiding re-entrancy
+    if (this.settings.toggleCollapseOnStatusChange && !this._updatingCollapseState) {
+      const shouldCollapse = StatusManager.shouldCollapseOnStatus(value, this.settings);
+      this._updatingCollapseState = true;
+      try {
+        if (shouldCollapse) {
+          this.collapsed = true;
+        } else {
+          // Explicitly expand when status becomes non-collapsible
+          this.collapsed = false;
+          // Ensure all ancestor containers are expanded so this node becomes visible
+          let ancestor = this.parentNode;
+          while (ancestor) {
+            try {
+              if (ancestor.collapsed) ancestor.collapsed = false;
+            } catch {}
+            ancestor = ancestor.parentNode;
+          }
+        }
+      } finally {
+        this._updatingCollapseState = false;
+      }
     }
 
     if (this.settings.cascadeOnStatusChange) {
@@ -112,7 +142,10 @@ export default class BaseNode {
   set selected(value) {
 
     this._selected = value;
-    this.element.classed("selected", this._selected);
+    // Only update DOM if element exists
+    if (this.element) {
+      this.element.classed("selected", this._selected);
+    }
   }
 
   handleDisplayChange() {
@@ -230,21 +263,25 @@ export default class BaseNode {
       Object.values(connectionPoints).forEach((point) => {
         // Update only this node's own points (scoped to the dedicated group)
         const scope = this.connectionPointsGroup || this.element;
-        scope
-          .select(`.connection-point.side-${point.side}`)
-          .attr("cx", point.x)
-          .attr("cy", point.y);
-      });
-      try {
-        if (this.settings.isDebug) {
-          const read = (side) => ({
-            side,
-            cx: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cx')),
-            cy: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cy')),
-          });
-          
+        if (scope) {
+          scope
+            .select(`.connection-point.side-${point.side}`)
+            .attr("cx", point.x)
+            .attr("cy", point.y);
         }
-      } catch {}
+      });
+              try {
+          if (this.settings.isDebug) {
+            const scope = this.connectionPointsGroup || this.element;
+            if (scope) {
+              const read = (side) => ({
+                side,
+                cx: parseFloat(scope.select(`.connection-point.side-${side}`).attr('cx')),
+                cy: parseFloat(scope.select(`.connection-point.side-${side}`).attr('cy')),
+              });
+            }
+          }
+        } catch {}
     }
   }
   
@@ -397,7 +434,10 @@ export default class BaseNode {
   }
 
   cascadeStatusChange() {
-    if (this.parentNode && typeof this.parentNode.determineStatusBasedOnChildren === 'function') {
+    if (this.parentNode && 
+        typeof this.parentNode.determineStatusBasedOnChildren === 'function' &&
+        this.parentNode.element && // Safety check: parent element exists
+        !this.parentNode.collapsed) { // Safety check: parent is not collapsed
       this.parentNode.determineStatusBasedOnChildren();
     } 
   }
