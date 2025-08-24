@@ -412,10 +412,8 @@ text {
   /* fill: rgb(216, 216, 241); */
   fill: rgb(65, 65, 151);
   fill-opacity: 0.8;
-  /* text-anchor: start; */
-  /* dominant-baseline: hanging; */
-  text-anchor: middle;
-  dominant-baseline: middle;
+  text-anchor: start;
+  dominant-baseline: hanging;
 }
 
 /* Ensure all node labels are centered */
@@ -680,7 +678,7 @@ rect.zone-innerContainer {
   fill: #333333;
 }
 
-/* Node Styles (for type="Node") */
+/* Node Styles (for type="node") */
 .rect.shape {
   fill: #f8f9fa;
   stroke: #dee2e6;

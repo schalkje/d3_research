@@ -48,7 +48,7 @@ This directory contains a comprehensive test suite for **foundationNode with exp
 {
     id: "raw-node-*",
     label: "FOUND.RAW_*",
-    type: "Node",
+    type: "node",
     role: "raw",
     category: "Raw",
     state: "Ingesting|Validated|Processing",

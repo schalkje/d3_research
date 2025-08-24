@@ -59,7 +59,7 @@
           "state": "Ready",
           "id": "pbdwh_ods",
           "description": "Database : ODS",
-          "type": "Node",
+          "type": "node",
           "category": "Database",
           "link": "https://example.com/ODS"
         },
@@ -68,7 +68,7 @@
           "state": "Ready",
           "id": "pbdwh_dwh",
           "description": "Database : DWH",
-          "type": "Node",
+          "type": "node",
           "category": "Database",
           "link": "https://example.com/DWH"
         }

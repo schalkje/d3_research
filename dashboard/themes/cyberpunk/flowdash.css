@@ -57,7 +57,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Unknown — neutral violet-blue outline */
-.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
+.shape[status="Unknown"], .node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
   fill: #18172e !important;
   stroke: #6b6f9a !important;
   stroke-width: 1.5px !important;
@@ -65,7 +65,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Ready — cyan neon edge */
-.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
+.shape[status="Ready"], .node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
   fill: #0a1f27 !important;
   stroke: var(--fd-neon-cyan) !important;
   stroke-width: 2px !important;
@@ -73,7 +73,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Updating — alternating magenta/cyan marching dash */
-.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+.shape[status="Updating"], .node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
   fill: #1e1522 !important;
   stroke: var(--fd-glow1) !important;
   stroke-width: 2.5px !important;
@@ -83,7 +83,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Updated — neon green confirmation */
-.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
+.shape[status="Updated"], .node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
   fill: #0a2f2a !important;
   stroke: var(--fd-neon-green) !important;
   stroke-width: 2px !important;
@@ -91,7 +91,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Skipped — muted violet neon */
-.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
+.shape[status="Skipped"], .node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
   fill: #1c1a2e !important;
   stroke: #b38cff !important;
   stroke-width: 2px !important;
@@ -99,7 +99,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Delayed — orange neon */
-.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
+.shape[status="Delayed"], .node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
   fill: #281a0e !important;
   stroke: var(--fd-neon-orange) !important;
   stroke-width: 2px !important;
@@ -107,7 +107,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Warning — yellow neon */
-.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
+.shape[status="Warning"], .node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
   fill: #2f230a !important;
   stroke: var(--fd-neon-yellow) !important;
   stroke-width: 2.25px !important;
@@ -115,7 +115,7 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Error — hot neon red with stronger glow */
-.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
+.shape[status="Error"], .node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
   fill: #2a0a12 !important;
   stroke: var(--fd-neon-red) !important;
   stroke-width: 2.75px !important;

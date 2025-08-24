@@ -41,7 +41,7 @@ export const demoData = {
                 {
                     id: "staging-role-1",
                     label: "staging",
-                    type: "Node",
+                    type: "node",
                     role: "staging",
                     category: "staging",
                     width: 80,
@@ -51,7 +51,7 @@ export const demoData = {
                 {
                     id: "archive-role-1", 
                     label: "archive",
-                    type: "Node",
+                    type: "node",
                     role: "archive",
                     category: "archive",
                     width: 80,
@@ -61,7 +61,7 @@ export const demoData = {
                 {
                     id: "transform-role-1",
                     label: "transform",
-                    type: "Node",
+                    type: "node",
                     role: "transform",
                     category: "transform",
                     width: 80,

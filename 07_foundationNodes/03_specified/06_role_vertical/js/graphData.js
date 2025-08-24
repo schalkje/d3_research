@@ -14,8 +14,8 @@ export const demoData = {
         layout: { mode: "auto", displayMode: "role", orientation: "vertical" },
         status: "active",
         children: [
-            { id: "raw-role-v", label: "raw vertical", type: "Node", role: "raw", category: "raw", width: 60, height: 32, state: "Active" },
-            { id: "base-role-v", label: "base vertical", type: "Node", role: "base", category: "base", width: 60, height: 32, state: "Ready" }
+            { id: "raw-role-v", label: "raw vertical", type: "node", role: "raw", category: "raw", width: 60, height: 32, state: "Active" },
+            { id: "base-role-v", label: "base vertical", type: "node", role: "base", category: "base", width: 60, height: 32, state: "Ready" }
         ]
     }],
     edges: []

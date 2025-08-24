@@ -108,7 +108,7 @@ function avoidNodeLinkCollisions() {
         nodes = _;
         nodes.forEach(node => {
             if (isNaN(node.x) || isNaN(node.y) || isNaN(node.width) || isNaN(node.height)) {
-                console.warn("Node properties are not correctly initialized", node);
+                console.warn("node properties are not correctly initialized", node);
             }
         });
         quadtree = d3.quadtree().x(d => d.x).y(d => d.y).addAll(nodes);

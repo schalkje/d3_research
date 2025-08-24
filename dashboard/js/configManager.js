@@ -73,7 +73,7 @@ export class ConfigManager {
     
     if (settings.nodeSpacing) {
       if (settings.nodeSpacing.horizontal < 0 || settings.nodeSpacing.vertical < 0) {
-        errors.push("Node spacing values must be non-negative");
+        errors.push("node spacing values must be non-negative");
       }
     }
     

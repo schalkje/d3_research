@@ -680,7 +680,7 @@ rect.zone-innerContainer {
   fill: #333333;
 }
 
-/* Node Styles (for type="Node") */
+/* Node Styles (for type="node") */
 .rect.shape {
   fill: #f8f9fa;
   stroke: #dee2e6;

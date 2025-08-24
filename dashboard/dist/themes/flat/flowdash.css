@@ -31,14 +31,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 700; }
 .minimap-svg .iris { fill: none !important; stroke: var(--fd-accent) !important; stroke-width: 6px !important; }
 
 /* Strong, flat status palette */
-.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] { fill: #e2e8f0 !important; stroke: #cbd5e1 !important; }
-.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] { fill: #dbeafe !important; stroke: #60a5fa !important; }
-.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] { fill: #fef3c7 !important; stroke: #f59e0b !important; stroke-dasharray: 10 6; animation: flat-dash 1s linear infinite; }
-.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #34d399 !important; }
-.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] { fill: #f1f5f9 !important; stroke: #94a3b8 !important; }
-.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] { fill: #ffedd5 !important; stroke: #fb923c !important; }
-.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #facc15 !important; }
-.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] { fill: #fee2e2 !important; stroke: #ef4444 !important; }
+.shape[status="Unknown"], .node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] { fill: #e2e8f0 !important; stroke: #cbd5e1 !important; }
+.shape[status="Ready"], .node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] { fill: #dbeafe !important; stroke: #60a5fa !important; }
+.shape[status="Updating"], .node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] { fill: #fef3c7 !important; stroke: #f59e0b !important; stroke-dasharray: 10 6; animation: flat-dash 1s linear infinite; }
+.shape[status="Updated"], .node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] { fill: #dcfce7 !important; stroke: #34d399 !important; }
+.shape[status="Skipped"], .node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] { fill: #f1f5f9 !important; stroke: #94a3b8 !important; }
+.shape[status="Delayed"], .node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] { fill: #ffedd5 !important; stroke: #fb923c !important; }
+.shape[status="Warning"], .node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] { fill: #fef9c3 !important; stroke: #facc15 !important; }
+.shape[status="Error"], .node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] { fill: #fee2e2 !important; stroke: #ef4444 !important; }
 
 @keyframes flat-dash { to { stroke-dashoffset: -64; } }
 

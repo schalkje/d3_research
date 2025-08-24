@@ -38,31 +38,31 @@ text, .label, .rect.label { fill: var(--fd-text); }
 
 
 /* status colors: clearer separation with soft, neomorphic tints */
-.shape[status="Unknown"], .Node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
+.shape[status="Unknown"], .node.shape[status="Unknown"], .container-shape[status="Unknown"], .rect.shape[status="Unknown"] {
   fill: #eef2f7; /* cool gray */
   stroke: #d5dbe5;
 }
-.shape[status="Ready"], .Node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
+.shape[status="Ready"], .node.shape[status="Ready"], .container-shape[status="Ready"], .rect.shape[status="Ready"] {
   fill: #e3f0ff; /* gentle blue */
   stroke: #bad7ff;
 }
-.shape[status="Updated"], .Node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
+.shape[status="Updated"], .node.shape[status="Updated"], .container-shape[status="Updated"], .rect.shape[status="Updated"] {
   fill: #ddf8eb; /* soothing green */
   stroke: #9fe9c9;
 }
-.shape[status="Skipped"], .Node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
+.shape[status="Skipped"], .node.shape[status="Skipped"], .container-shape[status="Skipped"], .rect.shape[status="Skipped"] {
   fill: #f6f2de; /* pale sand */
   stroke: #eadb9c;
 }
-.shape[status="Delayed"], .Node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
+.shape[status="Delayed"], .node.shape[status="Delayed"], .container-shape[status="Delayed"], .rect.shape[status="Delayed"] {
   fill: #ffe7c2; /* deeper amber */
   stroke: #ffcc87;
 }
-.shape[status="Warning"], .Node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
+.shape[status="Warning"], .node.shape[status="Warning"], .container-shape[status="Warning"], .rect.shape[status="Warning"] {
   fill: #ffeab0; /* brighter warning */
   stroke: #ffd06b;
 }
-.shape[status="Error"], .Node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
+.shape[status="Error"], .node.shape[status="Error"], .container-shape[status="Error"], .rect.shape[status="Error"] {
   fill: #ffd4d9; /* stronger red tint */
   stroke: #ff5a6b; /* more assertive stroke */
   stroke-width: 2.75px;
@@ -83,7 +83,7 @@ text, .label, .rect.label { fill: var(--fd-text); }
     transform: scale(1.012);
   }
 }
-.shape[status="Updating"], .Node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+.shape[status="Updating"], .node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
   fill: #ffe4b8;
   stroke: #ffbf4d;
   stroke-width: 2.25px;

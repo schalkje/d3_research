@@ -14,8 +14,8 @@ export const demoData = {
         layout: { mode: "auto", displayMode: "full", orientation: "rotate90" },
         status: "active",
         children: [
-            { id: "load-node-r90", label: "MART.LOAD_ROTATE", type: "Node", role: "load", category: "Load", state: "Rotating" },
-            { id: "report-node-r90", label: "MART.REPORT_ROTATE", type: "Node", role: "report", category: "Report", state: "Aligned" }
+            { id: "load-node-r90", label: "MART.LOAD_ROTATE", type: "node", role: "load", category: "Load", state: "Rotating" },
+            { id: "report-node-r90", label: "MART.REPORT_ROTATE", type: "node", role: "report", category: "Report", state: "Aligned" }
         ]
     }],
     edges: []

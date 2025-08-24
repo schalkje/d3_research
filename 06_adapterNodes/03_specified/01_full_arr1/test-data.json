@@ -16,7 +16,7 @@
     },
     {
       "id": "node-rendering",
-      "name": "Node Rendering",
+      "name": "node Rendering",
       "description": "Verify nodes are rendered in DOM",
       "expected": {
         "nodeCount": ">= 1",

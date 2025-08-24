@@ -25,9 +25,9 @@ export const demoData = {
         layout: { mode: "full", arrangement: 2, displayMode: "role" },
         status: "active",
         children: [
-            { id: "staging-role-2", label: "staging", type: "Node", role: "staging", category: "staging", width: 80, height: 44, state: "Active" },
-            { id: "archive-role-2", label: "archive", type: "Node", role: "archive", category: "archive", width: 80, height: 44, state: "Ready" },
-            { id: "transform-role-2", label: "transform", type: "Node", role: "transform", category: "transform", width: 80, height: 44, state: "Processing" }
+            { id: "staging-role-2", label: "staging", type: "node", role: "staging", category: "staging", width: 80, height: 44, state: "Active" },
+            { id: "archive-role-2", label: "archive", type: "node", role: "archive", category: "archive", width: 80, height: 44, state: "Ready" },
+            { id: "transform-role-2", label: "transform", type: "node", role: "transform", category: "transform", width: 80, height: 44, state: "Processing" }
         ]
     }],
     edges: []

@@ -51,7 +51,7 @@ This directory contains a comprehensive test suite for **adapter nodes with expl
     id: "unique-child-id",
     label: "DWH.CHILD_NAME",
     description: "Detailed description of child function",
-    type: "Node",
+    type: "node",
     datasetId: 123,
     category: "Staging|Archive|Transform",
     layout: null,

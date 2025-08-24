@@ -33,7 +33,7 @@ this.data.height = 60;          // Default height
 this.data.radius = 30;          // Calculated radius
 
 // Text properties
-this.data.label = "Node Label"; // Display text
+this.data.label = "node Label"; // Display text
 this.textOffset = 0;            // Text vertical offset
 
 // Visual properties

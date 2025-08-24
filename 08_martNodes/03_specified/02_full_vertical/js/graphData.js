@@ -21,7 +21,7 @@ export const demoData = {
             {
                 id: "load-node-v",
                 label: "MART.LOAD_BATCH",
-                type: "Node",
+                type: "node",
                 role: "load",
                 category: "Load",
                 state: "Batching",
@@ -30,7 +30,7 @@ export const demoData = {
             {
                 id: "report-node-v", 
                 label: "MART.REPORT_ANALYTICS",
-                type: "Node",
+                type: "node",
                 role: "report",
                 category: "Report",
                 state: "Analyzing",

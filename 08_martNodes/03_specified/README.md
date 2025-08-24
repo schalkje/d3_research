@@ -48,7 +48,7 @@ This directory contains a comprehensive test suite for **martNode with explicitl
 {
     id: "load-node-*",
     label: "MART.LOAD_*",
-    type: "Node",
+    type: "node",
     role: "load",
     category: "Load",
     state: "Loading|Loaded|Batching",

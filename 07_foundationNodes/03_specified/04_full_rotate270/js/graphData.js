@@ -14,8 +14,8 @@ export const demoData = {
         layout: { mode: "auto", displayMode: "full", orientation: "rotate270" },
         status: "active",
         children: [
-            { id: "raw-node-r270", label: "FOUND.RAW_ROT270", type: "Node", role: "raw", category: "Raw", state: "Ingesting", source: "external", format: "csv" },
-            { id: "base-node-r270", label: "FOUND.BASE_ROT270", type: "Node", role: "base", category: "Base", state: "Structuring", schema: "star", quality: "validated" }
+            { id: "raw-node-r270", label: "FOUND.RAW_ROT270", type: "node", role: "raw", category: "Raw", state: "Ingesting", source: "external", format: "csv" },
+            { id: "base-node-r270", label: "FOUND.BASE_ROT270", type: "node", role: "base", category: "Base", state: "Structuring", schema: "star", quality: "validated" }
         ]
     }],
     edges: []

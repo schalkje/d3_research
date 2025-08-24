@@ -14,8 +14,8 @@ export const demoData = {
         layout: { mode: "auto", displayMode: "full", orientation: "vertical" },
         status: "active",
         children: [
-            { id: "raw-node-v", label: "FOUND.RAW_STACK", type: "Node", role: "raw", category: "Raw", state: "Stacking", source: "layered" },
-            { id: "base-node-v", label: "FOUND.BASE_STACK", type: "Node", role: "base", category: "Base", state: "Layering", schema: "stacked" }
+            { id: "raw-node-v", label: "FOUND.RAW_STACK", type: "node", role: "raw", category: "Raw", state: "Stacking", source: "layered" },
+            { id: "base-node-v", label: "FOUND.BASE_STACK", type: "node", role: "base", category: "Base", state: "Layering", schema: "stacked" }
         ]
     }],
     edges: []

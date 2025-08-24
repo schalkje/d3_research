@@ -176,7 +176,7 @@ export default class MartNode extends BaseContainerNode {
           id: `${role}_${this.data.id}`,
           label: `${role.charAt(0).toUpperCase() + role.slice(1)} ${this.data.label}`,
           role: role,
-          type: "Node",
+          type: "node",
         };
         this.data.children.push(childData);
       }

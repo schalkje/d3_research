@@ -26,12 +26,12 @@
         {
           "id": "bankview",
           "label": "Bankview",
-          "type": "Node"
+          "type": "node"
         },
         {
           "id": "matrix",
           "label": "Matrix",
-          "type": "Node"
+          "type": "node"
         }
       ]
     }

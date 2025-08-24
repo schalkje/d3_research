@@ -33,7 +33,7 @@ this.data.height = 20;          // Default height
 this.textPadding = 20;          // Padding around text
 
 // Text properties
-this.data.label = "Node Label"; // Display text
+this.data.label = "node Label"; // Display text
 this.textWidth = 0;             // Calculated text width
 
 // Visual properties

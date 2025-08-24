@@ -21,7 +21,7 @@ export const demoData = {
             {
                 id: "raw-role-h",
                 label: "raw horizontal",
-                type: "Node",
+                type: "node",
                 role: "raw",
                 category: "raw",
                 width: 60,
@@ -31,7 +31,7 @@ export const demoData = {
             {
                 id: "base-role-h", 
                 label: "base horizontal",
-                type: "Node",
+                type: "node",
                 role: "base",
                 category: "base",
                 width: 60,

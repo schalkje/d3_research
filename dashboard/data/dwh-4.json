@@ -76,7 +76,7 @@
           "state": "Ready",
           "id": "pbdwh_ods",
           "description": "Database : ODS",
-          "type": "Node",
+          "type": "node",
           "category": "Database",
           "link": "https://example.com/ODS"
         },
@@ -85,7 +85,7 @@
           "state": "Ready",
           "id": "pbdwh_dwh",
           "description": "Database : DWH",
-          "type": "Node",
+          "type": "node",
           "category": "Database",
           "link": "https://example.com/DWH"
         },
@@ -98,19 +98,19 @@
               "id": "em_payments",
               "label": "Payments",
               "code": "EMP",
-              "type": "Node"
+              "type": "node"
             },
             {
               "id": "dm_via",
               "label": "VIA",
               "code": "EMP",
-              "type": "Node"
+              "type": "node"
             },
             {
               "id": "em_dgs",
               "label": "DGS",
               "code": "EMP",
-              "type": "Node"
+              "type": "node"
             }
           ]
         },

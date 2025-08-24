@@ -50,7 +50,7 @@ export const demoData = {
                     id: "archive-node-only",
                     label: "DWH.ARC_VAULT",
                     description: "Long-term data vault for permanent storage",
-                    type: "Node",
+                    type: "node",
                     datasetId: 601,
                     category: "Archive",
                     layout: null,

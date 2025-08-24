@@ -68,7 +68,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Unknown */
 .shape[status="Unknown"],
-.Node.shape[status="Unknown"],
+.node.shape[status="Unknown"],
 .container-shape[status="Unknown"] {
   fill: #e6e6e6;
   fill-opacity: 1;
@@ -78,7 +78,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Ready */
 .shape[status="Ready"],
-.Node.shape[status="Ready"],
+.node.shape[status="Ready"],
 .container-shape[status="Ready"] {
   fill: #b6e0ff;
   fill-opacity: 1;
@@ -88,7 +88,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Updating: strong signal with marching outline */
 .shape[status="Updating"],
-.Node.shape[status="Updating"],
+.node.shape[status="Updating"],
 .container-shape[status="Updating"] {
   fill: #ffe066;
   fill-opacity: 1;
@@ -100,7 +100,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Updated */
 .shape[status="Updated"],
-.Node.shape[status="Updated"],
+.node.shape[status="Updated"],
 .container-shape[status="Updated"] {
   fill: #22c55e;
   fill-opacity: 1;
@@ -110,7 +110,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Skipped */
 .shape[status="Skipped"],
-.Node.shape[status="Skipped"],
+.node.shape[status="Skipped"],
 .container-shape[status="Skipped"] {
   fill: #fff1a8;
   fill-opacity: 1;
@@ -120,7 +120,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Delayed */
 .shape[status="Delayed"],
-.Node.shape[status="Delayed"],
+.node.shape[status="Delayed"],
 .container-shape[status="Delayed"] {
   fill: #ffb02e;
   fill-opacity: 1;
@@ -130,7 +130,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Warning */
 .shape[status="Warning"],
-.Node.shape[status="Warning"],
+.node.shape[status="Warning"],
 .container-shape[status="Warning"] {
   fill: #ff9f0a;
   fill-opacity: 1;
@@ -140,7 +140,7 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 
 /* Error */
 .shape[status="Error"],
-.Node.shape[status="Error"],
+.node.shape[status="Error"],
 .container-shape[status="Error"] {
   fill: #ff453a;
   fill-opacity: 1;

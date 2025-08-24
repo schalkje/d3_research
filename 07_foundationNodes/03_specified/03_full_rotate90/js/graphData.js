@@ -14,8 +14,8 @@ export const demoData = {
         layout: { mode: "auto", displayMode: "full", orientation: "rotate90" },
         status: "active",
         children: [
-            { id: "raw-node-r90", label: "FOUND.RAW_ROT90", type: "Node", role: "raw", category: "Raw", state: "Ingesting", source: "external", format: "json" },
-            { id: "base-node-r90", label: "FOUND.BASE_ROT90", type: "Node", role: "base", category: "Base", state: "Structuring", schema: "normalized", quality: "validated" }
+            { id: "raw-node-r90", label: "FOUND.RAW_ROT90", type: "node", role: "raw", category: "Raw", state: "Ingesting", source: "external", format: "json" },
+            { id: "base-node-r90", label: "FOUND.BASE_ROT90", type: "node", role: "base", category: "Base", state: "Structuring", schema: "normalized", quality: "validated" }
         ]
     }],
     edges: []

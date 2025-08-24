@@ -35,7 +35,7 @@ export function getTextWidth(text) {
 
 **Usage:**
 ```javascript
-const labelWidth = getTextWidth("Node Label");
+const labelWidth = getTextWidth("node Label");
 ```
 
 **Performance Note:** Creates and removes DOM elements, so use sparingly in performance-critical code.

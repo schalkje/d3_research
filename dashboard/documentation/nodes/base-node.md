@@ -185,7 +185,7 @@ const defaultSettings = {
 const nodeData = {
   id: "unique-id",              // Required unique identifier
   type: "node-type",            // Node type for factory creation
-  label: "Node Label",          // Display label
+  label: "node Label",          // Display label
   x: 100,                       // X coordinate
   y: 200,                       // Y coordinate
   width: 80,                    // Node width

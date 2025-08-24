@@ -24,13 +24,8 @@ export function computeLocalConnectionPoints(width, height) {
 }
 
 export function generateEdgePath(edge) {
-  // console.warn(`    Generating Edge Path [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
-  // console.warn(`    Generating Edge Path ${edge.data.source} -> ${edge.data.target} [${edge.sourcePoint}] -> [${edge.targetPoint}]:`, edge);
-
   const sourceNode = edge.source;
   const targetNode = edge.target;
-  // console.warn("    Source Node:", sourceNode, edge.x1, edge.y1, sourceNode.data.width, sourceNode.data.height);
-  // console.warn("    Target Node:", targetNode, edge.x2, edge.y2, targetNode.data.width, targetNode.data.height);
 
   const sourceConnectionPoints = sourceNode.computeConnectionPoints(
     edge.x1,
@@ -38,8 +33,6 @@ export function generateEdgePath(edge) {
     sourceNode.data.width,
     sourceNode.data.height
   );
-  // console.log("    Source Connection Points:", sourceConnectionPoints);
-  // correct the source connection points, if the drawing surface of the node is not the container
 
   const targetConnectionPoints = targetNode.computeConnectionPoints(
     edge.x2,
@@ -47,7 +40,6 @@ export function generateEdgePath(edge) {
     targetNode.data.width,
     targetNode.data.height
   );
-  // console.log("    Target Connection Points:", targetConnectionPoints);
 
   let sourcePoint, targetPoint;
 
@@ -55,7 +47,6 @@ export function generateEdgePath(edge) {
   let minDistance = Number.MAX_VALUE;
   Object.values(sourceConnectionPoints).forEach((source) => {
     Object.values(targetConnectionPoints).forEach((target) => {
-      // console.log("    Checking Connection Points:", source, target);
       // initialize source and target points; this fixes the nodeColumns object, when all collapsed, and one node is expanded
       if (!sourcePoint) sourcePoint = source;
       if (!targetPoint) targetPoint = target;

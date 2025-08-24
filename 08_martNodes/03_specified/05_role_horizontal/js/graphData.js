@@ -21,7 +21,7 @@ export const demoData = {
             {
                 id: "load-role-h",
                 label: "load",
-                type: "Node",
+                type: "node",
                 role: "load",
                 category: "load",
                 width: 60,
@@ -31,7 +31,7 @@ export const demoData = {
             {
                 id: "report-role-h", 
                 label: "report",
-                type: "Node",
+                type: "node",
                 role: "report",
                 category: "report",
                 width: 60,
