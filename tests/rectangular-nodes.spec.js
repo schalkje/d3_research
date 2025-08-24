@@ -32,7 +32,7 @@ test.describe('Rectangular Node Tests', () => {
   async function waitForNodes(page, timeout = 30000) {
     try {
       // Wait for node elements to appear
-      await page.waitForSelector('g.Node', { timeout });
+      await page.waitForSelector('g.node', { timeout });
       
       // Wait a bit more for the nodes to be fully rendered
       await page.waitForTimeout(1000);
@@ -55,7 +55,7 @@ test.describe('Rectangular Node Tests', () => {
     expect(nodesFound).toBe(true);
     
     // Check for rectangular nodes
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     // Verify the node has exactly one rectangle (no separate border)
@@ -84,7 +84,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     // Verify text element exists and is centered
@@ -113,7 +113,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     const node = nodes.first();
@@ -135,7 +135,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     const node = nodes.first();
@@ -147,7 +147,7 @@ test.describe('Rectangular Node Tests', () => {
     
     // Change status programmatically
     await page.evaluate(() => {
-      const nodeElement = document.querySelector('g.Node');
+      const nodeElement = document.querySelector('g.node');
       if (nodeElement && nodeElement.__node) {
         nodeElement.__node.status = 'Ready';
       }
@@ -166,7 +166,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     const node = nodes.first();
@@ -181,7 +181,7 @@ test.describe('Rectangular Node Tests', () => {
     
     // Change dimensions programmatically
     await page.evaluate(() => {
-      const nodeElement = document.querySelector('g.Node');
+      const nodeElement = document.querySelector('g.node');
       if (nodeElement && nodeElement.__node) {
         nodeElement.__node.resize({ width: 200, height: 40 });
       }
@@ -213,7 +213,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     const node = nodes.first();
@@ -221,7 +221,7 @@ test.describe('Rectangular Node Tests', () => {
     
     // Change to a long text label
     await page.evaluate(() => {
-      const nodeElement = document.querySelector('g.Node');
+      const nodeElement = document.querySelector('g.node');
       if (nodeElement && nodeElement.__node) {
         nodeElement.__node.data.label = 'This is a very long text label that should be handled properly';
         nodeElement.__node.redrawText(nodeElement.__node.data.label, 300);
@@ -265,7 +265,7 @@ test.describe('Rectangular Node Tests', () => {
     await expect(laneNode).toHaveCount(1);
     
     // Check for child rectangular nodes - use a more flexible selector
-    const childNodes = page.locator('g.Node').filter({ hasText: /simple|longtext|very long/ });
+    const childNodes = page.locator('g.node').filter({ hasText: /simple|longtext|very long/ });
     await expect(childNodes).toHaveCount(3);
     
     // Verify each child node has proper structure
@@ -289,8 +289,8 @@ test.describe('Rectangular Node Tests', () => {
     }
     
     // Test specific issues mentioned by user
-    const longTextNode = page.locator('g.Node').filter({ hasText: 'this is a long text' });
-    const veryLongTextNode = page.locator('g.Node').filter({ hasText: 'this is a very text' });
+    const longTextNode = page.locator('g.node').filter({ hasText: 'this is a long text' });
+    const veryLongTextNode = page.locator('g.node').filter({ hasText: 'this is a very text' });
     
     // Check that long text nodes are properly sized
     await expect(longTextNode).toBeVisible();
@@ -298,7 +298,7 @@ test.describe('Rectangular Node Tests', () => {
     
     // Verify text positioning and containment
     const longTextPositions = await page.evaluate(() => {
-      const nodes = document.querySelectorAll('g.Node');
+      const nodes = document.querySelectorAll('g.node');
       let targetNode = null;
       
       for (const node of nodes) {
@@ -356,7 +356,7 @@ test.describe('Rectangular Node Tests', () => {
       const laneH = parseFloat(laneRect.getAttribute('height') || 0);
       
       // Get child nodes
-      const childNodes = Array.from(document.querySelectorAll('g.Node')).filter(node => {
+      const childNodes = Array.from(document.querySelectorAll('g.node')).filter(node => {
         const text = node.querySelector('text');
         return text && (text.textContent.includes('simple') || 
                        text.textContent.includes('longtext') || 
@@ -409,7 +409,7 @@ test.describe('Rectangular Node Tests', () => {
     const nodesFound = await waitForNodes(page);
     expect(nodesFound).toBe(true);
     
-    const nodes = page.locator('g.Node');
+    const nodes = page.locator('g.node');
     await expect(nodes).toHaveCount(1);
     
     const node = nodes.first();

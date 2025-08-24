@@ -152,7 +152,7 @@ Displays 6 adapter nodes showcasing all major combinations:
 'g.adapter'
 
 // Child nodes across all adapters
-'g.adapter g.Node'
+'g.adapter g.node'
 'g.adapter g.node-container'
 
 // Text and rectangle elements

@@ -13,9 +13,31 @@ export class Minimap {
     this.targetWidthPx = 240;
     this.targetHeightPx = 160;
     
+    // CRITICAL FIX: Clean up any existing zoom-cockpit elements that might be left behind
+    try {
+      if (typeof document !== 'undefined') {
+        // Remove any orphaned zoom-cockpit elements from the DOM
+        const existingCockpits = document.querySelectorAll('.zoom-cockpit');
+        existingCockpits.forEach(cockpit => {
+          if (cockpit.parentElement && cockpit.parentElement.classList.contains('zoom-overlay-host')) {
+            cockpit.remove();
+          }
+        });
+        
+        // Remove empty overlay hosts
+        const emptyOverlayHosts = document.querySelectorAll('.zoom-overlay-host');
+        emptyOverlayHosts.forEach(host => {
+          if (host.children.length === 0) {
+            host.remove();
+          }
+        });
+      }
+    } catch {}
+    
     // UI Elements
     this.cockpit = null;
     this.overlay = null;
+    this.overlayHost = null;
     this.chromeSvg = null;
     this.content = null;
     this.collapsedIcon = null;
@@ -44,6 +66,27 @@ export class Minimap {
     
     // State management
     this.state = { showTimer: null, hideTimer: null, interacting: false, wheelTimer: null };
+    
+    // CRITICAL FIX: Track initialization state to prevent duplicates
+    this._isInitialized = false;
+    
+    // CRITICAL FIX: Set up periodic duplicate detection and cleanup
+    this._duplicateCheckInterval = null;
+    this._setupDuplicateDetection();
+  }
+
+  /**
+   * Set up periodic duplicate detection to catch any runtime duplications
+   */
+  _setupDuplicateDetection() {
+    try {
+      if (typeof window !== 'undefined') {
+        // Check every 5 seconds for duplicates
+        this._duplicateCheckInterval = setInterval(() => {
+          this.removeDuplicates();
+        }, 5000);
+      }
+    } catch {}
   }
 
   getActiveThemeName() {
@@ -120,11 +163,70 @@ export class Minimap {
     this.updateViewport(transform);
   }
 
+  /**
+   * Check for and remove any duplicate zoom-cockpit elements
+   * This is a safety measure to prevent the duplication issue
+   */
+  removeDuplicates() {
+    try {
+      if (typeof document !== 'undefined') {
+        const allCockpits = document.querySelectorAll('.zoom-cockpit');
+        if (allCockpits.length > 1) {
+          console.warn(`Found ${allCockpits.length} zoom-cockpit elements, removing duplicates`);
+          
+          // Keep only the first one (which should be the current one)
+          for (let i = 1; i < allCockpits.length; i++) {
+            allCockpits[i].remove();
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error removing duplicate elements:', e);
+    }
+  }
+
+  /**
+   * Check if the minimap is properly initialized and has all required DOM elements
+   */
+  isProperlyInitialized() {
+    return this._isInitialized && 
+           this.cockpit && 
+           this.overlayHost && 
+           this.chromeSvg && 
+           this.content;
+  }
+
+  /**
+   * Safely initialize the minimap, only if not already properly initialized
+   */
+  safeInitialize() {
+    if (this.isProperlyInitialized()) {
+      return; // Already properly initialized
+    }
+    
+    // CRITICAL FIX: Remove any duplicates before initialization
+    this.removeDuplicates();
+    
+    // If partially initialized, clean up first
+    if (this._isInitialized) {
+      this.destroy();
+    }
+    
+    this.initializeEmbedded();
+  }
+
   initializeEmbedded() {
+    // CRITICAL FIX: Prevent duplicate initialization
+    if (this._isInitialized) {
+      console.warn('Minimap already initialized, skipping duplicate initialization');
+      return;
+    }
+    
     const mm = this.dashboard.data.settings.minimap;
     if (!mm || mm.enabled === false) {
       // Performance optimization: Skip minimap entirely if disabled
       this.active = false;
+      this._isInitialized = true; // Mark as initialized even when disabled
       return;
     }
 
@@ -137,6 +239,7 @@ export class Minimap {
     // Disabled mode: do not create the cockpit at all
     if (mode === 'disabled') {
       this.dashboard.data.settings.minimap.enabled = false;
+      this._isInitialized = true; // Mark as initialized even when disabled
       return;
     }
 
@@ -174,6 +277,10 @@ export class Minimap {
         .append('div')
         .attr('class', 'zoom-overlay-host');
     }
+    
+    // CRITICAL FIX: Remove any existing zoom-cockpit elements to prevent duplication
+    overlayHost.selectAll('.zoom-cockpit').remove();
+    
     // Size and place host to account for container padding
     try {
       const cs = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(graphContainer) : null;
@@ -365,6 +472,7 @@ export class Minimap {
     this.setCollapsed(mm.collapsed === true);
     this.updateVisibilityByZoom();
     this.updatePinVisualState();
+    this._isInitialized = true; // Mark as initialized after successful initialization
   }
 
   setCollapsed(collapsed, persist = false) {
@@ -930,6 +1038,12 @@ export class Minimap {
       if (this.state?.showTimer) { clearTimeout(this.state.showTimer); this.state.showTimer = null; }
       if (this.state?.hideTimer) { clearTimeout(this.state.hideTimer); this.state.hideTimer = null; }
       if (this.state?.wheelTimer) { clearTimeout(this.state.wheelTimer); this.state.wheelTimer = null; }
+      
+      // CRITICAL FIX: Clean up duplicate detection interval
+      if (this._duplicateCheckInterval) { 
+        clearInterval(this._duplicateCheckInterval); 
+        this._duplicateCheckInterval = null; 
+      }
     } catch {}
 
     try {
@@ -940,11 +1054,22 @@ export class Minimap {
       if (this.cockpit) {
         this.cockpit.remove();
       }
+      
+      // CRITICAL FIX: Also remove any other zoom-cockpit elements that might exist
+      if (this.overlayHost) {
+        this.overlayHost.selectAll('.zoom-cockpit').remove();
+        
+        // If overlay host is empty, remove it too to prevent accumulation
+        if (this.overlayHost.selectAll('*').empty()) {
+          this.overlayHost.remove();
+        }
+      }
     } catch {}
 
     // Null out references
     this.cockpit = null;
     this.overlay = null;
+    this.overlayHost = null;
     this.chromeSvg = null;
     this.content = null;
     this.collapsedIcon = null;
@@ -967,6 +1092,9 @@ export class Minimap {
     this.drag = null;
     this.zoom = null;
     this.active = false;
+    
+    // CRITICAL FIX: Reset initialization flag so minimap can be reinitialized
+    this._isInitialized = false;
   }
 }
 

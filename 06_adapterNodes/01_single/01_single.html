@@ -134,7 +134,7 @@
         }
         
         function testChildNodeRendering() {
-            const childNodes = document.querySelectorAll('g.adapter g.Node');
+            const childNodes = document.querySelectorAll('g.adapter g.node');
             return childNodes.length === 3; // staging, archive, transform
         }
         
@@ -157,7 +157,7 @@
             const adapter = document.querySelector('g.adapter');
             if (!adapter) return false;
             
-            const childNodes = adapter.querySelectorAll('g.Node');
+            const childNodes = adapter.querySelectorAll('g.node');
             return childNodes.length === 3;
         }
         

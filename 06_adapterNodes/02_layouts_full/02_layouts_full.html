@@ -359,7 +359,7 @@
             let totalChildNodes = 0;
             
             adapters.forEach(adapter => {
-                const childNodes = adapter.querySelectorAll('g.Node');
+                const childNodes = adapter.querySelectorAll('g.node');
                 totalChildNodes += childNodes.length;
             });
             
@@ -395,7 +395,7 @@
             let validPositioning = 0;
             
             adapters.forEach(adapter => {
-                const childNodes = adapter.querySelectorAll('g.Node');
+                const childNodes = adapter.querySelectorAll('g.node');
                 const innerContainer = adapter.querySelector('rect.zone-innerContainer');
                 
                 if (childNodes.length > 0 && innerContainer) {
@@ -431,7 +431,7 @@
             // This test checks if we have different arrangements
             // by examining the DOM structure variations
             adapters.forEach((adapter, index) => {
-                const childNodes = adapter.querySelectorAll('g.Node');
+                const childNodes = adapter.querySelectorAll('g.node');
                 const layoutSignature = `${childNodes.length}`;
                 layoutSet.add(layoutSignature);
             });

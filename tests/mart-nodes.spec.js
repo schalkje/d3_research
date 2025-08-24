@@ -11,7 +11,7 @@ async function extractRoles(page) {
     const el = document.querySelector('g.mart');
     if (!el) return null;
     const map = {};
-    el.querySelectorAll('g.Node').forEach(n => {
+    el.querySelectorAll('g.node').forEach(n => {
       const inst = n.__node;
       if (inst?.data?.role) {
         map[inst.data.role] = { x: inst.x, y: inst.y, width: inst.data.width, height: inst.data.height };

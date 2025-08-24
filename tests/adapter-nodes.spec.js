@@ -41,7 +41,7 @@ async function getAdapterMetrics(page) {
 
     const getChildRoles = () => {
       const map = {};
-      const nodes = adapterEl.querySelectorAll('g.Node');
+      const nodes = adapterEl.querySelectorAll('g.node');
       nodes.forEach((n) => {
         const inst = n.__node;
         if (inst?.data?.role) {
@@ -416,7 +416,7 @@ test.describe('Adapter Nodes - Clean Suite', () => {
 
         // Check that role labels are displayed in full
         const roleLabels = await page.evaluate(() => {
-          const nodes = Array.from(document.querySelectorAll('g.Node text.label'));
+          const nodes = Array.from(document.querySelectorAll('g.node text.label'));
           return nodes.map(text => text.textContent);
         });
 

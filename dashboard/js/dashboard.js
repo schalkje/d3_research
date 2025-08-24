@@ -55,6 +55,37 @@ export class Dashboard {
   }
 
   // --- Selection bounding box helpers ---
+  
+  /**
+   * Global cleanup method to remove any orphaned zoom-cockpit elements
+   * This prevents the duplication issue that can occur after expand/collapse operations
+   */
+  cleanupOrphanedElements() {
+    try {
+      if (typeof document !== 'undefined') {
+        // Remove any orphaned zoom-cockpit elements that might exist outside the current minimap instance
+        const allCockpits = document.querySelectorAll('.zoom-cockpit');
+        allCockpits.forEach(cockpit => {
+          // Only remove if it's not the current minimap's cockpit
+          if (cockpit !== this.minimap?.cockpit?.node()) {
+            console.warn('Removing orphaned zoom-cockpit element');
+            cockpit.remove();
+          }
+        });
+        
+        // Remove empty overlay hosts
+        const emptyOverlayHosts = document.querySelectorAll('.zoom-overlay-host');
+        emptyOverlayHosts.forEach(host => {
+          if (host.children.length === 0) {
+            host.remove();
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Error during cleanup of orphaned elements:', e);
+    }
+  }
+  
   renderSelectionBoundingBox(bbox) {
     try {
       // Respect settings: if disabled, just clear and return
@@ -154,11 +185,25 @@ export class Dashboard {
       this.main.zoom = this.initializeZoom();
     }
 
+    // CRITICAL FIX: Instead of destroying and recreating the minimap, 
+    // just reinitialize the existing one to prevent zoom-cockpit duplication
     if (this.minimap) {
-      try { this.minimap.destroy(); } catch {}
+      try { 
+        // Clean up any orphaned elements first
+        this.cleanupOrphanedElements();
+        // Use safe initialization to prevent duplicates
+        this.minimap.safeInitialize();
+      } catch (e) {
+        // If reinitialization fails, fall back to creating a new instance
+        console.warn('Failed to reinitialize minimap, creating new instance:', e);
+        this.minimap = new Minimap(this);
+        this.minimap.initializeEmbedded();
+      }
+    } else {
+      // Only create new instance if one doesn't exist
+      this.minimap = new Minimap(this);
+      this.minimap.initializeEmbedded();
     }
-    this.minimap = new Minimap(this);
-    this.minimap.initializeEmbedded();
 
     this.hasPerformedInitialZoomToRoot = false;
     this.recomputeBaselineFit();
@@ -205,7 +250,9 @@ export class Dashboard {
   this.main.root.onClick = (node) => this.selectNode(node);
   this.main.root.onDblClick = (node, event) => this.handleNodeDblClick(node, event);
 
-    this.minimap.initializeEmbedded();
+    // CRITICAL FIX: Clean up any orphaned elements and use safe initialization to prevent duplicates
+    this.cleanupOrphanedElements();
+    this.minimap.safeInitialize();
 
     if (this.data.settings.zoomToRoot) {
       this.zoomToRoot();

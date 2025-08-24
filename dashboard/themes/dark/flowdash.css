@@ -23,7 +23,7 @@ text, .label, .rect.label { fill: var(--fd-text); }
 
 /* dashboard containers */
 .container-shape, .adapter.shape, .rect.shape, .SSIS.shape { fill: var(--fd-surface); stroke: var(--fd-border); }
-.header-background { fill: #12151c; stroke: var(--fd-border); }
+.header-background { fill: none; stroke: none; }
 .header-text { fill: var(--fd-text); }
 .zoom-button:hover circle { fill: #1f2632; stroke: #394252; }
 .zoom-icon { fill: var(--fd-text); }

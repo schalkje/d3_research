@@ -18,7 +18,7 @@ test.describe('Lane Node Tests', () => {
   async function waitForNodes(page, timeout = 30000) {
     try {
       // Wait for node elements to appear
-      await page.waitForSelector('g.Node', { timeout });
+      await page.waitForSelector('g.node', { timeout });
       
       // Wait a bit more for the nodes to be fully rendered
       await page.waitForTimeout(1000);
@@ -455,7 +455,7 @@ test.describe('Lane Node Tests', () => {
       expect(nodesFound).toBe(true);
       
       // Check for lane node
-      const laneNodes = page.locator('g.Node[data-type="lane"]');
+      const laneNodes = page.locator('g.node[data-type="lane"]');
       await expect(laneNodes).toHaveCount(1);
       
       // Check for child nodes

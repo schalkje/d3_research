@@ -416,9 +416,13 @@ text {
   dominant-baseline: hanging;
 }
 
+.rect.label,
+.node.label {
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
 /* Ensure all node labels are centered */
-.rect.label,
-.rect.label,
 .rect.label,
 .adapter.label,
 .foundation.label,

@@ -179,7 +179,7 @@ test.describe('Foundation Node Tests', () => {
         const roles = await page.evaluate(() => {
           const foundationEl = document.querySelector('g.foundation');
           if (!foundationEl) return null;
-          const nodes = foundationEl.querySelectorAll('g.Node');
+          const nodes = foundationEl.querySelectorAll('g.node');
           const map = {};
           nodes.forEach(n => {
             const inst = n.__node;

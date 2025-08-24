@@ -18,8 +18,8 @@ svg.canvas { border: none; box-shadow: 12px 12px 24px #c8ccd4, -12px -12px 24px 
 .shape, .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: var(--fd-surface); stroke: #dfe3ea; stroke-width: 1.5px; filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9)); rx: 12; ry: 12; transition: transform 160ms ease-out, filter 160ms ease-out, stroke-width 160ms ease-out; }
 .shape:hover, .rect.shape:hover, .container-shape:hover { filter: drop-shadow(10px 10px 20px rgba(0,0,0,.14)) drop-shadow(-10px -10px 20px rgba(255,255,255,.95)); }
 .container-shape.selected, .rect.shape.selected { filter: drop-shadow(12px 12px 24px rgba(0,0,0,.18)) drop-shadow(-12px -12px 24px rgba(255,255,255,.98)); }
-.header-background { fill: var(--fd-surface); stroke: #e5e9f0; }
-.header-text { fill: var(--fd-text); font-weight: 600; }
+.header-background { fill: var(--fd-surface); stroke: none; }
+.header-text { fill: var(--fd-text); font-weight: 600; text-anchor: start; dominant-baseline: middle; }
 
 text, .label, .rect.label { fill: var(--fd-text); }
 .edge .path { stroke: var(--fd-edge); stroke-width: 2.25px; }

@@ -17,7 +17,7 @@ test.describe('ColumnsNode Comprehensive Tests', () => {
   // Helper function to wait for nodes to be rendered
   async function waitForNodes(page, timeout = 30000) {
     try {
-      await page.waitForSelector('g.Node', { timeout });
+      await page.waitForSelector('g.node', { timeout });
       await page.waitForTimeout(1000);
       return true;
     } catch (error) {
