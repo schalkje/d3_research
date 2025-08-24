@@ -152,6 +152,16 @@ export default class BaseNode {
     if (this.suspenseDisplayChange) {
       return;
     }
+    // If dashboard is temporarily suspending display changes during bulk init,
+    // skip bubbling to avoid mid-cascade zoom recalculation. We detect via the
+    // closest available dashboard reference on the root node if present.
+    try {
+      const root = this.parentNode?.parentNode ? this.parentNode.parentNode : this.parentNode || this;
+      const dashboard = root?.dashboard || root?.__dashboard;
+      if (dashboard && dashboard._suspendDisplayChange) {
+        return;
+      }
+    } catch {}
     if (this.onDisplayChange) {
       this.onDisplayChange();
     } else {

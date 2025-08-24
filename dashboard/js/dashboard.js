@@ -53,6 +53,8 @@ export class Dashboard {
     this.isMainAndMinimapSyncing = false;
     this._displayChangeScheduled = false;
     this.hasPerformedInitialZoomToRoot = false;
+    this._displayChangeCount = 0;
+    this._suspendDisplayChange = false;
   }
 
   // --- Selection bounding box helpers ---
@@ -208,10 +210,6 @@ export class Dashboard {
 
     this.hasPerformedInitialZoomToRoot = false;
     this.recomputeBaselineFit();
-    if (this.data.settings.zoomToRoot) {
-      this.zoomToRoot();
-      this.hasPerformedInitialZoomToRoot = true;
-    }
 
     this.onMainDisplayChange();
   }
@@ -255,10 +253,7 @@ export class Dashboard {
     this.cleanupOrphanedElements();
     this.minimap.safeInitialize();
 
-    if (this.data.settings.zoomToRoot) {
-      this.zoomToRoot();
-      this.hasPerformedInitialZoomToRoot = true;
-    }
+    // Defer initial zoom-to-root to onMainDisplayChange so it happens after layout settles
     
 
     this.initializeFullscreenToggle();
@@ -266,6 +261,8 @@ export class Dashboard {
     if (typeof window !== 'undefined') {
       this._onWindowResize = () => {
         if (this.main.svg.classed('flowdash-fullscreen')) return;
+        // Avoid early resizes during initial layout stabilization which can shift the view
+        if ((this._displayChangeCount || 0) < 2) return;
         this.applyResizePreserveZoom();
       };
       window.addEventListener('resize', this._onWindowResize);
@@ -595,10 +592,17 @@ export class Dashboard {
     const prevX = this.main.transform.x;
     const prevY = this.main.transform.y;
 
+    // Preserve world center instead of scaling translate by size ratios
+    // Derive current world-space center from previous transform and container size
+    const worldLeft = (prevX + prevWidth / 2) / -prevK;
+    const worldTop = (prevY + prevHeight / 2) / -prevK;
+    const worldWidth = prevWidth / prevK;
+    const worldHeight = prevHeight / prevK;
+    const worldCenterX = worldLeft + worldWidth / 2;
+    const worldCenterY = worldTop + worldHeight / 2;
+
     const newWidth = rect.width || prevWidth;
     const newHeight = rect.height || prevHeight;
-    const widthRatio = newWidth / prevWidth;
-    const heightRatio = newHeight / prevHeight;
 
     this.main.width = newWidth;
     this.main.height = newHeight;
@@ -607,13 +611,17 @@ export class Dashboard {
     this.main.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
 
     const newK = prevK;
-    const newX = prevX * widthRatio;
-    const newY = prevY * heightRatio;
-    const newTransform = d3.zoomIdentity.translate(newX, newY).scale(newK);
+    const newWorldWidth = newWidth / newK;
+    const newWorldHeight = newHeight / newK;
+    const newLeft = worldCenterX - newWorldWidth / 2;
+    const newTop = worldCenterY - newWorldHeight / 2;
+    const newTransform = d3.zoomIdentity
+      .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
+      .scale(newK);
 
     if (this.minimap.active) this.minimap.resize();
 
-    this.main.transform = { k: newK, x: newX, y: newY };
+    this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
     this.main.container.attr('transform', newTransform);
     this.main.svg.call(this.main.zoom.transform, newTransform);
 
@@ -703,10 +711,17 @@ export class Dashboard {
     }
 
     if (displayChangeCallback) {
-      root.onDisplayChange = displayChangeCallback;
+      root.onDisplayChange = () => {
+        if (this._suspendDisplayChange) return;
+        displayChangeCallback();
+      };
     }
 
+    // Suspend display-change reactions during bulk initialization to avoid
+    // mid-cascade zoom/fit recalculations that cause drift
+    this._suspendDisplayChange = true;
     root.init();
+    this._suspendDisplayChange = false;
 
     this.initializeChildrenStatusses(root);
 
@@ -724,6 +739,19 @@ export class Dashboard {
     }
 
     
+    // After initial construction, perform one stabilized anchor/zoom based on
+    // the final computed content bbox
+    try {
+      this.recomputeBaselineFit();
+      if (this.data.settings.zoomToRoot) {
+        this.zoomToRoot();
+        this.hasPerformedInitialZoomToRoot = true;
+      } else {
+        const target = this.main.fitTransform || d3.zoomIdentity;
+        this.main.svg.call(this.main.zoom.transform, target);
+      }
+    } catch {}
+
     return root;
   }
 
@@ -787,16 +815,39 @@ export class Dashboard {
     this._displayChangeScheduled = true;
 
     requestAnimationFrame(() => {
+      // Count display changes to detect initial stabilization after post-init measures
+      this._displayChangeCount = (this._displayChangeCount || 0) + 1;
+      // Recompute baseline fit so scale indicator and reset reflect current content
+      try { this.recomputeBaselineFit(); } catch {}
+
       if (this.minimap.svg) {
         if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
         this.isMainAndMinimapSyncing = true;
         this.minimap.update();
+        // Keep minimap eye in sync with current main transform
+        try {
+          const transform = d3.zoomIdentity
+            .translate(this.main.transform.x, this.main.transform.y)
+            .scale(this.main.transform.k);
+          this.minimap.updateViewport(transform);
+          this.minimap.updateScaleIndicator?.();
+        } catch {}
         this.isMainAndMinimapSyncing = false;
       }
 
-      if (this.data.settings.zoomToRoot && !this.hasPerformedInitialZoomToRoot) {
+      // Defer initial zoom-to-root until at least two display changes have occurred,
+      // so header sizing and collapsed layout have stabilized
+      if (this.data.settings.zoomToRoot && !this.hasPerformedInitialZoomToRoot && this._displayChangeCount >= 2) {
         this.zoomToRoot();
         this.hasPerformedInitialZoomToRoot = true;
+      }
+
+      // If zoom-to-root is disabled, still anchor once after stabilization so
+      // any early resizes/cascades don't leave the view offset.
+      if (!this.data.settings.zoomToRoot && !this._didInitialAnchor && this._displayChangeCount >= 2) {
+        const target = this.main.fitTransform || d3.zoomIdentity;
+        this.main.svg.call(this.main.zoom.transform, target);
+        this._didInitialAnchor = true;
       }
 
       this.minimap.position();
@@ -1193,10 +1244,21 @@ export function computeBoundingBox(dashboard, nodes) {
       dimensions = null;
     }
     if (!dimensions || !isFinite(dimensions.width) || !isFinite(dimensions.height)) {
+      // Skip nodes that are not rendered/visible (e.g., collapsed descendants removed from DOM)
+      const hasDom = !!(node?.element && typeof node.element.node === 'function' && node.element.node());
+      const isVisible = (node?.visible !== false);
+      if (!hasDom || !isVisible) {
+        return;
+      }
+      // Fallback to effective size when DOM bbox is unavailable but node is visible
       const nx = (typeof node.x === 'number') ? node.x : 0;
       const ny = (typeof node.y === 'number') ? node.y : 0;
-      const nw = (node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0);
-      const nh = (node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0);
+      const nw = (typeof node.getEffectiveWidth === 'function')
+        ? node.getEffectiveWidth()
+        : ((node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0));
+      const nh = (typeof node.getEffectiveHeight === 'function')
+        ? node.getEffectiveHeight()
+        : ((node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0));
       minX = Math.min(minX, nx - nw / 2);
       minY = Math.min(minY, ny - nh / 2);
       maxX = Math.max(maxX, nx + nw / 2);
