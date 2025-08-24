@@ -3,8 +3,8 @@ export const DEFAULT_SETTINGS = {
   selector: { incomming: 1, outgoing: 1 },
   showBoundingBox: true,
   zoomToRoot: true,
-  toggleCollapseOnStatusChange: false,
-  cascadeOnStatusChange: true,
+  toggleCollapseOnStatusChange: true, // Default true for flowdash-js and flowdash-bundle
+  cascadeOnStatusChange: true, // Default true for flowdash-js and flowdash-bundle
   showCenterMark: false,
   showConnectionPoints: false,
   showInnerZoneRect: false,
@@ -36,9 +36,17 @@ export const DEFAULT_SETTINGS = {
   }
 };
 
+// Default settings for demo pages (other than flowdash-js and flowdash-bundle)
+export const DEMO_DEFAULT_SETTINGS = {
+  ...DEFAULT_SETTINGS,
+  toggleCollapseOnStatusChange: false, // Default false for demo pages
+  cascadeOnStatusChange: false, // Default false for demo pages
+};
+
 export class ConfigManager {
-  static mergeWithDefaults(userSettings) {
-    return this.deepMerge(DEFAULT_SETTINGS, userSettings);
+  static mergeWithDefaults(userSettings, isDemoPage = false) {
+    const defaults = isDemoPage ? DEMO_DEFAULT_SETTINGS : DEFAULT_SETTINGS;
+    return this.deepMerge(defaults, userSettings);
   }
   
   static deepMerge(target, source) {

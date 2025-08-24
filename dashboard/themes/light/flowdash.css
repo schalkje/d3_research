@@ -62,7 +62,6 @@ svg.canvas { border: 2px solid var(--fd-border); border-radius: var(--fd-radius)
 text, .rect.label { fill: var(--fd-text) !important; }
 .label { font-size: 12px; font-weight: normal; fill: var(--fd-accent) !important; opacity: 1; }
 .node.label { stroke: none; font-size: 14px; font-weight: bold; fill: var(--fd-text) !important; opacity: 1; text-anchor: middle; dominant-baseline: middle; }
-.node.label { stroke: none; font-size: 14px; font-weight: bold; fill: var(--fd-text) !important; opacity: 1; text-anchor: middle; dominant-baseline: middle; }
 .edge .path { stroke: var(--fd-edge) !important; }
 
 /* Minimap overlays: solid (no transparency), no blur; iris red as legacy */

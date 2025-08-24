@@ -67,6 +67,13 @@
                     <label><input type="checkbox" id="showInnerZoneRectCheckbox"> Inner zone rect</label>
                 </div>
             </div>
+            <div class="settings-group is-toggles">
+                <label class="settings-title">Status Behavior</label>
+                <div class="settings-toggles">
+                    <label><input type="checkbox" id="toggleCollapseOnStatusChange" checked> Auto-collapse on status change</label>
+                    <label><input type="checkbox" id="cascadeOnStatusChange" checked> Cascade status changes</label>
+                </div>
+            </div>
             <div class="settings-group">
                 <label class="settings-title">Minimap</label>
                 <div class="settings-inline">
@@ -265,6 +272,8 @@
             setChecked('showConnectionPointsCheckbox', false);
             setChecked('zoomToRoot', true);
             setChecked('showInnerZoneRectCheckbox', false);
+            setChecked('toggleCollapseOnStatusChange', true);
+            setChecked('cascadeOnStatusChange', true);
             setValue('layoutMechanismSelect', 'force');
             setValue('numCurveMargin', 0);
             setValue('numSelectorIn', 1);
@@ -297,6 +306,8 @@
             document.getElementById('showConnectionPointsCheckbox').addEventListener('change', updateLayout);
             document.getElementById('zoomToRoot').addEventListener('change', updateLayout);
             document.getElementById('showInnerZoneRectCheckbox').addEventListener('change', updateLayout);
+            document.getElementById('toggleCollapseOnStatusChange').addEventListener('change', updateLayout);
+            document.getElementById('cascadeOnStatusChange').addEventListener('change', updateLayout);
             document.getElementById('numCurveMargin').addEventListener('change', updateLayout);
             document.getElementById('numSelectorIn').addEventListener('change', updateLayout);
             document.getElementById('numSelectorOut').addEventListener('change', updateLayout);
@@ -374,8 +385,9 @@
                 mm.scaleIndicator = mm.scaleIndicator || {};
                 mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 
-                // Keep nodes expanded by default on re-render
-                dashboardData.settings.toggleCollapseOnStatusChange = false;
+                // Status behavior settings from UI
+                dashboardData.settings.toggleCollapseOnStatusChange = document.getElementById('toggleCollapseOnStatusChange').checked;
+                dashboardData.settings.cascadeOnStatusChange = document.getElementById('cascadeOnStatusChange').checked;
                 
                 dashboard = new flowdash.Dashboard(dashboardData);
                 dashboard.initialize('#graph');
@@ -456,8 +468,9 @@
                 mm.scaleIndicator = mm.scaleIndicator || {};
                 mm.scaleIndicator.visible = !!(document.getElementById('minimapScaleVisible')?.checked);
                 
-                // Keep nodes expanded by default on re-render
-                dashboardData.settings.toggleCollapseOnStatusChange = false;
+                // Status behavior settings from UI
+                dashboardData.settings.toggleCollapseOnStatusChange = document.getElementById('toggleCollapseOnStatusChange').checked;
+                dashboardData.settings.cascadeOnStatusChange = document.getElementById('cascadeOnStatusChange').checked;
 
                 if (!dashboard) {
                     dashboard = new flowdash.Dashboard(dashboardData);
