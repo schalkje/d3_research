@@ -116,13 +116,17 @@ export class ZoomManager {
   }
 
   handleLayoutChange() {
+    const isInitial = !this.lastContentBounds;
     const oldFitK = this.lastFitK || this.dashboard.main.fitK || 1;
     const oldBounds = this.lastContentBounds || this.dashboard.getContentBBox();
     const oldTransform = { ...(this.dashboard.main.transform || { k: 1, x: 0, y: 0 }) };
     const { fitK, fitTransform, bounds } = this.recomputeBaselineFit();
 
     let target;
-    if (this.approximatelyEqual(oldTransform.k, oldFitK)) {
+    if (isInitial) {
+      // Initial load: always snap to baseline fit (100%)
+      target = fitTransform;
+    } else if (this.approximatelyEqual(oldTransform.k, oldFitK)) {
       // User was at 100% → snap to new baseline
       target = fitTransform;
     } else {

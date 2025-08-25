@@ -133,7 +133,38 @@ export class Dashboard {
     if (!this.main?.root) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
     const nodes = this.main.root.getAllNodes(false);
     if (!nodes || nodes.length === 0) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
-    return computeBoundingBox(this, nodes);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const includeNode = (node) => {
+      // Include nodes that are actually visible or collapsed containers (use footprint)
+      const hasDom = !!(node?.element && typeof node.element.node === 'function' && node.element.node());
+      if (hasDom) return true;
+      // If DOM not present, include only if container itself is visible (collapsed footprint)
+      return !!(node?.isContainer && node?.collapsed === true);
+    };
+    nodes.forEach((node) => {
+      if (!includeNode(node)) return;
+      const nx = (typeof node.x === 'number') ? node.x : 0;
+      const ny = (typeof node.y === 'number') ? node.y : 0;
+      const nw = (typeof node.getEffectiveWidth === 'function')
+        ? node.getEffectiveWidth()
+        : ((node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0));
+      const nh = (typeof node.getEffectiveHeight === 'function')
+        ? node.getEffectiveHeight()
+        : ((node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0));
+      const left = nx - nw / 2;
+      const right = nx + nw / 2;
+      const top = ny - nh / 2;
+      const bottom = ny + nh / 2;
+      minX = Math.min(minX, left);
+      minY = Math.min(minY, top);
+      maxX = Math.max(maxX, right);
+      maxY = Math.max(maxY, bottom);
+    });
+    if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) {
+      return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
+    }
+    const padding = 2;
+    return { x: minX - padding, y: minY - padding, width: (maxX - minX) + 2 * padding, height: (maxY - minY) + 2 * padding };
   }
 
   
