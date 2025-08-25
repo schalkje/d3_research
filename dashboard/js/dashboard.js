@@ -817,8 +817,13 @@ export class Dashboard {
     requestAnimationFrame(() => {
       // Count display changes to detect initial stabilization after post-init measures
       this._displayChangeCount = (this._displayChangeCount || 0) + 1;
+      // Preserve current percent-of-fit across content changes by remembering previous baseline
+      const prevFitK = this.main.fitK || 1;
       // Recompute baseline fit so scale indicator and reset reflect current content
       try { this.recomputeBaselineFit(); } catch {}
+      const newFitK = this.main.fitK || 1;
+      const currentK = this.main.transform.k || 1;
+      const currentPctOfFit = (prevFitK > 0) ? (currentK / prevFitK) : 1;
 
       if (this.minimap.svg) {
         if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
@@ -848,6 +853,20 @@ export class Dashboard {
         const target = this.main.fitTransform || d3.zoomIdentity;
         this.main.svg.call(this.main.zoom.transform, target);
         this._didInitialAnchor = true;
+      }
+
+      // After initial anchoring, when content changes (expand/collapse),
+      // keep the same percent-of-fit. If at 100%, refit to keep all content visible.
+      if ((this.hasPerformedInitialZoomToRoot || this._didInitialAnchor) && isFinite(currentPctOfFit)) {
+        try {
+          const bbox = this.getContentBBox();
+          const targetK = newFitK * currentPctOfFit;
+          const x = (-bbox.width * targetK) / 2 - bbox.x * targetK;
+          const y = (-bbox.height * targetK) / 2 - bbox.y * targetK;
+          const target = d3.zoomIdentity.translate(x, y).scale(targetK);
+          // Apply immediately (no transition) for stability
+          this.main.svg.call(this.main.zoom.transform, target);
+        } catch {}
       }
 
       this.minimap.position();
