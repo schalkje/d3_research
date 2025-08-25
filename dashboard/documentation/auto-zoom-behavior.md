@@ -26,6 +26,23 @@ Goals
 - Outputs: per-node sizes from `getSize()`, overall content bounds, `(fitK, fitTransform)`, current `transform`.
 
 Node model and sizing contract
+### Participating files and responsibilities
+- `dashboard/js/dashboard.js`: Orchestrates layout/zoom lifecycle, initializes zoom behavior, computes baseline fit, applies transforms, and coordinates minimap sync. Hosts selection and bbox helpers.
+- `dashboard/js/minimap.js`: Renders minimap content, viewport eye, and scale indicator; debounced updates; cockpit UI.
+- `dashboard/js/nodeBase.js`: Base node behavior; selection, visibility, and `getSize()` contract for leaf nodes.
+- `dashboard/js/nodeBaseContainer.js`: Container behavior; collapsed/expanded lifecycle, `getSize()` aggregation, inner-edges management, DOM attach/detach, and zone integration.
+- `dashboard/js/zones/ZoneManager.js` and zones:
+  - `HeaderZone.js`: Header metrics (min width/height), controls; impacts collapsed size.
+  - `InnerContainerZone.js`: Child container, child positioning, content size calculation.
+  - `MarginZone.js`, `ContainerZone.js`, `BaseZone.js`: Chrome, margins, and base zone utilities.
+- `dashboard/js/geometryManager.js`: Minimum size calculations, geometry helpers; used for enforcing min sizes and computing bounds per node.
+- `dashboard/js/configManager.js`: Default margins/spacing, settings merge; recommended place to expose `themeVersion` for cache invalidation.
+- `dashboard/js/statusManager.js`: Status cascade and container status computation (may trigger collapse/expand).
+- `dashboard/js/nodeRegistry.js` and node types: `nodeLane.js`, `nodeColumns.js`, `nodeGroup.js`, `nodeFoundation.js`, `nodeRect.js`, `nodeCircle.js`, `nodeMart.js` — provide layout algorithms/visuals while honoring base sizing contract.
+- `dashboard/js/utils.js`: DOM measurement helpers (e.g., `getComputedDimensions`), bounding box utilities used by dashboard/node modules.
+- `dashboard/js/edgeBase.js`, `dashboard/js/edge.js`: Edge rendering/updates; excluded from baseline fit but participate in visual density toggles and minimap visuals.
+- Optional/aux: `dashboard/js/themeManager.js` (theme switches), `dashboard/js/simulation.js` and force utilities if simulation layouts are active.
+
 - Sizing and positioning originate in the base classes `nodeBase.js` and `nodeBaseContainer.js`. Derived node types may customize visuals, but zooming/positioning calculations must rely on these base contracts only.
 - `nodeBase.getSize()` returns the full visual size for the node in its current state, including margins, headers, gutters, and all labels. Any decoration that is visible must be accounted for.
 - `nodeBaseContainer.getSize()` must always return a valid size regardless of whether the container is collapsed or expanded. Inner edges are included within the container’s inner content box (they must not extend outside the returned size). When collapsed or when no live DOM bbox exists, return the collapsed footprint supplied by the node data, honoring minimum width/height constraints.
@@ -54,8 +71,7 @@ Optional follow-up pass (visual polish only)
 - **R2. Recompute baseline fit after content changes**: After any change that affects content bounds (collapse/expand, status cascade, node additions/removals, resize), recompute `fitK`/`fitTransform` from current content bounds so the minimap scale indicator and Zoom Reset reflect the new baseline. The scale indicator shows `percent = (transform.k / fitK) * 100` and Zoom Reset returns to 100%.
 - **R3. Minimap stays in lockstep**: Any change to main transform or content bounds must schedule a minimap update: refresh content, update viewBox/masks, update eye viewport, update scale indicator, and re-position cockpit.
 - **R4. Avoid recursive updates**: Sync flags prevent main↔minimap feedback loops; minimap uses debounced viewport updates.
-- **R5. Do not auto-change user zoom intent**: Never change `k` due to a collapse/expand unless the user explicitly invoked a zoom action (Zoom In/Out/Reset/Zoom to Node/Bounding Box).
- - **R5. Do not auto-change user zoom intent**: Never change `k` due to a collapse/expand unless the user explicitly invoked a zoom action (Zoom In/Out/Reset/Zoom to Node/Bounding Box). Exception: if the user is currently at 100% (i.e., `approximatelyEqual(k, oldFitK)`), snap to the new baseline (`k := newFitK`) so the user remains at 100% after the baseline shifts.
+- **R5. Do not auto-change user zoom intent**: Never change `k` due to a collapse/expand unless the user explicitly invoked a zoom action (Zoom In/Out/Reset/Zoom to Node/Bounding Box). Exception: if the user is currently at 100% (i.e., `approximatelyEqual(k, oldFitK)`), snap to the new baseline (`k := newFitK`) so the user remains at 100% after the baseline shifts.
 Epsilon for equality checks
 - Use a small epsilon when comparing `k` to `fitK` to account for float/animation noise, e.g., `approximatelyEqual(a,b) := |a-b| <= max(1e-6, 0.005 * b)` (≈0.5%).
 - **R6. Fit-to-target actions animate via zoom behavior**: Actions that intentionally change zoom (zoom reset, zoom to node, zoom to bbox) must call the zoom behavior so the main and minimap remain synchronized.
@@ -370,8 +386,8 @@ sequenceDiagram
   DB->>DB: Recompute sizes (depth-first)
   DB->>DB: Compute content bounds (nodes only)
   DB->>DB: Recompute baseline fit (fitK, fitTransform)
-  DB->>DB: Keep k recenter translation
-  DB->>MM: onMainDisplayChange
+  DB->>DB: Keep k; recenter translation
+  DB->>MM: onMainDisplayChange()
   MM-->>DB: Update eye, scale indicator
 ```
 
