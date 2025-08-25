@@ -34,6 +34,12 @@ export const DEFAULT_SETTINGS = {
     persistence: { persistCollapsedState: true, storageKey: "flowdash:minimap:collapsed" },
     theme: {}
   }
+  ,
+  zoom: {
+    scaleExtent: [0.1, 40],
+    epsilonPct: 0.005,
+    minTargetBBoxPx: { w: 24, h: 24 }
+  }
 };
 
 // Default settings for demo pages (other than flowdash-js and flowdash-bundle)

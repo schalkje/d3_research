@@ -7,6 +7,7 @@ import { ConfigManager } from "./configManager.js";
 import { fetchDashboardFile } from "./data.js";
 import { LoadingOverlay, showLoading as showLoader, hideLoading as hideLoader, resolveLoadingContainer as resolveLoadingHost } from "./loadingOverlay.js";
 import { Minimap } from "./minimap.js";
+import ZoomManager from "./zoomManager.js";
 import { NodeStatus } from "./nodeBase.js";
 
 export class Dashboard {
@@ -55,6 +56,7 @@ export class Dashboard {
     this.hasPerformedInitialZoomToRoot = false;
     this._displayChangeCount = 0;
     this._suspendDisplayChange = false;
+    this.zoomManager = new ZoomManager(this);
   }
 
   // --- Selection bounding box helpers ---
@@ -134,28 +136,9 @@ export class Dashboard {
     return computeBoundingBox(this, nodes);
   }
 
-  computeFitForBoundingBox(boundingBox) {
-    const svgWidth = this.main.width || 1;
-    const svgHeight = this.main.height || 1;
-    const scaleX = svgWidth / boundingBox.width;
-    const scaleY = svgHeight / boundingBox.height;
-    const k = Math.min(scaleX, scaleY);
-    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
-    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
-    const transform = d3.zoomIdentity.translate(x, y).scale(k);
-    return { k, x, y, transform };
-  }
+  
 
-  recomputeBaselineFit() {
-    if (!this.main?.root) return;
-    const nodes = this.main.root.getAllNodes(false);
-    if (!nodes || nodes.length === 0) return;
-    const bbox = computeBoundingBox(this, nodes);
-    const fit = this.computeFitForBoundingBox(bbox);
-    this.main.fitK = fit.k || 1.0;
-    this.main.fitTransform = fit.transform;
-    this.minimap.updateScaleIndicator?.();
-  }
+  recomputeBaselineFit() { return this.zoomManager.recomputeBaselineFit(); }
 
   setData(newDashboardData) {
     this._initialLoading = true;
@@ -781,15 +764,7 @@ export class Dashboard {
     const dag = null;
 
     const dashboard = this;
-    const zoom = d3
-      .zoom()
-  // Disable default double-click zoom; custom handlers manage dblclicks
-  .filter((event) => event?.type !== 'dblclick')
-      .scaleExtent([0.1, 40])
-      .wheelDelta(event => {
-        return -event.deltaY * (event.deltaMode ? 120 : 1) * 0.002;
-      })
-      .on("zoom", (event) => this.zoomMain(event));
+    const zoom = this.zoomManager.initializeZoomBehavior();
 
     this.main.svg.call(zoom);
 
@@ -815,60 +790,18 @@ export class Dashboard {
     this._displayChangeScheduled = true;
 
     requestAnimationFrame(() => {
-      // Count display changes to detect initial stabilization after post-init measures
       this._displayChangeCount = (this._displayChangeCount || 0) + 1;
-      // Preserve current percent-of-fit across content changes by remembering previous baseline
-      const prevFitK = this.main.fitK || 1;
-      // Recompute baseline fit so scale indicator and reset reflect current content
-      try { this.recomputeBaselineFit(); } catch {}
-      const newFitK = this.main.fitK || 1;
-      const currentK = this.main.transform.k || 1;
-      const currentPctOfFit = (prevFitK > 0) ? (currentK / prevFitK) : 1;
-
+      try { this.zoomManager.handleLayoutChange(); } catch {}
       if (this.minimap.svg) {
-        if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
-        this.isMainAndMinimapSyncing = true;
-        this.minimap.update();
-        // Keep minimap eye in sync with current main transform
         try {
+          this.minimap.update();
           const transform = d3.zoomIdentity
             .translate(this.main.transform.x, this.main.transform.y)
             .scale(this.main.transform.k);
           this.minimap.updateViewport(transform);
           this.minimap.updateScaleIndicator?.();
         } catch {}
-        this.isMainAndMinimapSyncing = false;
       }
-
-      // Defer initial zoom-to-root until at least two display changes have occurred,
-      // so header sizing and collapsed layout have stabilized
-      if (this.data.settings.zoomToRoot && !this.hasPerformedInitialZoomToRoot && this._displayChangeCount >= 2) {
-        this.zoomToRoot();
-        this.hasPerformedInitialZoomToRoot = true;
-      }
-
-      // If zoom-to-root is disabled, still anchor once after stabilization so
-      // any early resizes/cascades don't leave the view offset.
-      if (!this.data.settings.zoomToRoot && !this._didInitialAnchor && this._displayChangeCount >= 2) {
-        const target = this.main.fitTransform || d3.zoomIdentity;
-        this.main.svg.call(this.main.zoom.transform, target);
-        this._didInitialAnchor = true;
-      }
-
-      // After initial anchoring, when content changes (expand/collapse),
-      // keep the same percent-of-fit. If at 100%, refit to keep all content visible.
-      if ((this.hasPerformedInitialZoomToRoot || this._didInitialAnchor) && isFinite(currentPctOfFit)) {
-        try {
-          const bbox = this.getContentBBox();
-          const targetK = newFitK * currentPctOfFit;
-          const x = (-bbox.width * targetK) / 2 - bbox.x * targetK;
-          const y = (-bbox.height * targetK) / 2 - bbox.y * targetK;
-          const target = d3.zoomIdentity.translate(x, y).scale(targetK);
-          // Apply immediately (no transition) for stability
-          this.main.svg.call(this.main.zoom.transform, target);
-        } catch {}
-      }
-
       this.minimap.position();
 
       if (this._initialLoading) {
@@ -882,78 +815,27 @@ export class Dashboard {
 
 
 
-  zoomMain(zoomEvent) {
-    if (this.isMainAndMinimapSyncing) return;
-    this.isMainAndMinimapSyncing = true;
+  zoomMain(zoomEvent) { this.zoomManager.onMainZoom(zoomEvent); }
 
-    this.main.transform.k = zoomEvent.transform.k;
-    this.main.transform.x = zoomEvent.transform.x;
-    this.main.transform.y = zoomEvent.transform.y;
+  zoomMinimap(zoomEvent) { this.zoomManager.onMinimapZoom(zoomEvent); }
 
-    const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
-    this.main.container.attr("transform", transform );
+  zoomIn() { this.zoomManager.zoomIn(); }
 
-    if (this.minimap.active) {
-      this.minimap.scheduleUpdate(zoomEvent.transform);
-    }
-
-    this.isMainAndMinimapSyncing = false;
-  }
-
-  zoomMinimap(zoomEvent) {
-    if (this.isMainAndMinimapSyncing) return;
-    this.isMainAndMinimapSyncing = true;
-
-    this.main.transform.x = zoomEvent.transform.x;
-    this.main.transform.y = zoomEvent.transform.y;
-    this.main.transform.k = zoomEvent.transform.k;
-
-    this.main.container.attr("transform", zoomEvent.transform);
-    this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
-
-    this.minimap.scheduleUpdate(zoomEvent.transform);
-
-    this.isMainAndMinimapSyncing = false;
-  }
-
-  zoomIn() {
-    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 1.2);
-    this.main.scale = this.main.scale * (1 + this.main.zoomSpeed);
-  }
-
-  zoomOut() {
-    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 0.8);
-    this.main.scale = this.main.scale * (1 - this.main.zoomSpeed);
-  }
+  zoomOut() { this.zoomManager.zoomOut(); }
 
   zoomToRoot() {
     if (!this.main.root) return;
     const allNodes = this.main.root.getAllNodes(false);
     if (!allNodes || allNodes.length === 0) return;
     const bbox = computeBoundingBox(this, allNodes);
-    const fit = this.computeFitForBoundingBox(bbox);
-    this.main.fitK = fit.k || 1.0;
-    this.main.fitTransform = fit.transform;
+    const { fitK, fitTransform } = this.zoomManager.computeFit(bbox);
+    this.main.fitK = fitK || 1.0;
+    this.main.fitTransform = fitTransform;
     this.minimap.updateScaleIndicator?.();
     this.zoomToBoundingBox(bbox);
   }
 
-  zoomReset() {
-    const target = this.main.fitTransform || d3.zoomIdentity;
-    this.main.svg
-      .transition()
-      .duration(750)
-      .call(this.main.zoom.transform, target);
-    this.main.scale = 1;
-
-    if (this.minimap.active)
-      this.minimap.svg
-        .transition()
-        .duration(750)
-        .call(this.minimap.zoom.transform, target);
-
-    this.deselectAll();
-  }
+  zoomReset() { this.zoomManager.zoomReset(); this.deselectAll(); }
 
   zoomClicked(event, [x, y]) {
     event.stopPropagation();
@@ -1202,24 +1084,7 @@ export class Dashboard {
     }
   }
 
-  zoomToBoundingBox(boundingBox) {
-    const svgWidth = this.main.width || 1;
-    const svgHeight = this.main.height || 1;
-
-    const scaleX = svgWidth / boundingBox.width;
-    const scaleY = svgHeight / boundingBox.height;
-    const k = Math.min(scaleX, scaleY);
-
-    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
-    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
-    const target = d3.zoomIdentity.translate(x, y).scale(k);
-
-    // Animate via the zoom behavior so internal state and minimap stay in sync
-    this.main.svg
-      .transition()
-      .duration(500)
-      .call(this.main.zoom.transform, target);
-  }
+  zoomToBoundingBox(boundingBox) { this.zoomManager.zoomToBoundingBox(boundingBox, { animate: true, duration: 500 }); }
 
   showLoading() {
     const container = resolveLoadingHost(this.main?.svg);
