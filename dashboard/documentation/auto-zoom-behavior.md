@@ -1,8 +1,9 @@
 ### Automatic Zoom and Minimap Behavior
 
-This document specifies how Flowdash computes node sizes, lays out the dashboard, and synchronizes zoom and minimap behavior when nodes are collapsed/expanded or when state updates change collapse state.
+Scope
+- This document is an implementation-ready spec for zooming and positioning in Flowdash. It defines contracts, algorithms, defaults, and acceptance criteria so the zoom/minimap system can be reimplemented or refactored safely.
 
-The goals are:
+Goals
 - Maintain a stable user experience (preserve perceived zoom when possible).
 - Recompute fit baselines when layout changes so scale indicators and reset behave correctly.
 - Keep the minimap synchronized with the main viewport at all times.
@@ -19,7 +20,12 @@ The goals are:
 - 100% zoom is defined as `k === fitK`. Zooming in increases `k` (> fitK), zooming out decreases `k` (< fitK).
 - Layout-only changes preserve `k` and adjust translation so the visible region stays stable.
 
-### Node model and sizing contract
+### Architecture and contracts
+- Core components: base nodes (`nodeBase.js`, `nodeBaseContainer.js`), zoom behavior (applies `(k,x,y)`), minimap (content clone/simplification + eye/indicator), and the zone system for container interiors.
+- Inputs: node tree, node states (collapsed/expanded), viewport size, settings.
+- Outputs: per-node sizes from `getSize()`, overall content bounds, `(fitK, fitTransform)`, current `transform`.
+
+Node model and sizing contract
 - Sizing and positioning originate in the base classes `nodeBase.js` and `nodeBaseContainer.js`. Derived node types may customize visuals, but zooming/positioning calculations must rely on these base contracts only.
 - `nodeBase.getSize()` returns the full visual size for the node in its current state, including margins, headers, gutters, and all labels. Any decoration that is visible must be accounted for.
 - `nodeBaseContainer.getSize()` must always return a valid size regardless of whether the container is collapsed or expanded. Inner edges are included within the container’s inner content box (they must not extend outside the returned size). When collapsed or when no live DOM bbox exists, return the collapsed footprint supplied by the node data, honoring minimum width/height constraints.
@@ -43,12 +49,15 @@ When building or updating the dashboard layout, perform a depth-first sizing pas
 Optional follow-up pass (visual polish only)
 - Optionally expand the minimap’s content mask to include edge geometry/labels if they extend beyond node boxes. This does not change `(fitK, fitTransform)`.
 
-### General Rules
+### Core invariants and rules
 - **R1. Preserve current scale on layout-only changes**: When layout changes (collapse/expand, status-driven changes, window resize), keep `transform.k` constant where feasible and re-center translation so the visible world region remains stable.
 - **R2. Recompute baseline fit after content changes**: After any change that affects content bounds (collapse/expand, status cascade, node additions/removals, resize), recompute `fitK`/`fitTransform` from current content bounds so the minimap scale indicator and Zoom Reset reflect the new baseline. The scale indicator shows `percent = (transform.k / fitK) * 100` and Zoom Reset returns to 100%.
 - **R3. Minimap stays in lockstep**: Any change to main transform or content bounds must schedule a minimap update: refresh content, update viewBox/masks, update eye viewport, update scale indicator, and re-position cockpit.
 - **R4. Avoid recursive updates**: Sync flags prevent main↔minimap feedback loops; minimap uses debounced viewport updates.
 - **R5. Do not auto-change user zoom intent**: Never change `k` due to a collapse/expand unless the user explicitly invoked a zoom action (Zoom In/Out/Reset/Zoom to Node/Bounding Box).
+ - **R5. Do not auto-change user zoom intent**: Never change `k` due to a collapse/expand unless the user explicitly invoked a zoom action (Zoom In/Out/Reset/Zoom to Node/Bounding Box). Exception: if the user is currently at 100% (i.e., `approximatelyEqual(k, oldFitK)`), snap to the new baseline (`k := newFitK`) so the user remains at 100% after the baseline shifts.
+Epsilon for equality checks
+- Use a small epsilon when comparing `k` to `fitK` to account for float/animation noise, e.g., `approximatelyEqual(a,b) := |a-b| <= max(1e-6, 0.005 * b)` (≈0.5%).
 - **R6. Fit-to-target actions animate via zoom behavior**: Actions that intentionally change zoom (zoom reset, zoom to node, zoom to bbox) must call the zoom behavior so the main and minimap remain synchronized.
 - **R7. Ignore edges for baseline fit and transform**: Edges (and edge labels) must not influence content bounds or `fitK/fitTransform`. Edge visibility toggles (e.g., density-based) update visuals/minimap but never change the baseline fit.
 
@@ -57,19 +66,19 @@ Optional follow-up pass (visual polish only)
 - The minimap scale indicator and any UI badges display `round((k / fitK) * 100)%`.
 - Initial load starts at 100% (fit). Zoom Reset always returns to 100% of the current baseline. When content changes, the baseline (and therefore what 100% means) may change; we preserve absolute `k` per R1 and update the indicator accordingly.
 
-### User Actions
+### User actions
 
 - **A1. Collapse a container (click)**
   - Dashboard:
     - Apply collapse, recompute container size/visibility.
-    - Keep `k` unchanged (R1). Adjust `(x,y)` to maintain the same world center in screen space; avoid sudden jump.
+  - If current zoom is 100% (k ≈ oldFitK), snap to the new baseline (`k := newFitK`). Otherwise keep `k` unchanged (R1). Adjust `(x,y)` to maintain the same world center in screen space; avoid sudden jump.
     - Recompute `fitK`/`fitTransform` based on new content bounds (R2).
   - Minimap:
     - Regenerate content (simplified or clone), update viewBox/masks to new content bbox, update eye from current main transform (R3).
     - Update scale indicator based on `transform.k / fitK`.
 
 - **A2. Expand a container (click)**
-  - Dashboard: Same as A1; expand, layout children, keep `k`, recenter `(x,y)` if necessary; recompute baseline fit.
+  - Dashboard: Same as A1; expand, layout children; if at 100% snap to new baseline, else keep `k`; recenter `(x,y)` if necessary; recompute baseline fit.
   - Minimap: Same as A1.
 
 - **A3. Double-click zoom to node or neighborhood**
@@ -112,7 +121,7 @@ Optional follow-up pass (visual polish only)
 - **M1. Hover mode auto-hide**: When not pinned, collapse cockpit when zoomed out to fit-or-below threshold; show cockpit when zoomed in. Keep visible while interacting/hovering.
 - **M2. Pinned mode**: Always visible; still updates scale indicator and viewport.
 
-### Edge Cases
+### Edge cases
 - **E1. Collapsed nodes without DOM bbox**: Use `nodeBaseContainer.getSize()` or fallback node data width/height for minimap rectangles and content bounds calculations. Collapsed height/width are supplied by the node and must respect minimums.
 - **E2. Extremely small targets**: When zooming to a tiny node, you may expand the target to the configured Minimum target bbox to avoid over-zooming; set to 0 to disable if not needed.
 - **E3. Duplicate cockpit elements**: Detect and remove duplicates; re-initialize minimap safely on data reloads.
@@ -125,7 +134,7 @@ Optional follow-up pass (visual polish only)
   - Per-container cap: hide edges for a container when its visible inner-edge count exceeds 500 while `k / fitK < 0.6`.
 - When edge visibility changes, call `dashboard.onMainDisplayChange()` to refresh the minimap; no baseline recompute is necessary.
 
-### Implementation Hooks
+### Implementation hooks
 - After any expand/collapse or status-induced visibility change, call:
   - `dashboard.recomputeBaselineFit()`
   - `dashboard.onMainDisplayChange()` (schedules minimap update) or ensure equivalent update path is invoked.
@@ -137,6 +146,133 @@ Optional follow-up pass (visual polish only)
 - Inputs: node tree, node states (collapsed/expanded), viewport size.
 - Outputs: per-node sizes from `getSize()`, overall content bounds, `(fitK, fitTransform)`, current `transform`.
 - Success criteria: content fully fits at 100%; minimap reflects viewport; zoom reset returns to 100%; no jumps in perceived scale on layout-only changes.
+
+### Algorithms (pseudocode)
+
+Depth-first sizing
+```
+function depth_first_sizing(root):
+  for node in postorder(root):
+    if node.isLeaf():
+      size = nodeBase.getSize(node)
+    else:
+      childSizes = [c.size for c in node.children if c.visible]
+      size = nodeBaseContainer.getSize(node, childSizes)
+    size.width = max(size.width, node.minWidth)
+    size.height = max(size.height, node.minHeight)
+    node.applySize(size)
+    node.cachedBounds = computeNodeBounds(node)
+```
+
+Compute baseline fit
+```
+function compute_fit(contentBounds, viewport):
+  contentW = contentBounds.width; contentH = contentBounds.height
+  fitK = min(viewport.width / contentW, viewport.height / contentH)
+  // center content in viewport
+  tx = viewport.cx - fitK * contentBounds.cx
+  ty = viewport.cy - fitK * contentBounds.cy
+  return { fitK, fitTransform: { k: fitK, x: tx, y: ty } }
+```
+
+Apply layout-only change (preserve k)
+```
+function preserve_k_and_recentre(oldTransform, oldBounds, newBounds, viewport):
+  k = oldTransform.k
+  // keep same world center on screen (use old center to avoid jumps)
+  worldCx = oldBounds.cx; worldCy = oldBounds.cy
+  x = viewport.cx - k * worldCx
+  y = viewport.cy - k * worldCy
+  return { k, x, y }
+```
+
+Zoom to target bbox (with minimum target bbox)
+```
+function zoom_to_bbox(targetBounds, viewport, minBBoxPx = {w:24,h:24}):
+  if minBBoxPx and (minBBoxPx.w > 0 and minBBoxPx.h > 0):
+    targetBounds = expandToMinScreenSize(targetBounds, minBBoxPx)
+  k = min(viewport.width / targetBounds.width, viewport.height / targetBounds.height)
+  x = viewport.cx - k * targetBounds.cx
+  y = viewport.cy - k * targetBounds.cy
+  animateZoom({k,x,y}) via zoom behavior
+```
+
+Handle window resize
+```
+function on_resize(oldTransform, bounds, newViewport):
+  // keep k; adjust translation to keep the same world center in view
+  k = oldTransform.k
+  x = newViewport.cx - k * bounds.cx
+  y = newViewport.cy - k * bounds.cy
+  return { k, x, y }
+```
+
+Incremental recompute (layout-specific impacted region)
+```
+function request_layout_change(changedNode, layoutEngine, themeVersion):
+  // 1) Determine impacted region based on layout specifics (lanes/columns/zones)
+  impacted = layoutEngine.computeImpactedSet(changedNode)
+  // Always include ancestors up to root to allow containers to resize
+  impacted |= ancestorsInclusive(changedNode)
+
+  // 2) Mark dirty
+  for n in impacted:
+    n.dirty = true
+
+  // 3) Recompute sizes post-order only for dirty nodes
+  for n in postorder(root):
+    if !n.visible: continue
+    if n.dirty or n.themeVersion != themeVersion:
+      if n.isLeaf():
+        n.size = nodeBase.getSize(n)
+      else:
+        childSizes = [c.size for c in n.children if c.visible]
+        n.size = nodeBaseContainer.getSize(n, childSizes)
+      n.size.width = max(n.size.width, n.minWidth)
+      n.size.height = max(n.size.height, n.minHeight)
+      n.applySize(n.size)
+      n.cachedBounds = computeNodeBounds(n)
+      n.themeVersion = themeVersion
+      n.dirty = false
+
+  // 4) Compute overall content bounds from cached bounds
+  contentBounds = union([n.cachedBounds for n in allVisibleNodes(root)])
+
+  // 5) Recompute baseline
+  {fitK, fitTransform} = compute_fit(contentBounds, viewport)
+
+  // 6) Preserve k unless user was at 100%
+  if approximatelyEqual(oldTransform.k, oldFitK):
+    newTransform = fitTransform // stay at 100%
+  else:
+    newTransform = preserve_k_and_recentre(oldTransform, oldContentBounds, contentBounds, viewport)
+
+  // 7) Apply and refresh
+  applyTransform(newTransform) via zoom behavior
+  onMainDisplayChange()
+```
+
+Cache invalidation
+- Long-lived caches are allowed for sizes and bounds. Invalidate by:
+  - Marking nodes dirty when data/state changes or when included in the impacted region.
+  - Bumping a `themeVersion` token (font-size/theme swap) to force remeasure on next update.
+  - Explicit reset on viewport DPI/zoom changes (if applicable).
+
+### Configuration defaults
+- Minimum target bbox (zoom-to-target): 24×24 px (set to 0 to disable)
+- Edge visibility thresholds:
+  - Hide when `k / fitK < 0.4`
+  - Hide when edges per screen area > 0.001 edges/px²
+  - Per-container cap: hide when inner-edge count > 500 and `k / fitK < 0.6`
+- Minimap: debounced viewport updates; update on any transform or content-bounds change
+
+### Acceptance criteria (tests/invariants)
+- Initial load sets `transform = fitTransform` (100%); minimap reflects this immediately.
+- On collapse/expand, if the user was at 100% before the change, the view remains at 100% after (snap to new baseline). Otherwise `k` stays constant; view recenters smoothly; minimap updates once.
+- Zoom Reset returns to the latest computed baseline fit after any structural change.
+- Zoom-to-node respects minimum target bbox when enabled; animation occurs through zoom behavior; minimap eye matches.
+- Window resize preserves `k`; recenters; recomputes baseline; minimap stays in sync.
+- Edges toggling (density-based) never changes `fitK`/`fitTransform`.
 
 ## Visual examples (SVG)
 
@@ -234,8 +370,8 @@ sequenceDiagram
   DB->>DB: Recompute sizes (depth-first)
   DB->>DB: Compute content bounds (nodes only)
   DB->>DB: Recompute baseline fit (fitK, fitTransform)
-  DB->>DB: Keep k; recenter translation
-  DB->>MM: onMainDisplayChange()
+  DB->>DB: Keep k recenter translation
+  DB->>MM: onMainDisplayChange
   MM-->>DB: Update eye, scale indicator
 ```
 
