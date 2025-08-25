@@ -108,7 +108,12 @@ export default class BaseNode {
 
     // Auto collapse/expand based on status when enabled, avoiding re-entrancy
     if (this.settings.toggleCollapseOnStatusChange && !this._updatingCollapseState) {
-      const shouldCollapse = StatusManager.shouldCollapseOnStatus(value, this.settings);
+      // Determine collapse rule based on effective status (containers use aggregated child status)
+      let effectiveStatus = value;
+      if (this.isContainer && this.childNodes && this.childNodes.length > 0) {
+        try { effectiveStatus = StatusManager.calculateContainerStatus(this.childNodes, this.settings); } catch {}
+      }
+      const shouldCollapse = StatusManager.shouldCollapseOnStatus(effectiveStatus, this.settings);
       this._updatingCollapseState = true;
       try {
         if (shouldCollapse) {
