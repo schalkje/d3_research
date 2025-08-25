@@ -668,8 +668,13 @@ export default class BaseContainerNode extends BaseNode {
     }
     else
     {
-      // Get child container from zone system
-      const childContainer = this.zoneManager?.innerContainerZone?.getChildContainer() || this.element;
+      // Ensure inner container zone exists before creating children so we never fall back to the root element
+      let innerZone = this.zoneManager?.innerContainerZone;
+      if (!innerZone && this.zoneManager?.ensureInnerContainerZone) {
+        innerZone = this.zoneManager.ensureInnerContainerZone();
+      }
+      // Get child container from zone system (prefer inner container)
+      const childContainer = innerZone?.getChildContainer() || this.element;
       
       for (const node of this.data.children) {
         // Create the childComponent instance based on node type
@@ -680,8 +685,8 @@ export default class BaseContainerNode extends BaseNode {
           this.childNodes.push(childComponent);
 
           // Add child to zone system
-          if (this.zoneManager?.innerContainerZone) {
-            this.zoneManager.innerContainerZone.addChild(childComponent);
+          if (innerZone) {
+            innerZone.addChild(childComponent);
           } else {
             console.warn("Zone system not available for child:", node.id);
           }
@@ -691,8 +696,8 @@ export default class BaseContainerNode extends BaseNode {
       }
       
       // Trigger child positioning after all children are initialized
-      if (this.zoneManager?.innerContainerZone) {
-        this.zoneManager.innerContainerZone.forceUpdateChildPositions();
+      if (innerZone) {
+        innerZone.forceUpdateChildPositions();
       }
     }
 
