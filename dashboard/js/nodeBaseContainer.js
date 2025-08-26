@@ -402,7 +402,7 @@ export default class BaseContainerNode extends BaseNode {
       headerHeight = this.zoneManager.headerZone.getHeaderHeight?.() ?? this.zoneManager.headerZone.getSize().height ?? headerHeight;
     }
 
-    // Final collapsed dimensions
+    // Final collapsed dimensions (clamp to minimums)
     const collapsedWidth = Math.max(headerMinWidth, this.minimumSize.width);
     const collapsedHeight = Math.max(headerHeight, this.minimumSize.height);
 
@@ -414,6 +414,19 @@ export default class BaseContainerNode extends BaseNode {
     }
 
     if (this.parentNode) this.parentNode.update();
+
+    // Ensure any child elements that might still exist are moved under this.element (collapsed containers do not show inner content group)
+    try {
+      const elNode = this.element?.node?.();
+      if (elNode) {
+        this.childNodes.forEach((child) => {
+          const childEl = child?.element?.node?.();
+          if (childEl && childEl.parentNode !== elNode) {
+            try { elNode.appendChild(childEl); } catch {}
+          }
+        });
+      }
+    } catch {}
     this.suspenseDisplayChange = false;
   }
 
@@ -717,6 +730,9 @@ export default class BaseContainerNode extends BaseNode {
 
     // Shape drawing is now handled by ContainerZone in the zone system
 
+    // Ensure DOM parent for all children is correct before layout
+    this.ensureChildrenDomParent();
+
     // Only call updateChildren if we're not already in an update cycle
     // This prevents infinite loops between the zone system and node updates
     if (!this._updating) {
@@ -733,9 +749,34 @@ export default class BaseContainerNode extends BaseNode {
     }
   }
 
+  // Ensure children are attached under the inner container zone's child container
+  ensureChildrenDomParent() {
+    try {
+      if (!this.childNodes || this.childNodes.length === 0) return;
+      // Prefer inner container when expanded; fallback to this.element when collapsed
+      let innerZone = this.zoneManager?.innerContainerZone;
+      if (!this.collapsed && !innerZone && this.zoneManager?.ensureInnerContainerZone) {
+        innerZone = this.zoneManager.ensureInnerContainerZone();
+      }
+      const parentGroup = (innerZone && !this.collapsed) ? (innerZone.getChildContainer?.() || this.element) : this.element;
+      const parentNode = parentGroup?.node?.() || null;
+      if (!parentNode) return;
+      this.childNodes.forEach((childNode) => {
+        const el = childNode?.element?.node?.();
+        if (!el) return;
+        if (el.parentNode !== parentNode) {
+          // Move element under the correct parent group
+          try { parentNode.appendChild(el); } catch {}
+        }
+      });
+    } catch {}
+  }
+
   updateChildren() {
     // Use zone system for child positioning if available
     if (this.zoneManager) {
+      // Ensure DOM parent is correct even when status toggles cause collapse/expand
+      this.ensureChildrenDomParent();
       // Zone system handles positioning automatically
       return;
     }
@@ -803,6 +844,15 @@ export default class BaseContainerNode extends BaseNode {
         if (!childNode.element) {
           console.log(`attachChildrenToDOM: Reinitializing child ${childNode.id} in container ${this.id}`);
           childNode.init(childContainer);
+        } else {
+          // Ensure DOM is attached to the correct container group
+          try {
+            const currentParent = childNode.element.node()?.parentNode || null;
+            const desiredParent = childContainer.node?.() || null;
+            if (desiredParent && currentParent !== desiredParent) {
+              desiredParent.appendChild(childNode.element.node());
+            }
+          } catch {}
         }
         // Ensure the zone knows about this child (always re-register after zone recreation)
         if (innerZone) {

@@ -214,6 +214,23 @@ export default class BaseNode {
       }
     }
 
+    // Ensure DOM parenting matches logical parenting for all nodes
+    try {
+      const parent = this.parentNode;
+      if (parent && parent.element && this.element) {
+        let desiredParentGroup = parent.element;
+        if (parent.isContainer && !parent.collapsed) {
+          const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+          desiredParentGroup = innerZone?.getChildContainer?.() || parent.element;
+        }
+        const currentParent = this.element.node()?.parentNode || null;
+        const desired = desiredParentGroup?.node?.() || null;
+        if (desired && currentParent !== desired) {
+          desired.appendChild(this.element.node());
+        }
+      }
+    } catch {}
+
     // Set up default events using EventManager
     EventManager.setupDefaultNodeEvents(this);
       

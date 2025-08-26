@@ -133,7 +133,9 @@ export default class LaneNode extends BaseContainerNode {
         // When expanded, use margin zone calculation with correct margins
         // This ensures proper sizing based on actual child content
         const margins = marginZone.getMargins();
-        const contentWidth = maxChildWidth;
+        // Clamp to available inner width
+        const availableWidth = Math.max(0, this.data.width - margins.left - margins.right);
+        const contentWidth = Math.min(maxChildWidth, availableWidth);
         const contentHeight = totalChildHeight + totalSpacing;
         
         newSize = {

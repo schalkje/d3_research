@@ -753,6 +753,9 @@ export class Dashboard {
     }
 
     
+    // After initial construction, fix up hierarchy for nodes with explicit parentId(s)
+    try { this.reparentNodesByParentIds(); } catch {}
+
     // After initial construction, perform one stabilized anchor/zoom based on
     // the final computed content bbox
     try {
@@ -767,6 +770,55 @@ export class Dashboard {
     } catch {}
 
     return root;
+  }
+
+  reparentNodesByParentIds() {
+    if (!this.main?.root) return;
+    const all = this.main.root.getAllNodes(false, false);
+    const idMap = new Map(all.map(n => [n.id, n]));
+    const ensureChildAttached = (parent, child) => {
+      try {
+        // Adjust logical tree
+        if (child.parentNode && child.parentNode !== parent) {
+          const prev = child.parentNode;
+          const idx = prev.childNodes ? prev.childNodes.indexOf(child) : -1;
+          if (idx >= 0) prev.childNodes.splice(idx, 1);
+          // Remove from previous zone listing
+          try { prev.zoneManager?.innerContainerZone?.removeChild?.(child); } catch {}
+        }
+        child.parentNode = parent;
+        parent.childNodes = parent.childNodes || [];
+        if (parent.childNodes.indexOf(child) === -1) parent.childNodes.push(child);
+        // Register with zone system and move DOM
+        const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+        if (innerZone) {
+          innerZone.addChild(child);
+          const target = innerZone.getChildContainer?.();
+          const el = child.element?.node?.();
+          const tgt = target?.node?.();
+          if (el && tgt && el.parentNode !== tgt) tgt.appendChild(el);
+          // Update layout for new parent
+          try { parent.updateChildren?.(); } catch {}
+          try { parent.zoneManager?.update?.(); } catch {}
+          try { innerZone.updateChildPositions(); } catch {}
+        } else if (parent.element && child.element) {
+          const tgt = parent.element.node();
+          const el = child.element.node();
+          if (tgt && el && el.parentNode !== tgt) tgt.appendChild(el);
+        }
+      } catch {}
+    };
+    for (const node of all) {
+      const pids = Array.isArray(node?.data?.parentIds) ? node.data.parentIds : (node?.data?.parentId ? [node.data.parentId] : []);
+      if (!pids.length) continue;
+      // Prefer first existing container parent
+      const target = pids.map(id => idMap.get(id)).find(n => n && n.isContainer);
+      if (target && node.parentNode !== target) {
+        ensureChildAttached(target, node);
+      }
+    }
+    // Update top-level after reparenting
+    this.main.root.update();
   }
 
   initializeChildrenStatusses(node) {
@@ -823,6 +875,8 @@ export class Dashboard {
     requestAnimationFrame(() => {
       this._displayChangeCount = (this._displayChangeCount || 0) + 1;
       try { this.zoomManager.handleLayoutChange(); } catch {}
+      // Ensure DOM hierarchy is consistent with logical parent/child relationships
+      try { this.enforceDomHierarchy(); } catch {}
       if (this.minimap.svg) {
         try {
           this.minimap.update();
@@ -842,6 +896,32 @@ export class Dashboard {
 
       this._displayChangeScheduled = false;
     });
+  }
+
+  enforceDomHierarchy() {
+    try {
+      if (!this.main?.root) return;
+      const allNodes = this.main.root.getAllNodes(false, false);
+      allNodes.forEach((node) => {
+        if (!node?.element) return;
+        const parent = node.parentNode;
+        if (!parent) return;
+        // Determine correct DOM parent group
+        let parentGroup = parent.element;
+        try {
+          if (parent.isContainer && !parent.collapsed) {
+            const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+            parentGroup = innerZone?.getChildContainer?.() || parent.element;
+          }
+        } catch {}
+        const targetDom = parentGroup?.node?.();
+        const el = node.element?.node?.();
+        if (!targetDom || !el) return;
+        if (el.parentNode !== targetDom) {
+          try { targetDom.appendChild(el); } catch {}
+        }
+      });
+    } catch {}
   }
 
 
