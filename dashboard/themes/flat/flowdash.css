@@ -44,7 +44,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 700; }
 
 
 /* Collapsed containers: reflect state fully (like rect nodes) */
-.collapsed .container-shape { /* base state palette above is already full */ }
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #e2e8f0 !important; stroke: #cbd5e1 !important; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #dbeafe !important; stroke: #60a5fa !important; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #fef3c7 !important; stroke: #f59e0b !important; animation: none !important; stroke-dasharray: none !important; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #dcfce7 !important; stroke: #34d399 !important; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #f1f5f9 !important; stroke: #94a3b8 !important; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #ffedd5 !important; stroke: #fb923c !important; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #fef9c3 !important; stroke: #facc15 !important; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #fee2e2 !important; stroke: #ef4444 !important; }
 
 /* Expanded adapters/marts/foundations: subdued, no animations */
 .adapter.expanded[status="Updating"] > .zone-container > .container-shape,

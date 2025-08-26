@@ -123,7 +123,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
 }
 
 /* Collapsed containers: reflect state fully (like rect nodes) */
-.collapsed .container-shape { /* full intensity already defined above */ }
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #18172e !important; stroke: #6b6f9a !important; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #0a1f27 !important; stroke: var(--fd-neon-cyan) !important; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #1e1522 !important; stroke: var(--fd-glow1) !important; animation: none !important; stroke-dasharray: none !important; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #0a2f2a !important; stroke: var(--fd-neon-green) !important; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #1c1a2e !important; stroke: #b38cff !important; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #281a0e !important; stroke: var(--fd-neon-orange) !important; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #2f230a !important; stroke: var(--fd-neon-yellow) !important; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #2a0a12 !important; stroke: var(--fd-neon-red) !important; }
 
 /* Expanded adapters/marts/foundations: subdued, no animations */
 .adapter.expanded[status="Updating"] > .zone-container > .container-shape,

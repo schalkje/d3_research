@@ -93,7 +93,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; text-shadow: 0 0 4p
 .selected .shape { stroke: var(--fd-accent) !important; stroke-width: 2.5px !important; }
 
 /* Collapsed containers: reflect state fully (like rect nodes) */
-.collapsed .container-shape { /* full retro phosphor palette already applied above */ }
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #0b130b !important; stroke: #2a5a2a !important; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #081312 !important; stroke: var(--fd-cyan) !important; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #111a0a !important; stroke: #aaff00 !important; animation: none !important; stroke-dasharray: none !important; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #0c2d0c !important; stroke: var(--fd-accent) !important; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #0d140d !important; stroke: #3a6a3a !important; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #1a1308 !important; stroke: #ffaa33 !important; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #201705 !important; stroke: var(--fd-amber) !important; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #2a0a0a !important; stroke: var(--fd-red) !important; }
 
 /* Expanded adapters/marts/foundations: subdued, no animations */
 .adapter.expanded[status="Updating"] > .zone-container > .container-shape,

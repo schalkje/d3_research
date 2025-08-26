@@ -110,16 +110,14 @@ text, .label, .rect.label { fill: var(--fd-text); }
 
 /* Collapsed containers — clear, full-opacity and no animations */
 .collapsed .container-shape { filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9)); }
-.collapsed[status="Unknown"] .container-shape,
-.collapsed[status="Ready"] .container-shape,
-.collapsed[status="Updated"] .container-shape,
-.collapsed[status="Skipped"] .container-shape,
-.collapsed[status="Delayed"] .container-shape,
-.collapsed[status="Warning"] .container-shape,
-.collapsed[status="Error"] .container-shape,
-.collapsed[status="Updating"] .container-shape {
-  animation: none;
-}
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #eef2f7; stroke: #d5dbe5; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #e3f0ff; stroke: #bad7ff; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #ddf8eb; stroke: #9fe9c9; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #f6f2de; stroke: #eadb9c; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #ffe7c2; stroke: #ffcc87; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #ffeab0; stroke: #ffd06b; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #ffd4d9; stroke: #ff5a6b; stroke-width: 2.75px; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #ffe4b8; stroke: #ffbf4d; animation: none; }
 
 /* Expanded lane/columns containers: ignore state (no fill/animation), keep soft stroke */
 .lane.expanded > .zone-container > .container-shape,

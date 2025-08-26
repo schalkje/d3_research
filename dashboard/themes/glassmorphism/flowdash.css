@@ -116,7 +116,14 @@ text, .label, .rect.label {
 }
 
 /* Collapsed containers: reflect state fully (like rect nodes) */
-.collapsed .container-shape { /* base frosted palette already at full intention */ }
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: rgba(255,255,255,0.18) !important; stroke: rgba(255,255,255,0.5) !important; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: rgba(59, 130, 246, 0.30) !important; stroke: rgba(122,184,255,1) !important; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: rgba(245, 158, 11, 0.26) !important; stroke: rgba(251, 191, 36, 0.95) !important; animation: none !important; stroke-dasharray: none !important; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: rgba(16, 185, 129, 0.36) !important; stroke: rgba(34,197,94,1) !important; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: rgba(148,163,184,0.26) !important; stroke: rgba(203,213,225,0.75) !important; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: rgba(251, 146, 60, 0.32) !important; stroke: rgba(255, 138, 76, 1) !important; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: rgba(245, 158, 11, 0.34) !important; stroke: rgba(255, 193, 7, 1) !important; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: rgba(239, 68, 68, 0.38) !important; stroke: rgba(255, 82, 82, 1) !important; }
 
 /* Expanded adapters/marts/foundations: subdued, no animations */
 .adapter.expanded[status="Updating"] > .zone-container > .container-shape,

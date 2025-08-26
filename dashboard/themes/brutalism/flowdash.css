@@ -149,7 +149,14 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
 }
 
 /* Collapsed containers: reflect state fully (in line with rect nodes) */
-.collapsed .container-shape { /* inherits strong palette above; just ensure full opacity and no motion */ }
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #e6e6e6; stroke: #000; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #b6e0ff; stroke: #000; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #ffe066; stroke: #000; stroke-width: 4px; stroke-dasharray: none; animation: none; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #22c55e; stroke: #000; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #fff1a8; stroke: #000; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #ffb02e; stroke: #000; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #ff9f0a; stroke: #000; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #ff453a; stroke: #000; }
 
 /* Expanded adapters/marts/foundations: subdued (no animations, calmer fills) */
 .adapter.expanded[status="Updating"] > .zone-container > .container-shape,
