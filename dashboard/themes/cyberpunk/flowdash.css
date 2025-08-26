@@ -27,8 +27,76 @@ svg.canvas { border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2
 
 .shape { fill: #17162c !important; stroke: var(--fd-accent) !important; stroke-width: 1.5px; filter: drop-shadow(0 0 8px rgba(255,0,229,0.3)); }
 .rect.shape, .adapter.shape, .SSIS.shape, .container-shape, .circle.shape { fill: #14132a !important; stroke: #3b3a5a !important; rx: 6 !important; ry: 6 !important; }
+/* Base header styling */
 .header-background { fill: #151433 !important; stroke: #3b3a5a !important; }
 .header-text { fill: var(--fd-text) !important; text-shadow: 0 0 8px rgba(0,229,255,0.5); }
+
+/* Collapsed container headers — cyberpunk styling with status-based fills */
+.collapsed .zone-header .header-background {
+  stroke-width: 1px !important;
+}
+
+.collapsed[status="Unknown"] .zone-header .header-background {
+  fill: #18172e !important;
+  stroke: #6b6f9a !important;
+  filter: drop-shadow(0 0 6px rgba(107,111,154,0.4));
+}
+
+.collapsed[status="Ready"] .zone-header .header-background {
+  fill: #0a1f27 !important;
+  stroke: var(--fd-neon-cyan) !important;
+  filter: drop-shadow(0 0 8px rgba(0,229,255,0.5));
+}
+
+.collapsed[status="Updating"] .zone-header .header-background {
+  fill: #1e1522 !important;
+  stroke: var(--fd-glow1) !important;
+  filter: drop-shadow(0 0 10px rgba(255,0,229,0.6)) drop-shadow(0 0 6px rgba(0,229,255,0.4));
+}
+
+.collapsed[status="Updated"] .zone-header .header-background {
+  fill: #0a2f2a !important;
+  stroke: var(--fd-neon-green) !important;
+  filter: drop-shadow(0 0 8px rgba(0,255,168,0.5));
+}
+
+.collapsed[status="Skipped"] .zone-header .header-background {
+  fill: #1c1a2e !important;
+  stroke: #b38cff !important;
+  filter: drop-shadow(0 0 6px rgba(179,140,255,0.5));
+}
+
+.collapsed[status="Delayed"] .zone-header .header-background {
+  fill: #281a0e !important;
+  stroke: var(--fd-neon-orange) !important;
+  filter: drop-shadow(0 0 8px rgba(255,158,61,0.5));
+}
+
+.collapsed[status="Warning"] .zone-header .header-background {
+  fill: #2f230a !important;
+  stroke: var(--fd-neon-yellow) !important;
+  filter: drop-shadow(0 0 10px rgba(255,196,0,0.5));
+}
+
+.collapsed[status="Error"] .zone-header .header-background {
+  fill: #2a0a12 !important;
+  stroke: var(--fd-neon-red) !important;
+  filter: drop-shadow(0 0 12px rgba(255,51,102,0.6));
+}
+
+.collapsed[status="Disabled"] .zone-header .header-background {
+  fill: #14132a !important;
+  stroke: #4b4a60 !important;
+  filter: drop-shadow(0 0 4px rgba(75,74,96,0.4));
+}
+
+/* Enhanced header text glow for collapsed containers */
+.collapsed .zone-header .header-text {
+  text-shadow:
+    0 0 8px rgba(0,229,255,0.8),
+    0 0 16px rgba(0,229,255,0.4),
+    0 0 24px rgba(0,229,255,0.2) !important;
+}
 
 text, .label, .rect.label { fill: var(--fd-text) !important; }
 .edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; filter: drop-shadow(0 0 6px rgba(0,229,255,0.6)); }
@@ -62,6 +130,14 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
   stroke: #6b6f9a !important;
   stroke-width: 1.5px !important;
   filter: drop-shadow(0 0 6px rgba(107,111,154,0.35));
+}
+
+/* Disabled — desaturated neutral outline */
+.shape[status="Disabled"], .node.shape[status="Disabled"], .container-shape[status="Disabled"], .rect.shape[status="Disabled"] {
+  fill: #14132a !important;
+  stroke: #4b4a60 !important;
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 4px rgba(75,74,96,0.35));
 }
 
 /* Ready — cyan neon edge */
@@ -122,70 +198,181 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
   filter: drop-shadow(0 0 14px rgba(255,51,102,0.65));
 }
 
-/* Collapsed containers: reflect state fully (like rect nodes) */
-.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #18172e !important; stroke: #6b6f9a !important; }
-.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #0a1f27 !important; stroke: var(--fd-neon-cyan) !important; }
-.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #1e1522 !important; stroke: var(--fd-glow1) !important; animation: none !important; stroke-dasharray: none !important; }
-.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #0a2f2a !important; stroke: var(--fd-neon-green) !important; }
-.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #1c1a2e !important; stroke: #b38cff !important; }
-.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #281a0e !important; stroke: var(--fd-neon-orange) !important; }
-.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #2f230a !important; stroke: var(--fd-neon-yellow) !important; }
-.collapsed[status="Error"] > .zone-container > .container-shape { fill: #2a0a12 !important; stroke: var(--fd-neon-red) !important; }
+/* Container node state theming
+   - Expanded (default): toned down vs base nodes, no animations
+   - Collapsed: clear, full-opacity states, no animations
+   Note: container status is on the parent <g>, not the rect */
 
-/* Expanded adapters/marts/foundations: subdued, no animations */
-.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
-.mart.expanded[status="Updating"] > .zone-container > .container-shape,
-.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
-.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Updating"] > .zone-container > .container-shape { animation: none !important; stroke-dasharray: none !important; }
-.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
-.mart.expanded[status="Ready"] > .zone-container > .container-shape,
-.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
-.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Ready"] > .zone-container > .container-shape,
-.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
-.mart.expanded[status="Updated"] > .zone-container > .container-shape,
-.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
-.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Updated"] > .zone-container > .container-shape,
-.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
-.mart.expanded[status="Warning"] > .zone-container > .container-shape,
-.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
-.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Warning"] > .zone-container > .container-shape,
-.adapter.expanded[status="Error"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
-.mart.expanded[status="Error"] > .zone-container > .container-shape,
-.Mart.expanded[status="Error"] > .zone-container > .container-shape,
-.foundation.expanded[status="Error"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Error"] > .zone-container > .container-shape,
-.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
-.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
-.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
-.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
-.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
-.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
-.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
-.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
-.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
-.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+/* Collapsed containers — styled like rect nodes (parent carries status) */
+.collapsed .container-shape { opacity: 1 !important; filter: none !important; }
+.collapsed[status="Unknown"] .container-shape {
+  fill: #18172e !important;
+  stroke: #6b6f9a !important;
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 6px rgba(107,111,154,0.35));
+}
+.collapsed[status="Ready"] .container-shape {
+  fill: #0a1f27 !important;
+  stroke: var(--fd-neon-cyan) !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 10px rgba(0,229,255,0.6));
+}
+.collapsed[status="Updating"] .container-shape {
+  fill: #1e1522 !important;
+  stroke: var(--fd-glow1) !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 10px rgba(255,0,229,0.55)) drop-shadow(0 0 8px rgba(0,229,255,0.35));
+}
+.collapsed[status="Updated"] .container-shape {
+  fill: #0a2f2a !important;
+  stroke: var(--fd-neon-green) !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 10px rgba(0,255,168,0.55));
+}
+.collapsed[status="Skipped"] .container-shape {
+  fill: #1c1a2e !important;
+  stroke: #b38cff !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 8px rgba(179,140,255,0.5));
+}
+.collapsed[status="Delayed"] .container-shape {
+  fill: #281a0e !important;
+  stroke: var(--fd-neon-orange) !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 10px rgba(255,158,61,0.55));
+}
+.collapsed[status="Warning"] .container-shape {
+  fill: #2f230a !important;
+  stroke: var(--fd-neon-yellow) !important;
+  stroke-width: 2.25px !important;
+  filter: drop-shadow(0 0 12px rgba(255,196,0,0.55));
+}
+.collapsed[status="Error"] .container-shape {
+  fill: #2a0a12 !important;
+  stroke: var(--fd-neon-red) !important;
+  stroke-width: 2.75px !important;
+  filter: drop-shadow(0 0 14px rgba(255,51,102,0.65));
+}
+.collapsed[status="Disabled"] .container-shape {
+  fill: #14132a !important;
+  stroke: #4b4a60 !important;
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 4px rgba(75,74,96,0.35));
+}
+
+/* Expanded containers — toned down (parent carries status) */
+/* Expanded subdued state — adapters, marts, foundations only */
 .adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
 .Adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
 .mart.expanded[status="Unknown"] > .zone-container > .container-shape,
 .Mart.expanded[status="Unknown"] > .zone-container > .container-shape,
 .foundation.expanded[status="Unknown"] > .zone-container > .container-shape,
 .Foundation.expanded[status="Unknown"] > .zone-container > .container-shape {
-  /* keep neon edges but neutralize fill glow */
-  filter: drop-shadow(0 0 8px rgba(0,229,255,0.22));
+  fill: #18172e !important;
+  fill-opacity: 0.2 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
 }
 
-/* Expanded lanes/columns: no state styling beyond theme default */
+.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Ready"] > .zone-container > .container-shape {
+  fill: #0a1f27 !important;
+  fill-opacity: 0.25 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape {
+  fill: #1e1522 !important;
+  fill-opacity: 0.25 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+}
+
+.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updated"] > .zone-container > .container-shape {
+  fill: #0a2f2a !important;
+  fill-opacity: 0.18 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape {
+  fill: #1c1a2e !important;
+  fill-opacity: 0.9 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape {
+  fill: #281a0e !important;
+  fill-opacity: 0.28 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Warning"] > .zone-container > .container-shape {
+  fill: #2f230a !important;
+  fill-opacity: 0.28 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.mart.expanded[status="Error"] > .zone-container > .container-shape,
+.Mart.expanded[status="Error"] > .zone-container > .container-shape,
+.foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Error"] > .zone-container > .container-shape {
+  fill: #2a0a12 !important;
+  fill-opacity: 0.28 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+.adapter.expanded[status="Disabled"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Disabled"] > .zone-container > .container-shape,
+.mart.expanded[status="Disabled"] > .zone-container > .container-shape,
+.Mart.expanded[status="Disabled"] > .zone-container > .container-shape,
+.foundation.expanded[status="Disabled"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Disabled"] > .zone-container > .container-shape {
+  fill: #14132a !important;
+  fill-opacity: 0.2 !important;
+  stroke: #3b3a5a !important;
+  stroke-width: 1px !important;
+}
+
+/* Expanded lanes/columns: ignore state (no fill/animation) */
 .lane.expanded > .zone-container > .container-shape,
 .Lane.expanded > .zone-container > .container-shape,
 .columns.expanded > .zone-container > .container-shape,
@@ -253,5 +440,3 @@ text, .label, .rect.label { fill: var(--fd-text) !important; }
   fill-opacity: 0.88 !important;
   stroke-opacity: 0.8 !important;
 }
-
-
