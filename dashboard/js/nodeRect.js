@@ -193,6 +193,8 @@ export default class RectangularNode extends BaseNode {
       // Update text without truncation and remove any tooltip
       this.label.text(label);
       this.removeTooltip();
+      // Notify parent that size changed to trigger relayout
+      this.handleDisplayChange();
     } else if (layoutMode === 'fixed-size') {
       // For fixed-size, don't change width based on text
       this.element
@@ -216,6 +218,8 @@ export default class RectangularNode extends BaseNode {
 
       // Apply text truncation
       this.truncateTextIfNeeded();
+      // If width grew, inform parent for relayout
+      this.handleDisplayChange();
     }
   }
 
@@ -317,6 +321,8 @@ export default class RectangularNode extends BaseNode {
         
         // Update text without truncation
         this.label.text(this.data.label);
+        // Notify parent that size changed to trigger relayout
+        this.handleDisplayChange();
       } else {
         // Just update the text without truncation
         this.label.text(this.data.label);
@@ -325,6 +331,15 @@ export default class RectangularNode extends BaseNode {
       // For default and fixed-size, use truncation
       this.truncateTextIfNeeded();
     }
+  }
+
+  // RectangularNode is not a container and must never be collapsed
+  get collapsed() {
+    return false;
+  }
+
+  set collapsed(value) {
+    // Ignore collapse requests for non-container nodes
   }
 
   resize(size, forced = false) {

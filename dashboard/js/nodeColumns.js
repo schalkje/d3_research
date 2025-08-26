@@ -77,34 +77,26 @@ export default class ColumnsNode extends BaseContainerNode {
     }
 
 
-    // Ensure all immediate children DOM elements are attached to the inner container group
-    try {
-      const target = innerContainerZone.getChildContainer?.();
-      const tgt = target?.node?.();
-      if (tgt) {
-        this.childNodes.forEach(child => {
-          const el = child?.element?.node?.();
-          if (el && el.parentNode !== tgt) {
-            try { tgt.appendChild(el); } catch {}
-          }
-        });
-      }
-    } catch {}
+    
 
     // Set horizontal row layout algorithm
     innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
       if (childNodes.length === 0) return;
 
       const spacing = this.nodeSpacing?.horizontal || 20;
-      // Start at left edge inside content box
-      let currentX = -coordinateSystem.size.width / 2;
-
       const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+      if (visibleChildNodes.length === 0) return;
+
+      // Compute total content width to center around 0
+      const contentWidth = visibleChildNodes.reduce((sum, n) => {
+        const w = n.getEffectiveWidth ? n.getEffectiveWidth() : n.data.width;
+        return sum + w;
+      }, 0) + (visibleChildNodes.length > 1 ? (visibleChildNodes.length - 1) * spacing : 0);
+
+      let currentX = -contentWidth / 2;
 
       visibleChildNodes.forEach(childNode => {
-        // Use effective width for collapsed vs expanded nodes
         const w = childNode.getEffectiveWidth ? childNode.getEffectiveWidth() : childNode.data.width;
-        // Position by center within inner container coordinates
         const x = currentX + w / 2;
         const y = 0;
         childNode.move(x, y);
@@ -153,9 +145,8 @@ export default class ColumnsNode extends BaseContainerNode {
         // When expanded, use margin zone calculation with correct margins
         // This ensures proper sizing based on actual child content
         const margins = marginZone.getMargins();
-        // Clamp content width to inner container available width to avoid overhangs
-        const availableWidth = Math.max(0, this.data.width - margins.left - margins.right);
-        const contentWidth = Math.max(0, Math.min(totalChildWidth + totalSpacing, availableWidth));
+        // Compute content width unconstrained so node can expand to fit children
+        const contentWidth = Math.max(0, totalChildWidth + totalSpacing);
         const contentHeight = Math.max(maxChildHeight, 0);
         
         const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')

@@ -107,7 +107,8 @@ export default class BaseNode {
     }
 
     // Auto collapse/expand based on status when enabled, avoiding re-entrancy
-    if (this.settings.toggleCollapseOnStatusChange && !this._updatingCollapseState) {
+    // Only containers should auto-toggle collapsed state
+    if (this.isContainer && this.settings.toggleCollapseOnStatusChange && !this._updatingCollapseState) {
       // Determine collapse rule based on effective status (containers use aggregated child status)
       let effectiveStatus = value;
       if (this.isContainer && this.childNodes && this.childNodes.length > 0) {
@@ -524,7 +525,8 @@ export default class BaseNode {
    * This method handles collapsed state internally
    */
   getEffectiveWidth() {
-    if (this.collapsed) {
+    // Non-containers should ignore collapsed state for effective size
+    if (this.isContainer && this.collapsed) {
       // When collapsed, always use minimumSize, not data.width
       // This ensures we get the correct collapsed size even if data.width hasn't been updated yet
       return this.minimumSize?.width || 20; // Default minimum width
@@ -537,7 +539,8 @@ export default class BaseNode {
    * This method handles collapsed state internally
    */
   getEffectiveHeight() {
-    if (this.collapsed) {
+    // Non-containers should ignore collapsed state for effective size
+    if (this.isContainer && this.collapsed) {
       // When collapsed, always use minimumSize, not data.height
       // This ensures we get the correct collapsed size even if data.height hasn't been updated yet
       return this.minimumSize?.height || 20; // Default minimum height
