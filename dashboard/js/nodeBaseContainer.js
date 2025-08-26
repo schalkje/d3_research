@@ -136,8 +136,9 @@ export default class BaseContainerNode extends BaseNode {
       return;
     }
 
-    // Safety check: don't determine status if element is null or node is collapsed
-    if (!this.element || this.collapsed) {
+    // Safety check: don't determine status if element is null
+    // Allow recalculation even when collapsed so auto-expand can trigger on status changes
+    if (!this.element) {
       return;
     }
 

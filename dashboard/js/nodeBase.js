@@ -136,6 +136,22 @@ export default class BaseNode {
       }
     }
 
+    // For non-container nodes, ensure ancestors are expanded when status indicates non-collapsible
+    if (!this.isContainer && this.settings.toggleCollapseOnStatusChange) {
+      try {
+        const shouldCollapseAncestors = StatusManager.shouldCollapseOnStatus(value, this.settings);
+        if (!shouldCollapseAncestors) {
+          let ancestor = this.parentNode;
+          while (ancestor) {
+            try {
+              if (ancestor.collapsed) ancestor.collapsed = false;
+            } catch {}
+            ancestor = ancestor.parentNode;
+          }
+        }
+      } catch {}
+    }
+
     if (this.settings.cascadeOnStatusChange) {
       this.cascadeStatusChange();
     }
@@ -469,8 +485,7 @@ export default class BaseNode {
   cascadeStatusChange() {
     if (this.parentNode && 
         typeof this.parentNode.determineStatusBasedOnChildren === 'function' &&
-        this.parentNode.element && // Safety check: parent element exists
-        !this.parentNode.collapsed) { // Safety check: parent is not collapsed
+        this.parentNode.element) { // Safety check: parent element exists
       this.parentNode.determineStatusBasedOnChildren();
     } 
   }
