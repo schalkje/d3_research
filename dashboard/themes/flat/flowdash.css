@@ -78,6 +78,51 @@ svg.canvas { border: 1px solid var(--fd-border) !important; box-shadow: none !im
   text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
+/* Status-specific header text colors for collapsed containers */
+.collapsed[status="Unknown"] .zone-header .header-text {
+  fill: #475569 !important;
+}
+
+.collapsed[status="Ready"] .zone-header .header-text {
+  fill: #2563eb !important;
+  text-shadow: 0 1px 2px rgba(37,99,235,0.2) !important;
+}
+
+.collapsed[status="Updating"] .zone-header .header-text {
+  fill: #f59e0b !important;
+  text-shadow: 0 1px 2px rgba(245,158,11,0.2) !important;
+}
+
+.collapsed[status="Updated"] .zone-header .header-text {
+  fill: #34d399 !important;
+  text-shadow: 0 1px 2px rgba(52,211,153,0.2) !important;
+}
+
+.collapsed[status="Skipped"] .zone-header .header-text {
+  fill: #94a3b8 !important;
+  text-shadow: 0 1px 2px rgba(148,163,184,0.2) !important;
+}
+
+.collapsed[status="Delayed"] .zone-header .header-text {
+  fill: #fb923c !important;
+  text-shadow: 0 1px 2px rgba(251,146,60,0.2) !important;
+}
+
+.collapsed[status="Warning"] .zone-header .header-text {
+  fill: #facc15 !important;
+  text-shadow: 0 1px 2px rgba(250,204,21,0.2) !important;
+}
+
+.collapsed[status="Error"] .zone-header .header-text {
+  fill: #ef4444 !important;
+  text-shadow: 0 1px 2px rgba(239,68,68,0.2) !important;
+}
+
+.collapsed[status="Disabled"] .zone-header .header-text {
+  fill: #9ca3af !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
 text, .label, .rect.label { fill: var(--fd-text) !important; font-weight: 700; }
 .edge .path { stroke: var(--fd-edge) !important; stroke-width: 2.5px; }
 

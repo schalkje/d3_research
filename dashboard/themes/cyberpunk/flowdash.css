@@ -98,6 +98,74 @@ svg.canvas { border-color: var(--fd-border) !important; box-shadow: 0 0 0 1px #2
     0 0 24px rgba(0,229,255,0.2) !important;
 }
 
+/* Status-specific header text colors for collapsed containers */
+.collapsed[status="Unknown"] .zone-header .header-text {
+  fill: #94a3b8 !important;
+}
+
+.collapsed[status="Ready"] .zone-header .header-text {
+  fill: #00e5ff !important;
+  text-shadow:
+    0 0 8px rgba(0,229,255,1),
+    0 0 16px rgba(0,229,255,0.6),
+    0 0 24px rgba(0,229,255,0.3) !important;
+}
+
+.collapsed[status="Updating"] .zone-header .header-text {
+  fill: #ff00e5 !important;
+  text-shadow:
+    0 0 8px rgba(255,0,229,1),
+    0 0 8px rgba(0,229,255,0.8),
+    0 0 16px rgba(255,0,229,0.6),
+    0 0 16px rgba(0,229,255,0.4),
+    0 0 24px rgba(255,0,229,0.3) !important;
+}
+
+.collapsed[status="Updated"] .zone-header .header-text {
+  fill: #00ffa8 !important;
+  text-shadow:
+    0 0 8px rgba(0,255,168,1),
+    0 0 16px rgba(0,255,168,0.6),
+    0 0 24px rgba(0,255,168,0.3) !important;
+}
+
+.collapsed[status="Skipped"] .zone-header .header-text {
+  fill: #b38cff !important;
+  text-shadow:
+    0 0 8px rgba(179,140,255,1),
+    0 0 16px rgba(179,140,255,0.6),
+    0 0 24px rgba(179,140,255,0.3) !important;
+}
+
+.collapsed[status="Delayed"] .zone-header .header-text {
+  fill: #ff9e3d !important;
+  text-shadow:
+    0 0 8px rgba(255,158,61,1),
+    0 0 16px rgba(255,158,61,0.6),
+    0 0 24px rgba(255,158,61,0.3) !important;
+}
+
+.collapsed[status="Warning"] .zone-header .header-text {
+  fill: #ffc400 !important;
+  text-shadow:
+    0 0 8px rgba(255,196,0,1),
+    0 0 16px rgba(255,196,0,0.6),
+    0 0 24px rgba(255,196,0,0.3) !important;
+}
+
+.collapsed[status="Error"] .zone-header .header-text {
+  fill: #ff3366 !important;
+  text-shadow:
+    0 0 8px rgba(255,51,102,1),
+    0 0 16px rgba(255,51,102,0.6),
+    0 0 24px rgba(255,51,102,0.3) !important;
+}
+
+.collapsed[status="Disabled"] .zone-header .header-text {
+  fill: #64748b !important;
+  text-shadow: none !important;
+}
+
 text, .label, .rect.label { fill: var(--fd-text) !important; }
 .edge .path { stroke: var(--fd-edge) !important; stroke-width: 2px; filter: drop-shadow(0 0 6px rgba(0,229,255,0.6)); }
 
