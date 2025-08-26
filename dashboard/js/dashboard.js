@@ -7,6 +7,8 @@ import { ConfigManager } from "./configManager.js";
 import { fetchDashboardFile } from "./data.js";
 import { LoadingOverlay, showLoading as showLoader, hideLoading as hideLoader, resolveLoadingContainer as resolveLoadingHost } from "./loadingOverlay.js";
 import { Minimap } from "./minimap.js";
+import ZoomManager from "./zoomManager.js";
+import { NodeStatus } from "./nodeBase.js";
 
 export class Dashboard {
   constructor(dashboardData) {
@@ -52,6 +54,9 @@ export class Dashboard {
     this.isMainAndMinimapSyncing = false;
     this._displayChangeScheduled = false;
     this.hasPerformedInitialZoomToRoot = false;
+    this._displayChangeCount = 0;
+    this._suspendDisplayChange = false;
+    this.zoomManager = new ZoomManager(this);
   }
 
   // --- Selection bounding box helpers ---
@@ -125,34 +130,31 @@ export class Dashboard {
   }
 
   getContentBBox() {
-    if (!this.main?.root) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
-    const nodes = this.main.root.getAllNodes(false);
-    if (!nodes || nodes.length === 0) return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
-    return computeBoundingBox(this, nodes);
+    // Prefer DOM-accurate bounding box to account for nested transforms and collapsed containers
+    try {
+      if (this.main?.root) {
+        const nodes = this.main.root.getAllNodes(false);
+        if (nodes && nodes.length) {
+          const bbox = computeBoundingBox(this, nodes);
+          if (
+            bbox &&
+            Number.isFinite(bbox.x) &&
+            Number.isFinite(bbox.y) &&
+            Number.isFinite(bbox.width) &&
+            Number.isFinite(bbox.height)
+          ) {
+            return bbox;
+          }
+        }
+      }
+    } catch {}
+    // Fallback: centered viewport
+    return { x: -this.main.width / 2, y: -this.main.height / 2, width: this.main.width, height: this.main.height };
   }
 
-  computeFitForBoundingBox(boundingBox) {
-    const svgWidth = this.main.width || 1;
-    const svgHeight = this.main.height || 1;
-    const scaleX = svgWidth / boundingBox.width;
-    const scaleY = svgHeight / boundingBox.height;
-    const k = Math.min(scaleX, scaleY);
-    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
-    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
-    const transform = d3.zoomIdentity.translate(x, y).scale(k);
-    return { k, x, y, transform };
-  }
+  
 
-  recomputeBaselineFit() {
-    if (!this.main?.root) return;
-    const nodes = this.main.root.getAllNodes(false);
-    if (!nodes || nodes.length === 0) return;
-    const bbox = computeBoundingBox(this, nodes);
-    const fit = this.computeFitForBoundingBox(bbox);
-    this.main.fitK = fit.k || 1.0;
-    this.main.fitTransform = fit.transform;
-    this.minimap.updateScaleIndicator?.();
-  }
+  recomputeBaselineFit() { return this.zoomManager.recomputeBaselineFit(); }
 
   setData(newDashboardData) {
     this._initialLoading = true;
@@ -206,12 +208,7 @@ export class Dashboard {
     }
 
     this.hasPerformedInitialZoomToRoot = false;
-    this.recomputeBaselineFit();
-    if (this.data.settings.zoomToRoot) {
-      this.zoomToRoot();
-      this.hasPerformedInitialZoomToRoot = true;
-    }
-
+    // Defer baseline fit to onMainDisplayChange to ensure layout is settled
     this.onMainDisplayChange();
   }
 
@@ -254,10 +251,7 @@ export class Dashboard {
     this.cleanupOrphanedElements();
     this.minimap.safeInitialize();
 
-    if (this.data.settings.zoomToRoot) {
-      this.zoomToRoot();
-      this.hasPerformedInitialZoomToRoot = true;
-    }
+    // Defer initial zoom-to-root to onMainDisplayChange so it happens after layout settles
     
 
     this.initializeFullscreenToggle();
@@ -265,6 +259,8 @@ export class Dashboard {
     if (typeof window !== 'undefined') {
       this._onWindowResize = () => {
         if (this.main.svg.classed('flowdash-fullscreen')) return;
+        // Avoid early resizes during initial layout stabilization which can shift the view
+        if ((this._displayChangeCount || 0) < 2) return;
         this.applyResizePreserveZoom();
       };
       window.addEventListener('resize', this._onWindowResize);
@@ -594,10 +590,17 @@ export class Dashboard {
     const prevX = this.main.transform.x;
     const prevY = this.main.transform.y;
 
+    // Preserve world center instead of scaling translate by size ratios
+    // Derive current world-space center from previous transform and container size
+    const worldLeft = (prevX + prevWidth / 2) / -prevK;
+    const worldTop = (prevY + prevHeight / 2) / -prevK;
+    const worldWidth = prevWidth / prevK;
+    const worldHeight = prevHeight / prevK;
+    const worldCenterX = worldLeft + worldWidth / 2;
+    const worldCenterY = worldTop + worldHeight / 2;
+
     const newWidth = rect.width || prevWidth;
     const newHeight = rect.height || prevHeight;
-    const widthRatio = newWidth / prevWidth;
-    const heightRatio = newHeight / prevHeight;
 
     this.main.width = newWidth;
     this.main.height = newHeight;
@@ -606,13 +609,17 @@ export class Dashboard {
     this.main.svg.attr('viewBox', [-newWidth / 2, -newHeight / 2, newWidth, newHeight]);
 
     const newK = prevK;
-    const newX = prevX * widthRatio;
-    const newY = prevY * heightRatio;
-    const newTransform = d3.zoomIdentity.translate(newX, newY).scale(newK);
+    const newWorldWidth = newWidth / newK;
+    const newWorldHeight = newHeight / newK;
+    const newLeft = worldCenterX - newWorldWidth / 2;
+    const newTop = worldCenterY - newWorldHeight / 2;
+    const newTransform = d3.zoomIdentity
+      .translate(-newLeft * newK - newWidth / 2, -newTop * newK - newHeight / 2)
+      .scale(newK);
 
     if (this.minimap.active) this.minimap.resize();
 
-    this.main.transform = { k: newK, x: newX, y: newY };
+    this.main.transform = { k: newK, x: newTransform.x, y: newTransform.y };
     this.main.container.attr('transform', newTransform);
     this.main.svg.call(this.main.zoom.transform, newTransform);
 
@@ -630,7 +637,11 @@ export class Dashboard {
     
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      node.status = status;
+      try {
+        node.status = status;
+      } catch (e) {
+        console.warn('updateNodeStatus: Failed to update status for node:', nodeId, e);
+      }
     } else {
       console.error("updateNodeStatus: Node not found:", nodeId);
     }
@@ -641,8 +652,12 @@ export class Dashboard {
     const nodes = this.main.root.getNodesByDatasetId(datasetId);
     if (nodes && nodes.length > 0) {
       for (const node of nodes) {
-        node.status = status;
-        stateUpdated = true;
+        try {
+          node.status = status;
+          stateUpdated = true;
+        } catch (e) {
+          console.warn('updateDatasetStatus: Failed to update status for node:', node.id, e);
+        }
       }
     }
     return stateUpdated; 
@@ -694,10 +709,17 @@ export class Dashboard {
     }
 
     if (displayChangeCallback) {
-      root.onDisplayChange = displayChangeCallback;
+      root.onDisplayChange = () => {
+        if (this._suspendDisplayChange) return;
+        displayChangeCallback();
+      };
     }
 
+    // Suspend display-change reactions during bulk initialization to avoid
+    // mid-cascade zoom/fit recalculations that cause drift
+    this._suspendDisplayChange = true;
     root.init();
+    this._suspendDisplayChange = false;
 
     this.initializeChildrenStatusses(root);
 
@@ -715,15 +737,81 @@ export class Dashboard {
     }
 
     
+    // After initial construction, fix up hierarchy for nodes with explicit parentId(s)
+    try { this.reparentNodesByParentIds(); } catch {}
+
+    // Defer initial baseline fit and zoom until layout has fully settled
+    // This will be handled by onMainDisplayChange via ZoomManager.handleLayoutChange
+
     return root;
+  }
+
+  reparentNodesByParentIds() {
+    if (!this.main?.root) return;
+    const all = this.main.root.getAllNodes(false, false);
+    const idMap = new Map(all.map(n => [n.id, n]));
+    const ensureChildAttached = (parent, child) => {
+      try {
+        // Adjust logical tree
+        if (child.parentNode && child.parentNode !== parent) {
+          const prev = child.parentNode;
+          const idx = prev.childNodes ? prev.childNodes.indexOf(child) : -1;
+          if (idx >= 0) prev.childNodes.splice(idx, 1);
+          // Remove from previous zone listing
+          try { prev.zoneManager?.innerContainerZone?.removeChild?.(child); } catch {}
+        }
+        child.parentNode = parent;
+        parent.childNodes = parent.childNodes || [];
+        if (parent.childNodes.indexOf(child) === -1) parent.childNodes.push(child);
+        // Register with zone system and move DOM
+        const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+        if (innerZone) {
+          innerZone.addChild(child);
+          const target = innerZone.getChildContainer?.();
+          const el = child.element?.node?.();
+          const tgt = target?.node?.();
+          if (el && tgt && el.parentNode !== tgt) tgt.appendChild(el);
+          // Update layout for new parent
+          try { parent.updateChildren?.(); } catch {}
+          try { parent.zoneManager?.update?.(); } catch {}
+          try { innerZone.updateChildPositions(); } catch {}
+        } else if (parent.element && child.element) {
+          const tgt = parent.element.node();
+          const el = child.element.node();
+          if (tgt && el && el.parentNode !== tgt) tgt.appendChild(el);
+        }
+      } catch {}
+    };
+    for (const node of all) {
+      const pids = Array.isArray(node?.data?.parentIds) ? node.data.parentIds : (node?.data?.parentId ? [node.data.parentId] : []);
+      if (!pids.length) continue;
+      // Prefer first existing container parent
+      const target = pids.map(id => idMap.get(id)).find(n => n && n.isContainer);
+      if (target && node.parentNode !== target) {
+        ensureChildAttached(target, node);
+      }
+    }
+    // Update top-level after reparenting
+    this.main.root.update();
   }
 
   initializeChildrenStatusses(node) {
     var allNodes = node.getAllNodes();
 
     for (var i = allNodes.length - 1; i >= 0; i--) {
-      if (allNodes[i].isContainer && (allNodes[i].status == null || allNodes[i].status == "" || allNodes[i].status == "Unknown")) {
-        allNodes[i].determineStatusBasedOnChildren();
+      const currentNode = allNodes[i];
+      // Safety check: only process nodes with valid elements
+      if (!currentNode.element) {
+        console.warn('initializeChildrenStatusses: Node has null element, skipping:', currentNode.id);
+        continue;
+      }
+      
+      if (currentNode.isContainer && (currentNode.status == null || currentNode.status == "" || currentNode.status == "Unknown")) {
+        try {
+          currentNode.determineStatusBasedOnChildren();
+        } catch (e) {
+          console.warn('initializeChildrenStatusses: Failed to determine status for node:', currentNode.id, e);
+        }
       } 
     }
   }
@@ -733,15 +821,7 @@ export class Dashboard {
     const dag = null;
 
     const dashboard = this;
-    const zoom = d3
-      .zoom()
-  // Disable default double-click zoom; custom handlers manage dblclicks
-  .filter((event) => event?.type !== 'dblclick')
-      .scaleExtent([0.1, 40])
-      .wheelDelta(event => {
-        return -event.deltaY * (event.deltaMode ? 120 : 1) * 0.002;
-      })
-      .on("zoom", (event) => this.zoomMain(event));
+    const zoom = this.zoomManager.initializeZoomBehavior();
 
     this.main.svg.call(zoom);
 
@@ -767,19 +847,53 @@ export class Dashboard {
     this._displayChangeScheduled = true;
 
     requestAnimationFrame(() => {
+      this._displayChangeCount = (this._displayChangeCount || 0) + 1;
+      try { this.zoomManager.handleLayoutChange(); } catch {}
+      // Ensure DOM hierarchy is consistent with logical parent/child relationships
+      try { this.enforceDomHierarchy(); } catch {}
       if (this.minimap.svg) {
-        if (this.isMainAndMinimapSyncing) { this._displayChangeScheduled = false; return; }
-        this.isMainAndMinimapSyncing = true;
-        this.minimap.update();
-        this.isMainAndMinimapSyncing = false;
+        try {
+          this.minimap.update();
+          const transform = d3.zoomIdentity
+            .translate(this.main.transform.x, this.main.transform.y)
+            .scale(this.main.transform.k);
+          this.minimap.updateViewport(transform);
+          this.minimap.updateScaleIndicator?.();
+        } catch {}
       }
-
-      if (this.data.settings.zoomToRoot && !this.hasPerformedInitialZoomToRoot) {
-        this.zoomToRoot();
-        this.hasPerformedInitialZoomToRoot = true;
-      }
-
       this.minimap.position();
+
+      // Recompute selection bounding box after layout changes (e.g., collapse/expand)
+      try {
+        if (this.data?.settings?.showBoundingBox) {
+          const nb = this.selection?.neighborhood;
+          let nodesToBox = null;
+          if (nb && Array.isArray(nb.nodes) && nb.nodes.length > 0) {
+            nodesToBox = nb.nodes;
+          } else if (typeof this.getSelectedNodes === 'function') {
+            const sel = this.getSelectedNodes();
+            if (sel && sel.length) nodesToBox = sel;
+          }
+          if (nodesToBox && nodesToBox.length) {
+            const bbox = computeBoundingBox(this, nodesToBox);
+            if (
+              Number.isFinite(bbox.x) &&
+              Number.isFinite(bbox.y) &&
+              Number.isFinite(bbox.width) &&
+              Number.isFinite(bbox.height)
+            ) {
+              this.renderSelectionBoundingBox(bbox);
+              if (nb) nb.boundingBox = bbox;
+            } else {
+              this.clearSelectionBoundingBox?.();
+            }
+          } else {
+            this.clearSelectionBoundingBox?.();
+          }
+        } else {
+          this.clearSelectionBoundingBox?.();
+        }
+      } catch {}
 
       if (this._initialLoading) {
         this._initialLoading = false;
@@ -790,80 +904,55 @@ export class Dashboard {
     });
   }
 
-
-
-  zoomMain(zoomEvent) {
-    if (this.isMainAndMinimapSyncing) return;
-    this.isMainAndMinimapSyncing = true;
-
-    this.main.transform.k = zoomEvent.transform.k;
-    this.main.transform.x = zoomEvent.transform.x;
-    this.main.transform.y = zoomEvent.transform.y;
-
-    const transform = d3.zoomIdentity.translate(this.main.transform.x, this.main.transform.y).scale(this.main.transform.k);
-    this.main.container.attr("transform", transform );
-
-    if (this.minimap.active) {
-      this.minimap.scheduleUpdate(zoomEvent.transform);
-    }
-
-    this.isMainAndMinimapSyncing = false;
+  enforceDomHierarchy() {
+    try {
+      if (!this.main?.root) return;
+      const allNodes = this.main.root.getAllNodes(false, false);
+      allNodes.forEach((node) => {
+        if (!node?.element) return;
+        const parent = node.parentNode;
+        if (!parent) return;
+        // Determine correct DOM parent group
+        let parentGroup = parent.element;
+        try {
+          if (parent.isContainer && !parent.collapsed) {
+            const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+            parentGroup = innerZone?.getChildContainer?.() || parent.element;
+          }
+        } catch {}
+        const targetDom = parentGroup?.node?.();
+        const el = node.element?.node?.();
+        if (!targetDom || !el) return;
+        if (el.parentNode !== targetDom) {
+          try { targetDom.appendChild(el); } catch {}
+        }
+      });
+    } catch {}
   }
 
-  zoomMinimap(zoomEvent) {
-    if (this.isMainAndMinimapSyncing) return;
-    this.isMainAndMinimapSyncing = true;
 
-    this.main.transform.x = zoomEvent.transform.x;
-    this.main.transform.y = zoomEvent.transform.y;
-    this.main.transform.k = zoomEvent.transform.k;
 
-    this.main.container.attr("transform", zoomEvent.transform);
-    this.main.svg.call(this.main.zoom.transform, zoomEvent.transform);
+  zoomMain(zoomEvent) { this.zoomManager.onMainZoom(zoomEvent); }
 
-    this.minimap.scheduleUpdate(zoomEvent.transform);
+  zoomMinimap(zoomEvent) { this.zoomManager.onMinimapZoom(zoomEvent); }
 
-    this.isMainAndMinimapSyncing = false;
-  }
+  zoomIn() { this.zoomManager.zoomIn(); }
 
-  zoomIn() {
-    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 1.2);
-    this.main.scale = this.main.scale * (1 + this.main.zoomSpeed);
-  }
-
-  zoomOut() {
-    this.main.svg.transition().duration(750).call(this.main.zoom.scaleBy, 0.8);
-    this.main.scale = this.main.scale * (1 - this.main.zoomSpeed);
-  }
+  zoomOut() { this.zoomManager.zoomOut(); }
 
   zoomToRoot() {
     if (!this.main.root) return;
     const allNodes = this.main.root.getAllNodes(false);
     if (!allNodes || allNodes.length === 0) return;
     const bbox = computeBoundingBox(this, allNodes);
-    const fit = this.computeFitForBoundingBox(bbox);
-    this.main.fitK = fit.k || 1.0;
-    this.main.fitTransform = fit.transform;
+    const { fitK, fitTransform } = this.zoomManager.computeFit(bbox);
+    this.main.fitK = fitK || 1.0;
+    this.main.fitTransform = fitTransform;
     this.minimap.updateScaleIndicator?.();
     this.zoomToBoundingBox(bbox);
   }
 
-  zoomReset() {
-    const target = this.main.fitTransform || d3.zoomIdentity;
-    this.main.svg
-      .transition()
-      .duration(750)
-      .call(this.main.zoom.transform, target);
-    this.main.scale = 1;
-
-    if (this.minimap.active)
-      this.minimap.svg
-        .transition()
-        .duration(750)
-        .call(this.minimap.zoom.transform, target);
-
-    this.deselectAll();
-  }
+  zoomReset() { this.zoomManager.zoomReset(); this.deselectAll(); }
 
   zoomClicked(event, [x, y]) {
     event.stopPropagation();
@@ -892,7 +981,11 @@ export class Dashboard {
     
     const node = this.main.root.getNode(nodeId);
     if (node) {
-      node.status = status;
+      try {
+        node.status = status;
+      } catch (e) {
+        console.warn('setStatusToNodeById: Failed to update status for node:', nodeId, e);
+      }
     }
     else {
       console.error("setStatusToNodeById: Node not found:", nodeId);
@@ -956,6 +1049,62 @@ export class Dashboard {
     });
 
     return { Nodes: structureNodes, Edges: structureEdges };
+  }
+
+  /**
+   * Re-evaluate and apply status-based collapse logic to all nodes
+   * This method is called when toggleCollapseOnStatusChange setting changes
+   */
+  updateStatusBasedCollapse() {
+    if (!this.main.root) return;
+    
+    const nodes = this.main.root.getAllNodes(false, true);
+    if (!nodes || nodes.length === 0) return;
+
+    let hasChanges = false;
+
+    // Re-evaluate collapse state for each node based on current status and new setting
+    nodes.forEach(node => {
+      if (node && typeof node.status !== 'undefined') {
+        // Safety check: only process nodes with valid elements
+        if (!node.element) {
+          console.warn('Skipping node with null element in updateStatusBasedCollapse:', node.id);
+          return;
+        }
+        
+        // Determine if this node should be collapsed based on current status
+        const shouldCollapse = this.data.settings.toggleCollapseOnStatusChange && 
+          [NodeStatus.READY, NodeStatus.DISABLED, NodeStatus.UPDATED, NodeStatus.SKIPPED].includes(node.status);
+        
+        // Only change state if it's different from current
+        if (shouldCollapse !== node.collapsed) {
+          hasChanges = true;
+          console.log(`Status-based collapse change for node ${node.id}: status=${node.status}, shouldCollapse=${shouldCollapse}, current=${node.collapsed}`);
+          
+          // Use the collapsed setter to ensure proper state management and trigger expand/collapse methods
+          try {
+            node.collapsed = shouldCollapse;
+            console.log(`Successfully set node ${node.id} collapsed to ${shouldCollapse}`);
+          } catch (e) {
+            console.warn('Failed to change collapse state for node:', node.id, e);
+          }
+        }
+      }
+    });
+
+    // If there were changes, restart the simulation to recalculate the layout
+    if (hasChanges && this.main.root) {
+      console.log('Status-based collapse changes detected, restarting simulation and updating layout');
+      
+      // Restart simulation to recalculate layout with new collapsed/expanded states
+      this.main.root.cascadeRestartSimulation();
+      
+      // Update the display to show the new layout
+      this.main.root.update();
+    }
+
+    // Trigger display update to reflect changes
+    this.onMainDisplayChange();
   }
 
   deselectAll() {
@@ -1052,24 +1201,7 @@ export class Dashboard {
     }
   }
 
-  zoomToBoundingBox(boundingBox) {
-    const svgWidth = this.main.width || 1;
-    const svgHeight = this.main.height || 1;
-
-    const scaleX = svgWidth / boundingBox.width;
-    const scaleY = svgHeight / boundingBox.height;
-    const k = Math.min(scaleX, scaleY);
-
-    const x = (-boundingBox.width * k) / 2 - boundingBox.x * k;
-    const y = (-boundingBox.height * k) / 2 - boundingBox.y * k;
-    const target = d3.zoomIdentity.translate(x, y).scale(k);
-
-    // Animate via the zoom behavior so internal state and minimap stay in sync
-    this.main.svg
-      .transition()
-      .duration(500)
-      .call(this.main.zoom.transform, target);
-  }
+  zoomToBoundingBox(boundingBox) { this.zoomManager.zoomToBoundingBox(boundingBox, { animate: true, duration: 500 }); }
 
   showLoading() {
     const container = resolveLoadingHost(this.main?.svg);
@@ -1113,10 +1245,21 @@ export function computeBoundingBox(dashboard, nodes) {
       dimensions = null;
     }
     if (!dimensions || !isFinite(dimensions.width) || !isFinite(dimensions.height)) {
+      // Skip nodes that are not rendered/visible (e.g., collapsed descendants removed from DOM)
+      const hasDom = !!(node?.element && typeof node.element.node === 'function' && node.element.node());
+      const isVisible = (node?.visible !== false);
+      if (!hasDom || !isVisible) {
+        return;
+      }
+      // Fallback to effective size when DOM bbox is unavailable but node is visible
       const nx = (typeof node.x === 'number') ? node.x : 0;
       const ny = (typeof node.y === 'number') ? node.y : 0;
-      const nw = (node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0);
-      const nh = (node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0);
+      const nw = (typeof node.getEffectiveWidth === 'function')
+        ? node.getEffectiveWidth()
+        : ((node.data && typeof node.data.width === 'number') ? node.data.width : (typeof node.width === 'number' ? node.width : 0));
+      const nh = (typeof node.getEffectiveHeight === 'function')
+        ? node.getEffectiveHeight()
+        : ((node.data && typeof node.data.height === 'number') ? node.data.height : (typeof node.height === 'number' ? node.height : 0));
       minX = Math.min(minX, nx - nw / 2);
       minY = Math.min(minY, ny - nh / 2);
       maxX = Math.max(maxX, nx + nw / 2);

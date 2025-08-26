@@ -747,9 +747,10 @@ export class Minimap {
     this.drag = drag;
 
     // Initialize zoom behavior
+    const [minK, maxK] = (dashboard.data?.settings?.zoom?.scaleExtent) || [0.1, 40];
     const zoom = d3
       .zoom()
-      .scaleExtent([0.1, 40])
+      .scaleExtent([minK, maxK])
       .on("zoom", (event) => dashboard.zoomMinimap(event));
     this.svg.call(zoom);
     this.zoom = zoom;

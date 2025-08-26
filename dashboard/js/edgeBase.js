@@ -76,7 +76,9 @@ export default class BaseEdge {
 
   set status(value) {
     this._status = value;
-    this.element.attr("status", value);
+    if (this.element) {
+      this.element.attr("status", value);
+    }
   }
 
   get selected() {
@@ -244,7 +246,7 @@ export default class BaseEdge {
     }
 
     // Draw edges
-    if (this.settings.showEdges) {
+    if (this.settings.showEdges && this.element) {
       const edge = generateEdgePath(this);
       const line = this.lineGenerator();
 

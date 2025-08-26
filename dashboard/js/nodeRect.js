@@ -193,6 +193,8 @@ export default class RectangularNode extends BaseNode {
       // Update text without truncation and remove any tooltip
       this.label.text(label);
       this.removeTooltip();
+      // Notify parent that size changed to trigger relayout
+      this.handleDisplayChange();
     } else if (layoutMode === 'fixed-size') {
       // For fixed-size, don't change width based on text
       this.element
@@ -216,6 +218,8 @@ export default class RectangularNode extends BaseNode {
 
       // Apply text truncation
       this.truncateTextIfNeeded();
+      // If width grew, inform parent for relayout
+      this.handleDisplayChange();
     }
   }
 
@@ -248,7 +252,7 @@ export default class RectangularNode extends BaseNode {
     super.update();
 
     // After parent updates connection points using data, correct them using actual DOM size to avoid stale data issues
-    if (this.settings.showConnectionPoints) {
+    if (this.settings.showConnectionPoints && this.element) {
       const rectSel = this.element.select("rect");
       if (!rectSel.empty()) {
         const width = parseFloat(rectSel.attr("width")) || this.data.width;
@@ -260,13 +264,16 @@ export default class RectangularNode extends BaseNode {
         } catch {}
         const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
         Object.values(connectionPoints).forEach((point) => {
-          (this.connectionPointsGroup || this.element)
-            .select(`.connection-point.side-${point.side}`)
-            .attr("cx", point.x)
-            .attr("cy", point.y);
+          const scope = this.connectionPointsGroup || this.element;
+          if (scope) {
+            scope
+              .select(`.connection-point.side-${point.side}`)
+              .attr("cx", point.x)
+              .attr("cy", point.y);
+          }
         });
         try {
-          if (this.settings.isDebug) {
+          if (this.settings.isDebug && this.element) {
             const read = (side) => ({
               side,
               cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),
@@ -305,13 +312,17 @@ export default class RectangularNode extends BaseNode {
         this.data.width = newWidth;
         
         // Update visual elements directly without triggering simulation
-        this.element
-          .select("rect")
-          .attr("width", this.data.width)
-          .attr("x", -this.data.width / 2);
+        if (this.element) {
+          this.element
+            .select("rect")
+            .attr("width", this.data.width)
+            .attr("x", -this.data.width / 2);
+        }
         
         // Update text without truncation
         this.label.text(this.data.label);
+        // Notify parent that size changed to trigger relayout
+        this.handleDisplayChange();
       } else {
         // Just update the text without truncation
         this.label.text(this.data.label);
@@ -322,6 +333,15 @@ export default class RectangularNode extends BaseNode {
     }
   }
 
+  // RectangularNode is not a container and must never be collapsed
+  get collapsed() {
+    return false;
+  }
+
+  set collapsed(value) {
+    // Ignore collapse requests for non-container nodes
+  }
+
   resize(size, forced = false) {
     // Update data properties first
     if (size.width !== undefined) this.data.width = size.width;
@@ -330,18 +350,20 @@ export default class RectangularNode extends BaseNode {
     super.resize(size, forced);
 
     // Always update the visual elements
-    this.element
-      .select("rect")
-      .attr("width", this.data.width)
-      .attr("height", this.data.height)
-      .attr("x", -this.data.width / 2)
-      .attr("y", -this.data.height / 2);
+    if (this.element) {
+      this.element
+        .select("rect")
+        .attr("width", this.data.width)
+        .attr("height", this.data.height)
+        .attr("x", -this.data.width / 2)
+        .attr("y", -this.data.height / 2);
 
-    // Keep label centered
-    this.element
-      .select("text")
-      .attr("x", 0)
-      .attr("y", 0);
+      // Keep label centered
+      this.element
+        .select("text")
+        .attr("x", 0)
+        .attr("y", 0);
+    }
     
     // Check layout mode for text handling
     const layoutMode = this.data.layout?.layoutMode || 'default';
@@ -358,7 +380,7 @@ export default class RectangularNode extends BaseNode {
     }
 
     // Ensure connection points reflect the actual rect size after resize
-    if (this.settings.showConnectionPoints) {
+    if (this.settings.showConnectionPoints && this.element) {
       const rectSel = this.element.select("rect");
       if (!rectSel.empty()) {
         const width = parseFloat(rectSel.attr("width")) || this.data.width;
@@ -370,13 +392,16 @@ export default class RectangularNode extends BaseNode {
         } catch {}
         const connectionPoints = this.computeConnectionPoints(0, 0, width, height);
         Object.values(connectionPoints).forEach((point) => {
-          (this.connectionPointsGroup || this.element)
-            .select(`.connection-point.side-${point.side}`)
-            .attr("cx", point.x)
-            .attr("cy", point.y);
+          const scope = this.connectionPointsGroup || this.element;
+          if (scope) {
+            scope
+              .select(`.connection-point.side-${point.side}`)
+              .attr("cx", point.x)
+              .attr("cy", point.y);
+          }
         });
         try {
-          if (this.settings.isDebug) {
+          if (this.settings.isDebug && this.element) {
             const read = (side) => ({
               side,
               cx: parseFloat(this.element.select(`.connection-point.side-${side}`).attr('cx')),

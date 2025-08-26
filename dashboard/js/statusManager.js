@@ -6,11 +6,19 @@ export class StatusManager {
     if (!settings.cascadeOnStatusChange || childNodes.length === 0) {
       return NodeStatus.UNKNOWN;
     }
-    
-    const statuses = childNodes
-      .filter(node => !node.isContainer)
-      .map(node => node.status);
-    
+
+    const collectLeafStatuses = (nodes, out) => {
+      for (const n of nodes) {
+        if (n.isContainer && Array.isArray(n.childNodes) && n.childNodes.length > 0) {
+          collectLeafStatuses(n.childNodes, out);
+        } else {
+          out.push(n.status);
+        }
+      }
+    };
+
+    const statuses = [];
+    collectLeafStatuses(childNodes, statuses);
     return this.determineAggregateStatus(statuses);
   }
   

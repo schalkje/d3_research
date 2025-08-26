@@ -62,7 +62,6 @@ svg.canvas { border: 2px solid var(--fd-border); border-radius: var(--fd-radius)
 text, .rect.label { fill: var(--fd-text) !important; }
 .label { font-size: 12px; font-weight: normal; fill: var(--fd-accent) !important; opacity: 1; }
 .node.label { stroke: none; font-size: 14px; font-weight: bold; fill: var(--fd-text) !important; opacity: 1; text-anchor: middle; dominant-baseline: middle; }
-.node.label { stroke: none; font-size: 14px; font-weight: bold; fill: var(--fd-text) !important; opacity: 1; text-anchor: middle; dominant-baseline: middle; }
 .edge .path { stroke: var(--fd-edge) !important; }
 
 /* Minimap overlays: solid (no transparency), no blur; iris red as legacy */
@@ -123,3 +122,81 @@ text, .rect.label { fill: var(--fd-text) !important; }
 .editbox { border: 1px grey solid; background: lightblue; margin: 0 2px; padding: 2px 2px 0 2px; }
 
 
+
+/* Container node state theming
+   - Expanded (default): toned down vs base nodes, no animations
+   - Collapsed: clear, full-opacity states, no animations
+   Note: container status is on the parent <g>, not the rect */
+/* Expanded containers — toned down (parent carries status) */
+/* Expanded subdued state — adapters, marts, foundations only */
+.adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.foundation.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Unknown"] > .zone-container > .container-shape { fill: var(--fd-status-unknown); fill-opacity: 0.2; stroke: var(--fd-border); }
+.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Ready"] > .zone-container > .container-shape { fill: var(--fd-status-ready); fill-opacity: 0.25; stroke: var(--fd-border); }
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape { fill: var(--fd-status-updating); fill-opacity: 0.25; stroke: var(--fd-status-updating-stroke); }
+.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updated"] > .zone-container > .container-shape { fill: var(--fd-status-updated); fill-opacity: 0.18; stroke: none; }
+.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape { fill: var(--fd-status-skipped); fill-opacity: 0.9; stroke: yellowgreen; }
+.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape { fill: var(--fd-status-delayed); fill-opacity: 0.28; stroke: orange; }
+.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Warning"] > .zone-container > .container-shape { fill: var(--fd-status-warning); fill-opacity: 0.28; stroke: orangered; }
+.adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.mart.expanded[status="Error"] > .zone-container > .container-shape,
+.Mart.expanded[status="Error"] > .zone-container > .container-shape,
+.foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Error"] > .zone-container > .container-shape { fill: var(--fd-status-error); fill-opacity: 0.28; stroke: red; }
+
+/* Collapsed containers — clear (parent carries status) */
+.collapsed .container-shape { opacity: 1 !important; filter: none !important; }
+.collapsed[status="Unknown"] .container-shape { fill: var(--fd-status-unknown) !important; fill-opacity: 0.5 !important; stroke: var(--fd-accent) !important; }
+.collapsed[status="Ready"] .container-shape { fill: var(--fd-status-ready) !important; fill-opacity: 0.5 !important; stroke: var(--fd-accent) !important; }
+.collapsed[status="Updating"] .container-shape { fill: var(--fd-status-updating) !important; fill-opacity: 1 !important; stroke: var(--fd-status-updating-stroke) !important; stroke-dasharray: none !important; animation: none !important; }
+.collapsed[status="Updated"] .container-shape { fill: var(--fd-status-updated) !important; fill-opacity: 1 !important; stroke: none !important; }
+.collapsed[status="Skipped"] .container-shape { fill: var(--fd-status-skipped) !important; fill-opacity: 1 !important; stroke: yellowgreen !important; }
+.collapsed[status="Delayed"] .container-shape { fill: var(--fd-status-delayed) !important; fill-opacity: 1 !important; stroke: orange !important; }
+.collapsed[status="Warning"] .container-shape { fill: var(--fd-status-warning) !important; fill-opacity: 1 !important; stroke: orangered !important; }
+.collapsed[status="Error"] .container-shape { fill: var(--fd-status-error) !important; fill-opacity: 1 !important; stroke: red !important; }
+
+/* Expanded lane/columns containers: ignore state (no fill/animation) */
+.lane.expanded > .zone-container > .container-shape,
+.Lane.expanded > .zone-container > .container-shape,
+.columns.expanded > .zone-container > .container-shape,
+.Columns.expanded > .zone-container > .container-shape {
+  fill: none !important;
+  fill-opacity: 0 !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+  stroke: var(--fd-border) !important;
+}

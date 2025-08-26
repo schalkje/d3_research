@@ -76,23 +76,31 @@ export default class ColumnsNode extends BaseContainerNode {
       return;
     }
 
-    // Debug logs removed
+
+    
 
     // Set horizontal row layout algorithm
     innerContainerZone.setLayoutAlgorithm((childNodes, coordinateSystem) => {
       if (childNodes.length === 0) return;
 
       const spacing = this.nodeSpacing?.horizontal || 20;
-      const leftPadding = 0;
-      let currentX = -coordinateSystem.size.width / 2 + leftPadding;
-
       const visibleChildNodes = childNodes.filter(childNode => childNode.visible);
+      if (visibleChildNodes.length === 0) return;
+
+      // Compute total content width to center around 0
+      const contentWidth = visibleChildNodes.reduce((sum, n) => {
+        const w = n.getEffectiveWidth ? n.getEffectiveWidth() : n.data.width;
+        return sum + w;
+      }, 0) + (visibleChildNodes.length > 1 ? (visibleChildNodes.length - 1) * spacing : 0);
+
+      let currentX = -contentWidth / 2;
 
       visibleChildNodes.forEach(childNode => {
-        const x = currentX + childNode.data.width / 2;
+        const w = childNode.getEffectiveWidth ? childNode.getEffectiveWidth() : childNode.data.width;
+        const x = currentX + w / 2;
         const y = 0;
         childNode.move(x, y);
-        currentX += childNode.data.width + spacing;
+        currentX += w + spacing;
       });
     });
 
@@ -137,7 +145,8 @@ export default class ColumnsNode extends BaseContainerNode {
         // When expanded, use margin zone calculation with correct margins
         // This ensures proper sizing based on actual child content
         const margins = marginZone.getMargins();
-        const contentWidth = totalChildWidth + totalSpacing;
+        // Compute content width unconstrained so node can expand to fit children
+        const contentWidth = Math.max(0, totalChildWidth + totalSpacing);
         const contentHeight = Math.max(maxChildHeight, 0);
         
         const headerMinWidth = (headerZone && typeof headerZone.getMinimumWidthThrottled === 'function')

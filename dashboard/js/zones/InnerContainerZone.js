@@ -235,6 +235,19 @@ export class InnerContainerZone extends BaseZone {
     
     if (initializedChildren.length === 0) return;
     
+    // As a defensive measure, move any child under the inner container group before layout
+    try {
+      const tgt = this.getChildContainer()?.node?.();
+      if (tgt) {
+        initializedChildren.forEach(child => {
+          const el = child?.element?.node?.();
+          if (el && el.parentNode !== tgt) {
+            try { tgt.appendChild(el); } catch {}
+          }
+        });
+      }
+    } catch {}
+
     if (!this.layoutAlgorithm) {
       this.applyDefaultLayout();
     } else {

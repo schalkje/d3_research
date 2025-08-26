@@ -61,13 +61,26 @@
             flowdash = new flowDashboard.Dashboard(dataset);
             flowdash.initialize('#graph');
             window.flowdash = flowdash;
+            
+            // Attach dashboard instance to the graph element for settings to find
+            const graphElement = document.getElementById('graph');
+            if (graphElement) {
+                graphElement.__dashboard__ = flowdash;
+            }
         }
 
         injectSettingsUI({
             containerSelector: 'body',
             withVariation: false,
             getBaseData: () => baseData,
-            buildDashboard: (dataset) => build(dataset)
+            buildDashboard: (dataset) => build(dataset),
+            onDashboardRebuilt: (dashboardInstance) => {
+                // This callback is called after the dashboard is rebuilt
+                // We can use it to perform any post-rebuild operations
+                if (dashboardInstance && typeof dashboardInstance.updateStatusBasedCollapse === 'function') {
+                    dashboardInstance.updateStatusBasedCollapse();
+                }
+            }
         });
 
         build(baseData);

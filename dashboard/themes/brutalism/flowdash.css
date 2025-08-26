@@ -148,4 +148,170 @@ text, .label, .rect.label { fill: var(--fd-text); font-weight: 800; }
   stroke-width: 3px;
 }
 
+/* Expanded background for adapters/marts/foundations: neutral, faint, brutalist border */
+.adapter.expanded > .zone-container > .container-shape,
+.Adapter.expanded > .zone-container > .container-shape,
+.mart.expanded > .zone-container > .container-shape,
+.Mart.expanded > .zone-container > .container-shape,
+.foundation.expanded > .zone-container > .container-shape,
+.Foundation.expanded > .zone-container > .container-shape {
+  fill: var(--fd-surface) !important;   /* keep brutalist surface tone */
+  fill-opacity: 0.10 !important;        /* faint background */
+  stroke: var(--fd-border) !important;  /* bold black edge */
+  stroke-width: 3px !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+  filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.85));
+}
+
+/* Expanded adapters/marts/foundations — subdued state background (header stays black) */
+.adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.foundation.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Unknown"] > .zone-container > .container-shape { fill: #e6e6e6 !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Ready"] > .zone-container > .container-shape { fill: #b6e0ff !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape { fill: #ffe066 !important; fill-opacity: 0.18 !important; stroke: #000 !important; animation: none !important; stroke-dasharray: none !important; }
+.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updated"] > .zone-container > .container-shape { fill: #22c55e !important; fill-opacity: 0.16 !important; stroke: #000 !important; }
+.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape { fill: #fff1a8 !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape { fill: #ffb02e !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Warning"] > .zone-container > .container-shape { fill: #ff9f0a !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+.adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.mart.expanded[status="Error"] > .zone-container > .container-shape,
+.Mart.expanded[status="Error"] > .zone-container > .container-shape,
+.foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Error"] > .zone-container > .container-shape { fill: #ff453a !important; fill-opacity: 0.18 !important; stroke: #000 !important; }
+
+/* Collapsed adapters/marts/foundations — header adopts state color */
+.collapsed[status="Unknown"] > .zone-header > .header-background { fill: #e6e6e6 !important; stroke: #000 !important; }
+.collapsed[status="Ready"] > .zone-header > .header-background { fill: #b6e0ff !important; stroke: #000 !important; }
+.collapsed[status="Updating"] > .zone-header > .header-background { fill: #ffe066 !important; stroke: #000 !important; }
+.collapsed[status="Updated"] > .zone-header > .header-background { fill: #22c55e !important; stroke: #000 !important; }
+.collapsed[status="Skipped"] > .zone-header > .header-background { fill: #fff1a8 !important; stroke: #000 !important; }
+.collapsed[status="Delayed"] > .zone-header > .header-background { fill: #ffb02e !important; stroke: #000 !important; }
+.collapsed[status="Warning"] > .zone-header > .header-background { fill: #ff9f0a !important; stroke: #000 !important; }
+.collapsed[status="Error"] > .zone-header > .header-background { fill: #ff453a !important; stroke: #000 !important; }
+
+/* Collapsed typography adjustments */
+.collapsed .header-text,
+.collapsed .label {
+  font-weight: 500 !important; /* not bold */
+  font-size: 10px !important;  /* smaller */
+}
+
+/* Collapsed text color: black on light state headers */
+.collapsed[status="Unknown"] .header-text, .collapsed[status="Unknown"] .label,
+.collapsed[status="Ready"] .header-text, .collapsed[status="Ready"] .label,
+.collapsed[status="Updating"] .header-text, .collapsed[status="Updating"] .label,
+.collapsed[status="Updated"] .header-text, .collapsed[status="Updated"] .label,
+.collapsed[status="Skipped"] .header-text, .collapsed[status="Skipped"] .label,
+.collapsed[status="Delayed"] .header-text, .collapsed[status="Delayed"] .label,
+.collapsed[status="Warning"] .header-text, .collapsed[status="Warning"] .label,
+.collapsed[status="Error"] .header-text, .collapsed[status="Error"] .label {
+  fill: #000 !important;
+}
+/* Collapsed containers: reflect state fully (in line with rect nodes) */
+.collapsed[status="Unknown"] > .zone-container > .container-shape { fill: #e6e6e6; stroke: #000; }
+.collapsed[status="Ready"] > .zone-container > .container-shape { fill: #b6e0ff; stroke: #000; }
+.collapsed[status="Updating"] > .zone-container > .container-shape { fill: #ffe066; stroke: #000; stroke-width: 4px; stroke-dasharray: none; animation: none; }
+.collapsed[status="Updated"] > .zone-container > .container-shape { fill: #22c55e; stroke: #000; }
+.collapsed[status="Skipped"] > .zone-container > .container-shape { fill: #fff1a8; stroke: #000; }
+.collapsed[status="Delayed"] > .zone-container > .container-shape { fill: #ffb02e; stroke: #000; }
+.collapsed[status="Warning"] > .zone-container > .container-shape { fill: #ff9f0a; stroke: #000; }
+.collapsed[status="Error"] > .zone-container > .container-shape { fill: #ff453a; stroke: #000; }
+
+/* Expanded adapters/marts/foundations: subdued (no animations, calmer fills) */
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape { animation: none; stroke-dasharray: none; }
+.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Ready"] > .zone-container > .container-shape { fill-opacity: 0.85; }
+.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updated"] > .zone-container > .container-shape { fill-opacity: 0.85; }
+.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.mart.expanded[status="Error"] > .zone-container > .container-shape,
+.Mart.expanded[status="Error"] > .zone-container > .container-shape,
+.foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.foundation.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Unknown"] > .zone-container > .container-shape { filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.8)); }
+
+/* Expanded lanes/columns: no state styling (default container look only) */
+.lane.expanded > .zone-container > .container-shape,
+.Lane.expanded > .zone-container > .container-shape,
+.columns.expanded > .zone-container > .container-shape,
+.Columns.expanded > .zone-container > .container-shape {
+  fill: none !important;
+  fill-opacity: 0 !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+  stroke: var(--fd-border) !important;
+}
+
 

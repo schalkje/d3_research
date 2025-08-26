@@ -35,10 +35,12 @@ import BaseNode from "./nodeBase.js";
       .text(this.data.label);
 
     // Set expanded or collapsed state
-    if (this.collapsed) {
-      this.element.classed("collapsed", true);
-    } else {
-      this.element.classed("expanded", true);
+    if (this.element) {
+      if (this.collapsed) {
+        this.element.classed("collapsed", true);
+      } else {
+        this.element.classed("expanded", true);
+      }
     }
   }
 }

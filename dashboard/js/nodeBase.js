@@ -47,6 +47,7 @@ export default class BaseNode {
     this.simulation = null;
 
     this.zoneManager = null;
+    this._updatingCollapseState = false;
 
     // Set default values for x, y, width, and height
     this.x ??= 0;
@@ -80,10 +81,19 @@ export default class BaseNode {
 
   set collapsed(value) {
     if (value === this._collapsed) return;
+    
+    console.log(`BaseNode.collapsed setter: Setting ${this.id} collapsed to ${value}, _updatingCollapseState: ${this._updatingCollapseState}`);
+    
     this._collapsed = value;
 
-    this.element.classed("collapsed", this.collapsed);
-    this.element.classed("expanded", !this.collapsed);
+    // Always update DOM classes if element exists
+    if (this.element) {
+      console.log(`BaseNode.collapsed setter: Updating DOM classes for ${this.id}`);
+      this.element.classed("collapsed", this.collapsed);
+      this.element.classed("expanded", !this.collapsed);
+    } else {
+      console.log(`BaseNode.collapsed setter: Skipping DOM update for ${this.id} - element: ${!!this.element}`);
+    }
   }
 
   get status() {
@@ -96,8 +106,50 @@ export default class BaseNode {
       this.element.attr("status", value);
     }
 
-    if (StatusManager.shouldCollapseOnStatus(value, this.settings)) {
-      this.collapsed = true;
+    // Auto collapse/expand based on status when enabled, avoiding re-entrancy
+    // Only containers should auto-toggle collapsed state
+    if (this.isContainer && this.settings.toggleCollapseOnStatusChange && !this._updatingCollapseState) {
+      // Determine collapse rule based on effective status (containers use aggregated child status)
+      let effectiveStatus = value;
+      if (this.isContainer && this.childNodes && this.childNodes.length > 0) {
+        try { effectiveStatus = StatusManager.calculateContainerStatus(this.childNodes, this.settings); } catch {}
+      }
+      const shouldCollapse = StatusManager.shouldCollapseOnStatus(effectiveStatus, this.settings);
+      this._updatingCollapseState = true;
+      try {
+        if (shouldCollapse) {
+          this.collapsed = true;
+        } else {
+          // Explicitly expand when status becomes non-collapsible
+          this.collapsed = false;
+          // Ensure all ancestor containers are expanded so this node becomes visible
+          let ancestor = this.parentNode;
+          while (ancestor) {
+            try {
+              if (ancestor.collapsed) ancestor.collapsed = false;
+            } catch {}
+            ancestor = ancestor.parentNode;
+          }
+        }
+      } finally {
+        this._updatingCollapseState = false;
+      }
+    }
+
+    // For non-container nodes, ensure ancestors are expanded when status indicates non-collapsible
+    if (!this.isContainer && this.settings.toggleCollapseOnStatusChange) {
+      try {
+        const shouldCollapseAncestors = StatusManager.shouldCollapseOnStatus(value, this.settings);
+        if (!shouldCollapseAncestors) {
+          let ancestor = this.parentNode;
+          while (ancestor) {
+            try {
+              if (ancestor.collapsed) ancestor.collapsed = false;
+            } catch {}
+            ancestor = ancestor.parentNode;
+          }
+        }
+      } catch {}
     }
 
     if (this.settings.cascadeOnStatusChange) {
@@ -112,13 +164,26 @@ export default class BaseNode {
   set selected(value) {
 
     this._selected = value;
-    this.element.classed("selected", this._selected);
+    // Only update DOM if element exists
+    if (this.element) {
+      this.element.classed("selected", this._selected);
+    }
   }
 
   handleDisplayChange() {
     if (this.suspenseDisplayChange) {
       return;
     }
+    // If dashboard is temporarily suspending display changes during bulk init,
+    // skip bubbling to avoid mid-cascade zoom recalculation. We detect via the
+    // closest available dashboard reference on the root node if present.
+    try {
+      const root = this.parentNode?.parentNode ? this.parentNode.parentNode : this.parentNode || this;
+      const dashboard = root?.dashboard || root?.__dashboard;
+      if (dashboard && dashboard._suspendDisplayChange) {
+        return;
+      }
+    } catch {}
     if (this.onDisplayChange) {
       this.onDisplayChange();
     } else {
@@ -165,6 +230,23 @@ export default class BaseNode {
         this.zoneManager.resize(this.data.width, this.data.height);
       }
     }
+
+    // Ensure DOM parenting matches logical parenting for all nodes
+    try {
+      const parent = this.parentNode;
+      if (parent && parent.element && this.element) {
+        let desiredParentGroup = parent.element;
+        if (parent.isContainer && !parent.collapsed) {
+          const innerZone = parent.zoneManager?.innerContainerZone || (parent.zoneManager?.ensureInnerContainerZone ? parent.zoneManager.ensureInnerContainerZone() : null);
+          desiredParentGroup = innerZone?.getChildContainer?.() || parent.element;
+        }
+        const currentParent = this.element.node()?.parentNode || null;
+        const desired = desiredParentGroup?.node?.() || null;
+        if (desired && currentParent !== desired) {
+          desired.appendChild(this.element.node());
+        }
+      }
+    } catch {}
 
     // Set up default events using EventManager
     EventManager.setupDefaultNodeEvents(this);
@@ -230,21 +312,25 @@ export default class BaseNode {
       Object.values(connectionPoints).forEach((point) => {
         // Update only this node's own points (scoped to the dedicated group)
         const scope = this.connectionPointsGroup || this.element;
-        scope
-          .select(`.connection-point.side-${point.side}`)
-          .attr("cx", point.x)
-          .attr("cy", point.y);
-      });
-      try {
-        if (this.settings.isDebug) {
-          const read = (side) => ({
-            side,
-            cx: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cx')),
-            cy: parseFloat((this.connectionPointsGroup || this.element).select(`.connection-point.side-${side}`).attr('cy')),
-          });
-          
+        if (scope) {
+          scope
+            .select(`.connection-point.side-${point.side}`)
+            .attr("cx", point.x)
+            .attr("cy", point.y);
         }
-      } catch {}
+      });
+              try {
+          if (this.settings.isDebug) {
+            const scope = this.connectionPointsGroup || this.element;
+            if (scope) {
+              const read = (side) => ({
+                side,
+                cx: parseFloat(scope.select(`.connection-point.side-${side}`).attr('cx')),
+                cy: parseFloat(scope.select(`.connection-point.side-${side}`).attr('cy')),
+              });
+            }
+          }
+        } catch {}
     }
   }
   
@@ -397,7 +483,9 @@ export default class BaseNode {
   }
 
   cascadeStatusChange() {
-    if (this.parentNode && typeof this.parentNode.determineStatusBasedOnChildren === 'function') {
+    if (this.parentNode && 
+        typeof this.parentNode.determineStatusBasedOnChildren === 'function' &&
+        this.parentNode.element) { // Safety check: parent element exists
       this.parentNode.determineStatusBasedOnChildren();
     } 
   }
@@ -452,7 +540,8 @@ export default class BaseNode {
    * This method handles collapsed state internally
    */
   getEffectiveWidth() {
-    if (this.collapsed) {
+    // Non-containers should ignore collapsed state for effective size
+    if (this.isContainer && this.collapsed) {
       // When collapsed, always use minimumSize, not data.width
       // This ensures we get the correct collapsed size even if data.width hasn't been updated yet
       return this.minimumSize?.width || 20; // Default minimum width
@@ -465,7 +554,8 @@ export default class BaseNode {
    * This method handles collapsed state internally
    */
   getEffectiveHeight() {
-    if (this.collapsed) {
+    // Non-containers should ignore collapsed state for effective size
+    if (this.isContainer && this.collapsed) {
       // When collapsed, always use minimumSize, not data.height
       // This ensures we get the correct collapsed size even if data.height hasn't been updated yet
       return this.minimumSize?.height || 20; // Default minimum height
