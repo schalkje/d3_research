@@ -889,6 +889,38 @@ export class Dashboard {
       }
       this.minimap.position();
 
+      // Recompute selection bounding box after layout changes (e.g., collapse/expand)
+      try {
+        if (this.data?.settings?.showBoundingBox) {
+          const nb = this.selection?.neighborhood;
+          let nodesToBox = null;
+          if (nb && Array.isArray(nb.nodes) && nb.nodes.length > 0) {
+            nodesToBox = nb.nodes;
+          } else if (typeof this.getSelectedNodes === 'function') {
+            const sel = this.getSelectedNodes();
+            if (sel && sel.length) nodesToBox = sel;
+          }
+          if (nodesToBox && nodesToBox.length) {
+            const bbox = computeBoundingBox(this, nodesToBox);
+            if (
+              Number.isFinite(bbox.x) &&
+              Number.isFinite(bbox.y) &&
+              Number.isFinite(bbox.width) &&
+              Number.isFinite(bbox.height)
+            ) {
+              this.renderSelectionBoundingBox(bbox);
+              if (nb) nb.boundingBox = bbox;
+            } else {
+              this.clearSelectionBoundingBox?.();
+            }
+          } else {
+            this.clearSelectionBoundingBox?.();
+          }
+        } else {
+          this.clearSelectionBoundingBox?.();
+        }
+      } catch {}
+
       if (this._initialLoading) {
         this._initialLoading = false;
         this.hideLoading();
