@@ -115,6 +115,74 @@ text, .label, .rect.label {
   animation: glass-pulse 1.2s ease-in-out infinite;
 }
 
+/* Collapsed containers: reflect state fully (like rect nodes) */
+.collapsed .container-shape { /* base frosted palette already at full intention */ }
+
+/* Expanded adapters/marts/foundations: subdued, no animations */
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape { animation: none !important; stroke-dasharray: none !important; }
+.adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Ready"] > .zone-container > .container-shape,
+.mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.Mart.expanded[status="Ready"] > .zone-container > .container-shape,
+.foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Ready"] > .zone-container > .container-shape,
+.adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updated"] > .zone-container > .container-shape,
+.mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updated"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updated"] > .zone-container > .container-shape,
+.adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Warning"] > .zone-container > .container-shape,
+.mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.Mart.expanded[status="Warning"] > .zone-container > .container-shape,
+.foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Warning"] > .zone-container > .container-shape,
+.adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Error"] > .zone-container > .container-shape,
+.mart.expanded[status="Error"] > .zone-container > .container-shape,
+.Mart.expanded[status="Error"] > .zone-container > .container-shape,
+.foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Error"] > .zone-container > .container-shape,
+.adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Delayed"] > .zone-container > .container-shape,
+.mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Mart.expanded[status="Delayed"] > .zone-container > .container-shape,
+.foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Delayed"] > .zone-container > .container-shape,
+.adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Skipped"] > .zone-container > .container-shape,
+.mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Mart.expanded[status="Skipped"] > .zone-container > .container-shape,
+.foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Skipped"] > .zone-container > .container-shape,
+.adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Unknown"] > .zone-container > .container-shape,
+.mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Mart.expanded[status="Unknown"] > .zone-container > .container-shape,
+.foundation.expanded[status="Unknown"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Unknown"] > .zone-container > .container-shape {
+  /* retain glass look, but keep container calmer than base nodes */
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.45)) drop-shadow(0 0 12px rgba(122,184,255,0.18));
+}
+
+/* Expanded lanes/columns: no state styling beyond theme default */
+.lane.expanded > .zone-container > .container-shape,
+.Lane.expanded > .zone-container > .container-shape,
+.columns.expanded > .zone-container > .container-shape,
+.Columns.expanded > .zone-container > .container-shape {
+  fill: none !important;
+  fill-opacity: 0 !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+  /* keep base border */
+}
+
 /* Glassy hover effects on containers and headers */
 .container-shape.hover,
 .lane:hover > .zone-container > .container-shape,

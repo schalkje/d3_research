@@ -202,13 +202,18 @@ const nodeData = {
 ### Available Statuses
 ```javascript
 const NodeStatus = {
-  UNKNOWN: "unknown",           // Default/unknown status
-  ACTIVE: "active",             // Normal operation
-  INACTIVE: "inactive",         // Disabled/inactive
-  ERROR: "error",               // Error state
-  WARNING: "warning",           // Warning state
-  SUCCESS: "success",           // Success state
-  PROCESSING: "processing"      // Processing/loading state
+  UNDETERMINED: 'Undetermined',
+  UNKNOWN: 'Unknown',
+  DISABLED: 'Disabled',
+  // process states
+  READY: 'Ready',
+  UPDATING: 'Updating',
+  UPDATED: 'Updated',
+  SKIPPED: 'Skipped',
+  // error states
+  DELAYED: 'Delayed',
+  WARNING: 'Warning',
+  ERROR: 'Error'
 };
 ```
 
@@ -217,6 +222,11 @@ const NodeStatus = {
 - **Event Handling**: Status-specific interaction behavior
 - **Edge Coloring**: Connected edges may change color
 - **Tooltip Content**: Status information in tooltips
+
+### Propagation to Parent Containers
+- When a child node's status changes, it triggers a cascade to its parent container.
+- Parent containers aggregate statuses from their leaf descendants using priority: Error > Warning > Delayed > Unknown > Updating > Updated > Skipped > Ready.
+- If `settings.toggleCollapseOnStatusChange` is enabled, containers auto-collapse on non-problem states (Ready, Disabled, Updated, Skipped) and auto-expand otherwise, ensuring ancestors expand when needed.
 
 ## Event System
 

@@ -105,3 +105,57 @@ All themes use CSS custom properties (variables) for easy customization. Modify 
 ---
 
 *Need help choosing? Start with the Light theme for maximum compatibility, or Dark theme for reduced eye strain.*
+
+## Container state styling guidelines
+
+These rules standardize how container nodes visually respond to states across themes. They ensure clarity while keeping the UI calm and readable.
+
+- **Collapsed containers: reflect state fully**
+  - Treat collapsed containers like rect nodes: full, clear state colors; no animations needed beyond the base.
+  - Example (using status on the ancestor container group):
+```css
+.collapsed[status="Ready"] .container-shape { fill-opacity: 1; }
+.collapsed[status="Updated"] .container-shape { fill-opacity: 1; stroke: none; }
+.collapsed[status="Updating"] .container-shape { animation: none; stroke-dasharray: none; }
+```
+
+- **Expanded adapters, marts, foundations: subdued state styling**
+  - Use toned-down fills (reduced opacity), neutral strokes, and **no animations**.
+  - Match each theme’s aesthetic but keep containers visually quieter than base nodes.
+```css
+.expanded[status="Ready"] .container-shape { fill-opacity: 0.2–0.3; }
+.expanded[status="Updating"] .container-shape { animation: none; stroke-dasharray: none; }
+```
+
+- **Expanded lanes and columns: no state styling**
+  - Do not apply state-based fills or animations. Show only the default container styling from the theme; the status icon communicates state.
+```css
+.lane.expanded .container-shape,
+.columns.expanded .container-shape {
+  fill: none;
+  fill-opacity: 0;
+  animation: none;
+  stroke-dasharray: none;
+}
+```
+
+### Implementation notes
+
+- **Where state lives**: The `status` attribute is applied to the container `<g>` element, not the `rect`. Use ancestor selectors:
+```css
+.expanded[status="Warning"] .container-shape { /* ... */ }
+.collapsed[status="Updated"] .container-shape { /* ... */ }
+```
+- **Specificity**: Place lane/columns overrides after generic container rules so they take precedence.
+- **Status icon**: Header status indicators remain the primary signal for lanes/columns when expanded.
+- **Accessibility**: Ensure sufficient contrast for strokes and avoid flashing animations on large surfaces.
+
+### Example container markup
+```html
+<g class="Adapter expanded" id="1282" status="Warning" transform="translate(0,-80)">
+  <g class="zone-container">
+    <rect class="container-shape" x="-98" y="-35" width="196" height="70"></rect>
+  </g>
+  <!-- header, inner zones, etc. -->
+</g>
+```

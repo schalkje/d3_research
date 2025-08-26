@@ -83,13 +83,54 @@ text, .label, .rect.label { fill: var(--fd-text); }
     transform: scale(1.012);
   }
 }
-.shape[status="Updating"], .node.shape[status="Updating"], .container-shape[status="Updating"], .rect.shape[status="Updating"] {
+/* Expanded adapters/marts/foundations — tone down and disable animations (status on parent) */
+.adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.Adapter.expanded[status="Updating"] > .zone-container > .container-shape,
+.mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.Mart.expanded[status="Updating"] > .zone-container > .container-shape,
+.foundation.expanded[status="Updating"] > .zone-container > .container-shape,
+.Foundation.expanded[status="Updating"] > .zone-container > .container-shape {
+  fill: #ffe4b8;
+  stroke: #ffbf4d;
+  stroke-width: 2.25px;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: none !important;
+}
+
+/* Keep base node animations; only containers are disabled above */
+.shape[status="Updating"], .node.shape[status="Updating"], .rect.shape[status="Updating"] {
   fill: #ffe4b8;
   stroke: #ffbf4d;
   stroke-width: 2.25px;
   transform-box: fill-box;
   transform-origin: center;
   animation: neumo-update-pulse 1.2s ease-in-out infinite;
+}
+
+/* Collapsed containers — clear, full-opacity and no animations */
+.collapsed .container-shape { filter: drop-shadow(6px 6px 12px rgba(0,0,0,.10)) drop-shadow(-6px -6px 12px rgba(255,255,255,.9)); }
+.collapsed[status="Unknown"] .container-shape,
+.collapsed[status="Ready"] .container-shape,
+.collapsed[status="Updated"] .container-shape,
+.collapsed[status="Skipped"] .container-shape,
+.collapsed[status="Delayed"] .container-shape,
+.collapsed[status="Warning"] .container-shape,
+.collapsed[status="Error"] .container-shape,
+.collapsed[status="Updating"] .container-shape {
+  animation: none;
+}
+
+/* Expanded lane/columns containers: ignore state (no fill/animation), keep soft stroke */
+.lane.expanded > .zone-container > .container-shape,
+.Lane.expanded > .zone-container > .container-shape,
+.columns.expanded > .zone-container > .container-shape,
+.Columns.expanded > .zone-container > .container-shape {
+  fill: none !important;
+  fill-opacity: 0 !important;
+  animation: none !important;
+  stroke-dasharray: none !important;
+  stroke: #dfe3ea !important;
 }
 
 

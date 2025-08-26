@@ -113,6 +113,13 @@ Updates child positioning and container sizing.
 - Applies margin and spacing calculations
 - Triggers visual updates
 
+### Status Aggregation and Propagation
+
+- Parent containers compute their status from descendant leaf nodes.
+- On any child status change, the parent calls `determineStatusBasedOnChildren()`, which uses `StatusManager.calculateContainerStatus(childNodes, settings)`.
+- Aggregation priority: Error > Warning > Delayed > Unknown > Updating > Updated > Skipped > Ready.
+- With `settings.toggleCollapseOnStatusChange` enabled, containers auto-collapse on non-problem states (Ready, Disabled, Updated, Skipped) and expand otherwise; ancestors may auto-expand to reveal affected nodes.
+
 ### Child Management
 
 #### `addChild(childNode)`
