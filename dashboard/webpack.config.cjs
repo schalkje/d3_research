@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const TerserPlugin = require('terser-webpack-plugin');
+const packageJson = require('./package.json');
 
 module.exports = (env, argv) => {
     const isProduction = argv.mode === 'production';
@@ -34,6 +36,16 @@ module.exports = (env, argv) => {
             sideEffects: false,
             // Enable minification
             minimize: true,
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions: {
+                        format: {
+                            comments: /^!/,
+                        },
+                    },
+                    extractComments: false,
+                }),
+            ],
             // Enable module concatenation
             concatenateModules: true,
             // Enable dead code elimination
@@ -55,7 +67,7 @@ module.exports = (env, argv) => {
         },
         plugins: [
             new webpack.BannerPlugin({
-                banner: 'flowdash.min.js | (c) schalken.net | Licensed under the MIT License. See https://opensource.org/licenses/MIT',
+                banner: `flowdash v${packageJson.version} | (c) schalken.net | Licensed under the MIT License. See https://opensource.org/licenses/MIT`,
                 entryOnly: true
             })
         ],

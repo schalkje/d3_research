@@ -1,4 +1,4 @@
-// Public API aggregator
+// Public API aggregator for flowdash
 import * as dashboard from './dashboard.js';
 import * as data from './data.js';
 import { showLoading } from './loadingOverlay.js';
