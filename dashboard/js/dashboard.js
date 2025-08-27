@@ -896,6 +896,7 @@ export class Dashboard {
       } catch {}
 
       if (this._initialLoading) {
+        console.log('📊 Dashboard onMainDisplayChange - Initial loading complete, calling hideLoading()');
         this._initialLoading = false;
         this.hideLoading();
       }
@@ -1201,10 +1202,13 @@ export class Dashboard {
   zoomToBoundingBox(boundingBox) { this.zoomManager.zoomToBoundingBox(boundingBox, { animate: true, duration: 500 }); }
 
   showLoading() {
+    console.log('📊 Dashboard.showLoading() called');
     const container = resolveLoadingHost(this.main?.svg);
+    console.log('📊 Dashboard.showLoading() - Using container:', container);
     LoadingOverlay.show(container);
   }
   hideLoading() {
+    console.log('📊 Dashboard.hideLoading() called');
     LoadingOverlay.hide();
   }
 }
