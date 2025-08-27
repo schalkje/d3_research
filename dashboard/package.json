@@ -1,6 +1,6 @@
 {
   "name": "flowdash",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "Visualize data flow processes",
   "homepage": "https://schalken.net",
   "main": "index.js",
@@ -16,6 +16,7 @@
     "canvas"
   ],
   "scripts": {
+    "prebuild": "npm version patch --no-git-tag-version",
     "build": "webpack --mode production",
     "build:analyze": "webpack --mode production --env analyze",
     "start": "webpack serve --open --mode development"
