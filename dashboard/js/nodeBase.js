@@ -82,18 +82,13 @@ export default class BaseNode {
   set collapsed(value) {
     if (value === this._collapsed) return;
     
-    console.log(`BaseNode.collapsed setter: Setting ${this.id} collapsed to ${value}, _updatingCollapseState: ${this._updatingCollapseState}`);
-    
     this._collapsed = value;
 
     // Always update DOM classes if element exists
     if (this.element) {
-      console.log(`BaseNode.collapsed setter: Updating DOM classes for ${this.id}`);
       this.element.classed("collapsed", this.collapsed);
       this.element.classed("expanded", !this.collapsed);
-    } else {
-      console.log(`BaseNode.collapsed setter: Skipping DOM update for ${this.id} - element: ${!!this.element}`);
-    }
+    } 
   }
 
   get status() {
@@ -474,12 +469,9 @@ export default class BaseNode {
 
   cascadeUpdate() {
     if (this.parentNode) {
-      // console.log(`cascadeUpdate from "${this.data.label}" --> "${this.parentNode.data.label}"`);
       this.parentNode.update();
       this.parentNode.cascadeUpdate();
-    } else {
-      // console.log(`cascadeUpdate "${this.data.label}" --> has no parent to cascade to`);
-    }
+    } 
   }
 
   cascadeStatusChange() {
@@ -491,9 +483,7 @@ export default class BaseNode {
   }
 
   cascadeRestartSimulation() {
-    // console.log("cascadeRestartSimulation ", this.id);
     if (this.simulation) {
-      // console.log("                    simulaiton restart", this.id);
       this.simulation.simulation.alphaTarget(0.8).restart();
     }
     if (this.parentNode) {
@@ -502,9 +492,7 @@ export default class BaseNode {
   }
 
   cascadeStopSimulation() {
-    // console.log("cascadeStopSimulation ", this.id);
     if (this.simulation) {
-      // console.log("                    simulation stop", this.id);
       this.simulation.simulation.alphaTarget(0);
     }
     if (this.parentNode) {

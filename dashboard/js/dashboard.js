@@ -1079,12 +1079,10 @@ export class Dashboard {
         // Only change state if it's different from current
         if (shouldCollapse !== node.collapsed) {
           hasChanges = true;
-          console.log(`Status-based collapse change for node ${node.id}: status=${node.status}, shouldCollapse=${shouldCollapse}, current=${node.collapsed}`);
-          
+         
           // Use the collapsed setter to ensure proper state management and trigger expand/collapse methods
           try {
             node.collapsed = shouldCollapse;
-            console.log(`Successfully set node ${node.id} collapsed to ${shouldCollapse}`);
           } catch (e) {
             console.warn('Failed to change collapse state for node:', node.id, e);
           }
@@ -1094,8 +1092,7 @@ export class Dashboard {
 
     // If there were changes, restart the simulation to recalculate the layout
     if (hasChanges && this.main.root) {
-      console.log('Status-based collapse changes detected, restarting simulation and updating layout');
-      
+     
       // Restart simulation to recalculate layout with new collapsed/expanded states
       this.main.root.cascadeRestartSimulation();
       

@@ -39,6 +39,12 @@ module.exports = (env, argv) => {
             minimizer: [
                 new TerserPlugin({
                     terserOptions: {
+                        compress: {
+                            // Remove console.log, console.warn, etc. in production
+                            drop_console: true,
+                            // Remove debugger statements
+                            drop_debugger: true,
+                        },
                         format: {
                             comments: /^!/,
                         },
