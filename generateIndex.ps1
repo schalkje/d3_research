@@ -92,6 +92,7 @@ $sectionDescriptions = @{
     '08_martNodes' = 'Mart nodes with modes and orientations.'
     '09_groupNodes' = 'Group nodes.'
     '10_edges' = 'Edges and routing demos (basic, simple, extended).'
+    '11_dashboard' = 'Dashboard layout and components.'
     'd3_basics' = 'Introductory D3.js examples and learning modules.'
     'dashboard' = 'Main product: Modular dashboard with real data and advanced features.'
     'experiments' = 'Advanced and experimental D3/network visualizations.'
